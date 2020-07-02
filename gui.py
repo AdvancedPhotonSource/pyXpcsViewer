@@ -8,6 +8,7 @@ from pyqtgraph import PlotWidget, ImageWindow
 import pyqtgraph as pg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from data_loader import DataLoader
+from file_locator import FileLocator
 
 
 class Ui(QtWidgets.QMainWindow):

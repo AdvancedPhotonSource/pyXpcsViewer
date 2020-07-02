@@ -15,7 +15,8 @@ hdf_dict = {
     't_el': '/exchange/tau',
     'g2': '/exchange/norm-0-g2',
     'g2_err': '/exchange/norm-0-stderr',
-    'Int_2D': '/exchange/pixelSum'
+    'Int_2D': '/exchange/pixelSum',
+    'Int_t': '/exchange/frameSum'
 }
 
 
