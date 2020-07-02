@@ -6,7 +6,6 @@ from scipy.optimize import curve_fit
 import os
 import h5py
 
-
 hdf_dict = {
     'Iq': '/exchange/partition-mean-total',
     'ql_sta': '/xpcs/sqlist',
@@ -96,9 +95,9 @@ class DataLoader(object):
 
         plt.show()
 
+
 if __name__ == "__main__":
     flist = os.listdir('./data')
     dv = DataViewer('./data', flist)
     dv.average()
     # dv.plot_g2()
-

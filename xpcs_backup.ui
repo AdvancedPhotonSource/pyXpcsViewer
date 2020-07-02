@@ -30,41 +30,6 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="2" column="1">
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="minimumSize">
-          <size>
-           <width>1080</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>SAXS</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
-            <widget class="ImageView" name="graphWidget" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>120</horstretch>
-               <verstretch>120</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Tab 2</string>
-          </attribute>
-         </widget>
-        </widget>
-       </item>
        <item row="2" column="0">
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
@@ -179,12 +144,72 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
-             <widget class="QListWidget" name="list_view_target"/>
+             <widget class="QListWidget" name="list_view_target">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+              <property name="gridSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>SAXS</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="0" column="0">
+            <widget class="ImageView" name="graphWidget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>120</horstretch>
+               <verstretch>120</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_2">
+          <attribute name="title">
+           <string>Tab 2</string>
+          </attribute>
+         </widget>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -221,7 +246,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>677</x>
-     <y>440</y>
+     <y>509</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -237,7 +262,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>767</x>
-     <y>440</y>
+     <y>509</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -268,8 +293,8 @@
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>362</x>
-     <y>433</y>
+     <x>292</x>
+     <y>496</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -284,12 +309,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>277</x>
-     <y>433</y>
+     <x>207</x>
+     <y>494</y>
     </hint>
     <hint type="destinationlabel">
-     <x>677</x>
-     <y>440</y>
+     <x>648</x>
+     <y>493</y>
     </hint>
    </hints>
   </connection>
