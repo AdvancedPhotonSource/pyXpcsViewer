@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1331</width>
-    <height>800</height>
+    <width>1920</width>
+    <height>980</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -32,9 +32,15 @@
       <layout class="QGridLayout" name="gridLayout">
        <item row="2" column="1">
         <widget class="QTabWidget" name="tabWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
-           <width>1080</width>
+           <width>1280</width>
            <height>0</height>
           </size>
          </property>
@@ -95,17 +101,39 @@
           </attribute>
           <layout class="QGridLayout" name="gridLayout_7">
            <item row="0" column="0">
-            <widget class="MplCanvas" name="mf1" native="true"/>
+            <widget class="MplCanvas" name="mf1" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_4">
+         <widget class="QWidget" name="">
           <attribute name="title">
-           <string>Page</string>
+           <string>g2</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_8">
            <item row="0" column="0">
             <widget class="QScrollArea" name="scrollArea">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>800</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOn</enum>
+             </property>
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
@@ -114,13 +142,32 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1032</width>
-                <height>650</height>
+                <width>1216</width>
+                <height>830</height>
                </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
               <layout class="QGridLayout" name="gridLayout_9">
                <item row="0" column="0">
-                <widget class="MplCanvas" name="f5" native="true"/>
+                <widget class="MplCanvas" name="mf2" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -272,7 +319,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1331</width>
+     <width>1920</width>
      <height>22</height>
     </rect>
    </property>

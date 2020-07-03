@@ -5,6 +5,8 @@ from PyQt5.QtCore import QObject, pyqtSlot, QDir
 import sys
 import os
 from pyqtgraph import PlotWidget, ImageWindow
+import matplotlib.pyplot as plt
+import matplotlib
 import pyqtgraph as pg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from data_loader import DataLoader
@@ -28,55 +30,35 @@ class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('xpcs.ui', self)
-        # self.f1 = MplCanvas()
         self.show()
-
         self.dl = None
         self.fl = None
         self.cache = None
         self.load_path()
 
-
-        # flist = os.listdir('./data')
-        # self.dv = DataLoader('./data', flist)
-        # self.avg = self.dv.average()
-
-        # import numpy as np
-        # x = np.random.normal(size=1000)
-        # y = np.random.normal(size=1000)
-        # # self.graphWidget.plot(x, y, pen=None, symbol='o')
-        # avg = self.dv.read_data(['Int_2D'])['Int_2D']
-        # avg = np.log10(avg + 1E-8)
-        # xvals = np.arange(avg.shape[0])
-        # self.graphWidget.setImage(avg, xvals=xvals)
-
-        # model = QFileSystemModel()
-        # model.setRootPath(QDir.currentPath())
-        # self.treeView.setModel(model)
-        # self.treeView.setRootIndex(model.index(QDir.currentPath()))
-
     def load_data(self):
         self.dl = DataLoader(prefix=self.fl.cwd,
                              file_list=self.fl.target_list)
-        res = self.dl.get_stability_data()
 
-        # data = res['Int_t']
-        data = res['Iq']
-        # self.graphWidget.setImage(data)
         self.mf1.subplots(2, 1)
-        for n in range(data.shape[0]):
-        #     self.f0.plot(np.log10(data[n]), pen=pg.mkPen('b', width=1))
-        #     # self.mf1.axes[0].plot(np.log10(res['Iq']))
-            self.mf1.axes[1].plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
+        self.mf1.draw()
+        self.plot_g2()
+        # for n in range(data.shape[0]):
+        #     self.mf1.axes[1].plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
         # self.mf1.axes[1].imshow((res['Int_t'][:, :, 0]).T, aspect='auto')
 
-        self.mf1.draw()
-        #     self.graphWidget.setImage()
-        # saxs = self.dl.get_saxs()
-        # xvals = np.arange(saxs.shape[0])
-        # self.graphWidget.setImage(saxs, xvals=xvals)
-        # self.f1.plot(x, y, pen=None, symbol='o')
+    def plot_g2(self, max_q=0.016, num_col=4):
+        # prepare g2
+        res = self.dl.get_g2_data()
 
+        num_q = np.sum(res['ql_dyn'][0, :] <= max_q)
+        # adjust canvas size according to number of images
+        num_row = (num_q + num_col - 1) // num_col
+        canvas_size = max(800, 200 * num_row)
+        self.mf2.setMinimumSize(QtCore.QSize(0, canvas_size))
+        self.mf2.subplots(num_row, num_col)
+
+        self.dl.plot_g2(handler=self.mf2, max_q=max_q)
 
     def load_path(self):
         # f = QFileDialog.getExistingDirectory(self, 'Open directory',

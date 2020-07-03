@@ -12,4 +12,5 @@ class MplCanvas(FigureCanvasQTAgg):
 
     def subplots(self, n, m, **kwargs):
         self.axes = self.fig.subplots(n, m, **kwargs)
+        return self.axes
 

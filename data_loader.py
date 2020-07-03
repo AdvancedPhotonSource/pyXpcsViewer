@@ -1,8 +1,10 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 from scipy.optimize import curve_fit
+from matplot_qt import MplCanvas
+from matplotlib.ticker import FormatStrFormatter
+
 import os
 import h5py
 
@@ -11,11 +13,30 @@ hdf_dict = {
     'ql_sta': '/xpcs/sqlist',
     'ql_dyn': '/xpcs/dqlist',
     't0': '/measurement/instrument/detector/exposure_period',
-    't_el': '/exchange/tau',
+    'tau': '/exchange/tau',
     'g2': '/exchange/norm-0-g2',
     'g2_err': '/exchange/norm-0-stderr',
     'Int_2D': '/exchange/pixelSum',
-    'Int_t': '/exchange/frameSum'
+    'Int_t': '/exchange/frameSum',
+    'ccd_x0': '/measurement/instrument/acquisition/beam_center_x',
+    'ccd_y0': '/measurement/instrument/acquisition/beam_center_y',
+    'det_dist': '/measurement/instrument/detector/distance',
+    'pix_dim': '/measurement/instrument/detector/x_pixel_size',
+    'X_energy': '/measurement/instrument/source_begin/energy',
+    'xdim': '/measurement/instrument/detector/x_dimension',
+    'ydim': '/measurement/instrument/detector/y_dimension'
+}
+
+avg_hdf_dict = {
+    'Iq': '/Iq_ave',
+    'g2': '/g2_ave',
+    'g2_nb': '/g2_ave_nb',
+    'g2_err': '/g2_ave_err',
+    'fn_count': '/fn_count',
+    't_el': '/t_el',
+    'ql_sta': '/ql_sta',
+    'ql_dyn': '/ql_dyn',
+    'Int_2D': '/Int_2D_ave',
 }
 
 
@@ -23,7 +44,19 @@ def read_file(fields, fn, prefix='./data'):
     res = []
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
         for field in fields:
-            val = np.squeeze(HDF_Result.get(hdf_dict[field]))
+            if field == 't_el':
+                val1 = np.squeeze(HDF_Result.get(hdf_dict['t0']))
+                val2 = np.squeeze(HDF_Result.get(hdf_dict['tau']))
+                val = val1 * val2
+            else:
+                if field in hdf_dict.keys():
+                    link = hdf_dict[field]
+                    if link in HDF_Result.keys():
+                        val = np.squeeze(HDF_Result.get(link))
+                    else:
+                        link = avg_hdf_dict[field]
+                        val = np.squeeze(HDF_Result.get(link))
+
             res.append(val)
 
     return res
@@ -81,24 +114,105 @@ class DataLoader(object):
         self.prefix = prefix
         self.file_list = file_list
         self.id_list = create_id(self.file_list)
-        self.get_g2_data()
 
-    def plot_saxs(self):
+    def get_g2_data(self, file_list=None):
+        labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
+        # labels = ['ql_dyn']
+        if file_list is None:
+            file_list = self.file_list
+        res = self.read_data(labels, file_list)
+        return res
 
+    def fit_g2(self, res):
+        
+
+    def plot_g2(self, max_q=0.016, handler=None):
+        res = self.get_g2_data()
+        t_el, g2, g2_err = res['t_el'], res['g2'], res['g2_err']
+        ql_dyn = res['ql_dyn'][0]
+
+        num_row = 7
+        num_col = 4
+
+        def plot_one_sample(ax, idx):
+            for i in range(num_row * num_col):
+                if i >= g2.shape[-1] or ql_dyn[i] > max_q:
+                   return
+                ax = ax_all.ravel()[i]
+                ax.errorbar(t_el[idx], g2[idx][:, i], yerr=g2_err[idx][:, i],
+                            fmt='o', markersize=3, markerfacecolor='none')
+                if idx == 0:
+                    ax.text(0.6, 0.8, ('Q = %5.4f $\AA^{-1}$' % ql_dyn[i]),
+                            horizontalalignment='center',
+                            verticalalignment='center', transform=ax.transAxes)
+                    ax.set_xscale('log')
+                    ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+
+        if isinstance(handler, MplCanvas):
+            ax_all = handler.axes
+            # for idx in range(res['g2'].shape[0]):
+            for idx in range(2):
+                plot_one_sample(ax_all, idx)
+
+            handler.fig.tight_layout()
+            handler.draw()
+
+
+    def get_detector_extend(self, file_list):
+        labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
+                  'xdim', 'ydim']
+        res = self.read_data(labels, file_list)
+        extents = []
+        for n in range(len(file_list)):
+            pix2q = res['pix_dim'][n] / res['det_dist'][n] * \
+                    (2 * np.pi /(12.398 / res['X_energy'][n]))
+
+            qy_min = (0 - res['ccd_x0'][n]) * pix2q
+            qy_max = (res['ydim'][n] - res['ccd_x0'][n]) * pix2q
+
+            qx_min = (0 - res['ccd_y0'][n]) * pix2q
+            qx_max = (res['xdim'][n] - res['ccd_y0'][n]) * pix2q
+            temp = (qy_min, qy_max, qx_min, qx_max)
+
+            extents.append(temp)
+
+        return extents
+
+    def plot_saxs(self, method='None', scale='log'):
+        extents = self.get_detector_extend(self.file_list)
+
+        ans = self.get_saxs()
+        if scale == 'log':
+            ans = np.log10(ans + 1E-8)
+
+        num_fig = min(8, len(extents))
+
+        if isinstance(method, MplCanvas):
+            if len(extents) <= 3:
+                ax = method.subplots(1, num_fig)
+            else:
+                ax = method.subplots(2, (num_fig + 1) // 2)
+
+            for n in range(num_fig):
+                if num_fig == 1:
+                    ax_0 = ax
+                else:
+                    ax_0 = ax.flatten()[n]
+                im = ax_0.imshow(ans[n], cmap=plt.get_cmap('jet'),
+                               # norm=LogNorm(vmin=1e-7, vmax=1e-4),
+                               interpolation='none')
+                               # extent=extents[n])
+                ax_0.set_title(self.id_list[n])
+            method.draw()
+        else:
+            xvals = np.arange(ans.shape[0])
+            method(ans.swapaxes(1, 2), xvals=xvals)
 
     def get_saxs(self):
         ans = self.read_data(['Int_2D'])['Int_2D']
+        # ans = np.swapaxes(ans, 1, 2)
+        # the detector figure is not oriented to image convention;
         return ans
-
-    def get_g2_data(self):
-        labels = ['g2', 'g2_err']
-        res = self.read_data(labels)
-        labels2 = ['t0', 't_el']
-        time_res = self.read_data(labels2, [self.file_list[0]])
-        t_el = time_res['t0'] * time_res['t_el'][0]
-        res['t_el'] = t_el
-
-        return res
 
     def get_stability_data(self, max_point=128):
         labels = ['Int_t', 'Iq']
@@ -165,18 +279,6 @@ class DataLoader(object):
             result[label] = result[label] / num_points
 
         return result
-
-    def plot_g2(self, ax=None):
-        if ax is None:
-            fig, ax = plt.subplots(1, 1)
-
-        print(len(self.data))
-        print(len(self.data[1]))
-        for n in range(self.size):
-            ax.plot(self.data[n][1][0, 1])
-
-        plt.show()
-
 
 if __name__ == "__main__":
     flist = os.listdir('./data')
