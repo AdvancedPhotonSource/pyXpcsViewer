@@ -5,6 +5,7 @@ import os
 class FileLocator(object):
     def __init__(self, path):
         self.path = path
+        self.cwd = None
         self.trie = None
         self.source_list = None
         self.target_list = None
@@ -33,8 +34,10 @@ class FileLocator(object):
             flist = []
             with open(path, 'r') as f:
                 flist = [x[:-1] for x in f]
+            self.cwd = os.path.dirname(path)
         elif os.path.isdir(path):
             flist = os.listdir(path)
+            self.cwd = path
 
         # only keep hdf files
         flist = [x for x in flist if '.hdf' in x]

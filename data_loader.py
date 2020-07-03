@@ -34,9 +34,41 @@ class DataLoader(object):
         self.size = len(file_list)
         self.prefix = prefix
         self.file_list = file_list
-        # self.label = ['Iq', 'g2', 'Int_2D', 'ql_sta', 'ql_dyn', 't_el']
-        # self.label = ['Iq', 'g2', 'ql_sta', 'ql_dyn', 't_el']
-        # self.data = self.load_data(self.label, file_list)
+        self.get_g2_data()
+
+    def get_saxs(self):
+        avg = self.read_data(['Int_2D'])['Int_2D']
+        return avg
+
+    def get_g2_data(self):
+        labels = ['g2', 'g2_err']
+        res = self.read_data(labels)
+        labels2 = ['t0', 't_el']
+        time_res = self.read_data(labels2, [self.file_list[0]])
+        t_el = time_res['t0'] * time_res['t_el'][0]
+        res['t_el'] = t_el
+
+        return res
+
+    def get_stability_data(self, max_point=128):
+        labels = ['Int_t', 'Iq']
+        res = self.read_data(labels)
+        avg_int_t = []
+
+        int_t = res['Int_t'][:, 1, :]
+        int_t = int_t / np.mean(int_t)
+        avg_size = (int_t.shape[1] + max_point - 1) // max_point
+        for n in range(max_point):
+            sl = slice(n * avg_size, (n + 1) * avg_size)
+            temp = int_t[:, sl]
+            avg, mean = np.mean(temp, axis=1), np.std(temp, axis=1)
+            avg_int_t.append(np.vstack([avg, mean]).T)
+
+        res['Int_t_statistics'] = np.array(avg_int_t).swapaxes(0, 1)
+        res['Int_t'] = None
+        res['avg_size'] = avg_size
+
+        return res
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:

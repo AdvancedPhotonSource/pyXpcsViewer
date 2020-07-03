@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>mainwindow</class>
+ <widget class="QMainWindow" name="mainwindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1553</width>
+    <width>1331</width>
     <height>800</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>XPCS_GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -39,7 +39,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -62,6 +62,71 @@
           <attribute name="title">
            <string>Tab 2</string>
           </attribute>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="PlotWidget" name="f0" native="true"/>
+               </item>
+               <item>
+                <widget class="PlotWidget" name="f1" native="true"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="PlotWidget" name="f2" native="true"/>
+               </item>
+               <item>
+                <widget class="PlotWidget" name="f3" native="true"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_3">
+          <attribute name="title">
+           <string>Page</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
+            <widget class="MplCanvas" name="mf1" native="true"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_4">
+          <attribute name="title">
+           <string>Page</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0">
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1032</width>
+                <height>650</height>
+               </rect>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_9">
+               <item row="0" column="0">
+                <widget class="MplCanvas" name="f5" native="true"/>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
        </item>
@@ -179,7 +244,18 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
-             <widget class="QListWidget" name="list_view_target"/>
+             <widget class="QListWidget" name="list_view_target">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="btn_load_data">
+              <property name="text">
+               <string>Finalize</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -196,7 +272,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1553</width>
+     <width>1331</width>
      <height>22</height>
     </rect>
    </property>
@@ -205,9 +281,21 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>ImageView</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvas</class>
+   <extends>QWidget</extends>
+   <header>matplot_qt</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -216,11 +304,11 @@
   <connection>
    <sender>pushButton_2</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>677</x>
+     <x>340</x>
      <y>440</y>
     </hint>
     <hint type="destinationlabel">
@@ -232,11 +320,11 @@
   <connection>
    <sender>pushButton_3</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>767</x>
+     <x>430</x>
      <y>440</y>
     </hint>
     <hint type="destinationlabel">
@@ -248,12 +336,12 @@
   <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>load_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>738</x>
-     <y>58</y>
+     <x>430</x>
+     <y>79</y>
     </hint>
     <hint type="destinationlabel">
      <x>776</x>
@@ -264,11 +352,11 @@
   <connection>
    <sender>filter_str</sender>
    <signal>textChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>362</x>
+     <x>273</x>
      <y>433</y>
     </hint>
     <hint type="destinationlabel">
@@ -284,12 +372,28 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>277</x>
+     <x>273</x>
      <y>433</y>
     </hint>
     <hint type="destinationlabel">
-     <x>677</x>
+     <x>340</x>
      <y>440</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_load_data</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>load_data()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>729</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>775</y>
     </hint>
    </hints>
   </connection>
@@ -300,5 +404,6 @@
   <slot>load_path()</slot>
   <slot>trie_search()</slot>
   <slot>add_batch()</slot>
+  <slot>load_data()</slot>
  </slots>
 </ui>
