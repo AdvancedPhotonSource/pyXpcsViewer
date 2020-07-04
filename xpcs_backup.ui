@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>mainwindow</class>
+ <widget class="QMainWindow" name="mainwindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1553</width>
-    <height>800</height>
+    <width>1920</width>
+    <height>980</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>XPCS_GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -30,6 +30,153 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="1">
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>1280</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="currentIndex">
+          <number>3</number>
+         </property>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>SAXS</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="0" column="0">
+            <widget class="ImageView" name="graphWidget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>120</horstretch>
+               <verstretch>120</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_2">
+          <attribute name="title">
+           <string>Tab 2</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="PlotWidget" name="f0" native="true"/>
+               </item>
+               <item>
+                <widget class="PlotWidget" name="f1" native="true"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="PlotWidget" name="f2" native="true"/>
+               </item>
+               <item>
+                <widget class="PlotWidget" name="f3" native="true"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_3">
+          <attribute name="title">
+           <string>Page</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
+            <widget class="MplCanvas" name="mf1" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="">
+          <attribute name="title">
+           <string>g2</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0">
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>800</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOn</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1216</width>
+                <height>830</height>
+               </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_9">
+               <item row="0" column="0">
+                <widget class="MplCanvas" name="mf2" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
        <item row="2" column="0">
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
@@ -145,35 +292,15 @@
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
              <widget class="QListWidget" name="list_view_target">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>120</height>
-               </size>
-              </property>
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="horizontalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="editTriggers">
-               <set>QAbstractItemView::NoEditTriggers</set>
-              </property>
               <property name="selectionMode">
                <enum>QAbstractItemView::MultiSelection</enum>
               </property>
-              <property name="gridSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="btn_load_data">
+              <property name="text">
+               <string>Finalize</string>
               </property>
              </widget>
             </item>
@@ -181,35 +308,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="2" column="1">
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>SAXS</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
-            <widget class="ImageView" name="graphWidget" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>120</horstretch>
-               <verstretch>120</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Tab 2</string>
-          </attribute>
-         </widget>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -221,7 +319,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1553</width>
+     <width>1920</width>
      <height>22</height>
     </rect>
    </property>
@@ -230,9 +328,21 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>ImageView</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvas</class>
+   <extends>QWidget</extends>
+   <header>matplot_qt</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -241,12 +351,12 @@
   <connection>
    <sender>pushButton_2</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>677</x>
-     <y>509</y>
+     <x>340</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -257,12 +367,12 @@
   <connection>
    <sender>pushButton_3</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>767</x>
-     <y>509</y>
+     <x>430</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -273,12 +383,12 @@
   <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>load_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>738</x>
-     <y>58</y>
+     <x>430</x>
+     <y>79</y>
     </hint>
     <hint type="destinationlabel">
      <x>776</x>
@@ -289,12 +399,12 @@
   <connection>
    <sender>filter_str</sender>
    <signal>textChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>mainwindow</receiver>
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>292</x>
-     <y>496</y>
+     <x>273</x>
+     <y>433</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -309,12 +419,28 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>207</x>
-     <y>494</y>
+     <x>273</x>
+     <y>433</y>
     </hint>
     <hint type="destinationlabel">
-     <x>648</x>
-     <y>493</y>
+     <x>340</x>
+     <y>440</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_load_data</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>load_data()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>729</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>775</y>
     </hint>
    </hints>
   </connection>
@@ -325,5 +451,6 @@
   <slot>load_path()</slot>
   <slot>trie_search()</slot>
   <slot>add_batch()</slot>
+  <slot>load_data()</slot>
  </slots>
 </ui>
