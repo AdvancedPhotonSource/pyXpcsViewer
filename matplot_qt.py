@@ -14,3 +14,10 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes = self.fig.subplots(n, m, **kwargs)
         return self.axes
 
+    def clear_axes(self):
+        if self.axes is None:
+            return
+        else:
+            for ax in self.axes.ravel():
+                ax.clear()
+
