@@ -54,7 +54,7 @@ class Ui(QtWidgets.QMainWindow):
         num_q = np.sum(res['ql_dyn'][0, :] <= max_q)
         # adjust canvas size according to number of images
         num_row = (num_q + num_col - 1) // num_col
-        canvas_size = max(800, 200 * num_row)
+        canvas_size = max(840, 200 * num_row)
         self.mf2.setMinimumSize(QtCore.QSize(0, canvas_size))
         self.mf2.subplots(num_row, num_col)
 
