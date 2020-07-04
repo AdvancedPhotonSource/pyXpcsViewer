@@ -115,47 +115,64 @@ class DataLoader(object):
         self.prefix = prefix
         self.file_list = file_list
         self.id_list = create_id(self.file_list)
+        self.g2_cache = {
+            'hash_val': None,
+            'res': None,
+        }
 
-    def get_g2_data(self, file_list=None):
+    def get_g2_data(self, file_list=None, max_points=10):
         labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-        # labels = ['ql_dyn']
         if file_list is None:
             file_list = self.file_list
-        res = self.read_data(labels, file_list)
-        return res
+        hash_val = hash(tuple(file_list[0: max_points]))
+        if self.g2_cache['hash_val'] == hash_val:
+            print('using cache')
+            return self.g2_cache['res']
+        else:
+            res = self.read_data(labels, file_list[0: max_points])
+            self.g2_cache['hash_val'] = hash_val
+            self.g2_cache['res'] = res
+            return res
 
     def fit_g2(self, g2_data, idx, max_q, contrast=None):
         return fit_xpcs(g2_data, idx, max_q=max_q, contrast=contrast)
 
-    def plot_g2(self, max_q=0.016, handler=None, contrast=None):
+    def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None, contrast=None,
+                offset=None, max_points=3):
         res = self.get_g2_data()
-        t_el, g2, g2_err = res['t_el'][0], res['g2'], res['g2_err']
+        t_el = res['t_el'][0]
         ql_dyn = res['ql_dyn'][0]
 
-        num_row = 7
-        num_col = 4
+        tslice = t_el <= max_tel
+
+        t_el = t_el[tslice]
+        g2, g2_err = res['g2'][:, tslice, :], res['g2_err'][:, tslice, :]
+
+        ql_dyn = res['ql_dyn'][0]
 
         def plot_one_sample(ax, idx):
             fit_res = self.fit_g2(res, idx, max_q, contrast=0.16)
-            for i in range(num_row * num_col):
-                if i >= g2.shape[-1] or ql_dyn[i] > max_q:
+            offset_idx = -1 * offset * (idx + 1)
+
+            for i in range(ax_all.size):
+                if i >= g2.shape[2] or ql_dyn[i] > max_q:
                    return
                 ax = ax_all.ravel()[i]
-                ax.errorbar(t_el, g2[idx][:, i], yerr=g2_err[idx][:, i],
-                            fmt='o', markersize=3, markerfacecolor='none')
+                ax.errorbar(t_el, g2[idx][:, i] + offset_idx,
+                            yerr=g2_err[idx][:, i], fmt='o', markersize=3,
+                            markerfacecolor='none',
+                            label='{}'.format(self.id_list[idx]))
                 if idx == 0:
-                    ax.text(0.6, 0.8, ('Q = %5.4f $\AA^{-1}$' % ql_dyn[i]),
-                            horizontalalignment='center',
-                            verticalalignment='center', transform=ax.transAxes)
+                    ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
                     ax.set_xscale('log')
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
-                ax.plot(fit_res[i]['fit_x'], fit_res[i]['fit_y'])
+                ax.plot(fit_res[i]['fit_x'], fit_res[i]['fit_y'] + offset_idx)
+                ax.legend(fontsize=8)
 
         if isinstance(handler, MplCanvas):
             ax_all = handler.axes
-            # for idx in range(res['g2'].shape[0]):
-            for idx in range(2):
+            for idx in range(min(res['g2'].shape[0], max_points)):
                 plot_one_sample(ax_all, idx)
 
             handler.fig.tight_layout()
