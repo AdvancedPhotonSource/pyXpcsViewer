@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from matplot_qt import MplCanvas
 from matplotlib.ticker import FormatStrFormatter
+from xpcs_fitting import fit_xpcs
 
 import os
 import h5py
@@ -123,30 +124,33 @@ class DataLoader(object):
         res = self.read_data(labels, file_list)
         return res
 
-    def fit_g2(self, res):
-        
+    def fit_g2(self, g2_data, idx, max_q, contrast=None):
+        return fit_xpcs(g2_data, idx, max_q=max_q, contrast=contrast)
 
-    def plot_g2(self, max_q=0.016, handler=None):
+    def plot_g2(self, max_q=0.016, handler=None, contrast=None):
         res = self.get_g2_data()
-        t_el, g2, g2_err = res['t_el'], res['g2'], res['g2_err']
+        t_el, g2, g2_err = res['t_el'][0], res['g2'], res['g2_err']
         ql_dyn = res['ql_dyn'][0]
 
         num_row = 7
         num_col = 4
 
         def plot_one_sample(ax, idx):
+            fit_res = self.fit_g2(res, idx, max_q, contrast=0.16)
             for i in range(num_row * num_col):
                 if i >= g2.shape[-1] or ql_dyn[i] > max_q:
                    return
                 ax = ax_all.ravel()[i]
-                ax.errorbar(t_el[idx], g2[idx][:, i], yerr=g2_err[idx][:, i],
+                ax.errorbar(t_el, g2[idx][:, i], yerr=g2_err[idx][:, i],
                             fmt='o', markersize=3, markerfacecolor='none')
                 if idx == 0:
                     ax.text(0.6, 0.8, ('Q = %5.4f $\AA^{-1}$' % ql_dyn[i]),
                             horizontalalignment='center',
                             verticalalignment='center', transform=ax.transAxes)
                     ax.set_xscale('log')
-                    ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
+                ax.plot(fit_res[i]['fit_x'], fit_res[i]['fit_y'])
 
         if isinstance(handler, MplCanvas):
             ax_all = handler.axes
@@ -282,6 +286,6 @@ class DataLoader(object):
 
 if __name__ == "__main__":
     flist = os.listdir('./data')
-    dv = DataViewer('./data', flist)
+    dv = DataLoader('./data', flist)
     dv.average()
     # dv.plot_g2()
