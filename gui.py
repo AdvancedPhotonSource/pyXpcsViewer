@@ -8,10 +8,10 @@ from pyqtgraph import PlotWidget, ImageWindow
 import matplotlib.pyplot as plt
 import matplotlib
 import pyqtgraph as pg
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from data_loader import DataLoader
 from file_locator import FileLocator
 import numpy as np
+import time
 # from xpcs_ui import
 
 # from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -42,23 +42,60 @@ class Ui(QtWidgets.QMainWindow):
 
         self.mf1.subplots(2, 1)
         self.mf1.draw()
-        self.plot_g2()
+        self.prepare_g2()
+        # self.plot_g2()
         # for n in range(data.shape[0]):
         #     self.mf1.axes[1].plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
         # self.mf1.axes[1].imshow((res['Int_t'][:, :, 0]).T, aspect='auto')
 
-    def plot_g2(self, max_q=0.016, num_col=4):
-        # prepare g2
+    def prepare_g2(self, max_q=0.015, max_tel=0.31, num_col=4):
         res = self.dl.get_g2_data()
+        ql_dyn_list = res['ql_dyn'].ravel()
+        ql_dyn_list = list(set(ql_dyn_list))
+        ql_dyn_list.sort()
+        # get the index for the default max q value
+        ql_idx = np.argmin(np.abs(max_q - np.array(ql_dyn_list)))
 
-        num_q = np.sum(res['ql_dyn'][0, :] <= max_q)
+        ql_dyn_list = ['%.4f' % (x + 1E-4) for x in ql_dyn_list]
+        self.cb_q_max.addItems(ql_dyn_list)
+        self.cb_q_max.setCurrentIndex(ql_idx)
+
+        t_el_list = res['t_el'].ravel()
+        t_el_list = list(set(t_el_list))
+        t_el_list.sort()
+        # get the index for the default max t_el value
+        t_el_idx = np.argmin(np.abs(np.log(np.array(t_el_list) / max_tel)))
+
+        t_el_list = ['%.2e' % (x * 1.01) for x in t_el_list]
+        # only list 20 points because the list can be very long
+        self.cb_tel_max.addItems(t_el_list[-20:])
+        self.cb_tel_max.setCurrentIndex(t_el_idx - (len(t_el_list) - 20))
+
+        return res
+
+    def plot_g2(self):
+        num_col = 4
+
+        # add 1 to convert index to count
+        num_fig = int(self.cb_q_max.currentIndex()) + 1
+
+        max_q = float(self.cb_q_max.currentText())
+        max_tel = float(self.cb_tel_max.currentText())
+        offset = self.sb_offset.value()
+
         # adjust canvas size according to number of images
-        num_row = (num_q + num_col - 1) // num_col
-        canvas_size = max(840, 200 * num_row)
-        self.mf2.setMinimumSize(QtCore.QSize(0, canvas_size))
-        self.mf2.subplots(num_row, num_col)
+        num_row = (num_fig + num_col - 1) // num_col
+        if self.mf2.axes is None or self.mf2.axes.shape != (num_row, num_col):
+            canvas_size = max(840, 200 * num_row)
+            self.mf2.setMinimumSize(QtCore.QSize(0, canvas_size))
+            self.mf2.fig.clear()
+            self.mf2.subplots(num_row, num_col)
+        else:
+            self.mf2.clear_axes()
 
-        self.dl.plot_g2(handler=self.mf2, max_q=max_q)
+        self.dl.plot_g2(handler=self.mf2, max_q=max_q, max_tel=max_tel,
+                        offset=offset)
+
 
     def load_path(self):
         # f = QFileDialog.getExistingDirectory(self, 'Open directory',
@@ -73,6 +110,7 @@ class Ui(QtWidgets.QMainWindow):
         # for debug
         self.list_view_source.selectAll()
         self.add_target()
+        self.list_view_source.clearSelection()
 
     def update_box(self, file_list, mode='source'):
         if mode == 'source':
