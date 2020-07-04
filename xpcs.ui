@@ -116,7 +116,7 @@
           <attribute name="title">
            <string>g2</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_8">
+          <layout class="QGridLayout" name="gridLayout_9">
            <item row="0" column="0">
             <widget class="QScrollArea" name="scrollArea">
              <property name="sizePolicy">
@@ -128,7 +128,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>800</height>
+               <height>700</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -142,8 +142,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1392</width>
-                <height>838</height>
+                <width>1376</width>
+                <height>698</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -152,7 +152,7 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <layout class="QGridLayout" name="gridLayout_9">
+              <layout class="QGridLayout" name="gridLayout_10">
                <item row="0" column="0">
                 <widget class="MplCanvas" name="mf2" native="true">
                  <property name="sizePolicy">
@@ -172,6 +172,161 @@
               </layout>
              </widget>
             </widget>
+           </item>
+           <item row="1" column="0">
+            <layout class="QGridLayout" name="gridLayout_8">
+             <item row="0" column="0">
+              <widget class="QGroupBox" name="groupBox">
+               <property name="title">
+                <string>Data Selection:</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_13">
+                <item row="0" column="0">
+                 <layout class="QGridLayout" name="gridLayout_12">
+                  <item row="0" column="0">
+                   <layout class="QGridLayout" name="gridLayout_11">
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="label_3">
+                      <property name="text">
+                       <string>Max q (1/Å):</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QComboBox" name="cb_tel_max"/>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QComboBox" name="cb_q_max"/>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_4">
+                      <property name="text">
+                       <string>Max t_el (t):</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="label_7">
+                      <property name="text">
+                       <string>Offset:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QDoubleSpinBox" name="sb_offset">
+                      <property name="minimum">
+                       <double>-1.000000000000000</double>
+                      </property>
+                      <property name="maximum">
+                       <double>1.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.010000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>0.030000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QPushButton" name="pushButton_4">
+                    <property name="text">
+                     <string>plot</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+               <zorder>label_3</zorder>
+               <zorder>cb_q_max</zorder>
+               <zorder>label_4</zorder>
+               <zorder>cb_tel_max</zorder>
+               <zorder>pushButton_4</zorder>
+               <zorder>pushButton_4</zorder>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QGroupBox" name="groupBox_2">
+               <property name="title">
+                <string>Single Exp Fitting Bounds:</string>
+               </property>
+               <widget class="QWidget" name="layoutWidget">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>30</y>
+                  <width>658</width>
+                  <height>73</height>
+                 </rect>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_14">
+                 <item row="0" column="0">
+                  <layout class="QGridLayout" name="gridLayout_15">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>tau:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLineEdit" name="tau_max">
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="placeholderText">
+                      <string>max</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="cts_min">
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="tau_min">
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLineEdit" name="cts_max">
+                     <property name="placeholderText">
+                      <string>max</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_6">
+                     <property name="text">
+                      <string>contrast: </string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QPushButton" name="pushButton_5">
+                   <property name="text">
+                    <string>PushButton</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -355,8 +510,8 @@
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>340</x>
-     <y>440</y>
+     <x>353</x>
+     <y>530</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -371,8 +526,8 @@
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>430</x>
-     <y>440</y>
+     <x>443</x>
+     <y>530</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -403,8 +558,8 @@
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>273</x>
-     <y>433</y>
+     <x>286</x>
+     <y>523</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -419,12 +574,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>273</x>
-     <y>433</y>
+     <x>286</x>
+     <y>523</y>
     </hint>
     <hint type="destinationlabel">
-     <x>340</x>
-     <y>440</y>
+     <x>353</x>
+     <y>530</y>
     </hint>
    </hints>
   </connection>
@@ -435,12 +590,28 @@
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>334</x>
-     <y>729</y>
+     <x>369</x>
+     <y>925</y>
     </hint>
     <hint type="destinationlabel">
      <x>345</x>
      <y>775</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_4</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_g2()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>897</x>
+     <y>857</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>926</x>
+     <y>956</y>
     </hint>
    </hints>
   </connection>
@@ -452,5 +623,6 @@
   <slot>trie_search()</slot>
   <slot>add_batch()</slot>
   <slot>load_data()</slot>
+  <slot>plot_g2()</slot>
  </slots>
 </ui>
