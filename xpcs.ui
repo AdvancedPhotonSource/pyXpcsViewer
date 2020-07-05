@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1920</width>
-    <height>980</height>
+    <height>979</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -142,7 +142,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1376</width>
+                <width>1392</width>
                 <height>698</height>
                </rect>
               </property>
@@ -183,7 +183,7 @@
                <layout class="QGridLayout" name="gridLayout_13">
                 <item row="0" column="0">
                  <layout class="QGridLayout" name="gridLayout_12">
-                  <item row="0" column="0">
+                  <item row="0" column="1">
                    <layout class="QGridLayout" name="gridLayout_11">
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_3">
@@ -230,22 +230,22 @@
                     </item>
                    </layout>
                   </item>
-                  <item row="0" column="1">
+                  <item row="0" column="0">
                    <widget class="QPushButton" name="pushButton_4">
+                    <property name="minimumSize">
+                     <size>
+                      <width>120</width>
+                      <height>80</height>
+                     </size>
+                    </property>
                     <property name="text">
-                     <string>plot</string>
+                     <string>fit plot</string>
                     </property>
                    </widget>
                   </item>
                  </layout>
                 </item>
                </layout>
-               <zorder>label_3</zorder>
-               <zorder>cb_q_max</zorder>
-               <zorder>label_4</zorder>
-               <zorder>cb_tel_max</zorder>
-               <zorder>pushButton_4</zorder>
-               <zorder>pushButton_4</zorder>
               </widget>
              </item>
              <item row="0" column="1">
@@ -256,6 +256,16 @@
                <layout class="QGridLayout" name="gridLayout_14">
                 <item row="0" column="0">
                  <layout class="QGridLayout" name="gridLayout_15">
+                  <item row="0" column="2">
+                   <widget class="QLineEdit" name="tau_max">
+                    <property name="text">
+                     <string>1.00e-2</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="2">
                    <widget class="QLineEdit" name="cts_max">
                     <property name="text">
@@ -283,17 +293,10 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="3">
-                   <widget class="QLabel" name="label_8">
+                  <item row="2" column="2">
+                   <widget class="QLineEdit" name="bkg_max">
                     <property name="text">
-                     <string>TextLabel</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="QLineEdit" name="tau_max">
-                    <property name="text">
-                     <string>1.00e-2</string>
+                     <string>1.05</string>
                     </property>
                     <property name="placeholderText">
                      <string>max</string>
@@ -310,27 +313,6 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="3">
-                   <widget class="QLabel" name="label_9">
-                    <property name="text">
-                     <string>TextLabel</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_5">
-                    <property name="text">
-                     <string>tau:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="text">
-                     <string>bkg:</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="2" column="1">
                    <widget class="QLineEdit" name="bkg_min">
                     <property name="text">
@@ -341,17 +323,30 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="2">
-                   <widget class="QLineEdit" name="bkg_max">
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_10">
                     <property name="text">
-                     <string>1.05</string>
+                     <string>bkg:</string>
                     </property>
-                    <property name="placeholderText">
-                     <string>max</string>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_5">
+                    <property name="text">
+                     <string>tau:</string>
                     </property>
                    </widget>
                   </item>
                  </layout>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPlainTextEdit" name="err_msg">
+                  <property name="font">
+                   <font>
+                    <family>Courier</family>
+                   </font>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -484,8 +479,11 @@
             </item>
             <item row="1" column="0">
              <widget class="QPushButton" name="btn_load_data">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
-               <string>Finalize</string>
+               <string>update</string>
               </property>
              </widget>
             </item>
@@ -541,7 +539,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>353</x>
-     <y>530</y>
+     <y>529</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -557,7 +555,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>443</x>
-     <y>530</y>
+     <y>529</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -589,7 +587,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>286</x>
-     <y>523</y>
+     <y>522</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -605,11 +603,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>286</x>
-     <y>523</y>
+     <y>522</y>
     </hint>
     <hint type="destinationlabel">
      <x>353</x>
-     <y>530</y>
+     <y>529</y>
     </hint>
    </hints>
   </connection>
@@ -621,7 +619,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>369</x>
-     <y>925</y>
+     <y>924</y>
     </hint>
     <hint type="destinationlabel">
      <x>345</x>
