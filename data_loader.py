@@ -108,6 +108,13 @@ def create_id(in_list, repeat=2, keep_slice=None):
     in_list = [keep_str + x for x in in_list]
     return in_list
 
+def create_slice(arr, cutoff):
+    id = arr <= cutoff
+    end = np.argmin(id)
+    if end == 0 and arr[-1] < cutoff:
+        end = len(arr)
+    return slice(0, end)
+
 
 class DataLoader(object):
     def __init__(self, prefix, file_list):
@@ -118,66 +125,103 @@ class DataLoader(object):
         self.g2_cache = {
             'hash_val': None,
             'res': None,
+            'plot_condition': (None, None)
         }
 
-    def get_g2_data(self, file_list=None, max_points=10):
+    def get_g2_data(self, file_list=None, max_points=10, max_q=1.0,
+                    max_tel=1e8):
         labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
         if file_list is None:
             file_list = self.file_list
         hash_val = hash(tuple(file_list[0: max_points]))
         if self.g2_cache['hash_val'] == hash_val:
-            print('using cache')
-            return self.g2_cache['res']
+            res = self.g2_cache['res']
         else:
             res = self.read_data(labels, file_list[0: max_points])
             self.g2_cache['hash_val'] = hash_val
             self.g2_cache['res'] = res
-            return res
 
-    def fit_g2(self, g2_data, idx, max_q, contrast=None):
-        return fit_xpcs(g2_data, idx, max_q=max_q, contrast=contrast)
+        tslice = create_slice(res['t_el'][0], max_tel)
+        qslice = create_slice(res['ql_dyn'][0], max_q)
 
-    def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None, contrast=None,
-                offset=None, max_points=3):
-        res = self.get_g2_data()
-        t_el = res['t_el'][0]
-        ql_dyn = res['ql_dyn'][0]
+        return res, tslice, qslice
 
-        tslice = t_el <= max_tel
+    def create_template_g2(self, handler, ql_dyn, num_points, num_fig=17):
+        # dummy line as the place holder
+        x = np.logspace(-5, 0, 32)
+        y = np.exp(-x / 1E-3) * 0.25 + 1.0
+        err = y / 40
 
-        t_el = t_el[tslice]
-        g2, g2_err = res['g2'][:, tslice, :], res['g2_err'][:, tslice, :]
+        ax_all = handler.axes
+        err_obj = []
+        lin_obj = []
 
-        ql_dyn = res['ql_dyn'][0]
-
-        def plot_one_sample(ax, idx):
-            fit_res = self.fit_g2(res, idx, max_q, contrast=0.16)
-            offset_idx = -1 * offset * (idx + 1)
-
-            for i in range(ax_all.size):
-                if i >= g2.shape[2] or ql_dyn[i] > max_q:
-                   return
+        for idx in range(num_points):
+            for i in range(num_fig):
+                offset = 0.03 * idx
                 ax = ax_all.ravel()[i]
-                ax.errorbar(t_el, g2[idx][:, i] + offset_idx,
-                            yerr=g2_err[idx][:, i], fmt='o', markersize=3,
-                            markerfacecolor='none',
-                            label='{}'.format(self.id_list[idx]))
-                if idx == 0:
+                obj1 = ax.errorbar(x, y + offset,
+                                  yerr=err, fmt='o', markersize=3,
+                                  markerfacecolor='none',
+                                  label='{}'.format(self.id_list[idx]))
+                err_obj.append(obj1)
+
+                obj2 = ax.plot(x, y + offset)
+                lin_obj.append(obj2)
+
+                # last image
+                if idx == num_points - 1:
                     ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
                     ax.set_xscale('log')
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
-                ax.plot(fit_res[i]['fit_x'], fit_res[i]['fit_y'] + offset_idx)
-                ax.legend(fontsize=8)
+                    if idx >= 1:
+                        ax.legend(fontsize=8)
 
-        if isinstance(handler, MplCanvas):
-            ax_all = handler.axes
-            for idx in range(min(res['g2'].shape[0], max_points)):
-                plot_one_sample(ax_all, idx)
+        handler.fig.tight_layout()
+        # handler.draw()
+        handler.obj = {
+            'err': err_obj,
+            'lin': lin_obj,
+        }
 
-            handler.fig.tight_layout()
-            handler.draw()
+    def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None,
+                offset=None, max_points=3, bounds=None):
 
+        res, tslice, qslice = self.get_g2_data(max_q=max_q, max_tel=max_tel,
+                                               max_points=max_points)
+        num_points = min(res['g2'].shape[0], max_points)
+
+        t_el = res['t_el'][0][tslice]
+        g2 = res['g2'][:, tslice, qslice]
+        g2_err = res['g2_err'][:, tslice, qslice]
+
+        num_fig = qslice.stop
+
+        plot_target = 0
+        new_condition = ((max_q, max_tel, offset), bounds)
+        if self.g2_cache['plot_condition'] == new_condition:
+            return
+        else:
+            s1 = self.g2_cache['plot_condition'][0] != new_condition[0]
+            s2 = self.g2_cache['plot_condition'][1] != new_condition[1]
+            self.g2_cache['plot_condition'] = new_condition
+            plot_target = 2 * int(s1) + int(s2)
+
+        for ipt in range(num_points):
+            fit_res = fit_xpcs(res, ipt, tslice, qslice, b=bounds)
+            offset_i = -1 * offset * (ipt + 1)
+            for ifg in range(num_fig):
+                loc = ipt * num_fig + ifg
+                handler.update_lin(loc, fit_res[ifg]['fit_x'],
+                       fit_res[ifg]['fit_y'] + offset_i)
+
+                if plot_target >= 2:
+                    handler.update_err(loc, t_el, g2[ipt][:, ifg] + offset_i,
+                                       g2_err[ipt][:, ifg])
+
+        handler.auto_scale()
+        handler.draw()
 
     def get_detector_extend(self, file_list):
         labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
