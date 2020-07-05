@@ -253,77 +253,107 @@
                <property name="title">
                 <string>Single Exp Fitting Bounds:</string>
                </property>
-               <widget class="QWidget" name="layoutWidget">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>30</y>
-                  <width>658</width>
-                  <height>73</height>
-                 </rect>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_14">
-                 <item row="0" column="0">
-                  <layout class="QGridLayout" name="gridLayout_15">
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_5">
-                     <property name="text">
-                      <string>tau:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="2">
-                    <widget class="QLineEdit" name="tau_max">
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="placeholderText">
-                      <string>max</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="cts_min">
-                     <property name="placeholderText">
-                      <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="tau_min">
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="placeholderText">
-                      <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QLineEdit" name="cts_max">
-                     <property name="placeholderText">
-                      <string>max</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_6">
-                     <property name="text">
-                      <string>contrast: </string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QPushButton" name="pushButton_5">
-                   <property name="text">
-                    <string>PushButton</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="0" column="0">
+                 <layout class="QGridLayout" name="gridLayout_15">
+                  <item row="1" column="2">
+                   <widget class="QLineEdit" name="cts_max">
+                    <property name="text">
+                     <string>0.20</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLineEdit" name="tau_min">
+                    <property name="text">
+                     <string>1.00e-6</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>min</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_6">
+                    <property name="text">
+                     <string>contrast: </string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QLabel" name="label_8">
+                    <property name="text">
+                     <string>TextLabel</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QLineEdit" name="tau_max">
+                    <property name="text">
+                     <string>1.00e-2</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="cts_min">
+                    <property name="text">
+                     <string>0.01</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>min</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="3">
+                   <widget class="QLabel" name="label_9">
+                    <property name="text">
+                     <string>TextLabel</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_5">
+                    <property name="text">
+                     <string>tau:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_10">
+                    <property name="text">
+                     <string>bkg:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLineEdit" name="bkg_min">
+                    <property name="text">
+                     <string>0.95</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>min</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QLineEdit" name="bkg_max">
+                    <property name="text">
+                     <string>1.05</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -606,11 +636,107 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>897</x>
+     <x>751</x>
      <y>857</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
+     <y>956</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tau_min</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1100</x>
+     <y>814</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1106</x>
+     <y>958</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tau_max</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1366</x>
+     <y>811</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1248</x>
+     <y>953</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cts_min</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>949</x>
+     <y>843</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1051</x>
+     <y>958</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cts_max</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1453</x>
+     <y>847</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1403</x>
+     <y>953</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bkg_min</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1061</x>
+     <y>875</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>832</x>
+     <y>947</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bkg_max</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1534</x>
+     <y>876</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1583</x>
      <y>956</y>
     </hint>
    </hints>
@@ -624,5 +750,6 @@
   <slot>add_batch()</slot>
   <slot>load_data()</slot>
   <slot>plot_g2()</slot>
+  <slot>check_number()</slot>
  </slots>
 </ui>
