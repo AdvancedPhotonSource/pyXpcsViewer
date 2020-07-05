@@ -42,13 +42,13 @@ def fit_xpcs(res, idx, tslice, qslice, b):
                                    sigma=err,
                                    bounds=b)
         except:
-            result['err_msg'] = str(traceback.format_exc())
-            result = {'opt': None, 'err': None,
+            result = {'err_msg': str(traceback.format_exc()),
+                      'opt': None, 'err': None,
                       'fit_x': fit_x, 'fit_y': np.ones_like(fit_x)}
         else:
-            result['err_msg'] = None
             fit_y = single_exp(fit_x, *popt)
-            result = {'opt': popt, 'err': np.sqrt(np.diag(pcov)),
+            result = {'err_msg': 'q_index %2d: fit ends without err' % n,
+                      'opt': popt, 'err': np.sqrt(np.diag(pcov)),
                       'fit_x': fit_x, 'fit_y': fit_y}
         finally:
             fit_result.append(result)
