@@ -5,6 +5,7 @@ from scipy.optimize import curve_fit
 from matplot_qt import MplCanvas
 from matplotlib.ticker import FormatStrFormatter
 from xpcs_fitting import fit_xpcs
+from file_locator import FileLocator
 
 import os
 import h5py
@@ -57,56 +58,9 @@ def read_file(fields, fn, prefix='./data'):
                     else:
                         link = avg_hdf_dict[field]
                         val = np.squeeze(HDF_Result.get(link))
-
             res.append(val)
-
     return res
 
-# the following functions are copied from:
-# https://stackoverflow.com/questions/2892931
-def long_substr(data):
-    substr = ''
-    if len(data) > 1 and len(data[0]) > 0:
-        for i in range(len(data[0])):
-            for j in range(len(data[0])-i+1):
-                if j > len(substr) and is_substr(data[0][i:i+j], data):
-                    substr = data[0][i:i+j]
-    return substr
-
-def is_substr(find, data):
-    if len(data) < 1 and len(find) < 1:
-        return False
-    for i in range(len(data)):
-        if find not in data[i]:
-            return False
-    return True
-
-
-def create_id(in_list, repeat=2, keep_slice=None):
-    """
-    :param in_list: input file name list
-    :param repeat: number of repeats to remove common string
-    :param keep_slice: the slice in the original string to keep, if not given,
-        then use the segment before the first underscore.
-    :return: label list with minimal information redundancy
-    """
-    if len(in_list) < 1:
-        return []
-
-    if keep_slice is None:
-        idx = in_list[0].find('_')
-        keep_slice = slice(0, idx + 1)
-
-    keep_str = in_list[0][keep_slice]
-    if keep_str[-1] != '_':
-        keep_str = keep_str + '_'
-
-    for n in range(repeat):
-        substr = long_substr(in_list)
-        in_list = [x.replace(substr, '') for x in in_list]
-
-    in_list = [keep_str + x for x in in_list]
-    return in_list
 
 def create_slice(arr, cutoff):
     id = arr <= cutoff
@@ -116,24 +70,32 @@ def create_slice(arr, cutoff):
     return slice(0, end)
 
 
-class DataLoader(object):
-    def __init__(self, prefix, file_list):
-        self.size = len(file_list)
-        self.prefix = prefix
-        self.file_list = file_list
-        self.id_list = create_id(self.file_list)
+class DataLoader(FileLocator):
+    def __init__(self, path):
+        super().__init__(path)
+        # self.target_list
         self.g2_cache = {
+            'num_points': None,
             'hash_val': None,
             'res': None,
             'plot_condition': (None, None)
         }
 
-    def get_g2_data(self, file_list=None, max_points=10, max_q=1.0,
-                    max_tel=1e8):
+    def hash(self, max_points=10):
+        if self.target_list is None:
+            return hash(None)
+        elif max_points <= 0:   # use all items
+            val = hash(tuple(self.target_list))
+        else:
+            val = hash(tuple(self.target_list[0: max_points]))
+        return val
+
+    def get_g2_data(self, max_points=10, max_q=1.0, max_tel=1e8):
+
         labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-        if file_list is None:
-            file_list = self.file_list
-        hash_val = hash(tuple(file_list[0: max_points]))
+        file_list = self.target_list
+
+        hash_val = self.hash(max_points)
         if self.g2_cache['hash_val'] == hash_val:
             res = self.g2_cache['res']
         else:
@@ -174,7 +136,8 @@ class DataLoader(object):
                     ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
                     ax.set_xscale('log')
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-
+                    # if there's only one point, do not add title; the title
+                    # will be too long.
                     if idx >= 1:
                         ax.legend(fontsize=8)
 
@@ -187,7 +150,8 @@ class DataLoader(object):
 
     def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None,
                 offset=None, max_points=3, bounds=None):
-
+        if len(self.target_list) < 1:
+            return
         res, tslice, qslice = self.get_g2_data(max_q=max_q, max_tel=max_tel,
                                                max_points=max_points)
         num_points = min(res['g2'].shape[0], max_points)
@@ -198,8 +162,8 @@ class DataLoader(object):
 
         num_fig = qslice.stop
 
-        plot_target = 0
         new_condition = ((max_q, max_tel, offset), bounds)
+
         if self.g2_cache['plot_condition'] == new_condition:
             return
         else:
@@ -208,13 +172,16 @@ class DataLoader(object):
             self.g2_cache['plot_condition'] = new_condition
             plot_target = 2 * int(s1) + int(s2)
 
+        err_msg = []
         for ipt in range(num_points):
             fit_res = fit_xpcs(res, ipt, tslice, qslice, b=bounds)
             offset_i = -1 * offset * (ipt + 1)
+            err_msg.append('\n' + self.target_list[ipt])
             for ifg in range(num_fig):
                 loc = ipt * num_fig + ifg
                 handler.update_lin(loc, fit_res[ifg]['fit_x'],
                        fit_res[ifg]['fit_y'] + offset_i)
+                err_msg.append('----' + fit_res[ifg]['err_msg'])
 
                 if plot_target >= 2:
                     handler.update_err(loc, t_el, g2[ipt][:, ifg] + offset_i,
@@ -222,6 +189,7 @@ class DataLoader(object):
 
         handler.auto_scale()
         handler.draw()
+        return err_msg
 
     def get_detector_extend(self, file_list):
         labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
@@ -244,7 +212,7 @@ class DataLoader(object):
         return extents
 
     def plot_saxs(self, method='None', scale='log'):
-        extents = self.get_detector_extend(self.file_list)
+        extents = self.get_detector_extend(self.target_list)
 
         ans = self.get_saxs()
         if scale == 'log':
@@ -301,7 +269,7 @@ class DataLoader(object):
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:
-            file_list = self.file_list
+            file_list = self.target_list
 
         if mask is None:
             mask = np.ones(shape=len(file_list), dtype=np.bool)
@@ -309,7 +277,7 @@ class DataLoader(object):
         data = []
         for n, fn in enumerate(file_list):
             if mask[n]:
-                data.append(read_file(labels, fn, self.prefix))
+                data.append(read_file(labels, fn, self.cwd))
 
         np_data = {}
         for n, label in enumerate(labels):
@@ -320,7 +288,7 @@ class DataLoader(object):
 
     def average(self, baseline=1.03, chunk_size=256):
         labels = ['Iq', 'g2', 'g2_err', 'Int_2D']
-        g2 = self.read_data(['g2'], self.file_list)['g2']
+        g2 = self.read_data(['g2'], self.target_list)['g2']
         mask = np.mean(g2[:, -10:, 1], axis=1) < baseline
 
         steps = (len(mask) + chunk_size - 1) // chunk_size
@@ -330,7 +298,7 @@ class DataLoader(object):
             end = chunk_size * (n + 1)
             end = min(len(mask), end)
             slice0 = slice(beg, end)
-            values = self.read_data(labels, file_list=self.file_list[slice0],
+            values = self.read_data(labels, file_list=self.target_list[slice0],
                                     mask=mask[slice0])
             if n == 0:
                 for label in labels:
