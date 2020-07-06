@@ -532,12 +532,38 @@
            <item row="1" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
               <widget class="QComboBox" name="hdf_list">
                <property name="minimumSize">
                 <size>
                  <width>450</width>
                  <height>0</height>
                 </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="hdf_key_filter">
+               <property name="minimumSize">
+                <size>
+                 <width>360</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="placeholderText">
+                <string>filter strings, seperate by space, press enter to apply</string>
                </property>
               </widget>
              </item>
@@ -841,6 +867,22 @@
     <hint type="destinationlabel">
      <x>585</x>
      <y>948</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hdf_key_filter</sender>
+   <signal>returnPressed()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>show_hdf_info()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1024</x>
+     <y>902</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1026</x>
+     <y>953</y>
     </hint>
    </hints>
   </connection>
