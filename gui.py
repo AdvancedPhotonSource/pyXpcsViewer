@@ -29,14 +29,24 @@ class Ui(QtWidgets.QMainWindow):
         if (len(self.dl.target_list)) == 0:
             return
 
-        self.mf1.subplots(2, 1)
-        self.mf1.draw()
         self.prepare_g2()
         self.btn_load_data.setEnabled(False)
-        # self.plot_g2()
-        # for n in range(data.shape[0]):
-        #     self.mf1.axes[1].plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
-        # self.mf1.axes[1].imshow((res['Int_t'][:, :, 0]).T, aspect='auto')
+        self.update_hdf_list()
+
+    def update_hdf_list(self):
+        self.hdf_list.clear()
+        self.hdf_list.addItems(self.dl.target_list)
+
+    def show_hdf_info(self):
+        fname = self.hdf_list.currentText()
+        msg = self.dl.get_hdf_info(fname)
+        self.hdf_info.clear()
+        self.hdf_info.setText('\n'.join(msg))
+
+
+    def plot_saxs(self):
+        self.dl.plot_saxs(pg_hdl=self.pg_saxs, mp_hdl=self.mp_saxs,
+                          scale='log')
 
     def prepare_g2(self, max_q=0.0092, max_tel=0.31, num_col=4):
         res, _, _ = self.dl.get_g2_data()
@@ -145,13 +155,10 @@ class Ui(QtWidgets.QMainWindow):
     def add_target(self):
         target = []
         prev_hash = self.dl.hash(-1)
-        print('prev', self.dl.target_list)
         for x in self.list_view_source.selectedIndexes():
             target.append(x.data())
 
         self.dl.add_target(target)
-        print('curr', self.dl.target_list)
-        print('-------------------------')
         self.update_box(self.dl.target_list, mode='target')
 
         curr_hash = self.dl.hash(-1)

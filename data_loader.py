@@ -7,7 +7,9 @@ from matplotlib.ticker import FormatStrFormatter
 from xpcs_fitting import fit_xpcs
 from file_locator import FileLocator
 import pyqtgraph as pg
-from mpl_cmaps_in_ImageItem import cmapToColormap
+from mpl_cmaps_in_ImageItem import pg_get_cmap
+from hdf_to_str import get_hdf_info
+
 
 import os
 import h5py
@@ -91,6 +93,10 @@ class DataLoader(FileLocator):
         else:
             val = hash(tuple(self.target_list[0: max_points]))
         return val
+
+    def get_hdf_info(self, fname):
+        return get_hdf_info(self.cwd, fname)
+
 
     def get_g2_data(self, max_points=10, max_q=1.0, max_tel=1e8):
 
@@ -193,7 +199,7 @@ class DataLoader(FileLocator):
         handler.draw()
         return err_msg
 
-    def get_detector_extend(self, file_list):
+    def get_detector_extent(self, file_list):
         labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
                   'xdim', 'ydim']
         res = self.read_data(labels, file_list)
@@ -203,10 +209,10 @@ class DataLoader(FileLocator):
                     (2 * np.pi /(12.398 / res['X_energy'][n]))
 
             qy_min = (0 - res['ccd_x0'][n]) * pix2q
-            qy_max = (res['ydim'][n] - res['ccd_x0'][n]) * pix2q
+            qy_max = (res['xdim'][n] - res['ccd_x0'][n]) * pix2q
 
             qx_min = (0 - res['ccd_y0'][n]) * pix2q
-            qx_max = (res['xdim'][n] - res['ccd_y0'][n]) * pix2q
+            qx_max = (res['ydim'][n] - res['ccd_y0'][n]) * pix2q
             temp = (qy_min, qy_max, qx_min, qx_max)
 
             extents.append(temp)
@@ -214,7 +220,7 @@ class DataLoader(FileLocator):
         return extents
 
     def plot_saxs(self, pg_hdl=None, mp_hdl=None, scale='log', max_points=8):
-        extents = self.get_detector_extend(self.target_list)
+        extents = self.get_detector_extent(self.target_list)
 
         res = self.get_saxs_data()
         ans = res['Int_2D']
@@ -236,32 +242,31 @@ class DataLoader(FileLocator):
                     ax.set_title(self.id_list[n])
             else:
                 mp_hdl.clear()
-                axes = mp_hdl.subplots(2, num_col)
+                axes = mp_hdl.subplots(2, num_col, sharex=True, sharey=True)
                 img_obj = []
                 for n in range(num_fig):
                     ax = axes.flatten()[n]
                     img = ax.imshow(ans[n], cmap=plt.get_cmap('jet'),
                                     # norm=LogNorm(vmin=1e-7, vmax=1e-4),
-                                    interpolation='none')
-                                    # extent=extents[n])
+                                    interpolation='none',
+                                    extent=extents[n])
                     img_obj.append(img)
                     ax.set_title(self.id_list[n])
-                    ax.axis('off')
+                    # ax.axis('off')
                 mp_hdl.obj = img_obj
                 mp_hdl.fig.tight_layout()
 
             mp_hdl.draw()
 
         if True:
-            pos, rgba_colors = zip(*cmapToColormap(matplotlib.cm.jet))
-            pgColormap = pg.ColorMap(pos, rgba_colors)
-            xvals = np.arange(ans.shape[0])
-            if ans.shape[0] > 1:
-                pg_hdl.setImage(ans.swapaxes(1, 2) , xvals=xvals)
-            else:
-                pg_hdl.setImage(ans[0].swapaxes(0, 1))# , xvals=xvals)
+            pg_cmap = pg_get_cmap(matplotlib.cm.jet)
+            pg_hdl.setColorMap(pg_cmap)
 
-            pg_hdl.setColorMap(pgColormap)
+            if ans.shape[0] > 1:
+                xvals = np.arange(ans.shape[0])
+                pg_hdl.setImage(ans.swapaxes(1, 2), xvals=xvals)
+            else:
+                pg_hdl.setImage(ans[0].swapaxes(0, 1))
 
     def get_saxs_data(self):
         labels = ['Int_2D', 'Iq']

@@ -180,7 +180,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>5</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -519,6 +519,44 @@
           <attribute name="title">
            <string>Exp Setup</string>
           </attribute>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
+            <widget class="QTextBrowser" name="hdf_info">
+             <property name="font">
+              <font>
+               <family>Menlo</family>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QComboBox" name="hdf_list">
+               <property name="minimumSize">
+                <size>
+                 <width>450</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </widget>
          <widget class="QWidget" name="tab_5">
           <attribute name="title">
@@ -790,8 +828,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>hdf_list</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>mainwindow</receiver>
+   <slot>show_hdf_info()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>747</x>
+     <y>895</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>585</x>
+     <y>948</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
+  <signal>signal1()</signal>
   <slot>add_target()</slot>
   <slot>remove_target()</slot>
   <slot>load_path()</slot>
@@ -801,5 +856,6 @@
   <slot>plot_g2()</slot>
   <slot>check_number()</slot>
   <slot>plot_saxs()</slot>
+  <slot>show_hdf_info()</slot>
  </slots>
 </ui>
