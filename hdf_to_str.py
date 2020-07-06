@@ -5,12 +5,29 @@ import os
 np.set_printoptions(precision=3, suppress=True)
 
 
+def c2r(x):
+    # def convert_to_readable_number(x):
+    if not isinstance(x, np.ndarray):
+        x = np.array(x)
+
+    val = np.max(np.abs(x))
+    if val > 1E4 or val < 1E-4:
+        if x.size == 1:
+            res = '%.3e' % x
+        else:
+            res_list = ['%.3e' % t for t in x]
+            res = '[' + ', '.join(res_list) + ']'
+    else:
+        res = str(np.round(x, 3))
+    return res
+
+
 def describe_numpy(arr):
     repr = str(arr.shape) + ', ' + str(arr.dtype) + ':'
     if arr.size > 1:
         res = describe(arr.ravel())
-        repr += 'minmax=%s, mean=%s' % (np.round(res.minmax, 2),
-                                        np.round(res.mean, 2))
+        repr += 'minmax = %s, mean = %s' % (c2r(res.minmax),
+                                            c2r(res.mean))
     else:
         repr += 'val = %s' % str(arr[0])
     return repr
