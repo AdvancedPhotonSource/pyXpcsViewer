@@ -30,6 +30,141 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Path:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="work_dir"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>browse</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="box_source">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Source:</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <widget class="QListWidget" name="list_view_source">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Filter:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="filter_str">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>100</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="text">
+              <string>add</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="text">
+              <string>remove</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="box_target">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>120</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Target:</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <widget class="QListWidget" name="list_view_target">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="btn_load_data">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>update</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="2" column="1">
         <widget class="QTabWidget" name="tabWidget">
          <property name="sizePolicy">
@@ -45,28 +180,60 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
            <string>SAXS</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_3">
+          <layout class="QGridLayout" name="gridLayout_16">
            <item row="0" column="0">
-            <widget class="ImageView" name="graphWidget" native="true">
+            <widget class="ImageView" name="pg_saxs" native="true">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>120</horstretch>
                <verstretch>120</verstretch>
               </sizepolicy>
              </property>
             </widget>
            </item>
+           <item row="0" column="1">
+            <widget class="MplCanvas" name="mp_saxs" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>800</width>
+               <height>0</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
+              <string>Data Selection:</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
+               <widget class="QPushButton" name="pushButton_5">
+                <property name="minimumSize">
+                 <size>
+                  <width>120</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>play</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
           </layout>
          </widget>
          <widget class="QWidget" name="tab_2">
           <attribute name="title">
-           <string>Tab 2</string>
+           <string>Stability</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_6">
            <item row="0" column="0">
@@ -92,23 +259,6 @@
               </layout>
              </item>
             </layout>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_3">
-          <attribute name="title">
-           <string>Page</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_7">
-           <item row="0" column="0">
-            <widget class="MplCanvas" name="mf1" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>
@@ -355,142 +505,27 @@
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="tab_3">
+          <attribute name="title">
+           <string>Diffusion</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="tab_6">
+          <attribute name="title">
+           <string>Two Time</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="tab_4">
+          <attribute name="title">
+           <string>Exp Setup</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="tab_5">
+          <attribute name="title">
+           <string>Log</string>
+          </attribute>
+         </widget>
         </widget>
-       </item>
-       <item row="2" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Path:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="work_dir"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>browse</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="box_source">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>80</height>
-            </size>
-           </property>
-           <property name="title">
-            <string>Source:</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
-             <widget class="QListWidget" name="list_view_source">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>120</height>
-               </size>
-              </property>
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="horizontalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="editTriggers">
-               <set>QAbstractItemView::NoEditTriggers</set>
-              </property>
-              <property name="selectionMode">
-               <enum>QAbstractItemView::MultiSelection</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Filter:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="filter_str">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>100</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_2">
-             <property name="text">
-              <string>add</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_3">
-             <property name="text">
-              <string>remove</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="box_target">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>120</height>
-            </size>
-           </property>
-           <property name="title">
-            <string>Target:</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_4">
-            <item row="0" column="0">
-             <widget class="QListWidget" name="list_view_target">
-              <property name="selectionMode">
-               <enum>QAbstractItemView::MultiSelection</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QPushButton" name="btn_load_data">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>update</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>
@@ -628,17 +663,65 @@
    </hints>
   </connection>
   <connection>
+   <sender>cts_max</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1347</x>
+     <y>861</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1403</x>
+     <y>953</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>pushButton_4</sender>
    <signal>clicked()</signal>
    <receiver>mainwindow</receiver>
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>751</x>
-     <y>857</y>
+     <x>605</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
+     <y>956</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tau_max</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1347</x>
+     <y>827</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1248</x>
+     <y>953</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bkg_max</sender>
+   <signal>editingFinished()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>check_number()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1347</x>
+     <y>895</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1583</x>
      <y>956</y>
     </hint>
    </hints>
@@ -660,18 +743,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>tau_max</sender>
+   <sender>bkg_min</sender>
    <signal>editingFinished()</signal>
    <receiver>mainwindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1366</x>
-     <y>811</y>
+     <x>1061</x>
+     <y>875</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1248</x>
-     <y>953</y>
+     <x>832</x>
+     <y>947</y>
     </hint>
    </hints>
   </connection>
@@ -692,50 +775,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>cts_max</sender>
-   <signal>editingFinished()</signal>
+   <sender>pushButton_5</sender>
+   <signal>clicked()</signal>
    <receiver>mainwindow</receiver>
-   <slot>check_number()</slot>
+   <slot>plot_saxs()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1453</x>
-     <y>847</y>
+     <x>1036</x>
+     <y>874</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1403</x>
-     <y>953</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>bkg_min</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1061</x>
-     <y>875</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>832</x>
-     <y>947</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>bkg_max</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1534</x>
-     <y>876</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1583</x>
-     <y>956</y>
+     <x>684</x>
+     <y>948</y>
     </hint>
    </hints>
   </connection>
@@ -749,5 +800,6 @@
   <slot>load_data()</slot>
   <slot>plot_g2()</slot>
   <slot>check_number()</slot>
+  <slot>plot_saxs()</slot>
  </slots>
 </ui>
