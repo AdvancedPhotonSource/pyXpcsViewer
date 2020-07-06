@@ -6,6 +6,8 @@ from matplot_qt import MplCanvas
 from matplotlib.ticker import FormatStrFormatter
 from xpcs_fitting import fit_xpcs
 from file_locator import FileLocator
+import pyqtgraph as pg
+from mpl_cmaps_in_ImageItem import cmapToColormap
 
 import os
 import h5py
@@ -211,41 +213,62 @@ class DataLoader(FileLocator):
 
         return extents
 
-    def plot_saxs(self, method='None', scale='log'):
+    def plot_saxs(self, pg_hdl=None, mp_hdl=None, scale='log', max_points=8):
         extents = self.get_detector_extend(self.target_list)
 
-        ans = self.get_saxs()
+        res = self.get_saxs_data()
+        ans = res['Int_2D']
         if scale == 'log':
             ans = np.log10(ans + 1E-8)
+        num_fig = min(max_points, len(extents))
+        num_col = (num_fig + 1) // 2
+        ax_shape = (2, num_col)
 
-        num_fig = min(8, len(extents))
+        if True:
+        #     if isinstance(mp_hdl, MplCanvas):
 
-        if isinstance(method, MplCanvas):
-            if len(extents) <= 3:
-                ax = method.subplots(1, num_fig)
+            if mp_hdl.axes is not None and mp_hdl.axes.shape == ax_shape:
+                axes = mp_hdl.axes
+                for n in range(num_fig):
+                    img = mp_hdl.obj[n]
+                    img.set_data(ans[n])
+                    ax = axes.flatten()[n]
+                    ax.set_title(self.id_list[n])
             else:
-                ax = method.subplots(2, (num_fig + 1) // 2)
+                mp_hdl.clear()
+                axes = mp_hdl.subplots(2, num_col)
+                img_obj = []
+                for n in range(num_fig):
+                    ax = axes.flatten()[n]
+                    img = ax.imshow(ans[n], cmap=plt.get_cmap('jet'),
+                                    # norm=LogNorm(vmin=1e-7, vmax=1e-4),
+                                    interpolation='none')
+                                    # extent=extents[n])
+                    img_obj.append(img)
+                    ax.set_title(self.id_list[n])
+                    ax.axis('off')
+                mp_hdl.obj = img_obj
+                mp_hdl.fig.tight_layout()
 
-            for n in range(num_fig):
-                if num_fig == 1:
-                    ax_0 = ax
-                else:
-                    ax_0 = ax.flatten()[n]
-                im = ax_0.imshow(ans[n], cmap=plt.get_cmap('jet'),
-                               # norm=LogNorm(vmin=1e-7, vmax=1e-4),
-                               interpolation='none')
-                               # extent=extents[n])
-                ax_0.set_title(self.id_list[n])
-            method.draw()
-        else:
+            mp_hdl.draw()
+
+        if True:
+            pos, rgba_colors = zip(*cmapToColormap(matplotlib.cm.jet))
+            pgColormap = pg.ColorMap(pos, rgba_colors)
             xvals = np.arange(ans.shape[0])
-            method(ans.swapaxes(1, 2), xvals=xvals)
+            if ans.shape[0] > 1:
+                pg_hdl.setImage(ans.swapaxes(1, 2) , xvals=xvals)
+            else:
+                pg_hdl.setImage(ans[0].swapaxes(0, 1))# , xvals=xvals)
 
-    def get_saxs(self):
-        ans = self.read_data(['Int_2D'])['Int_2D']
+            pg_hdl.setColorMap(pgColormap)
+
+    def get_saxs_data(self):
+        labels = ['Int_2D', 'Iq']
+        res = self.read_data(labels)
         # ans = np.swapaxes(ans, 1, 2)
         # the detector figure is not oriented to image convention;
-        return ans
+        return res
 
     def get_stability_data(self, max_point=128):
         labels = ['Int_t', 'Iq']
@@ -264,8 +287,12 @@ class DataLoader(FileLocator):
         res['Int_t_statistics'] = np.array(avg_int_t).swapaxes(0, 1)
         res['Int_t'] = None
         res['avg_size'] = avg_size
-
         return res
+
+    def plot_stability(self, mp_hdl):
+        res = self.get_stability_data()
+        self.mf1.axes[1].plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
+        self.mf1.axes[1].imshow((res['Int_t'][:, :, 0]).T, aspect='auto')
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:
