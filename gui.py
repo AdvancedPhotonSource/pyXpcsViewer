@@ -40,6 +40,18 @@ class Ui(QtWidgets.QMainWindow):
     def show_hdf_info(self):
         fname = self.hdf_list.currentText()
         msg = self.dl.get_hdf_info(fname)
+
+        filter_str = self.hdf_key_filter.text()
+        fstr = filter_str.split()
+        if len(fstr) > 0:
+            msg2 = []
+            for x in fstr:
+                for n, y in enumerate(msg):
+                    if n == len(msg) - 1:
+                        break
+                    if x in y:
+                        msg2 += [msg[n], msg[n + 1]]
+            msg = msg2
         self.hdf_info.clear()
         self.hdf_info.setText('\n'.join(msg))
 
