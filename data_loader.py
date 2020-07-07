@@ -219,9 +219,8 @@ class DataLoader(FileLocator):
 
         return extents
 
-    def plot_saxs(self, pg_hdl=None, mp_hdl=None, scale='log', max_points=8):
+    def plot_saxs_2D_mpl(self, mp_hdl=None,  scale='log', max_points=8):
         extents = self.get_detector_extent(self.target_list)
-
         res = self.get_saxs_data()
         ans = res['Int_2D']
         if scale == 'log':
@@ -230,36 +229,36 @@ class DataLoader(FileLocator):
         num_col = (num_fig + 1) // 2
         ax_shape = (2, num_col)
 
+        if mp_hdl.axes is not None and mp_hdl.axes.shape == ax_shape:
+            axes = mp_hdl.axes
+            for n in range(num_fig):
+                img = mp_hdl.obj[n]
+                img.set_data(ans[n])
+                ax = axes.flatten()[n]
+                ax.set_title(self.id_list[n])
+        else:
+            mp_hdl.clear()
+            axes = mp_hdl.subplots(2, num_col, sharex=True, sharey=True)
+            img_obj = []
+            for n in range(num_fig):
+                ax = axes.flatten()[n]
+                img = ax.imshow(ans[n], cmap=plt.get_cmap('jet'),
+                                # norm=LogNorm(vmin=1e-7, vmax=1e-4),
+                                interpolation=None,
+                                extent=extents[n])
+                img_obj.append(img)
+                ax.set_title(self.id_list[n])
+                # ax.axis('off')
+            mp_hdl.obj = img_obj
+            mp_hdl.fig.tight_layout()
+        mp_hdl.draw()
+
+    def plot_saxs_2D(self, pg_hdl, plot_type='log', cmap='jet'):
+        ans = self.get_saxs_data()['Int_2D']
+        if plot_type == 'log':
+            ans = np.log10(ans + 1E-8)
         if True:
-        #     if isinstance(mp_hdl, MplCanvas):
-
-            if mp_hdl.axes is not None and mp_hdl.axes.shape == ax_shape:
-                axes = mp_hdl.axes
-                for n in range(num_fig):
-                    img = mp_hdl.obj[n]
-                    img.set_data(ans[n])
-                    ax = axes.flatten()[n]
-                    ax.set_title(self.id_list[n])
-            else:
-                mp_hdl.clear()
-                axes = mp_hdl.subplots(2, num_col, sharex=True, sharey=True)
-                img_obj = []
-                for n in range(num_fig):
-                    ax = axes.flatten()[n]
-                    img = ax.imshow(ans[n], cmap=plt.get_cmap('jet'),
-                                    # norm=LogNorm(vmin=1e-7, vmax=1e-4),
-                                    interpolation='none',
-                                    extent=extents[n])
-                    img_obj.append(img)
-                    ax.set_title(self.id_list[n])
-                    # ax.axis('off')
-                mp_hdl.obj = img_obj
-                mp_hdl.fig.tight_layout()
-
-            mp_hdl.draw()
-
-        if True:
-            pg_cmap = pg_get_cmap(matplotlib.cm.jet)
+            pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
             pg_hdl.setColorMap(pg_cmap)
 
             if ans.shape[0] > 1:
@@ -268,36 +267,134 @@ class DataLoader(FileLocator):
             else:
                 pg_hdl.setImage(ans[0].swapaxes(0, 1))
 
+    def plot_saxs_1D(self, mp_hdl, plot_type='log', plot_norm=0,
+                     plot_offset=0, max_points=8):
+        num_points = min(len(self.target_list), max_points)
+        res = self.get_saxs_data()
+        q = res['ql_sta']
+        Iq = res['Iq']
+
+        ylabel = 'I'
+        if plot_norm == 1:
+            Iq = Iq * np.square(q)
+            ylabel = ylabel + 'q^2'
+        elif plot_norm == 2:
+            Iq = Iq * q ** 4
+            ylabel = ylabel + 'q^4'
+        elif plot_norm == 3:
+            baseline = Iq[0]
+            Iq = Iq / baseline
+            ylabel = ylabel + '/I_0'
+
+        if plot_type == 'log':
+            Iq = np.log10(Iq)
+            ylabel = '$log(%s)$' % ylabel
+        else:
+            ylabel = '$%s$' % ylabel
+
+        xlabel = '$q (\\AA^{-1})$'
+
+        if mp_hdl.shape == (1, 1) and len(mp_hdl.obj) == num_points:
+            for n in range(num_points):
+                offset = -plot_offset * (n + 1)
+                line = mp_hdl.obj[n]
+                line.set_data(q[n], Iq[n] + offset)
+            mp_hdl.axes.set_ylabel(ylabel)
+            mp_hdl.auto_scale()
+        else:
+            mp_hdl.clear()
+            ax = mp_hdl.subplots(1, 1)
+            lin_obj = []
+            for n in range(num_points):
+                offset = -plot_offset * (n + 1)
+                line, = ax.plot(q[n], Iq[n] + offset, 'o--', lw=0.5, alpha=0.8,
+                                markersize=2, label=self.id_list[n])
+                lin_obj.append(line)
+            mp_hdl.obj = lin_obj
+            mp_hdl.axes.set_ylabel(ylabel)
+            mp_hdl.axes.set_xlabel(xlabel)
+            ax.legend()
+            # do not use tight layout because the ylabel may not display fully.
+            # mp_hdl.fig.tight_layout()
+        mp_hdl.draw()
+        return
+
+
     def get_saxs_data(self):
-        labels = ['Int_2D', 'Iq']
+        labels = ['Int_2D', 'Iq', 'ql_sta']
         res = self.read_data(labels)
         # ans = np.swapaxes(ans, 1, 2)
         # the detector figure is not oriented to image convention;
         return res
 
-    def get_stability_data(self, max_point=128):
+    def get_stability_data(self, max_point=512):
         labels = ['Int_t', 'Iq']
         res = self.read_data(labels)
         avg_int_t = []
 
-        int_t = res['Int_t'][:, 1, :]
+        avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
+
+        int_t = res['Int_t'][:, 1, ::avg_size]
         int_t = int_t / np.mean(int_t)
-        avg_size = (int_t.shape[1] + max_point - 1) // max_point
+        res['Int_t'] = int_t
+
         for n in range(max_point):
-            sl = slice(n * avg_size, (n + 1) * avg_size)
+            sl = slice(n * avg_size, min((n + 1) * avg_size, int_t.shape[1]))
             temp = int_t[:, sl]
             avg, mean = np.mean(temp, axis=1), np.std(temp, axis=1)
             avg_int_t.append(np.vstack([avg, mean]).T)
 
         res['Int_t_statistics'] = np.array(avg_int_t).swapaxes(0, 1)
-        res['Int_t'] = None
+        # res['Int_t'] = None
         res['avg_size'] = avg_size
+
+        # normalize Iq data
+        Iq = res["Iq"]
+        Iq_norm = np.log10(Iq / Iq[0])
+        res['Iq_norm'] = Iq_norm
+
         return res
 
-    def plot_stability(self, mp_hdl):
+    def plot_stability(self, mp_hdl, mp_hdl_it):
         res = self.get_stability_data()
-        self.mf1.axes[1].plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
-        self.mf1.axes[1].imshow((res['Int_t'][:, :, 0]).T, aspect='auto')
+        if mp_hdl.axes is None:
+            ax = mp_hdl.subplots(1, 1)
+            ax.imshow((res['Iq_norm'][:, :].T), aspect='auto',
+                      cmap=plt.get_cmap('seismic'), vmin=-0.2, vmax=0.2,
+                      interpolation=None)
+        mp_hdl.fig.tight_layout()
+        mp_hdl.draw()
+
+        if mp_hdl_it.axes is None:
+            ax = mp_hdl_it.subplots(1, 1)
+            # shape = res['Int_t'].shape
+            shape = res['Iq_norm'].shape
+            # step = res['avg_size']
+            x_line = np.arange(shape[1])
+
+            cen = shape[1] // 2
+            for n in range(shape[0]):
+                ax.plot(x_line + n * shape[1], res['Iq_norm'][n], alpha=0.75)
+                # ax.legend(loc="upper left", ncol=len())
+            # avg = np.mean(res['Int_t'].ravel())
+            # std = np.std(res['Int_t'].ravel())
+
+            # ax.axhline(avg, ls='--', color='b', label='mean')
+            # ax.axhline(avg - 3 * std, ls='--', color='g', label='$-3\sigma$')
+            # ax.axhline(avg + 3 * std, ls='--', color='r', label='$+3\sigma$')
+            # ax.legend()
+
+            ax.set_xticks(cen + shape[1] * np.arange(shape[0]))
+            ax.set_xticklabels(self.id_list[0 : shape[0]])
+            ax.set_ylabel('Intensity (a.u.)')
+            mp_hdl_it.fig.tight_layout()
+
+        mp_hdl_it.draw()
+
+        # for n in range(res['Int_t'].shape[0]):
+        #     pg_hdl.plot(res['Int_t'][n, 1, ::100])
+        # pg_hdl.plot(res['Int_t'].ravel())
+        # mp_hdl.plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:
