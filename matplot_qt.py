@@ -9,11 +9,13 @@ class MplCanvas(FigureCanvasQTAgg):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         # self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(self.fig)
+        self.shape = None
         self.axes = None
         self.obj = None
 
     def subplots(self, n, m, **kwargs):
         self.axes = self.fig.subplots(n, m, **kwargs)
+        self.shape = (n, m)
         return self.axes
 
     def clear(self):
@@ -33,9 +35,13 @@ class MplCanvas(FigureCanvasQTAgg):
         if self.axes is None:
             return
         else:
-            for ax in self.axes.ravel():
-                ax.relim()
-                ax.autoscale_view(True, True, True)
+            if self.shape == (1, 1):
+                self.axes.relim()
+                self.axes.autoscale_view(True, True, True)
+            else:
+                for ax in self.axes.ravel():
+                    ax.relim()
+                    ax.autoscale_view(True, True, True)
 
     def update_lin(self, loc, x, y):
         if self.obj is None:
