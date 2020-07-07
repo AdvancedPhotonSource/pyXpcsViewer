@@ -74,8 +74,8 @@ def read_h5py(hdl, path, level, guide_str0):
 
 
 def get_hdf_info(path, fname):
-    hdl = h5py.File(os.path.join(path, fname), 'r')
-    res = read_h5py(hdl, '.', 0, '')
+    with h5py.File(os.path.join(path, fname), 'r') as hdl:
+        res = read_h5py(hdl, '.', 0, '')
     return res
 
 
