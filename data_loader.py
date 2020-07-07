@@ -46,6 +46,44 @@ avg_hdf_dict = {
 }
 
 
+def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
+    vmin = np.percentile(data.ravel(), min_percent)
+    vmax = np.percentile(data.ravel(), max_percent)
+
+    if 'plot_norm' in kwargs and 'plot_type' in kwargs:
+        if kwargs['plot_norm'] == 3:
+            if kwargs['plot_type'] == 'log':
+                t = max(abs(vmin), abs(vmax))
+                vmin, vmax = -t, t
+            else:
+                t = max(abs(1 - vmin), abs(vmax - 1))
+                vmin, vmax = 1 - t, 1 + t
+
+    return vmin, vmax
+
+
+def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
+    ylabel = 'I'
+    if plot_norm == 1:
+        Iq = Iq * np.square(q)
+        ylabel = ylabel + 'q^2'
+    elif plot_norm == 2:
+        Iq = Iq * np.square(np.square(q))
+        ylabel = ylabel + 'q^4'
+    elif plot_norm == 3:
+        baseline = Iq[0]
+        Iq = Iq / baseline
+        ylabel = ylabel + '/I_0'
+
+    if plot_type == 'log':
+        Iq = np.log10(Iq)
+        ylabel = '$log(%s)$' % ylabel
+    else:
+        ylabel = '$%s$' % ylabel
+
+    xlabel = '$q (\\AA^{-1})$'
+    return Iq, xlabel, ylabel
+
 def read_file(fields, fn, prefix='./data'):
     res = []
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
@@ -96,7 +134,6 @@ class DataLoader(FileLocator):
 
     def get_hdf_info(self, fname):
         return get_hdf_info(self.cwd, fname)
-
 
     def get_g2_data(self, max_points=10, max_q=1.0, max_tel=1e8):
 
@@ -274,25 +311,7 @@ class DataLoader(FileLocator):
         q = res['ql_sta']
         Iq = res['Iq']
 
-        ylabel = 'I'
-        if plot_norm == 1:
-            Iq = Iq * np.square(q)
-            ylabel = ylabel + 'q^2'
-        elif plot_norm == 2:
-            Iq = Iq * q ** 4
-            ylabel = ylabel + 'q^4'
-        elif plot_norm == 3:
-            baseline = Iq[0]
-            Iq = Iq / baseline
-            ylabel = ylabel + '/I_0'
-
-        if plot_type == 'log':
-            Iq = np.log10(Iq)
-            ylabel = '$log(%s)$' % ylabel
-        else:
-            ylabel = '$%s$' % ylabel
-
-        xlabel = '$q (\\AA^{-1})$'
+        Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm, plot_type)
 
         if mp_hdl.shape == (1, 1) and len(mp_hdl.obj) == num_points:
             for n in range(num_points):
@@ -319,7 +338,6 @@ class DataLoader(FileLocator):
         mp_hdl.draw()
         return
 
-
     def get_saxs_data(self):
         labels = ['Int_2D', 'Iq', 'ql_sta']
         res = self.read_data(labels)
@@ -327,74 +345,76 @@ class DataLoader(FileLocator):
         # the detector figure is not oriented to image convention;
         return res
 
-    def get_stability_data(self, max_point=512):
-        labels = ['Int_t', 'Iq']
+    def get_stability_data(self, max_point=50, **kwargs):
+        labels = ['Int_t', 'Iq', 'ql_sta']
         res = self.read_data(labels)
-        avg_int_t = []
 
         avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
-
-        int_t = res['Int_t'][:, 1, ::avg_size]
+        int_t = res['Int_t'][:, 1, :]
         int_t = int_t / np.mean(int_t)
-        res['Int_t'] = int_t
+        cum_int = np.cumsum(int_t, axis=1)
+        mean_int = np.diff(cum_int[:, ::avg_size]) / avg_size
+        res['Int_t'] = mean_int
 
-        for n in range(max_point):
-            sl = slice(n * avg_size, min((n + 1) * avg_size, int_t.shape[1]))
-            temp = int_t[:, sl]
-            avg, mean = np.mean(temp, axis=1), np.std(temp, axis=1)
-            avg_int_t.append(np.vstack([avg, mean]).T)
+        q = res["ql_sta"][0]
+        Iq, xlabel, ylabel = norm_saxs_data(res["Iq"], q, **kwargs)
+        res["Iq_norm"] = Iq
 
-        res['Int_t_statistics'] = np.array(avg_int_t).swapaxes(0, 1)
-        # res['Int_t'] = None
-        res['avg_size'] = avg_size
+        return res, xlabel, ylabel
 
-        # normalize Iq data
-        Iq = res["Iq"]
-        Iq_norm = np.log10(Iq / Iq[0])
-        res['Iq_norm'] = Iq_norm
+    def plot_stability(self, mp_hdl, **kwargs):
+        res, xlabel, ylabel = self.get_stability_data(**kwargs)
+        ql_sta = res['ql_sta'][0]
+        Iq = res['Iq_norm']
+        It = res['Int_t']
+        It_vmin, It_vmax = get_min_max(It, 1, 99)
+        Iq_vmin, Iq_vmax = get_min_max(Iq, 1, 99, **kwargs)
 
-        return res
+        def add_vline(ax, nums):
+            for x in np.arange(nums - 1):
+                ax.axvline(x + 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
 
-    def plot_stability(self, mp_hdl, mp_hdl_it):
-        res = self.get_stability_data()
-        if mp_hdl.axes is None:
-            ax = mp_hdl.subplots(1, 1)
-            ax.imshow((res['Iq_norm'][:, :].T), aspect='auto',
-                      cmap=plt.get_cmap('seismic'), vmin=-0.2, vmax=0.2,
+        def draw_seismic_map(hdl, d0, d1, vmin=None, vmax=None):
+            if hdl.axes is None:
+                extent = (-0.5, d0.shape[1] - 0.5,
+                          np.min(ql_sta), np.max(ql_sta))
+                ax = hdl.subplots(2, 1, sharex=False)
+                im0 = ax[0].imshow((d0), aspect='auto',
+                      cmap=plt.get_cmap('seismic'), vmin=It_vmin, vmax=It_vmax,
                       interpolation=None)
-        mp_hdl.fig.tight_layout()
-        mp_hdl.draw()
+                im1 = ax[1].imshow((d1), aspect='auto',
+                      cmap=plt.get_cmap('seismic'), vmin=Iq_vmin, vmax=Iq_vmax,
+                      interpolation=None, origin='lower', extent=extent)
+                hdl.fig.colorbar(im0, ax=ax[0])
+                hdl.fig.colorbar(im1, ax=ax[1])
 
-        if mp_hdl_it.axes is None:
-            ax = mp_hdl_it.subplots(1, 1)
-            # shape = res['Int_t'].shape
-            shape = res['Iq_norm'].shape
-            # step = res['avg_size']
-            x_line = np.arange(shape[1])
+                add_vline(ax[0], d0.shape[1])
+                add_vline(ax[1], d1.shape[1])
 
-            cen = shape[1] // 2
-            for n in range(shape[0]):
-                ax.plot(x_line + n * shape[1], res['Iq_norm'][n], alpha=0.75)
-                # ax.legend(loc="upper left", ncol=len())
-            # avg = np.mean(res['Int_t'].ravel())
-            # std = np.std(res['Int_t'].ravel())
+                ax[0].set_title('Intensity / Intensity$_0$')
+                ax[0].set_ylabel('segment')
 
-            # ax.axhline(avg, ls='--', color='b', label='mean')
-            # ax.axhline(avg - 3 * std, ls='--', color='g', label='$-3\sigma$')
-            # ax.axhline(avg + 3 * std, ls='--', color='r', label='$+3\sigma$')
-            # ax.legend()
+                ax[1].set_ylabel(xlabel)
+                ax[1].set_title('SAXS: ' + ylabel)
+                ax[1].set_xlabel('frame number')
 
-            ax.set_xticks(cen + shape[1] * np.arange(shape[0]))
-            ax.set_xticklabels(self.id_list[0 : shape[0]])
-            ax.set_ylabel('Intensity (a.u.)')
-            mp_hdl_it.fig.tight_layout()
+                # when there are too many points, avoid labeling.
+                if d0.shape[1] < 20:
+                    ax[1].set_xticks(np.arange(d0.shape[1]))
+                    ax[1].set_xticklabels(self.id_list[0: d0.shape[1]])
+                hdl.obj = [im0, im1]
+                hdl.fig.tight_layout()
+            else:
+                hdl.obj[0].set_data(d0)
+                hdl.obj[1].set_data(d1)
 
-        mp_hdl_it.draw()
+                hdl.obj[0].set_clim(It_vmin, It_vmax)
+                hdl.obj[1].set_clim(Iq_vmin, Iq_vmax)
+                hdl.axes[1].set_title('SAXS: ' + ylabel)
 
-        # for n in range(res['Int_t'].shape[0]):
-        #     pg_hdl.plot(res['Int_t'][n, 1, ::100])
-        # pg_hdl.plot(res['Int_t'].ravel())
-        # mp_hdl.plot(res['Int_t_statistics'][n, :, 0], '-o', lw=1, alpha=0.5)
+            hdl.draw()
+
+        draw_seismic_map(mp_hdl, res['Int_t'].T, res['Iq_norm'].T)
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:
