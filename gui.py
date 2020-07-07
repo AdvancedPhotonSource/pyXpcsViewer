@@ -8,6 +8,7 @@ from pyqtgraph import PlotWidget, ImageWindow
 import matplotlib.pyplot as plt
 import matplotlib
 import pyqtgraph as pg
+from matplot_qt import MplCanvas
 from data_loader import DataLoader
 from file_locator import FileLocator
 import numpy as np
@@ -31,7 +32,8 @@ class Ui(QtWidgets.QMainWindow):
 
         self.prepare_g2()
         self.btn_load_data.setEnabled(False)
-        self.update_hdf_list()
+        # self.update_hdf_list()
+        self.dl.plot_stability(self.mp_stab, self.mp_stab_it)
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -55,10 +57,18 @@ class Ui(QtWidgets.QMainWindow):
         self.hdf_info.clear()
         self.hdf_info.setText('\n'.join(msg))
 
+    def plot_saxs_2D(self):
+        kwargs = {
+            'plot_type': self.cb_saxs2D_type.currentText(),
+            'cmap': self.cb_saxs2D_cmap.currentText()}
+        self.dl.plot_saxs_2D(pg_hdl=self.pg_saxs, **kwargs)
 
-    def plot_saxs(self):
-        self.dl.plot_saxs(pg_hdl=self.pg_saxs, mp_hdl=self.mp_saxs,
-                          scale='log')
+    def plot_saxs_1D(self):
+        kwargs = {
+            'plot_type': ('log', 'linear')[self.cb_saxs_type.currentIndex()],
+            'plot_offset': self.sb_saxs_offset.value(),
+            'plot_norm': self.cb_saxs_norm.currentIndex()}
+        self.dl.plot_saxs_1D(self.mp_saxs, **kwargs)
 
     def prepare_g2(self, max_q=0.0092, max_tel=0.31, num_col=4):
         res, _, _ = self.dl.get_g2_data()
