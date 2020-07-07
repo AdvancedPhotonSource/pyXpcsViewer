@@ -180,7 +180,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -873,6 +873,124 @@
           <attribute name="title">
            <string>Diffusion</string>
           </attribute>
+          <layout class="QGridLayout" name="gridLayout_22">
+           <item row="0" column="0" colspan="3">
+            <widget class="MplCanvas" name="mp_tauq" native="true"/>
+           </item>
+           <item row="1" column="0">
+            <spacer name="horizontalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>517</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="1">
+            <widget class="QGroupBox" name="groupBox_5">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>300</width>
+               <height>120</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>120</height>
+              </size>
+             </property>
+             <property name="title">
+              <string>Data Selection:</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_21">
+              <item row="0" column="1">
+               <layout class="QGridLayout" name="gridLayout_12">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_15">
+                  <property name="text">
+                   <string>Max q (1/Å):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QComboBox" name="cb_tauq_min"/>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="cb_tauq_max"/>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_17">
+                  <property name="text">
+                   <string>Max t_el (t):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_18">
+                  <property name="text">
+                   <string>Offset:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QDoubleSpinBox" name="sb_offset_2">
+                  <property name="minimum">
+                   <double>-1.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.010000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.030000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="0" column="0">
+               <widget class="QPushButton" name="pushButton_8">
+                <property name="minimumSize">
+                 <size>
+                  <width>120</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>fit plot</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <spacer name="horizontalSpacer_7">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>516</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </widget>
          <widget class="QWidget" name="tab_6">
           <attribute name="title">
@@ -1091,8 +1209,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1347</x>
-     <y>861</y>
+     <x>1342</x>
+     <y>869</y>
     </hint>
     <hint type="destinationlabel">
      <x>1403</x>
@@ -1107,8 +1225,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>605</x>
-     <y>891</y>
+     <x>599</x>
+     <y>902</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -1123,8 +1241,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1347</x>
-     <y>827</y>
+     <x>1342</x>
+     <y>843</y>
     </hint>
     <hint type="destinationlabel">
      <x>1248</x>
@@ -1139,7 +1257,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1347</x>
+     <x>1342</x>
      <y>895</y>
     </hint>
     <hint type="destinationlabel">
@@ -1155,8 +1273,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1100</x>
-     <y>814</y>
+     <x>1093</x>
+     <y>834</y>
     </hint>
     <hint type="destinationlabel">
      <x>1106</x>
@@ -1171,8 +1289,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1061</x>
-     <y>875</y>
+     <x>1054</x>
+     <y>880</y>
     </hint>
     <hint type="destinationlabel">
      <x>832</x>
@@ -1187,8 +1305,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>949</x>
-     <y>843</y>
+     <x>942</x>
+     <y>856</y>
     </hint>
     <hint type="destinationlabel">
      <x>1051</x>
@@ -1276,6 +1394,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_8</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_tauq()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1055</x>
+     <y>859</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>446</x>
+     <y>949</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>signal1()</signal>
@@ -1291,5 +1425,6 @@
   <slot>plot_saxs_2D()</slot>
   <slot>plot_saxs_1D()</slot>
   <slot>plot_stability_iq()</slot>
+  <slot>plot_tauq()</slot>
  </slots>
 </ui>

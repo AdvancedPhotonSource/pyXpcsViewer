@@ -33,6 +33,7 @@ class Ui(QtWidgets.QMainWindow):
         self.prepare_g2()
         self.btn_load_data.setEnabled(False)
         self.update_hdf_list()
+        self.plot_g2()
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -74,6 +75,12 @@ class Ui(QtWidgets.QMainWindow):
             'plot_type': ('log', 'linear')[self.cb_stab_type.currentIndex()],
             'plot_norm': self.cb_stab_norm.currentIndex()}
         self.dl.plot_stability(self.mp_stab, **kwargs)
+
+    def plot_tauq(self):
+        kwargs = {
+            'tauq_max': self.cb_tauq_max.currentIndex(),
+            'tauq_min': self.cb_tauq_min.currentIndex()}
+        self.dl.plot_tauq(hdl=self.mp_tauq)
 
     def prepare_g2(self, max_q=0.0092, max_tel=0.31, num_col=4):
         res, _, _ = self.dl.get_g2_data()
@@ -150,7 +157,10 @@ class Ui(QtWidgets.QMainWindow):
         err_msg = self.dl.plot_g2(handler=self.mf2, max_q=max_q, max_tel=max_tel,
                                   offset=offset, bounds=bounds)
         self.err_msg.clear()
-        self.err_msg.insertPlainText('\n'.join(err_msg))
+        if err_msg is None:
+            self.err_msg.insertPlainText('None')
+        else:
+            self.err_msg.insertPlainText('\n'.join(err_msg))
 
 
     def load_path(self):

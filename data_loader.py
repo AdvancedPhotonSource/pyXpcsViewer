@@ -120,7 +120,8 @@ class DataLoader(FileLocator):
             'num_points': None,
             'hash_val': None,
             'res': None,
-            'plot_condition': (None, None)
+            'plot_condition': (None, None),
+            'fit_val': {}
         }
 
     def hash(self, max_points=10):
@@ -200,6 +201,8 @@ class DataLoader(FileLocator):
         res, tslice, qslice = self.get_g2_data(max_q=max_q, max_tel=max_tel,
                                                max_points=max_points)
         num_points = min(res['g2'].shape[0], max_points)
+        self.g2_cache['tslice'] = tslice
+        self.g2_cache['qslice'] = qslice
 
         t_el = res['t_el'][0][tslice]
         g2 = res['g2'][:, tslice, qslice]
@@ -219,22 +222,61 @@ class DataLoader(FileLocator):
 
         err_msg = []
         for ipt in range(num_points):
-            fit_res = fit_xpcs(res, ipt, tslice, qslice, b=bounds)
+            fit_res, fit_val = fit_xpcs(res, ipt, tslice, qslice, b=bounds)
+            self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
             offset_i = -1 * offset * (ipt + 1)
-            err_msg.append('\n' + self.target_list[ipt])
+            err_msg.append(self.target_list[ipt])
+            prev_len = len(err_msg)
             for ifg in range(num_fig):
                 loc = ipt * num_fig + ifg
                 handler.update_lin(loc, fit_res[ifg]['fit_x'],
                        fit_res[ifg]['fit_y'] + offset_i)
-                err_msg.append('----' + fit_res[ifg]['err_msg'])
+                msg = fit_res[ifg]['err_msg']
+                if msg is not None:
+                    err_msg.append('----' + msg)
 
                 if plot_target >= 2:
                     handler.update_err(loc, t_el, g2[ipt][:, ifg] + offset_i,
                                        g2_err[ipt][:, ifg])
 
+            if len(err_msg) == prev_len:
+                err_msg.append('---- fit finished without errors')
+
+        # handler.fig.tight_layout()
         handler.auto_scale()
         handler.draw()
         return err_msg
+
+    def plot_tauq(self, max_q=0.016, max_tel=1E8, hdl=None, max_points=3, bounds=None):
+        num_points = len(self.g2_cache['fit_val'])
+        labels = self.g2_cache['fit_val'].keys()
+
+        # prepare fit values
+        fit_val = []
+        for fname, val in self.g2_cache['fit_val'].items():
+            fit_val.append(val)
+        fit_val = np.hstack(fit_val).swapaxes(0, 1)
+        q = fit_val[::7]
+        tau = fit_val[1::7] * 1E4
+        cts = fit_val[3::7]
+
+        tau_err = fit_val[4::7] * 1E4
+        cts_err = fit_val[6::7]
+
+
+        if hdl.axes is None:
+            ax = hdl.subplots(1, 1)
+            line_obj = []
+            for n in range(tau.shape[0]):
+                line = ax.errorbar(q[n], tau[n], yerr=tau_err[n], fmt='o--',
+                                   markersize=3, label=self.id_list[n])
+                line_obj.append(line)
+            ax.set_xlabel('$q (\\AA^{-1})$')
+            ax.set_ylabel('$\\tau \\times 10^4$')
+            ax.legend()
+            ax.set_xscale('log')
+            hdl.obj = line_obj
+            hdl.draw()
 
     def get_detector_extent(self, file_list):
         labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
