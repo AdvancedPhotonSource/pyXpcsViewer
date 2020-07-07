@@ -32,8 +32,7 @@ class Ui(QtWidgets.QMainWindow):
 
         self.prepare_g2()
         self.btn_load_data.setEnabled(False)
-        # self.update_hdf_list()
-        self.dl.plot_stability(self.mp_stab, self.mp_stab_it)
+        self.update_hdf_list()
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -69,6 +68,12 @@ class Ui(QtWidgets.QMainWindow):
             'plot_offset': self.sb_saxs_offset.value(),
             'plot_norm': self.cb_saxs_norm.currentIndex()}
         self.dl.plot_saxs_1D(self.mp_saxs, **kwargs)
+
+    def plot_stability_iq(self):
+        kwargs = {
+            'plot_type': ('log', 'linear')[self.cb_stab_type.currentIndex()],
+            'plot_norm': self.cb_stab_norm.currentIndex()}
+        self.dl.plot_stability(self.mp_stab, **kwargs)
 
     def prepare_g2(self, max_q=0.0092, max_tel=0.31, num_col=4):
         res, _, _ = self.dl.get_g2_data()

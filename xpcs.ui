@@ -180,7 +180,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -195,8 +195,6 @@
                <height>0</height>
               </size>
              </property>
-             <zorder>groupBox_3</zorder>
-             <zorder>groupBox_3</zorder>
             </widget>
            </item>
            <item row="0" column="0">
@@ -211,10 +209,16 @@
            </item>
            <item row="1" column="0" colspan="2">
             <widget class="QGroupBox" name="groupBox_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>100</height>
+               <height>120</height>
               </size>
              </property>
              <property name="title">
@@ -448,25 +452,134 @@
            <item row="0" column="0">
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
                <item>
-                <widget class="MplCanvas" name="mp_stab_it" native="true">
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>240</height>
-                  </size>
+                <widget class="MplCanvas" name="mp_stab" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
                </item>
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
-               <item>
-                <widget class="MplCanvas" name="mp_stab" native="true"/>
-               </item>
-              </layout>
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Stability Plot Setting</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_19">
+                <item row="0" column="0">
+                 <spacer name="horizontalSpacer_10">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_9">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QGridLayout" name="gridLayout_20">
+                  <item row="0" column="2">
+                   <widget class="QLabel" name="label_16">
+                    <property name="text">
+                     <string>normalization:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QComboBox" name="cb_stab_norm">
+                    <property name="currentIndex">
+                     <number>3</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>none</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = Iq2</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = Iq4</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = I/Io</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="4">
+                   <widget class="QPushButton" name="pushButton_7">
+                    <property name="text">
+                     <string>Plot Iq Stability Data</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_14">
+                    <property name="text">
+                     <string>type:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="cb_stab_type">
+                    <property name="currentIndex">
+                     <number>1</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>log</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>linear</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
              </item>
             </layout>
            </item>
@@ -502,8 +615,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1392</width>
-                <height>698</height>
+                <width>1408</width>
+                <height>824</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -524,7 +637,7 @@
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>0</height>
+                   <height>800</height>
                   </size>
                  </property>
                 </widget>
@@ -537,79 +650,111 @@
             <layout class="QGridLayout" name="gridLayout_8">
              <item row="0" column="0">
               <widget class="QGroupBox" name="groupBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>120</height>
+                </size>
+               </property>
                <property name="title">
                 <string>Data Selection:</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
-                <item row="0" column="0">
-                 <layout class="QGridLayout" name="gridLayout_12">
-                  <item row="0" column="1">
-                   <layout class="QGridLayout" name="gridLayout_11">
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_3">
-                      <property name="text">
-                       <string>Max q (1/Å):</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QComboBox" name="cb_tel_max"/>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QComboBox" name="cb_q_max"/>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="label_4">
-                      <property name="text">
-                       <string>Max t_el (t):</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="label_7">
-                      <property name="text">
-                       <string>Offset:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QDoubleSpinBox" name="sb_offset">
-                      <property name="minimum">
-                       <double>-1.000000000000000</double>
-                      </property>
-                      <property name="maximum">
-                       <double>1.000000000000000</double>
-                      </property>
-                      <property name="singleStep">
-                       <double>0.010000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>0.030000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
+                <item row="0" column="1">
+                 <layout class="QGridLayout" name="gridLayout_11">
                   <item row="0" column="0">
-                   <widget class="QPushButton" name="pushButton_4">
-                    <property name="minimumSize">
-                     <size>
-                      <width>120</width>
-                      <height>80</height>
-                     </size>
-                    </property>
+                   <widget class="QLabel" name="label_3">
                     <property name="text">
-                     <string>fit plot</string>
+                     <string>Max q (1/Å):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="cb_tel_max"/>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="cb_q_max"/>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Max t_el (t):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_7">
+                    <property name="text">
+                     <string>Offset:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="sb_offset">
+                    <property name="minimum">
+                     <double>-1.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.030000000000000</double>
                     </property>
                    </widget>
                   </item>
                  </layout>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="pushButton_4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>120</width>
+                    <height>80</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>fit plot</string>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
              </item>
              <item row="0" column="1">
               <widget class="QGroupBox" name="groupBox_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>120</height>
+                </size>
+               </property>
                <property name="title">
                 <string>Single Exp Fitting Bounds:</string>
                </property>
@@ -701,10 +846,19 @@
                 </item>
                 <item row="0" column="1">
                  <widget class="QPlainTextEdit" name="err_msg">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="font">
                    <font>
                     <family>Courier</family>
                    </font>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Fit error message</string>
                   </property>
                  </widget>
                 </item>
@@ -1106,6 +1260,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_7</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_stability_iq()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1108</x>
+     <y>881</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1081</x>
+     <y>946</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>signal1()</signal>
@@ -1120,5 +1290,6 @@
   <slot>show_hdf_info()</slot>
   <slot>plot_saxs_2D()</slot>
   <slot>plot_saxs_1D()</slot>
+  <slot>plot_stability_iq()</slot>
  </slots>
 </ui>
