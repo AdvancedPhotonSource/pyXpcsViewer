@@ -29,11 +29,13 @@ class Ui(QtWidgets.QMainWindow):
     def load_data(self):
         if (len(self.dl.target_list)) == 0:
             return
-
-        self.prepare_g2()
-        self.btn_load_data.setEnabled(False)
+        # self.plot_g2()
+        self.plot_saxs_2D()
+        self.plot_saxs_1D()
         self.update_hdf_list()
         self.plot_g2()
+        self.plot_stability_iq()
+        self.btn_load_data.setEnabled(False)
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -78,84 +80,18 @@ class Ui(QtWidgets.QMainWindow):
 
     def plot_tauq(self):
         kwargs = {
-            'tauq_max': self.cb_tauq_max.currentIndex(),
-            'tauq_min': self.cb_tauq_min.currentIndex()}
-        self.dl.plot_tauq(hdl=self.mp_tauq)
-
-    def prepare_g2(self, max_q=0.0092, max_tel=0.31, num_col=4):
-        res, _, _ = self.dl.get_g2_data()
-        ql_dyn_list = res['ql_dyn'].ravel()
-        ql_dyn_list = list(set(ql_dyn_list))
-        ql_dyn_list.sort()
-
-        self.g2_cache['ql_dyn'] = ql_dyn_list
-        # get the index for the default max q value
-        ql_idx = np.argmin(np.abs(max_q - np.array(ql_dyn_list)))
-
-        ql_dyn_list = ['%.4f' % (x + 1E-4) for x in ql_dyn_list]
-        prev_ql_idx = self.cb_q_max.currentIndex()
-        self.cb_q_max.clear()
-        self.cb_q_max.addItems(ql_dyn_list)
-        if prev_ql_idx != -1:
-            self.cb_q_max.setCurrentIndex(prev_ql_idx)
-        else:
-            self.cb_q_max.setCurrentIndex(ql_idx)
-
-        t_el_list = res['t_el'].ravel()
-        t_el_list = list(set(t_el_list))
-        t_el_list.sort()
-        self.g2_cache['t_el'] = t_el_list
-        # get the index for the default max t_el value
-        t_el_idx = np.argmin(np.abs(np.log(np.array(t_el_list) / max_tel)))
-
-        t_el_list = ['%.2e' % (x * 1.01) for x in t_el_list]
-        # only list 20 points because the list can be very long
-        self.cb_tel_max.setCurrentIndex(t_el_idx - (len(t_el_list) - 20))
-        # t_el_idx = t_el_idx - (len(t_el_list) - 20)
-
-        prev_tel_idx = self.cb_tel_max.currentIndex()
-        self.cb_tel_max.clear()
-        self.cb_tel_max.addItems(t_el_list[-20:])
-
-        self.mf2.clear()
-
-        return res
+            'max_q': self.sb_tauq_qmax.value(),
+            'offset': self.sb_tauq_offset.value()}
+        self.dl.plot_tauq(hdl=self.mp_tauq, **kwargs)
 
     def plot_g2(self, max_points=3):
-        if max_points in [False, None]:
-            max_points = 3
-        num_points = min(len(self.dl.target_list), max_points)
-        if num_points == 0:
-            return
-
-        # read user defined values
-        max_q = float(self.cb_q_max.currentText())
-        max_tel = float(self.cb_tel_max.currentText())
-        offset = self.sb_offset.value()
-        num_col = 4
-
-        # add 1 to convert index to count
-        # num_fig = int(self.cb_q_max.currentIndex()) + 1
-        num_fig = np.sum(np.array(self.g2_cache['ql_dyn']) <= max_q)
-
-        # adjust canvas size according to number of images
-        num_row = (num_fig + num_col - 1) // num_col
-        if self.mf2.axes is None or \
-                self.mf2.axes.shape != (num_row, num_col) or \
-                self.dl.hash(max_points) != self.dl.g2_cache['hash_val']:
-            print('create new fig')
-            canvas_size = max(600, 200 * num_row)
-            self.mf2.setMinimumSize(QtCore.QSize(0, canvas_size))
-            self.mf2.fig.clear()
-            self.mf2.subplots(num_row, num_col)
-            self.mf2.obj = None
-            self.dl.create_template_g2(self.mf2, self.g2_cache['ql_dyn'],
-                                       num_points, num_fig=num_fig)
-
-            self.mf2.draw()
+        kwargs = {
+            'offset': self.sb_g2_offset.value(),
+            'max_tel': 10 ** self.sb_g2_tmax.value(),
+            'max_q': self.sb_g2_qmax.value()
+        }
         bounds = self.check_number()
-        err_msg = self.dl.plot_g2(handler=self.mf2, max_q=max_q, max_tel=max_tel,
-                                  offset=offset, bounds=bounds)
+        err_msg = self.dl.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
         self.err_msg.clear()
         if err_msg is None:
             self.err_msg.insertPlainText('None')
@@ -164,19 +100,20 @@ class Ui(QtWidgets.QMainWindow):
 
 
     def load_path(self):
-        # f = QFileDialog.getExistingDirectory(self, 'Open directory',
-        #                                      '/User/mqichu',
-        #                                      QFileDialog.ShowDirsOnly)
-        # self.centralWidget.file_panel.work_dir.setValue(f)
-        f = './data/files2.txt'
+        f = QFileDialog.getExistingDirectory(self, 'Open directory',
+                                             '/User/mqichu',
+                                             QFileDialog.ShowDirsOnly)
+        if not os.path.isdir(f):
+            return
+        # f = './data/files2.txt'
         self.work_dir.setText(f)
         self.dl = DataLoader(f)
         self.update_box(self.dl.source_list, mode='source')
 
         # for debug
-        self.list_view_source.selectAll()
-        self.add_target()
-        self.list_view_source.clearSelection()
+        # self.list_view_source.selectAll()
+        # self.add_target()
+        # self.list_view_source.clearSelection()
 
     def update_box(self, file_list, mode='source'):
         if mode == 'source':
