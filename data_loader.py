@@ -1,12 +1,8 @@
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-from matplot_qt import MplCanvas
 from matplotlib.ticker import FormatStrFormatter
 from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
-import pyqtgraph as pg
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
 from PyQt5 import QtCore
@@ -83,6 +79,7 @@ def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
 
     xlabel = '$q (\\AA^{-1})$'
     return Iq, xlabel, ylabel
+
 
 def read_file(fields, fn, prefix='./data'):
     res = []
@@ -265,7 +262,7 @@ class DataLoader(FileLocator):
 
         # prepare fit values
         fit_val = []
-        for fname, val in self.g2_cache['fit_val'].items():
+        for _, val in self.g2_cache['fit_val'].items():
             fit_val.append(val)
         fit_val = np.hstack(fit_val).swapaxes(0, 1)
         q = fit_val[::7]
@@ -322,7 +319,7 @@ class DataLoader(FileLocator):
 
         return extents
 
-    def plot_saxs_2D_mpl(self, mp_hdl=None,  scale='log', max_points=8):
+    def plot_saxs_2d_mpl(self, mp_hdl=None, scale='log', max_points=8):
         extents = self.get_detector_extent(self.target_list)
         res = self.get_saxs_data()
         ans = res['Int_2D']
@@ -356,7 +353,7 @@ class DataLoader(FileLocator):
             mp_hdl.fig.tight_layout()
         mp_hdl.draw()
 
-    def plot_saxs_2D(self, pg_hdl, plot_type='log', cmap='jet'):
+    def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet'):
         ans = self.get_saxs_data()['Int_2D']
         if plot_type == 'log':
             ans = np.log10(ans + 1E-8)
@@ -370,7 +367,7 @@ class DataLoader(FileLocator):
             else:
                 pg_hdl.setImage(ans[0].swapaxes(0, 1))
 
-    def plot_saxs_1D(self, mp_hdl, plot_type='log', plot_norm=0,
+    def plot_saxs_1d(self, mp_hdl, plot_type='log', plot_norm=0,
                      plot_offset=0, max_points=8):
         num_points = min(len(self.target_list), max_points)
         res = self.get_saxs_data()

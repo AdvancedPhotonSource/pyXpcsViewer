@@ -63,14 +63,14 @@ class Ui(QtWidgets.QMainWindow):
         kwargs = {
             'plot_type': self.cb_saxs2D_type.currentText(),
             'cmap': self.cb_saxs2D_cmap.currentText()}
-        self.dl.plot_saxs_2D(pg_hdl=self.pg_saxs, **kwargs)
+        self.dl.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
     def plot_saxs_1D(self):
         kwargs = {
             'plot_type': ('log', 'linear')[self.cb_saxs_type.currentIndex()],
             'plot_offset': self.sb_saxs_offset.value(),
             'plot_norm': self.cb_saxs_norm.currentIndex()}
-        self.dl.plot_saxs_1D(self.mp_saxs, **kwargs)
+        self.dl.plot_saxs_1d(self.mp_saxs, **kwargs)
 
     def plot_stability_iq(self):
         kwargs = {
@@ -97,7 +97,6 @@ class Ui(QtWidgets.QMainWindow):
             self.err_msg.insertPlainText('None')
         else:
             self.err_msg.insertPlainText('\n'.join(err_msg))
-
 
     def load_path(self):
         f = QFileDialog.getExistingDirectory(self, 'Open directory',
