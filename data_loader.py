@@ -5,41 +5,11 @@ from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
+from hdf_reader import read_file
 from PyQt5 import QtCore
 
 import os
 import h5py
-
-hdf_dict = {
-    'Iq': '/exchange/partition-mean-total',
-    'ql_sta': '/xpcs/sqlist',
-    'ql_dyn': '/xpcs/dqlist',
-    't0': '/measurement/instrument/detector/exposure_period',
-    'tau': '/exchange/tau',
-    'g2': '/exchange/norm-0-g2',
-    'g2_err': '/exchange/norm-0-stderr',
-    'Int_2D': '/exchange/pixelSum',
-    'Int_t': '/exchange/frameSum',
-    'ccd_x0': '/measurement/instrument/acquisition/beam_center_x',
-    'ccd_y0': '/measurement/instrument/acquisition/beam_center_y',
-    'det_dist': '/measurement/instrument/detector/distance',
-    'pix_dim': '/measurement/instrument/detector/x_pixel_size',
-    'X_energy': '/measurement/instrument/source_begin/energy',
-    'xdim': '/measurement/instrument/detector/x_dimension',
-    'ydim': '/measurement/instrument/detector/y_dimension'
-}
-
-avg_hdf_dict = {
-    'Iq': '/Iq_ave',
-    'g2': '/g2_ave',
-    'g2_nb': '/g2_ave_nb',
-    'g2_err': '/g2_ave_err',
-    'fn_count': '/fn_count',
-    't_el': '/t_el',
-    'ql_sta': '/ql_sta',
-    'ql_dyn': '/ql_dyn',
-    'Int_2D': '/Int_2D_ave',
-}
 
 
 def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
@@ -79,26 +49,6 @@ def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
 
     xlabel = '$q (\\AA^{-1})$'
     return Iq, xlabel, ylabel
-
-
-def read_file(fields, fn, prefix='./data'):
-    res = []
-    with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
-        for field in fields:
-            if field == 't_el':
-                val1 = np.squeeze(HDF_Result.get(hdf_dict['t0']))
-                val2 = np.squeeze(HDF_Result.get(hdf_dict['tau']))
-                val = val1 * val2
-            else:
-                if field in hdf_dict.keys():
-                    link = hdf_dict[field]
-                    if link in HDF_Result.keys():
-                        val = np.squeeze(HDF_Result.get(link))
-                    else:
-                        link = avg_hdf_dict[field]
-                        val = np.squeeze(HDF_Result.get(link))
-            res.append(val)
-    return res
 
 
 def create_slice(arr, cutoff):
@@ -402,9 +352,10 @@ class DataLoader(FileLocator):
         mp_hdl.draw()
         return
 
-    def get_saxs_data(self):
+    def get_saxs_data(self, max_points=128):
         labels = ['Int_2D', 'Iq', 'ql_sta']
-        res = self.read_data(labels)
+        file_list = self.target_list[0: max_points]
+        res = self.read_data(labels, file_list)
         # ans = np.swapaxes(ans, 1, 2)
         # the detector figure is not oriented to image convention;
         return res
