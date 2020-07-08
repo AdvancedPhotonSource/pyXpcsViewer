@@ -28,8 +28,11 @@ class MplCanvas(FigureCanvasQTAgg):
         if self.axes is None:
             return
         else:
-            for ax in self.axes.ravel():
-                ax.clear()
+            if self.shape == (1, 1):
+                self.axes.clear()
+            else:
+                for ax in self.axes.ravel():
+                    ax.clear()
 
     def auto_scale(self):
         if self.axes is None:
