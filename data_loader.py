@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from matplot_qt import MplCanvas
 from matplotlib.ticker import FormatStrFormatter
-from xpcs_fitting import fit_xpcs
+from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
 import pyqtgraph as pg
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
-
+from PyQt5 import QtCore
 
 import os
 import h5py
@@ -120,7 +120,7 @@ class DataLoader(FileLocator):
             'num_points': None,
             'hash_val': None,
             'res': None,
-            'plot_condition': (None, None),
+            'plot_condition': tuple([None, None, None]),
             'fit_val': {}
         }
 
@@ -137,7 +137,6 @@ class DataLoader(FileLocator):
         return get_hdf_info(self.cwd, fname)
 
     def get_g2_data(self, max_points=10, max_q=1.0, max_tel=1e8):
-
         labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
         file_list = self.target_list
 
@@ -152,26 +151,39 @@ class DataLoader(FileLocator):
         tslice = create_slice(res['t_el'][0], max_tel)
         qslice = create_slice(res['ql_dyn'][0], max_q)
 
-        return res, tslice, qslice
+        tel = res['t_el'][0][tslice]
+        qd = res['ql_dyn'][0][qslice]
+        g2 = res['g2'][:, tslice, qslice]
+        g2_err = res['g2_err'][:, tslice, qslice]
 
-    def create_template_g2(self, handler, ql_dyn, num_points, num_fig=17):
-        # dummy line as the place holder
+        return tel, qd, g2, g2_err
+
+    def plot_g2_initialize(self, mp_hdl, num_fig, num_points, num_col=4):
+        # adjust canvas size according to number of images
+        num_row = (num_fig + num_col - 1) // num_col
+
+        canvas_size = max(600, 200 * num_row)
+        mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
+        mp_hdl.fig.clear()
+        mp_hdl.subplots(num_row, num_col)
+        mp_hdl.obj = None
+
+        # dummy x y fit line
         x = np.logspace(-5, 0, 32)
         y = np.exp(-x / 1E-3) * 0.25 + 1.0
         err = y / 40
 
-        ax_all = handler.axes
         err_obj = []
         lin_obj = []
 
         for idx in range(num_points):
             for i in range(num_fig):
                 offset = 0.03 * idx
-                ax = ax_all.ravel()[i]
+                ax = mp_hdl.axes.ravel()[i]
                 obj1 = ax.errorbar(x, y + offset,
-                                  yerr=err, fmt='o', markersize=3,
-                                  markerfacecolor='none',
-                                  label='{}'.format(self.id_list[idx]))
+                                   yerr=err, fmt='o', markersize=3,
+                                   markerfacecolor='none',
+                                   label='{}'.format(self.id_list[idx]))
                 err_obj.append(obj1)
 
                 obj2 = ax.plot(x, y + offset)
@@ -179,7 +191,7 @@ class DataLoader(FileLocator):
 
                 # last image
                 if idx == num_points - 1:
-                    ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
+                    # ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
                     ax.set_xscale('log')
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
                     # if there's only one point, do not add title; the title
@@ -187,42 +199,41 @@ class DataLoader(FileLocator):
                     if idx >= 1:
                         ax.legend(fontsize=8)
 
-        handler.fig.tight_layout()
-        # handler.draw()
-        handler.obj = {
+        mp_hdl.fig.tight_layout()
+        mp_hdl.obj = {
             'err': err_obj,
             'lin': lin_obj,
         }
 
-    def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None,
-                offset=None, max_points=3, bounds=None):
+    def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None, offset=None,
+                max_points=3, bounds=None):
+
         if len(self.target_list) < 1:
-            return
-        res, tslice, qslice = self.get_g2_data(max_q=max_q, max_tel=max_tel,
-                                               max_points=max_points)
-        num_points = min(res['g2'].shape[0], max_points)
-        self.g2_cache['tslice'] = tslice
-        self.g2_cache['qslice'] = qslice
+            return ['No target files selected.']
 
-        t_el = res['t_el'][0][tslice]
-        g2 = res['g2'][:, tslice, qslice]
-        g2_err = res['g2_err'][:, tslice, qslice]
-
-        num_fig = qslice.stop
-
-        new_condition = ((max_q, max_tel, offset), bounds)
-
+        num_points = min(len(self.target_list), max_points)
+        new_condition = (tuple(self.target_list[:num_points]),
+                         (max_q, max_tel, offset),
+                         bounds)
         if self.g2_cache['plot_condition'] == new_condition:
-            return
+            return ['No target files selected or change in setting.']
         else:
-            s1 = self.g2_cache['plot_condition'][0] != new_condition[0]
-            s2 = self.g2_cache['plot_condition'][1] != new_condition[1]
+            cmp_sign = tuple(i != j for i, j in \
+                         zip(new_condition, self.g2_cache['plot_condition']))
             self.g2_cache['plot_condition'] = new_condition
-            plot_target = 2 * int(s1) + int(s2)
+            plot_target = 4 * cmp_sign[0] + 2 * cmp_sign[1] + cmp_sign[2]
+
+        tel, qd, g2, g2_err = self.get_g2_data(max_q=max_q, max_tel=max_tel,
+                                               max_points=max_points)
+        num_fig = g2.shape[2]
+
+        if plot_target >= 2 or handler.axes is None:
+            self.plot_g2_initialize(handler, num_fig, num_points, 4)
+            handler.draw()
 
         err_msg = []
         for ipt in range(num_points):
-            fit_res, fit_val = fit_xpcs(res, ipt, tslice, qslice, b=bounds)
+            fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt], b=bounds)
             self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
             offset_i = -1 * offset * (ipt + 1)
             err_msg.append(self.target_list[ipt])
@@ -236,19 +247,20 @@ class DataLoader(FileLocator):
                     err_msg.append('----' + msg)
 
                 if plot_target >= 2:
-                    handler.update_err(loc, t_el, g2[ipt][:, ifg] + offset_i,
+                    handler.update_err(loc, tel, g2[ipt][:, ifg] + offset_i,
                                        g2_err[ipt][:, ifg])
 
             if len(err_msg) == prev_len:
                 err_msg.append('---- fit finished without errors')
 
-        # handler.fig.tight_layout()
         handler.auto_scale()
         handler.draw()
         return err_msg
 
-    def plot_tauq(self, max_q=0.016, max_tel=1E8, hdl=None, max_points=3, bounds=None):
+    def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
         num_points = len(self.g2_cache['fit_val'])
+        if num_points == 0:
+            return
         labels = self.g2_cache['fit_val'].keys()
 
         # prepare fit values
@@ -257,24 +269,36 @@ class DataLoader(FileLocator):
             fit_val.append(val)
         fit_val = np.hstack(fit_val).swapaxes(0, 1)
         q = fit_val[::7]
+        sl = q[0] <= max_q
+
         tau = fit_val[1::7] * 1E4
         cts = fit_val[3::7]
 
         tau_err = fit_val[4::7] * 1E4
         cts_err = fit_val[6::7]
 
-
-        if hdl.axes is None:
+        if True:
+        # if hdl.axes is None:
+            hdl.clear()
             ax = hdl.subplots(1, 1)
             line_obj = []
+            # for n in range(tau.shape[0]):
             for n in range(tau.shape[0]):
-                line = ax.errorbar(q[n], tau[n], yerr=tau_err[n], fmt='o--',
-                                   markersize=3, label=self.id_list[n])
+                s = 10 ** (offset * n)
+                line = ax.errorbar(q[n][sl], tau[n][sl] / s,
+                                   yerr=tau_err[n][sl] / s,
+                                   fmt='o-', markersize=3,
+                                   label=self.id_list[n]
+                                   )
                 line_obj.append(line)
+                slope, intercept, xf, yf = fit_tau(q[n][sl], tau[n][sl],
+                                                   tau_err[n][sl])
+                line2 = ax.plot(xf, yf / s)
             ax.set_xlabel('$q (\\AA^{-1})$')
             ax.set_ylabel('$\\tau \\times 10^4$')
             ax.legend()
             ax.set_xscale('log')
+            ax.set_yscale('log')
             hdl.obj = line_obj
             hdl.draw()
 
