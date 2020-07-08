@@ -215,10 +215,10 @@ class DataLoader(FileLocator):
         if self.g2_cache['plot_condition'] == new_condition:
             return ['No target files selected or change in setting.']
         else:
-            cmp_sign = tuple(i != j for i, j in \
-                         zip(new_condition, self.g2_cache['plot_condition']))
+            cmp = tuple(i != j for i, j in
+                        zip(new_condition, self.g2_cache['plot_condition']))
             self.g2_cache['plot_condition'] = new_condition
-            plot_target = 4 * cmp_sign[0] + 2 * cmp_sign[1] + cmp_sign[2]
+            plot_target = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
 
         tel, qd, g2, g2_err = self.get_g2_data(max_q=max_q, max_tel=max_tel,
                                                max_points=max_points)
@@ -230,7 +230,8 @@ class DataLoader(FileLocator):
 
         err_msg = []
         for ipt in range(num_points):
-            fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt], b=bounds)
+            fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt], 
+                                        b=bounds)
             self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
             offset_i = -1 * offset * (ipt + 1)
             err_msg.append(self.target_list[ipt])
@@ -238,7 +239,7 @@ class DataLoader(FileLocator):
             for ifg in range(num_fig):
                 loc = ipt * num_fig + ifg
                 handler.update_lin(loc, fit_res[ifg]['fit_x'],
-                       fit_res[ifg]['fit_y'] + offset_i)
+                                   fit_res[ifg]['fit_y'] + offset_i)
                 msg = fit_res[ifg]['err_msg']
                 if msg is not None:
                     err_msg.append('----' + msg)
@@ -306,7 +307,7 @@ class DataLoader(FileLocator):
         extents = []
         for n in range(len(file_list)):
             pix2q = res['pix_dim'][n] / res['det_dist'][n] * \
-                    (2 * np.pi /(12.398 / res['X_energy'][n]))
+                    (2 * np.pi / (12.398 / res['X_energy'][n]))
 
             qy_min = (0 - res['ccd_x0'][n]) * pix2q
             qy_max = (res['xdim'][n] - res['ccd_x0'][n]) * pix2q
@@ -443,11 +444,16 @@ class DataLoader(FileLocator):
                           np.min(ql_sta), np.max(ql_sta))
                 ax = hdl.subplots(2, 1, sharex=False)
                 im0 = ax[0].imshow((d0), aspect='auto',
-                      cmap=plt.get_cmap('seismic'), vmin=It_vmin, vmax=It_vmax,
-                      interpolation=None)
+                                   cmap=plt.get_cmap('seismic'),
+                                   vmin=It_vmin, vmax=It_vmax,
+                                   interpolation=None)
+
                 im1 = ax[1].imshow((d1), aspect='auto',
-                      cmap=plt.get_cmap('seismic'), vmin=Iq_vmin, vmax=Iq_vmax,
-                      interpolation=None, origin='lower', extent=extent)
+                                   cmap=plt.get_cmap('seismic'),
+                                   vmin=Iq_vmin, vmax=Iq_vmax,
+                                   interpolation=None, origin='lower',
+                                   extent=extent)
+
                 hdl.fig.colorbar(im0, ax=ax[0])
                 hdl.fig.colorbar(im1, ax=ax[1])
 
@@ -524,6 +530,7 @@ class DataLoader(FileLocator):
             result[label] = result[label] / num_points
 
         return result
+
 
 if __name__ == "__main__":
     flist = os.listdir('./data')
