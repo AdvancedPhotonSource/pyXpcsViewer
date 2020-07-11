@@ -209,7 +209,7 @@ class DataLoader(FileLocator):
         num_points = len(self.g2_cache['fit_val'])
         if num_points == 0:
             return
-        labels = self.g2_cache['fit_val'].keys()
+        labels = list(self.g2_cache['fit_val'].keys())
 
         # prepare fit values
         fit_val = []
@@ -219,11 +219,13 @@ class DataLoader(FileLocator):
         q = fit_val[::7]
         sl = q[0] <= max_q
 
-        tau = fit_val[1::7] * 1E4
+        tau = fit_val[1::7]
         cts = fit_val[3::7]
 
-        tau_err = fit_val[4::7] * 1E4
+        tau_err = fit_val[4::7]
         cts_err = fit_val[6::7]
+
+        fit_val = []
 
         if True:
         # if hdl.axes is None:
@@ -242,6 +244,9 @@ class DataLoader(FileLocator):
                 slope, intercept, xf, yf = fit_tau(q[n][sl], tau[n][sl],
                                                    tau_err[n][sl])
                 line2 = ax.plot(xf, yf / s)
+                fit_val.append('fn: %s, slope = %.4f, intercept = %.4f' % (
+                               self.target_list[n], slope, intercept))
+
             ax.set_xlabel('$q (\\AA^{-1})$')
             ax.set_ylabel('$\\tau \\times 10^4$')
             ax.legend()
@@ -249,6 +254,8 @@ class DataLoader(FileLocator):
             ax.set_yscale('log')
             hdl.obj = line_obj
             hdl.draw()
+
+            return fit_val
 
     def get_detector_extent(self, file_list):
         labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
@@ -304,19 +311,48 @@ class DataLoader(FileLocator):
             mp_hdl.fig.tight_layout()
         mp_hdl.draw()
 
-    def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet'):
+    def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet',
+                     autorotate=False):
         ans = self.get_saxs_data()['Int_2D']
         if plot_type == 'log':
             ans = np.log10(ans + 1E-8)
-        if True:
-            pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
-            pg_hdl.setColorMap(pg_cmap)
 
-            if ans.shape[0] > 1:
-                xvals = np.arange(ans.shape[0])
-                pg_hdl.setImage(ans.swapaxes(1, 2), xvals=xvals)
-            else:
-                pg_hdl.setImage(ans[0].swapaxes(0, 1))
+        if autorotate is True:
+            if ans.shape[1] > ans.shape[2]:
+                ans = ans.swapaxes(1, 2)
+
+        sp = ans.T.shape
+
+        pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
+        pg_hdl.setColorMap(pg_cmap)
+
+        if ans.shape[0] > 1:
+            xvals = np.arange(ans.shape[0])
+            pg_hdl.setImage(ans.swapaxes(1, 2), xvals=xvals)
+        else:
+            pg_hdl.setImage(ans[0].swapaxes(0, 1))
+
+        # pg_hdl.getFrame
+        fs = pg_hdl.frameSize()
+        w0, h0 = fs.width(), fs.height()
+        w1, h1 = sp[0], sp[1]
+
+        if w1 / w0 > h1 / h0:
+            margin_v = int((w1 / w0 * h0 - h1) / 2)
+            margin_h = 0
+        else:
+            margin_v = 0
+            margin_h = int((h1 / h0 * w0 - w1) / 2)
+
+        vb = pg_hdl.getView()
+        vb.setLimits(xMin= -0 * sp[0] - margin_h,
+                     yMin= -0 * sp[0] - margin_v,
+                     xMax= 1 * sp[0] + margin_h,
+                     yMax= 1 * sp[1] + margin_v,
+                     minXRange=sp[0] // 5,
+                     minYRange=sp[1] // 5)
+                     # maxXRange=sp[0] * 4,
+                     # maxYRange=sp[1] * 4)
 
     def plot_saxs_1d(self, mp_hdl, plot_type='log', plot_norm=0,
                      plot_offset=0, max_points=8):
@@ -362,7 +398,7 @@ class DataLoader(FileLocator):
 
     def get_stability_data(self, max_point=50, **kwargs):
         labels = ['Int_t', 'Iq', 'ql_sta']
-        res = self.read_data(labels)
+        res = self.read_data(labels, self.target_list[0:128])
 
         avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
         int_t = res['Int_t'][:, 1, :]

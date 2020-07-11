@@ -33,8 +33,8 @@ class Ui(QtWidgets.QMainWindow):
         self.plot_saxs_2D()
         self.plot_saxs_1D()
         self.update_hdf_list()
-        self.plot_g2()
-        self.plot_stability_iq()
+        # self.plot_g2()
+        # self.plot_stability_iq()
         self.btn_load_data.setEnabled(False)
 
     def update_hdf_list(self):
@@ -62,7 +62,8 @@ class Ui(QtWidgets.QMainWindow):
     def plot_saxs_2D(self):
         kwargs = {
             'plot_type': self.cb_saxs2D_type.currentText(),
-            'cmap': self.cb_saxs2D_cmap.currentText()}
+            'cmap': self.cb_saxs2D_cmap.currentText(),
+            'autorotate': self.saxs2d_autorotate.isChecked()}
         self.dl.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
     def plot_saxs_1D(self):
@@ -82,7 +83,9 @@ class Ui(QtWidgets.QMainWindow):
         kwargs = {
             'max_q': self.sb_tauq_qmax.value(),
             'offset': self.sb_tauq_offset.value()}
-        self.dl.plot_tauq(hdl=self.mp_tauq, **kwargs)
+        msg = self.dl.plot_tauq(hdl=self.mp_tauq, **kwargs)
+        self.tauq_msg.clear()
+        self.tauq_msg.setText('\n'.join(msg))
 
     def plot_g2(self, max_points=3):
         kwargs = {
@@ -92,19 +95,19 @@ class Ui(QtWidgets.QMainWindow):
         }
         bounds = self.check_number()
         err_msg = self.dl.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
-        self.err_msg.clear()
+        self.g2_err_msg.clear()
         if err_msg is None:
-            self.err_msg.insertPlainText('None')
+            self.g2_err_msg.insertPlainText('None')
         else:
-            self.err_msg.insertPlainText('\n'.join(err_msg))
+            self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
     def load_path(self):
-        f = QFileDialog.getExistingDirectory(self, 'Open directory',
-                                             '/User/mqichu',
-                                             QFileDialog.ShowDirsOnly)
-        if not os.path.isdir(f):
-            return
-        # f = './data/files2.txt'
+        # f = QFileDialog.getExistingDirectory(self, 'Open directory',
+        #                                      '/User/mqichu',
+        #                                      QFileDialog.ShowDirsOnly)
+        # if not os.path.isdir(f):
+        #     return
+        f = './data/files2.txt'
         self.work_dir.setText(f)
         self.dl = DataLoader(f)
         self.update_box(self.dl.source_list, mode='source')
@@ -112,7 +115,6 @@ class Ui(QtWidgets.QMainWindow):
         # for debug
         # self.list_view_source.selectAll()
         # self.add_target()
-        # self.list_view_source.clearSelection()
 
     def update_box(self, file_list, mode='source'):
         if mode == 'source':
@@ -137,6 +139,8 @@ class Ui(QtWidgets.QMainWindow):
         curr_hash = self.dl.hash(-1)
         if prev_hash != curr_hash:
             self.btn_load_data.setEnabled(True)
+
+        self.list_view_source.clearSelection()
 
     def remove_target(self):
         prev_hash = self.dl.hash(-1)
