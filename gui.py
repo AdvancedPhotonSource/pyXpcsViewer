@@ -116,6 +116,10 @@ class Ui(QtWidgets.QMainWindow):
         # self.list_view_source.selectAll()
         # self.add_target()
 
+    def show_error(self, msg):
+        error_dialog = QtWidgets.QErrorMessage()
+        error_dialog.showMessage('\n'.join(msg))
+
     def update_box(self, file_list, mode='source'):
         if mode == 'source':
             self.list_view_source.clear()

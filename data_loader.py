@@ -59,6 +59,46 @@ def create_slice(arr, cutoff):
     return slice(0, end)
 
 
+def draw_seismic_map(hdl, data, vmin=None, vmax=None, extent=None,
+                     xlabel=None, ylabel=None, title=None, id_list=None):
+
+    def add_vline(ax, nums):
+        for x in np.arange(nums - 1):
+            ax.axvline(x + 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
+
+    if hdl.axes is None:
+        ax = hdl.subplots(1, 1)
+        im0 = ax.imshow(data, aspect='auto',
+                           cmap=plt.get_cmap('seismic'),
+                           vmin=vmin, vmax=vmax,
+                           interpolation=None)
+
+        hdl.fig.colorbar(im0, ax=ax)
+        add_vline(ax, data.shape)
+
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
+        # when there are too many points, avoid labeling.
+        if data.shape < 20:
+            ax.set_xticks(np.arange(data.shape[1]))
+            ax.set_xticklabels(id_list[0: data.shape[1]])
+
+        hdl.obj = [im0]
+        hdl.fig.tight_layout()
+    else:
+        hdl.obj[0].set_data(data)
+        hdl.obj[0].set_clim(vmin, vmax)
+        hdl.axes.set_title(title)
+        hdl.axes.set_xlabel(xlabel)
+        hdl.axes.set_ylabel(ylabel)
+
+    hdl.draw()
+    return
+
+
+
 class DataLoader(FileLocator):
     def __init__(self, path):
         super().__init__(path)
@@ -81,6 +121,8 @@ class DataLoader(FileLocator):
         return val
 
     def get_hdf_info(self, fname):
+        if not os.path.isfile(os.path.join(self.cwd, fname)):
+            return
         return get_hdf_info(self.cwd, fname)
 
     def get_g2_data(self, max_points=10, max_q=1.0, max_tel=1e8):
@@ -154,9 +196,9 @@ class DataLoader(FileLocator):
 
     def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None, offset=None,
                 max_points=3, bounds=None):
-
-        if len(self.target_list) < 1:
-            return ['No target files selected.']
+        msg = self.check_target()
+        if msg != True:
+            return msg
 
         num_points = min(len(self.target_list), max_points)
         new_condition = (tuple(self.target_list[:num_points]),
@@ -208,7 +250,7 @@ class DataLoader(FileLocator):
     def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
         num_points = len(self.g2_cache['fit_val'])
         if num_points == 0:
-            return
+            return ['g2 fitting not ready']
         labels = list(self.g2_cache['fit_val'].keys())
 
         # prepare fit values
@@ -313,6 +355,9 @@ class DataLoader(FileLocator):
 
     def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet',
                      autorotate=False):
+        msg = self.check_target()
+        if msg != True:
+            return msg
         ans = self.get_saxs_data()['Int_2D']
         if plot_type == 'log':
             ans = np.log10(ans + 1E-8)
@@ -338,24 +383,31 @@ class DataLoader(FileLocator):
         w1, h1 = sp[0], sp[1]
 
         if w1 / w0 > h1 / h0:
+            # the fig is wider than the canvas
             margin_v = int((w1 / w0 * h0 - h1) / 2)
             margin_h = 0
         else:
+            # the canvas is wider than the figure
             margin_v = 0
             margin_h = int((h1 / h0 * w0 - w1) / 2)
 
         vb = pg_hdl.getView()
-        vb.setLimits(xMin= -0 * sp[0] - margin_h,
-                     yMin= -0 * sp[0] - margin_v,
+        vb.setLimits(xMin= -1 * margin_h,
+                     yMin= -1 * margin_v,
                      xMax= 1 * sp[0] + margin_h,
                      yMax= 1 * sp[1] + margin_v,
-                     minXRange=sp[0] // 5,
-                     minYRange=sp[1] // 5)
-                     # maxXRange=sp[0] * 4,
+                     minXRange=sp[0] // 10,
+                     minYRange=int(sp[0] / 10 / w0 * h0))
+        # minYRange=sp[1] // 10)
+        # maxXRange=sp[0] * 4,
                      # maxYRange=sp[1] * 4)
 
     def plot_saxs_1d(self, mp_hdl, plot_type='log', plot_norm=0,
                      plot_offset=0, max_points=8):
+        msg = self.check_target()
+        if msg != True:
+            return msg
+
         num_points = min(len(self.target_list), max_points)
         res = self.get_saxs_data()
         q = res['ql_sta']
@@ -413,7 +465,17 @@ class DataLoader(FileLocator):
 
         return res, xlabel, ylabel
 
+    def check_target(self):
+        if self.target_list is None or len(self.target_list) < 1:
+            return ['No target files selected.']
+        else:
+            return True
+
     def plot_stability(self, mp_hdl, **kwargs):
+        msg = self.check_target()
+        if msg != True:
+            return msg
+
         res, xlabel, ylabel = self.get_stability_data(**kwargs)
         ql_sta = res['ql_sta'][0]
         Iq = res['Iq_norm']
