@@ -1,6 +1,8 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import numpy as np
+import matplotlib
+matplotlib.pyplot.style.use(['science', 'no-latex'])
 
 
 class MplCanvas(FigureCanvasQTAgg):
