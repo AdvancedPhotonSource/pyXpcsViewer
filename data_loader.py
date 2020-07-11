@@ -59,44 +59,6 @@ def create_slice(arr, cutoff):
     return slice(0, end)
 
 
-def draw_seismic_map(hdl, data, vmin=None, vmax=None, extent=None,
-                     xlabel=None, ylabel=None, title=None, id_list=None):
-
-    def add_vline(ax, nums):
-        for x in np.arange(nums - 1):
-            ax.axvline(x + 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
-
-    if hdl.axes is None:
-        ax = hdl.subplots(1, 1)
-        im0 = ax.imshow(data, aspect='auto',
-                           cmap=plt.get_cmap('seismic'),
-                           vmin=vmin, vmax=vmax,
-                           interpolation=None)
-
-        hdl.fig.colorbar(im0, ax=ax)
-        add_vline(ax, data.shape)
-
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-
-        # when there are too many points, avoid labeling.
-        if data.shape < 20:
-            ax.set_xticks(np.arange(data.shape[1]))
-            ax.set_xticklabels(id_list[0: data.shape[1]])
-
-        hdl.obj = [im0]
-        hdl.fig.tight_layout()
-    else:
-        hdl.obj[0].set_data(data)
-        hdl.obj[0].set_clim(vmin, vmax)
-        hdl.axes.set_title(title)
-        hdl.axes.set_xlabel(xlabel)
-        hdl.axes.set_ylabel(ylabel)
-
-    hdl.draw()
-    return
-
 
 
 class DataLoader(FileLocator):
@@ -110,6 +72,10 @@ class DataLoader(FileLocator):
             'plot_condition': tuple([None, None, None]),
             'fit_val': {}
         }
+        self.stab_cache = {
+            'num_points': None
+        }
+
 
     def hash(self, max_points=10):
         if self.target_list is None:
@@ -456,22 +422,28 @@ class DataLoader(FileLocator):
         # the detector figure is not oriented to image convention;
         return res
 
-    def get_stability_data(self, max_point=50, **kwargs):
-        labels = ['Int_t', 'Iq', 'ql_sta']
+    def get_stability_data(self, max_point=128, **kwargs):
+        # labels = ['Int_t', 'Iq', 'ql_sta']
+        labels = ['Iqp', 'ql_sta']
         res = self.read_data(labels, self.target_list[0:128])
 
-        avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
-        int_t = res['Int_t'][:, 1, :]
-        int_t = int_t / np.mean(int_t)
-        cum_int = np.cumsum(int_t, axis=1)
-        mean_int = np.diff(cum_int[:, ::avg_size]) / avg_size
-        res['Int_t'] = mean_int
+        # avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
+        # int_t = res['Int_t'][:, 1, :]
+        # int_t = int_t / np.mean(int_t)
+        # cum_int = np.cumsum(int_t, axis=1)
+        # mean_int = np.diff(cum_int[:, ::avg_size]) / avg_size
+        # res['Int_t'] = mean_int
 
         q = res["ql_sta"][0]
-        Iq, xlabel, ylabel = norm_saxs_data(res["Iq"], q, **kwargs)
-        res["Iq_norm"] = Iq
+        seg_len = res["Iqp"].shape[1]
+        Iqp = res["Iqp"][0: max_point].reshape(-1, len(q))
+        Iqp, xlabel, ylabel = norm_saxs_data(Iqp, q, **kwargs)
 
-        return res, xlabel, ylabel
+        # switch axes and flip ud so the image has high q on the top
+        Iqp = Iqp.swapaxes(0, 1)
+        res["Iqp"] = np.flipud(Iqp).astype(np.float32)
+
+        return res, xlabel, ylabel, seg_len
 
     def check_target(self):
         if self.target_list is None or len(self.target_list) < 1:
@@ -484,63 +456,33 @@ class DataLoader(FileLocator):
         if msg != True:
             return msg
 
-        res, xlabel, ylabel = self.get_stability_data(**kwargs)
-        ql_sta = res['ql_sta'][0]
-        Iq = res['Iq_norm']
-        It = res['Int_t']
-        It_vmin, It_vmax = get_min_max(It, 1, 99)
-        Iq_vmin, Iq_vmax = get_min_max(Iq, 1, 99, **kwargs)
+        res, qlabel, ylabel, seg_len = self.get_stability_data(**kwargs)
 
-        def add_vline(ax, nums):
-            for x in np.arange(nums - 1):
-                ax.axvline(x + 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
+        if self.stab_cache['num_points'] != res['ql_sta'].shape[0]:
+            self.stab_cache['num_points'] = res['ql_sta'].shape[0]
+            mp_hdl.clear()
+        q = res['ql_sta'][0]
+        Iqp = res['Iqp']
 
-        def draw_seismic_map(hdl, d0, d1, vmin=None, vmax=None):
-            if hdl.axes is None:
-                extent = (-0.5, d0.shape[1] - 0.5,
-                          np.min(ql_sta), np.max(ql_sta))
-                ax = hdl.subplots(2, 1, sharex=False)
-                im0 = ax[0].imshow((d0), aspect='auto',
-                                   cmap=plt.get_cmap('seismic'),
-                                   vmin=It_vmin, vmax=It_vmax,
-                                   interpolation=None)
+        Iqp_vmin, Iqp_vmax = get_min_max(Iqp, 1, 99, **kwargs)
 
-                im1 = ax[1].imshow((d1), aspect='auto',
-                                   cmap=plt.get_cmap('seismic'),
-                                   vmin=Iq_vmin, vmax=Iq_vmax,
-                                   interpolation=None, origin='lower',
-                                   extent=extent)
+        if seg_len >= Iqp.shape[1]:
+            title = 'Single-Scan SAXS:'
+            xlabel = 'Segment'
+            extent = (-0.5, Iqp.shape[1] - 0.5, np.min(q), np.max(q))
+        else:
+            title = 'Multi-Scan SAXS:'
+            xlabel = 'Scan number (each has %d segments)' % seg_len
+            extent = (-0.5, Iqp.shape[1] // seg_len - 0.5,
+                      np.min(q), np.max(q))
 
-                hdl.fig.colorbar(im0, ax=ax[0])
-                hdl.fig.colorbar(im1, ax=ax[1])
+        mp_hdl.show_image(Iqp, vmin=Iqp_vmin, vmax=Iqp_vmax,
+                          vline_freq=1,
+                          extent=extent,
+                          title=title + ylabel,
+                          ylabel=qlabel,
+                          xlabel=xlabel)
 
-                add_vline(ax[0], d0.shape[1])
-                add_vline(ax[1], d1.shape[1])
-
-                ax[0].set_title('Intensity / Intensity$_0$')
-                ax[0].set_ylabel('segment')
-
-                ax[1].set_ylabel(xlabel)
-                ax[1].set_title('SAXS: ' + ylabel)
-                ax[1].set_xlabel('frame number')
-
-                # when there are too many points, avoid labeling.
-                if d0.shape[1] < 20:
-                    ax[1].set_xticks(np.arange(d0.shape[1]))
-                    ax[1].set_xticklabels(self.id_list[0: d0.shape[1]])
-                hdl.obj = [im0, im1]
-                hdl.fig.tight_layout()
-            else:
-                hdl.obj[0].set_data(d0)
-                hdl.obj[1].set_data(d1)
-
-                hdl.obj[0].set_clim(It_vmin, It_vmax)
-                hdl.obj[1].set_clim(Iq_vmin, Iq_vmax)
-                hdl.axes[1].set_title('SAXS: ' + ylabel)
-
-            hdl.draw()
-
-        draw_seismic_map(mp_hdl, res['Int_t'].T, res['Iq_norm'].T)
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:

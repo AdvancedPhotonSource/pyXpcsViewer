@@ -2,6 +2,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import numpy as np
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.pyplot.style.use(['science', 'no-latex'])
 
 
@@ -61,6 +62,77 @@ class MplCanvas(FigureCanvasQTAgg):
         err_obj = self.obj['err'][loc]
         adjust_yerr(err_obj, x, y, y_error)
         return
+
+    def show_image(self, data, vmin=None, vmax=None, extent=None,
+                   cmap='seismic', xlabel=None, ylabel=None, title=None,
+                   id_list=None, vline_freq=-1):
+
+        def add_vline(ax, stop, vline_freq):
+            if vline_freq < 0:
+                return
+            for x in np.arange(vline_freq, stop - 1, vline_freq):
+            # for x in np.arange(1, stop // vline_freq - 1):
+                ax.axvline(x - 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
+
+        if self.axes is None:
+            ax = self.subplots(1, 1)
+            add_vline(ax, data.shape[1], vline_freq)
+            im0 = ax.imshow(data, aspect='auto',
+                            cmap=plt.get_cmap(cmap),
+                            vmin=vmin, vmax=vmax, extent=extent,
+                            interpolation=None)
+            self.fig.colorbar(im0, ax=ax)
+
+            ax.set_title(title)
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+
+            # when there are too many points, avoid labeling.
+            # if data.shape < 20:
+            #     ax.set_xticks(np.arange(data.shape[1]))
+            #     ax.set_xticklabels(id_list[0: data.shape[1]])
+
+            self.obj = [im0]
+            self.fig.tight_layout()
+        else:
+            self.obj[0].set_data(data)
+            self.obj[0].set_clim(vmin, vmax)
+            self.axes.set_title(title)
+            self.axes.set_xlabel(xlabel)
+            self.axes.set_ylabel(ylabel)
+
+        self.draw()
+        return
+
+    def show_lines(self, data, xval=None, xlabel=None, ylabel=None,
+                   title=None):
+        if xval is None:
+            xval = np.arange(data.shape[1])
+
+        if self.axes is None or data.shape[0] != len(self.obj):
+            ax = self.subplots(1, 1)
+            line_obj = []
+            for n in range(data.shape[0]):
+                line = ax.plot(xval, data[n], 'o--')
+                line_obj.append(line)
+            self.obj = line_obj
+
+            ax.set_title(title)
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+            self.fig.tight_layout()
+
+        else:
+            for n in range(data.shape[0]):
+                self.obj[n].set_data(xval, data[n])
+            self.auto_scale()
+            self.axes.set_title(title)
+            self.axes.set_xlabel(xlabel)
+            self.axes.set_ylabel(ylabel)
+
+        self.draw()
+        return
+
 
 
 # https://github.com/matplotlib/matplotlib/issues/4556

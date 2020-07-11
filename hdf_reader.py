@@ -6,6 +6,7 @@ import time
 
 hdf_dict = {
     'Iq': '/exchange/partition-mean-total',
+    'Iqp': '/exchange/partition-mean-partial',
     'ql_sta': '/xpcs/sqlist',
     'ql_dyn': '/xpcs/dqlist',
     't0': '/measurement/instrument/detector/exposure_period',
