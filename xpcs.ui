@@ -42,7 +42,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="work_dir"/>
+            <widget class="QLineEdit" name="work_dir">
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QPushButton" name="pushButton">
@@ -89,7 +96,7 @@
                <set>QAbstractItemView::NoEditTriggers</set>
               </property>
               <property name="selectionMode">
-               <enum>QAbstractItemView::MultiSelection</enum>
+               <enum>QAbstractItemView::ContiguousSelection</enum>
               </property>
              </widget>
             </item>
@@ -97,20 +104,20 @@
           </widget>
          </item>
          <item>
+          <widget class="QLineEdit" name="filter_str">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>100</height>
+            </size>
+           </property>
+           <property name="placeholderText">
+            <string>prefix filter, press enter to add files</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLineEdit" name="filter_str">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>100</height>
-              </size>
-             </property>
-             <property name="placeholderText">
-              <string>prefix filter, press enter to add files</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QPushButton" name="pushButton_2">
              <property name="text">
@@ -142,7 +149,7 @@
             <item row="0" column="0">
              <widget class="QListWidget" name="list_view_target">
               <property name="selectionMode">
-               <enum>QAbstractItemView::MultiSelection</enum>
+               <enum>QAbstractItemView::ContiguousSelection</enum>
               </property>
              </widget>
             </item>
@@ -176,23 +183,13 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>5</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
-           <string>SAXS</string>
+           <string>SAXS-2D</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_16">
-           <item row="0" column="1">
-            <widget class="MplCanvas" name="mp_saxs" native="true">
-             <property name="minimumSize">
-              <size>
-               <width>600</width>
-               <height>0</height>
-              </size>
-             </property>
-            </widget>
-           </item>
+          <layout class="QGridLayout" name="gridLayout_26">
            <item row="0" column="0">
             <widget class="ImageView" name="pg_saxs" native="true">
              <property name="sizePolicy">
@@ -203,7 +200,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0" colspan="2">
+           <item row="1" column="0">
             <widget class="QGroupBox" name="groupBox_3">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -221,88 +218,31 @@
               <string>SAXS Plot Setting</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_18">
-              <item row="0" column="4">
-               <layout class="QGridLayout" name="gridLayout_17">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_9">
-                  <property name="text">
-                   <string>type:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="cb_saxs_type">
-                  <item>
-                   <property name="text">
-                    <string>log</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>linear</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_8">
-                  <property name="text">
-                   <string>offset:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QDoubleSpinBox" name="sb_saxs_offset">
-                  <property name="decimals">
-                   <number>4</number>
-                  </property>
-                  <property name="singleStep">
-                   <double>0.050000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>0.200000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="4">
-                 <widget class="QLabel" name="label_11">
-                  <property name="text">
-                   <string>normalization:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="5">
-                 <widget class="QComboBox" name="cb_saxs_norm">
-                  <item>
-                   <property name="text">
-                    <string>none</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>I' = Iq2</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>I' = Iq4</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>I' = I/Io</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="1" column="0" colspan="6">
-                 <widget class="QPushButton" name="pushButton_6">
-                  <property name="text">
-                   <string>Plot 1D SAXS</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+              <item row="0" column="0">
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
               <item row="0" column="1">
                <layout class="QGridLayout" name="gridLayout_3">
@@ -325,13 +265,6 @@
                     <string>linear</string>
                    </property>
                   </item>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_13">
-                  <property name="text">
-                   <string>colormap:</string>
-                  </property>
                  </widget>
                 </item>
                 <item row="0" column="3">
@@ -368,7 +301,7 @@
                   </item>
                  </widget>
                 </item>
-                <item row="1" column="0" colspan="4">
+                <item row="1" column="0" colspan="7">
                  <widget class="QPushButton" name="pushButton_5">
                   <property name="minimumSize">
                    <size>
@@ -381,10 +314,43 @@
                   </property>
                  </widget>
                 </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_13">
+                  <property name="text">
+                   <string>colormap:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="6">
+                 <widget class="QCheckBox" name="saxs2d_autorotate">
+                  <property name="text">
+                   <string>auto-rotate?</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_7">
+          <attribute name="title">
+           <string>SAXS-1D</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_25">
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox_6">
+             <property name="title">
+              <string>GroupBox</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_16">
               <item row="0" column="0">
-               <spacer name="horizontalSpacer_4">
+               <spacer name="horizontalSpacer_7">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -395,35 +361,92 @@
                  </size>
                 </property>
                </spacer>
+              </item>
+              <item row="0" column="1">
+               <layout class="QGridLayout" name="gridLayout_24">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_21">
+                  <property name="text">
+                   <string>type:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="cb_saxs_type">
+                  <item>
+                   <property name="text">
+                    <string>log</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>linear</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_22">
+                  <property name="text">
+                   <string>offset:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QDoubleSpinBox" name="sb_saxs_offset">
+                  <property name="decimals">
+                   <number>4</number>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.050000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.200000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
+                 <widget class="QLabel" name="label_23">
+                  <property name="text">
+                   <string>normalization:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QComboBox" name="cb_saxs_norm">
+                  <item>
+                   <property name="text">
+                    <string>none</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>I' = Iq2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>I' = Iq4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>I' = I/Io</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="6">
+                 <widget class="QPushButton" name="pushButton_10">
+                  <property name="text">
+                   <string>Plot 1D SAXS</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
               <item row="0" column="2">
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="0" column="5">
-               <spacer name="horizontalSpacer_5">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="0" column="3">
-               <spacer name="horizontalSpacer_6">
+               <spacer name="horizontalSpacer_8">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -436,6 +459,22 @@
                </spacer>
               </item>
              </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="MplCanvas" name="mp_saxs" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>600</width>
+               <height>0</height>
+              </size>
+             </property>
             </widget>
            </item>
           </layout>
@@ -864,7 +903,7 @@
                  </layout>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QPlainTextEdit" name="err_msg">
+                 <widget class="QPlainTextEdit" name="g2_err_msg">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -893,26 +932,10 @@
            <string>Diffusion</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_22">
-           <item row="0" column="0" colspan="3">
-            <widget class="MplCanvas" name="mp_tauq" native="true"/>
-           </item>
-           <item row="1" column="0">
-            <spacer name="horizontalSpacer_8">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>529</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
            <item row="1" column="1">
             <widget class="QGroupBox" name="groupBox_5">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -933,6 +956,19 @@
               <string>Data Selection:</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_21">
+              <item row="0" column="0">
+               <widget class="QPushButton" name="pushButton_8">
+                <property name="minimumSize">
+                 <size>
+                  <width>120</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>fit plot</string>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="1">
                <layout class="QGridLayout" name="gridLayout_12">
                 <item row="1" column="0">
@@ -986,34 +1022,27 @@
                 </item>
                </layout>
               </item>
-              <item row="0" column="0">
-               <widget class="QPushButton" name="pushButton_8">
+              <item row="0" column="2">
+               <widget class="QTextEdit" name="tauq_msg">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
-                  <width>120</width>
-                  <height>80</height>
+                  <width>100</width>
+                  <height>0</height>
                  </size>
-                </property>
-                <property name="text">
-                 <string>fit plot</string>
                 </property>
                </widget>
               </item>
              </layout>
             </widget>
            </item>
-           <item row="1" column="2">
-            <spacer name="horizontalSpacer_7">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>528</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+           <item row="0" column="0" colspan="3">
+            <widget class="MplCanvas" name="mp_tauq" native="true"/>
            </item>
           </layout>
          </widget>
@@ -1138,8 +1167,8 @@
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>353</x>
-     <y>529</y>
+     <x>233</x>
+     <y>542</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -1186,8 +1215,8 @@
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>286</x>
-     <y>522</y>
+     <x>312</x>
+     <y>500</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -1202,12 +1231,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>286</x>
-     <y>522</y>
+     <x>312</x>
+     <y>500</y>
     </hint>
     <hint type="destinationlabel">
-     <x>353</x>
-     <y>529</y>
+     <x>233</x>
+     <y>542</y>
     </hint>
    </hints>
   </connection>
@@ -1218,8 +1247,8 @@
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>369</x>
-     <y>924</y>
+     <x>404</x>
+     <y>918</y>
     </hint>
     <hint type="destinationlabel">
      <x>345</x>
@@ -1234,8 +1263,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1342</x>
-     <y>869</y>
+     <x>569</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>1403</x>
@@ -1250,8 +1279,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>599</x>
-     <y>902</y>
+     <x>589</x>
+     <y>167</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -1266,8 +1295,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1342</x>
-     <y>843</y>
+     <x>569</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>1248</x>
@@ -1282,8 +1311,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1342</x>
-     <y>895</y>
+     <x>569</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>1583</x>
@@ -1298,8 +1327,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1093</x>
-     <y>834</y>
+     <x>569</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>1106</x>
@@ -1314,8 +1343,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1054</x>
-     <y>880</y>
+     <x>569</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>832</x>
@@ -1330,8 +1359,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>942</x>
-     <y>856</y>
+     <x>569</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>1051</x>
@@ -1346,8 +1375,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>895</y>
+     <x>919</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>585</x>
@@ -1362,44 +1391,12 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1319</x>
-     <y>902</y>
+     <x>829</x>
+     <y>117</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
      <y>953</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_5</sender>
-   <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
-   <slot>plot_saxs_2D()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>726</x>
-     <y>881</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>401</x>
-     <y>955</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_6</sender>
-   <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
-   <slot>plot_saxs_1D()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1458</x>
-     <y>885</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1385</x>
-     <y>948</y>
     </hint>
    </hints>
   </connection>
@@ -1410,8 +1407,8 @@
    <slot>plot_stability_iq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1108</x>
-     <y>881</y>
+     <x>569</x>
+     <y>108</y>
     </hint>
     <hint type="destinationlabel">
      <x>1081</x>
@@ -1426,12 +1423,44 @@
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1055</x>
-     <y>859</y>
+     <x>599</x>
+     <y>152</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
      <y>949</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_5</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_saxs_2D()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1314</x>
+     <y>895</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>401</x>
+     <y>955</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_10</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_saxs_1D()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>982</x>
+     <y>886</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>456</x>
+     <y>943</y>
     </hint>
    </hints>
   </connection>
