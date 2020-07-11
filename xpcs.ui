@@ -20,6 +20,12 @@
    <string>XPCS_GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
      <widget class="QFrame" name="file_panel">
@@ -35,49 +41,151 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="geometry">
-        <rect>
-         <x>372</x>
-         <y>7</y>
-         <width>1511</width>
-         <height>885</height>
-        </rect>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>1080</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="currentIndex">
-        <number>7</number>
-       </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>SAXS-2D</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_26">
-         <item row="0" column="0">
-          <widget class="ImageView" name="pg_saxs" native="true">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Path:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="work_dir">
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>480</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>browse</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="box_source">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
-             <verstretch>120</verstretch>
+             <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>480</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Source:</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <widget class="QListWidget" name="list_view_source">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ContiguousSelection</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="filter_str">
+           <property name="maximumSize">
+            <size>
+             <width>480</width>
+             <height>100</height>
+            </size>
+           </property>
+           <property name="placeholderText">
+            <string>prefix filter, press enter to add files</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QGroupBox" name="groupBox_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="maximumSize">
+              <size>
+               <width>160</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>add</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="maximumSize">
+              <size>
+               <width>160</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>remove</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="box_target">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -88,300 +196,72 @@
              <height>120</height>
             </size>
            </property>
-           <property name="title">
-            <string>SAXS Plot Setting</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_18">
-            <item row="0" column="0">
-             <spacer name="horizontalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="1">
-             <layout class="QGridLayout" name="gridLayout_3">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_12">
-                <property name="text">
-                 <string>type:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="cb_saxs2D_type">
-                <item>
-                 <property name="text">
-                  <string>log</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>linear</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="QComboBox" name="cb_saxs2D_cmap">
-                <item>
-                 <property name="text">
-                  <string>jet</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>hot</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>plasma</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>viridis</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>magma</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>gray</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="7">
-               <widget class="QPushButton" name="pushButton_5">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Plot 2D SAXS</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>colormap:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="6">
-               <widget class="QCheckBox" name="saxs2d_autorotate">
-                <property name="text">
-                 <string>auto-rotate?</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_7">
-        <attribute name="title">
-         <string>SAXS-1D</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_25">
-         <item row="1" column="0">
-          <widget class="QGroupBox" name="groupBox_6">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="title">
-            <string>GroupBox</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_16">
-            <item row="0" column="0">
-             <spacer name="horizontalSpacer_7">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="1">
-             <layout class="QGridLayout" name="gridLayout_24">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_21">
-                <property name="text">
-                 <string>type:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="cb_saxs_type">
-                <item>
-                 <property name="text">
-                  <string>log</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>linear</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_22">
-                <property name="text">
-                 <string>offset:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="QDoubleSpinBox" name="sb_saxs_offset">
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="singleStep">
-                 <double>0.050000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.200000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <widget class="QLabel" name="label_23">
-                <property name="text">
-                 <string>normalization:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="5">
-               <widget class="QComboBox" name="cb_saxs_norm">
-                <item>
-                 <property name="text">
-                  <string>none</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I' = Iq2</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I' = Iq4</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I' = I/Io</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="6">
-               <widget class="QPushButton" name="pushButton_10">
-                <property name="text">
-                 <string>Plot 1D SAXS</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer_8">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="MplCanvas" name="mp_saxs" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
+           <property name="maximumSize">
             <size>
-             <width>600</width>
-             <height>0</height>
+             <width>480</width>
+             <height>16777215</height>
             </size>
            </property>
+           <property name="title">
+            <string>Target:</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <widget class="QListWidget" name="list_view_target">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ContiguousSelection</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="btn_load_data">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>update</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>Stability</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_6">
-         <item row="0" column="0">
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="MplCanvas" name="mp_stab" native="true">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-              </widget>
-             </item>
-            </layout>
+       </item>
+       <item row="0" column="1">
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>40</horstretch>
+           <verstretch>40</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>1080</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="currentIndex">
+          <number>3</number>
+         </property>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>SAXS-2D</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_26">
+           <item row="0" column="0">
+            <widget class="ImageView" name="pg_saxs" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>120</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
            </item>
-           <item>
-            <widget class="QGroupBox" name="groupBox_4">
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox_3">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -395,11 +275,11 @@
               </size>
              </property>
              <property name="title">
-              <string>Stability Plot Setting</string>
+              <string>SAXS Plot Setting</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_19">
+             <layout class="QGridLayout" name="gridLayout_18">
               <item row="0" column="0">
-               <spacer name="horizontalSpacer_10">
+               <spacer name="horizontalSpacer_4">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -412,7 +292,7 @@
                </spacer>
               </item>
               <item row="0" column="2">
-               <spacer name="horizontalSpacer_9">
+               <spacer name="horizontalSpacer_3">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -425,19 +305,181 @@
                </spacer>
               </item>
               <item row="0" column="1">
-               <layout class="QGridLayout" name="gridLayout_20">
+               <layout class="QGridLayout" name="gridLayout_3">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_12">
+                  <property name="text">
+                   <string>type:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="cb_saxs2D_type">
+                  <item>
+                   <property name="text">
+                    <string>log</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>linear</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QComboBox" name="cb_saxs2D_cmap">
+                  <item>
+                   <property name="text">
+                    <string>jet</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>hot</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>plasma</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>viridis</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>magma</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>gray</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="7">
+                 <widget class="QPushButton" name="pushButton_5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Plot 2D SAXS</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="0" column="2">
-                 <widget class="QLabel" name="label_16">
+                 <widget class="QLabel" name="label_13">
+                  <property name="text">
+                   <string>colormap:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="6">
+                 <widget class="QCheckBox" name="saxs2d_autorotate">
+                  <property name="text">
+                   <string>auto-rotate?</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_7">
+          <attribute name="title">
+           <string>SAXS-1D</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_25">
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox_6">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string>GroupBox</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_16">
+              <item row="0" column="0">
+               <spacer name="horizontalSpacer_7">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="1">
+               <layout class="QGridLayout" name="gridLayout_24">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_21">
+                  <property name="text">
+                   <string>type:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="cb_saxs_type">
+                  <item>
+                   <property name="text">
+                    <string>log</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>linear</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_22">
+                  <property name="text">
+                   <string>offset:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QDoubleSpinBox" name="sb_saxs_offset">
+                  <property name="decimals">
+                   <number>4</number>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.050000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.200000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
+                 <widget class="QLabel" name="label_23">
                   <property name="text">
                    <string>normalization:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="3">
-                 <widget class="QComboBox" name="cb_stab_norm">
-                  <property name="currentIndex">
-                   <number>3</number>
-                  </property>
+                <item row="0" column="5">
+                 <widget class="QComboBox" name="cb_saxs_norm">
                   <item>
                    <property name="text">
                     <string>none</string>
@@ -460,91 +502,74 @@
                   </item>
                  </widget>
                 </item>
-                <item row="1" column="0" colspan="4">
-                 <widget class="QPushButton" name="pushButton_7">
+                <item row="1" column="0" colspan="6">
+                 <widget class="QPushButton" name="pushButton_10">
                   <property name="text">
-                   <string>Plot Iq Stability Data</string>
+                   <string>Plot 1D SAXS</string>
                   </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_14">
-                  <property name="text">
-                   <string>type:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="cb_stab_type">
-                  <property name="currentIndex">
-                   <number>1</number>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>log</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>linear</string>
-                   </property>
-                  </item>
                  </widget>
                 </item>
                </layout>
               </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </widget>
            </item>
+           <item row="0" column="0">
+            <widget class="MplCanvas" name="mp_saxs" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>600</width>
+               <height>0</height>
+              </size>
+             </property>
+            </widget>
+           </item>
           </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="widget">
-        <attribute name="title">
-         <string>g2</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_9">
-         <item row="0" column="0">
-          <widget class="QScrollArea" name="scrollArea">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>700</height>
-            </size>
-           </property>
-           <property name="verticalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOn</enum>
-           </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
-           </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>1509</width>
-              <height>824</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_10">
-             <item row="0" column="0">
-              <widget class="MplCanvas" name="mp_g2" native="true">
+         </widget>
+         <widget class="QWidget" name="tab_2">
+          <attribute name="title">
+           <string>Stability</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="MplCanvas" name="mp_stab" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_4">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -552,19 +577,432 @@
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>800</height>
+                 <height>120</height>
                 </size>
                </property>
+               <property name="title">
+                <string>Stability Plot Setting</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_19">
+                <item row="0" column="0">
+                 <spacer name="horizontalSpacer_10">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_9">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QGridLayout" name="gridLayout_20">
+                  <item row="0" column="2">
+                   <widget class="QLabel" name="label_16">
+                    <property name="text">
+                     <string>normalization:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QComboBox" name="cb_stab_norm">
+                    <property name="currentIndex">
+                     <number>3</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>none</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = Iq2</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = Iq4</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = I/Io</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="4">
+                   <widget class="QPushButton" name="pushButton_7">
+                    <property name="text">
+                     <string>Plot Iq Stability Data</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_14">
+                    <property name="text">
+                     <string>type:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="cb_stab_type">
+                    <property name="currentIndex">
+                     <number>1</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>log</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>linear</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
-           </widget>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <layout class="QGridLayout" name="gridLayout_8">
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="widget">
+          <attribute name="title">
+           <string>g2</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_9">
            <item row="0" column="0">
-            <widget class="QGroupBox" name="groupBox">
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>30</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOn</enum>
+             </property>
+             <property name="sizeAdjustPolicy">
+              <enum>QAbstractScrollArea::AdjustToContents</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1478</width>
+                <height>707</height>
+               </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_10">
+               <item row="0" column="0">
+                <widget class="MplCanvas" name="mp_g2" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>30</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <layout class="QGridLayout" name="gridLayout_8">
+             <item row="0" column="0">
+              <widget class="QGroupBox" name="groupBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Data Selection:</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_13">
+                <item row="0" column="1">
+                 <layout class="QGridLayout" name="gridLayout_11">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_3">
+                    <property name="text">
+                     <string>Max q (1/Å):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Max log(t_el):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_7">
+                    <property name="text">
+                     <string>Offset:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="sb_g2_offset">
+                    <property name="minimum">
+                     <double>-1.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="sb_g2_qmax">
+                    <property name="decimals">
+                     <number>5</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.001000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.009200000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QDoubleSpinBox" name="sb_g2_tmax">
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="minimum">
+                     <double>-10.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>2.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.100000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="pushButton_4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>120</width>
+                    <height>80</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>fit plot</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QGroupBox" name="groupBox_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>120</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Single Exp Fitting Bounds:</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="0" column="0">
+                 <layout class="QGridLayout" name="gridLayout_15">
+                  <item row="0" column="2">
+                   <widget class="QLineEdit" name="tau_max">
+                    <property name="text">
+                     <string>1.00e-2</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QLineEdit" name="cts_max">
+                    <property name="text">
+                     <string>0.20</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLineEdit" name="tau_min">
+                    <property name="text">
+                     <string>1.00e-6</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>min</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_6">
+                    <property name="text">
+                     <string>contrast: </string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QLineEdit" name="bkg_max">
+                    <property name="text">
+                     <string>1.05</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>max</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="cts_min">
+                    <property name="text">
+                     <string>0.01</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>min</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLineEdit" name="bkg_min">
+                    <property name="text">
+                     <string>0.95</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string>min</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_10">
+                    <property name="text">
+                     <string>bkg:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_5">
+                    <property name="text">
+                     <string>tau:</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPlainTextEdit" name="g2_err_msg">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Courier</family>
+                   </font>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Fit error message</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_3">
+          <attribute name="title">
+           <string>Diffusion</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_22">
+           <item row="1" column="1">
+            <widget class="QGroupBox" name="groupBox_5">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -586,79 +1024,9 @@
              <property name="title">
               <string>Data Selection:</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_13">
-              <item row="0" column="1">
-               <layout class="QGridLayout" name="gridLayout_11">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Max q (1/Å):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_4">
-                  <property name="text">
-                   <string>Max log(t_el):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_7">
-                  <property name="text">
-                   <string>Offset:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QDoubleSpinBox" name="sb_g2_offset">
-                  <property name="minimum">
-                   <double>-1.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>1.000000000000000</double>
-                  </property>
-                  <property name="singleStep">
-                   <double>0.010000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>0.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QDoubleSpinBox" name="sb_g2_qmax">
-                  <property name="decimals">
-                   <number>5</number>
-                  </property>
-                  <property name="singleStep">
-                   <double>0.001000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>0.009200000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QDoubleSpinBox" name="sb_g2_tmax">
-                  <property name="decimals">
-                   <number>4</number>
-                  </property>
-                  <property name="minimum">
-                   <double>-10.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>2.000000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>0.100000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
+             <layout class="QGridLayout" name="gridLayout_21">
               <item row="0" column="0">
-               <widget class="QPushButton" name="pushButton_4">
+               <widget class="QPushButton" name="pushButton_8">
                 <property name="minimumSize">
                  <size>
                   <width>120</width>
@@ -670,537 +1038,178 @@
                 </property>
                </widget>
               </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QGroupBox" name="groupBox_2">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>120</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>120</height>
-              </size>
-             </property>
-             <property name="title">
-              <string>Single Exp Fitting Bounds:</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_14">
-              <item row="0" column="0">
-               <layout class="QGridLayout" name="gridLayout_15">
-                <item row="0" column="2">
-                 <widget class="QLineEdit" name="tau_max">
+              <item row="0" column="1">
+               <layout class="QGridLayout" name="gridLayout_12">
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_18">
                   <property name="text">
-                   <string>1.00e-2</string>
-                  </property>
-                  <property name="placeholderText">
-                   <string>max</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="2">
-                 <widget class="QLineEdit" name="cts_max">
-                  <property name="text">
-                   <string>0.20</string>
-                  </property>
-                  <property name="placeholderText">
-                   <string>max</string>
+                   <string>Offset:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLineEdit" name="tau_min">
-                  <property name="text">
-                   <string>1.00e-6</string>
+                 <widget class="QDoubleSpinBox" name="sb_tauq_qmax">
+                  <property name="decimals">
+                   <number>4</number>
                   </property>
-                  <property name="placeholderText">
-                   <string>min</string>
+                  <property name="minimum">
+                   <double>0.000000000000000</double>
                   </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_6">
-                  <property name="text">
-                   <string>contrast: </string>
+                  <property name="maximum">
+                   <double>2.000000000000000</double>
                   </property>
-                 </widget>
-                </item>
-                <item row="2" column="2">
-                 <widget class="QLineEdit" name="bkg_max">
-                  <property name="text">
-                   <string>1.05</string>
+                  <property name="singleStep">
+                   <double>0.001000000000000</double>
                   </property>
-                  <property name="placeholderText">
-                   <string>max</string>
+                  <property name="value">
+                   <double>0.009200000000000</double>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLineEdit" name="cts_min">
-                  <property name="text">
-                   <string>0.01</string>
+                 <widget class="QDoubleSpinBox" name="sb_tauq_offset">
+                  <property name="minimum">
+                   <double>-2.000000000000000</double>
                   </property>
-                  <property name="placeholderText">
-                   <string>min</string>
+                  <property name="maximum">
+                   <double>2.000000000000000</double>
                   </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QLineEdit" name="bkg_min">
-                  <property name="text">
-                   <string>0.95</string>
+                  <property name="singleStep">
+                   <double>0.200000000000000</double>
                   </property>
-                  <property name="placeholderText">
-                   <string>min</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_10">
-                  <property name="text">
-                   <string>bkg:</string>
+                  <property name="value">
+                   <double>0.250000000000000</double>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="0">
-                 <widget class="QLabel" name="label_5">
+                 <widget class="QLabel" name="label_15">
                   <property name="text">
-                   <string>tau:</string>
+                   <string>Max q (1/Å):</string>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item row="0" column="1">
-               <widget class="QPlainTextEdit" name="g2_err_msg">
+              <item row="0" column="2">
+               <widget class="QTextEdit" name="tauq_msg">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="font">
-                 <font>
-                  <family>Courier</family>
-                 </font>
-                </property>
-                <property name="placeholderText">
-                 <string>Fit error message</string>
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
                 </property>
                </widget>
               </item>
              </layout>
             </widget>
            </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_3">
-        <attribute name="title">
-         <string>Diffusion</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_22">
-         <item row="1" column="1">
-          <widget class="QGroupBox" name="groupBox_5">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>300</width>
-             <height>120</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>120</height>
-            </size>
-           </property>
-           <property name="title">
-            <string>Data Selection:</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_21">
-            <item row="0" column="0">
-             <widget class="QPushButton" name="pushButton_8">
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>80</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>fit plot</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <layout class="QGridLayout" name="gridLayout_12">
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_18">
-                <property name="text">
-                 <string>Offset:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QDoubleSpinBox" name="sb_tauq_qmax">
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="minimum">
-                 <double>0.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>2.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.001000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.009200000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QDoubleSpinBox" name="sb_tauq_offset">
-                <property name="minimum">
-                 <double>-2.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>2.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.200000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.250000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_15">
-                <property name="text">
-                 <string>Max q (1/Å):</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="0" column="2">
-             <widget class="QTextEdit" name="tauq_msg">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>100</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="3">
-          <widget class="MplCanvas" name="mp_tauq" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_6">
-        <attribute name="title">
-         <string>Two Time</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_4">
-        <attribute name="title">
-         <string>Exp Setup</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_7">
-         <item row="0" column="0">
-          <widget class="QTextBrowser" name="hdf_info">
-           <property name="font">
-            <font>
-             <family>Menlo</family>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QComboBox" name="hdf_list">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>450</width>
-               <height>0</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="hdf_key_filter">
-             <property name="minimumSize">
-              <size>
-               <width>360</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="placeholderText">
-              <string>filter strings, seperate by space, press enter to apply</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_5">
-        <attribute name="title">
-         <string>Log</string>
-        </attribute>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="">
-       <property name="geometry">
-        <rect>
-         <x>13</x>
-         <y>13</y>
-         <width>332</width>
-         <height>630</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Path:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="work_dir">
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>480</width>
-              <height>16777215</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>browse</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="box_source">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>80</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>480</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Source:</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="0" column="0">
-            <widget class="QListWidget" name="list_view_source">
+           <item row="0" column="0" colspan="3">
+            <widget class="MplCanvas" name="mp_tauq" native="true">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>120</height>
-              </size>
-             </property>
-             <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOn</enum>
-             </property>
-             <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOn</enum>
-             </property>
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
-             </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::ContiguousSelection</enum>
-             </property>
             </widget>
            </item>
           </layout>
          </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="filter_str">
-          <property name="maximumSize">
-           <size>
-            <width>480</width>
-            <height>100</height>
-           </size>
-          </property>
-          <property name="placeholderText">
-           <string>prefix filter, press enter to add files</string>
-          </property>
+         <widget class="QWidget" name="tab_6">
+          <attribute name="title">
+           <string>Two Time</string>
+          </attribute>
          </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="pushButton_2">
-            <property name="maximumSize">
-             <size>
-              <width>160</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>add</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_3">
-            <property name="maximumSize">
-             <size>
-              <width>160</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>remove</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="box_target">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>120</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>480</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Target:</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_4">
+         <widget class="QWidget" name="tab_4">
+          <attribute name="title">
+           <string>Exp Setup</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_7">
            <item row="0" column="0">
-            <widget class="QListWidget" name="list_view_target">
-             <property name="selectionMode">
-              <enum>QAbstractItemView::ContiguousSelection</enum>
+            <widget class="QTextBrowser" name="hdf_info">
+             <property name="font">
+              <font>
+               <family>Menlo</family>
+              </font>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QPushButton" name="btn_load_data">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>update</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QComboBox" name="hdf_list">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>450</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="hdf_key_filter">
+               <property name="minimumSize">
+                <size>
+                 <width>360</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="placeholderText">
+                <string>filter strings, seperate by space, press enter to apply</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
-        </item>
-       </layout>
-      </widget>
+         <widget class="QWidget" name="tab_5">
+          <attribute name="title">
+           <string>Log</string>
+          </attribute>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>

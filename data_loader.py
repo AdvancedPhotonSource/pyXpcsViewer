@@ -151,7 +151,9 @@ class DataLoader(FileLocator):
         # adjust canvas size according to number of images
         num_row = (num_fig + num_col - 1) // num_col
 
-        canvas_size = max(600, 200 * num_row)
+        height = mp_hdl.height()
+        canvas_size = max(height, int(height / 3 * num_row))
+        # print(height, canvas_size)
         mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
         mp_hdl.fig.clear()
         mp_hdl.subplots(num_row, num_col)
@@ -188,7 +190,7 @@ class DataLoader(FileLocator):
                     if idx >= 1:
                         ax.legend(fontsize=8)
 
-        mp_hdl.fig.tight_layout()
+        # mp_hdl.fig.tight_layout()
         mp_hdl.obj = {
             'err': err_obj,
             'lin': lin_obj,
@@ -218,11 +220,11 @@ class DataLoader(FileLocator):
 
         if plot_target >= 2 or handler.axes is None:
             self.plot_g2_initialize(handler, num_fig, num_points, 4)
-            handler.draw()
+            # handler.draw()
 
         err_msg = []
         for ipt in range(num_points):
-            fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt], 
+            fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt],
                                         b=bounds)
             self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
             offset_i = -1 * offset * (ipt + 1)
@@ -230,6 +232,9 @@ class DataLoader(FileLocator):
             prev_len = len(err_msg)
             for ifg in range(num_fig):
                 loc = ipt * num_fig + ifg
+                if ipt == 0:
+                    ax = handler.axes.ravel()[ifg]
+                    ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ifg])
                 handler.update_lin(loc, fit_res[ifg]['fit_x'],
                                    fit_res[ifg]['fit_y'] + offset_i)
                 msg = fit_res[ifg]['err_msg']
@@ -244,6 +249,7 @@ class DataLoader(FileLocator):
                 err_msg.append('---- fit finished without errors')
 
         handler.auto_scale()
+        handler.fig.tight_layout()
         handler.draw()
         return err_msg
 
@@ -361,6 +367,8 @@ class DataLoader(FileLocator):
         ans = self.get_saxs_data()['Int_2D']
         if plot_type == 'log':
             ans = np.log10(ans + 1E-8)
+
+        ans = ans.astype(np.float32)
 
         if autorotate is True:
             if ans.shape[1] > ans.shape[2]:
