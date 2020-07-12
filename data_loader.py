@@ -93,7 +93,7 @@ class DataLoader(FileLocator):
 
     def get_hdf_info(self, fname):
         if not os.path.isfile(os.path.join(self.cwd, fname)):
-            return
+            return ['None']
         return get_hdf_info(self.cwd, fname)
 
     def get_g2_data(self, max_points=10, q_range=None, t_range=None):
@@ -126,7 +126,6 @@ class DataLoader(FileLocator):
         height = mp_hdl.height()
         height = max(height, int(height / 3 * num_row))
         canvas_size = min(height,  250 * num_row)
-        # print(height, canvas_size)
         mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
         mp_hdl.fig.clear()
         # mp_hdl.subplots(num_row, num_col, sharex=True, sharey=True)
@@ -420,6 +419,7 @@ class DataLoader(FileLocator):
                 offset = -plot_offset * (n + 1)
                 line = mp_hdl.obj[n]
                 line.set_data(q[n], Iq[n] + offset)
+                line.set_label(self.target_list[n])
         else:
             mp_hdl.clear()
             ax = mp_hdl.subplots(1, 1)
@@ -429,9 +429,9 @@ class DataLoader(FileLocator):
                 line, = ax.plot(q[n], Iq[n] + offset, 'o--', lw=0.5, alpha=0.8,
                                 markersize=2, label=self.target_list[n])
                 lin_obj.append(line)
-            ax.legend()
             mp_hdl.obj = lin_obj
 
+        mp_hdl.axes.legend()
         mp_hdl.axes.set_xlabel(xlabel)
         mp_hdl.axes.set_ylabel(ylabel)
         mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
