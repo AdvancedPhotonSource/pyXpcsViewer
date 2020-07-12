@@ -161,7 +161,7 @@ class DataLoader(FileLocator):
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
                     # if there's only one point, do not add title; the title
                     # will be too long.
-                    if show_label:
+                    if show_label and i == num_fig -1:
                     # if idx >= 1 and num_points < 10:
                          ax.legend(fontsize=8)
 
@@ -173,7 +173,7 @@ class DataLoader(FileLocator):
 
     def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
                 offset=None, show_fit=False, max_points=50, bounds=None,
-                show_label=False):
+                show_label=False, num_col=4):
 
         msg = self.check_target()
         if msg != True:
@@ -198,8 +198,8 @@ class DataLoader(FileLocator):
 
         plot_target = 4
         if plot_target >= 2 or handler.axes is None:
-            self.plot_g2_initialize(handler, num_fig, num_points, 4,
-                                    show_label)
+            self.plot_g2_initialize(handler, num_fig, num_points,
+                                    show_label=show_label, num_col=num_col)
 
         # if plot_target >= 2:
         if True:

@@ -100,6 +100,7 @@ class Ui(QtWidgets.QMainWindow):
     def plot_g2(self, max_points=3):
         p = self.check_g2_number()
         kwargs = {
+            'num_col': self.sb_g2_column.value(),
             'offset': self.sb_g2_offset.value(),
             'show_fit': self.g2_show_fit.isChecked(),
             'show_label': self.g2_show_label.isChecked(),

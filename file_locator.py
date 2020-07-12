@@ -1,5 +1,6 @@
 import marisa_trie
 import os
+from os.path import commonprefix
 
 
 # the following functions are copied from:
@@ -23,6 +24,14 @@ def is_substr(find, data):
 
 
 def create_id(in_list, repeat=1, keep_slice=None):
+    out_list = [x[::-1] for x in in_list]
+    prefix = commonprefix(out_list)
+    out_list = [x.replace(prefix, '') for x in out_list]
+    out_list = [x[::-1] for x in out_list]
+    return out_list
+
+
+def create_id2(in_list, repeat=1, keep_slice=None):
     """
     :param in_list: input file name list
     :param repeat: number of repeats to remove common string
