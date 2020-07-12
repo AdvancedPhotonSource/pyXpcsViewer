@@ -37,23 +37,24 @@ class MplCanvas(FigureCanvasQTAgg):
                 for ax in self.axes.ravel():
                     ax.clear()
 
-    def auto_scale(self):
+    def auto_scale(self, ylim=None, xlim=None):
         if self.axes is None:
             return
         else:
-            if self.shape == (1, 1):
-                self.axes.relim()
-                self.axes.autoscale_view(True, True, True)
-            else:
-                for ax in self.axes.ravel():
-                    ax.relim()
-                    ax.autoscale_view(True, True, True)
+            for ax in np.array(self.axes).ravel():
+                ax.relim()
+                ax.autoscale_view(True, True, True)
+                if ylim is not None:
+                    ax.set_ylim(ylim)
+                if xlim is not None:
+                    ax.set_xlim(xlim)
 
-    def update_lin(self, loc, x, y):
+    def update_lin(self, loc, x, y, visible=True):
         if self.obj is None:
             return
         lin_obj, = self.obj['lin'][loc]
         lin_obj.set_data(x, y)
+        lin_obj.set_visible(visible)
         return
 
     def update_err(self, loc, x, y, y_error):
