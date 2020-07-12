@@ -28,7 +28,10 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
     :param b: bounds
     :return:
     """
-    fit_x = np.logspace(-5, 0.5, num=128)
+
+    # fit_x = np.logspace(-5, 0.5, num=128)
+    fit_x = np.logspace(np.log10(np.min(tel)) - 0.5,
+                        np.log10(np.max(tel)) + 0.5, 128)
 
     p0_guess = [np.sqrt(b[0][0] * b[1][0]),
                 0.5 * (b[0][1] + b[1][1]),
