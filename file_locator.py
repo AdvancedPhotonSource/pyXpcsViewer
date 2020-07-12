@@ -22,7 +22,7 @@ def is_substr(find, data):
     return True
 
 
-def create_id(in_list, repeat=2, keep_slice=None):
+def create_id(in_list, repeat=1, keep_slice=None):
     """
     :param in_list: input file name list
     :param repeat: number of repeats to remove common string
@@ -67,7 +67,7 @@ class FileLocator(object):
                 # avoid multiple add
                 if x not in self.target_list:
                     self.target_list.append(x)
-        self.id_list = create_id(self.target_list, 2)
+        self.id_list = create_id(self.target_list, 1)
 
     def remove_target(self, rlist):
         for x in rlist:

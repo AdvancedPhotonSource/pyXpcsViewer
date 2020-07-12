@@ -68,7 +68,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def plot_saxs_1D(self):
         kwargs = {
-            'plot_type': ('log', 'linear')[self.cb_saxs_type.currentIndex()],
+            'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
             'plot_norm': self.cb_saxs_norm.currentIndex()}
         self.dl.plot_saxs_1d(self.mp_saxs, **kwargs)

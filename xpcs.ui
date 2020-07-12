@@ -243,7 +243,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -439,14 +439,27 @@
                 </item>
                 <item row="0" column="1">
                  <widget class="QComboBox" name="cb_saxs_type">
+                  <property name="currentIndex">
+                   <number>2</number>
+                  </property>
                   <item>
                    <property name="text">
-                    <string>log</string>
+                    <string>I - q</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>linear</string>
+                    <string>I - log(q)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>log(I) - q</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>log(I) - log(q)</string>
                    </property>
                   </item>
                  </widget>

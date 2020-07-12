@@ -41,11 +41,11 @@ def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
         Iq = Iq / baseline
         ylabel = ylabel + '/I_0'
 
-    if plot_type == 'log':
-        Iq = np.log10(Iq)
-        ylabel = '$log(%s)$' % ylabel
-    else:
-        ylabel = '$%s$' % ylabel
+    # if plot_type == 'log':
+    #     Iq = np.log10(Iq)
+    #     ylabel = '$log(%s)$' % ylabel
+    # else:
+    #     ylabel = '$%s$' % ylabel
 
     xlabel = '$q (\\AA^{-1})$'
     return Iq, xlabel, ylabel
@@ -412,14 +412,14 @@ class DataLoader(FileLocator):
         Iq = res['Iq']
 
         Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm, plot_type)
+        xscale = ['linear', 'log'][plot_type % 2]
+        yscale = ['linear', 'log'][plot_type // 2]
 
         if mp_hdl.shape == (1, 1) and len(mp_hdl.obj) == num_points:
             for n in range(num_points):
                 offset = -plot_offset * (n + 1)
                 line = mp_hdl.obj[n]
                 line.set_data(q[n], Iq[n] + offset)
-            mp_hdl.axes.set_ylabel(ylabel)
-            mp_hdl.auto_scale()
         else:
             mp_hdl.clear()
             ax = mp_hdl.subplots(1, 1)
@@ -427,14 +427,17 @@ class DataLoader(FileLocator):
             for n in range(num_points):
                 offset = -plot_offset * (n + 1)
                 line, = ax.plot(q[n], Iq[n] + offset, 'o--', lw=0.5, alpha=0.8,
-                                markersize=2, label=self.id_list[n])
+                                markersize=2, label=self.target_list[n])
                 lin_obj.append(line)
-            mp_hdl.obj = lin_obj
-            mp_hdl.axes.set_ylabel(ylabel)
-            mp_hdl.axes.set_xlabel(xlabel)
             ax.legend()
-            # do not use tight layout because the ylabel may not display fully.
-            # mp_hdl.fig.tight_layout()
+            mp_hdl.obj = lin_obj
+
+        mp_hdl.axes.set_xlabel(xlabel)
+        mp_hdl.axes.set_ylabel(ylabel)
+        mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
+
+        # do not use tight layout because the ylabel may not display fully.
+        # mp_hdl.fig.tight_layout()
         mp_hdl.draw()
         return
 
