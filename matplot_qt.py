@@ -125,7 +125,8 @@ class MplCanvas(FigureCanvasQTAgg):
 
         else:
             for n in range(data.shape[0]):
-                self.obj[n].set_data(xval, data[n])
+                line, = self.obj[n]
+                line.set_data(xval, data[n])
             self.auto_scale()
             self.axes.set_title(title)
             self.axes.set_xlabel(xlabel)
