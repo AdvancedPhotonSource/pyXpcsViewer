@@ -69,13 +69,20 @@ class FileLocator(object):
                     self.target_list.append(x)
         self.id_list = create_id(self.target_list, 1)
 
+    def clear_target(self):
+        self.target_list = None
+        self.id_list = None
+
     def remove_target(self, rlist):
+        if rlist is None or self.target_list is None:
+            return
         for x in rlist:
             if x in self.target_list:
                 self.target_list.remove(x)
 
     def search(self, val):
         ans = self.trie.keys(val)
+        ans.sort()
         return len(ans), ans
 
     def build(self, path):
@@ -92,6 +99,7 @@ class FileLocator(object):
         flist = [x for x in flist if '.hdf' in x]
         # filter configure files
         flist = [x for x in flist if not x.startswith('.')]
+        flist.sort()
 
         self.trie = marisa_trie.Trie(flist)
         self.source_list = flist
