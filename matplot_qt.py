@@ -5,7 +5,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.pyplot.style.use(['science', 'no-latex'])
 
-
+markers = [
+    "o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"
+]
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5.1, height=3.2, dpi=100):
@@ -110,27 +112,36 @@ class MplCanvas(FigureCanvasQTAgg):
         return
 
     def show_lines(self, data, xval=None, xlabel=None, ylabel=None,
-                   title=None):
+                   title=None, legend=None):
         if xval is None:
             xval = np.arange(data.shape[1])
+
+        if legend is True:
+           legend_text = np.arange(data.shape[0])
 
         if self.axes is None or data.shape[0] != len(self.obj):
             ax = self.subplots(1, 1)
             line_obj = []
             for n in range(data.shape[0]):
-                line = ax.plot(xval, data[n], 'o--')
+                mk = markers[n % len(markers)]
+                line = ax.plot(xval, data[n], mk + '--',
+                               alpha=0.85, label=legend_text[n])
                 line_obj.append(line)
             self.obj = line_obj
 
             ax.set_title(title)
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
-            self.fig.tight_layout()
+            # self.fig.tight_layout()
+            if legend is not None:
+                ax.legend()
 
         else:
             for n in range(data.shape[0]):
                 line, = self.obj[n]
                 line.set_data(xval, data[n])
+                if legend is not None:
+                    line.set_label(legend_text[n])
             self.auto_scale()
             self.axes.set_title(title)
             self.axes.set_xlabel(xlabel)

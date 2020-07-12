@@ -450,11 +450,10 @@ class DataLoader(FileLocator):
         # the detector figure is not oriented to image convention;
         return res
 
-    def get_stability_data(self, max_point=128, **kwargs):
+    def get_stability_data(self, max_point=128, plot_id=0, **kwargs):
         # labels = ['Int_t', 'Iq', 'ql_sta']
         labels = ['Iqp', 'ql_sta']
-        res = self.read_data(labels, self.target_list[0:128])
-
+        res = self.read_data(labels, [self.target_list[plot_id]])
         # avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
         # int_t = res['Int_t'][:, 1, :]
         # int_t = int_t / np.mean(int_t)
@@ -465,7 +464,7 @@ class DataLoader(FileLocator):
         q = res["ql_sta"][0]
         seg_len = res["Iqp"].shape[1]
         # Iqp = res["Iqp"][0: max_point].reshape(-1, len(q))
-        Iqp = res["Iqp"][0: 1].reshape(-1, len(q))
+        Iqp = res["Iqp"][0].reshape(-1, len(q))
         Iqp, xlabel, ylabel = norm_saxs_data(Iqp, q, **kwargs)
 
         # switch axes and flip ud so the image has high q on the top
@@ -480,12 +479,13 @@ class DataLoader(FileLocator):
         else:
             return True
 
-    def plot_stability(self, mp_hdl, **kwargs):
+    def plot_stability(self, mp_hdl, plot_id, **kwargs):
         msg = self.check_target()
         if msg != True:
             return msg
 
-        res, qlabel, ylabel, seg_len = self.get_stability_data(**kwargs)
+        res, qlabel, ylabel, seg_len = self.get_stability_data(plot_id,
+                                                               **kwargs)
 
         if self.stab_cache['num_points'] != res['ql_sta'].shape[0]:
             self.stab_cache['num_points'] = res['ql_sta'].shape[0]
@@ -513,7 +513,11 @@ class DataLoader(FileLocator):
         #                   ylabel=qlabel,
         #                   xlabel=xlabel)
         mp_hdl.show_lines(np.fliplr(Iqp.T), xval=q, xlabel=qlabel,
-                          ylabel=ylabel)
+                          ylabel=ylabel, legend=True)
+
+        mp_hdl.axes.set_yscale(kwargs['plot_type'])
+        mp_hdl.axes.set_title(self.target_list[plot_id])
+        mp_hdl.draw()
 
 
     def read_data(self, labels, file_list=None, mask=None):

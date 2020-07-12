@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QFileSystemModel
-from PyQt5.QtCore import QAbstractItemMode
+# from PyQt5.QtCore import QAbstractItemMode
 from PyQt5.QtCore import QObject, pyqtSlot, QDir
 import sys
 import os
@@ -35,6 +35,7 @@ class Ui(QtWidgets.QMainWindow):
         self.plot_saxs_2D()
         self.plot_saxs_1D()
         self.update_hdf_list()
+        self.update_stab_list()
         # self.plot_g2()
         # self.plot_stability_iq()
         # self.btn_load_data.setEnabled(False)
@@ -42,6 +43,10 @@ class Ui(QtWidgets.QMainWindow):
     def update_hdf_list(self):
         self.hdf_list.clear()
         self.hdf_list.addItems(self.dl.target_list)
+
+    def update_stab_list(self):
+        self.cb_stab.clear()
+        self.cb_stab.addItems(self.dl.target_list)
 
     def show_hdf_info(self):
         fname = self.hdf_list.currentText()
@@ -79,7 +84,10 @@ class Ui(QtWidgets.QMainWindow):
         kwargs = {
             'plot_type': ('log', 'linear')[self.cb_stab_type.currentIndex()],
             'plot_norm': self.cb_stab_norm.currentIndex()}
-        self.dl.plot_stability(self.mp_stab, **kwargs)
+        plot_id = self.cb_stab.currentIndex()
+        if plot_id < 0:
+            return
+        self.dl.plot_stability(self.mp_stab, plot_id, **kwargs)
 
     def plot_tauq(self):
         kwargs = {
