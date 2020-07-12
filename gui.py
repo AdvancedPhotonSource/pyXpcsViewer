@@ -88,11 +88,15 @@ class Ui(QtWidgets.QMainWindow):
         self.tauq_msg.setText('\n'.join(msg))
 
     def plot_g2(self, max_points=3):
+        p = self.check_g2_number()
         kwargs = {
             'offset': self.sb_g2_offset.value(),
-            'max_tel': 10 ** self.sb_g2_tmax.value(),
-            'max_q': self.sb_g2_qmax.value()
+            'show_fit': self.g2_show_fit.isChecked(),
+            'q_range': (p[0], p[1]),
+            't_range': (p[2], p[3]),
+            'y_range': (p[4], p[5])
         }
+
         bounds = self.check_number()
         err_msg = self.dl.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
         self.g2_err_msg.clear()
@@ -101,13 +105,17 @@ class Ui(QtWidgets.QMainWindow):
         else:
             self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
-    def load_path(self):
-        # f = QFileDialog.getExistingDirectory(self, 'Open directory',
-        #                                      '/User/mqichu',
-        #                                      QFileDialog.ShowDirsOnly)
-        # if not os.path.isdir(f):
-        #     return
-        f = './data/files2.txt'
+    def load_path(self, debug=False):
+        if not debug:
+            f = QFileDialog.getExistingDirectory(self, 'Open directory',
+                                                 '/User/mqichu',
+                                                 QFileDialog.ShowDirsOnly)
+        else:
+            f = './data/files2.txt'
+
+        if not os.path.isdir(f):
+            return
+
         self.work_dir.setText(f)
         self.dl = DataLoader(f)
         self.update_box(self.dl.source_list, mode='source')
@@ -168,6 +176,32 @@ class Ui(QtWidgets.QMainWindow):
         num, self.cache = self.dl.search(val)
         self.update_box(self.cache, mode='source')
         self.list_view_source.selectAll()
+
+    def check_g2_number(self, default_val=(0, 0.0092, 1E-8, 1, 0.95, 1.35)):
+        keys = (self.g2_qmin, self.g2_qmax,
+                self.g2_tmin, self.g2_tmax,
+                self.g2_ymin, self.g2_ymax)
+        vals = [None] * len(keys)
+        for n, key in enumerate(keys):
+            try:
+                val = float(key.text())
+            except:
+                key.setText(str(default_val[n]))
+                return
+            else:
+                vals[n] = val
+
+        def swap_min_max(id1, id2, fun=str):
+            if vals[id1] > vals[id2]:
+                keys[id1].setText(fun(vals[id2]))
+                keys[id2].setText(fun(vals[id1]))
+                vals[id1], vals[id2] = vals[id2], vals[id1]
+
+        swap_min_max(0, 1)
+        swap_min_max(2, 3, lambda x: '%.2e' % x)
+        swap_min_max(4, 5)
+
+        return vals
 
     def check_number(self, default_val=(1e-6, 1e-2, 0.01, 0.20, 0.95, 1.05)):
         keys = (self.tau_min, self.tau_max,

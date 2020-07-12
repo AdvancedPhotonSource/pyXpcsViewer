@@ -51,14 +51,13 @@ def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
     return Iq, xlabel, ylabel
 
 
-def create_slice(arr, cutoff):
-    id = arr <= cutoff
-    end = np.argmin(id)
-    if end == 0 and arr[-1] < cutoff:
-        end = len(arr)
-    return slice(0, end)
-
-
+def create_slice(arr, x_range):
+    start, end = 0, arr.size - 1
+    while arr[start] < x_range[0]:
+        start += 1
+    while arr[end] >= x_range[1]:
+        end -= 1
+    return slice(start, end + 1)
 
 
 class DataLoader(FileLocator):
@@ -91,7 +90,7 @@ class DataLoader(FileLocator):
             return
         return get_hdf_info(self.cwd, fname)
 
-    def get_g2_data(self, max_points=10, max_q=1.0, max_tel=1e8):
+    def get_g2_data(self, max_points=10, q_range=None, t_range=None):
         labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
         file_list = self.target_list
 
@@ -103,8 +102,8 @@ class DataLoader(FileLocator):
             self.g2_cache['hash_val'] = hash_val
             self.g2_cache['res'] = res
 
-        tslice = create_slice(res['t_el'][0], max_tel)
-        qslice = create_slice(res['ql_dyn'][0], max_q)
+        tslice = create_slice(res['t_el'][0], t_range)
+        qslice = create_slice(res['ql_dyn'][0], q_range)
 
         tel = res['t_el'][0][tslice]
         qd = res['ql_dyn'][0][qslice]
@@ -118,10 +117,12 @@ class DataLoader(FileLocator):
         num_row = (num_fig + num_col - 1) // num_col
 
         height = mp_hdl.height()
-        canvas_size = max(height, int(height / 3 * num_row))
+        height = max(height, int(height / 3 * num_row))
+        canvas_size = min(height,  250 * num_row)
         # print(height, canvas_size)
         mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
         mp_hdl.fig.clear()
+        # mp_hdl.subplots(num_row, num_col, sharex=True, sharey=True)
         mp_hdl.subplots(num_row, num_col)
         mp_hdl.obj = None
 
@@ -144,6 +145,7 @@ class DataLoader(FileLocator):
                 err_obj.append(obj1)
 
                 obj2 = ax.plot(x, y + offset)
+                obj2[0].set_visible(False)
                 lin_obj.append(obj2)
 
                 # last image
@@ -153,7 +155,7 @@ class DataLoader(FileLocator):
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
                     # if there's only one point, do not add title; the title
                     # will be too long.
-                    if idx >= 1:
+                    if idx >= 1 and num_points < 10:
                         ax.legend(fontsize=8)
 
         # mp_hdl.fig.tight_layout()
@@ -162,59 +164,71 @@ class DataLoader(FileLocator):
             'lin': lin_obj,
         }
 
-    def plot_g2(self, max_q=0.016, max_tel=1E8, handler=None, offset=None,
-                max_points=3, bounds=None):
+    def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
+                offset=None, show_fit=False, max_points=50, bounds=None):
+
         msg = self.check_target()
         if msg != True:
             return msg
 
         num_points = min(len(self.target_list), max_points)
         new_condition = (tuple(self.target_list[:num_points]),
-                         (max_q, max_tel, offset),
+                         (q_range, t_range, y_range, offset),
                          bounds)
-        if self.g2_cache['plot_condition'] == new_condition:
-            return ['No target files selected or change in setting.']
-        else:
-            cmp = tuple(i != j for i, j in
-                        zip(new_condition, self.g2_cache['plot_condition']))
-            self.g2_cache['plot_condition'] = new_condition
-            plot_target = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
+        # if self.g2_cache['plot_condition'] == new_condition:
+        #     return ['No target files selected or change in setting.']
+        # else:
+        #     cmp = tuple(i != j for i, j in
+        #                 zip(new_condition, self.g2_cache['plot_condition']))
+        #     self.g2_cache['plot_condition'] = new_condition
+        #     plot_target = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
 
-        tel, qd, g2, g2_err = self.get_g2_data(max_q=max_q, max_tel=max_tel,
+        tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
+                                               t_range=t_range,
                                                max_points=max_points)
         num_fig = g2.shape[2]
 
+        plot_target = 4
         if plot_target >= 2 or handler.axes is None:
             self.plot_g2_initialize(handler, num_fig, num_points, 4)
-            # handler.draw()
 
-        err_msg = []
-        for ipt in range(num_points):
-            fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt],
-                                        b=bounds)
-            self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
-            offset_i = -1 * offset * (ipt + 1)
-            err_msg.append(self.target_list[ipt])
-            prev_len = len(err_msg)
-            for ifg in range(num_fig):
-                loc = ipt * num_fig + ifg
-                if ipt == 0:
-                    ax = handler.axes.ravel()[ifg]
-                    ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ifg])
-                handler.update_lin(loc, fit_res[ifg]['fit_x'],
-                                   fit_res[ifg]['fit_y'] + offset_i)
-                msg = fit_res[ifg]['err_msg']
-                if msg is not None:
-                    err_msg.append('----' + msg)
-
-                if plot_target >= 2:
+        # if plot_target >= 2:
+        if True:
+            for ipt in range(num_points):
+                for ifg in range(num_fig):
+                    # add the title
+                    if ipt == 0:
+                        ax = handler.axes.ravel()[ifg]
+                        ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ifg])
+                    # update info
+                    loc = ipt * num_fig + ifg
+                    offset_i = -1 * offset * (ipt + 1)
                     handler.update_err(loc, tel, g2[ipt][:, ifg] + offset_i,
                                        g2_err[ipt][:, ifg])
 
-            if len(err_msg) == prev_len:
-                err_msg.append('---- fit finished without errors')
+        err_msg = []
+        if show_fit:
+            for ipt in range(num_points):
+                fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt],
+                                            b=bounds)
+                self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
+                offset_i = -1 * offset * (ipt + 1)
+                err_msg.append(self.target_list[ipt])
+                prev_len = len(err_msg)
+                for ifg in range(num_fig):
+                    loc = ipt * num_fig + ifg
+                    handler.update_lin(loc, fit_res[ifg]['fit_x'],
+                                       fit_res[ifg]['fit_y'] + offset_i,
+                                       visible=show_fit)
+                    msg = fit_res[ifg]['err_msg']
+                    if msg is not None:
+                        err_msg.append('----' + msg)
 
-        handler.auto_scale()
+                if len(err_msg) == prev_len:
+                    err_msg.append('---- fit finished without errors')
+
+        x_range = (np.min(tel) / 2.5, np.max(tel) * 2.5)
+        handler.auto_scale(ylim=y_range, xlim=x_range)
         handler.fig.tight_layout()
         handler.draw()
         return err_msg
@@ -461,6 +475,7 @@ class DataLoader(FileLocator):
         if self.stab_cache['num_points'] != res['ql_sta'].shape[0]:
             self.stab_cache['num_points'] = res['ql_sta'].shape[0]
             mp_hdl.clear()
+
         q = res['ql_sta'][0]
         Iqp = res['Iqp']
 
