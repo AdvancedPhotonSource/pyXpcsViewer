@@ -243,7 +243,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -467,7 +467,7 @@
                    <double>0.050000000000000</double>
                   </property>
                   <property name="value">
-                   <double>0.200000000000000</double>
+                   <double>0.000000000000000</double>
                   </property>
                  </widget>
                 </item>
@@ -920,12 +920,26 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QDoubleSpinBox" name="sb_g2_offset"/>
+                     <widget class="QDoubleSpinBox" name="sb_g2_offset">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.005000000000000</double>
+                      </property>
+                     </widget>
                     </item>
                     <item>
                      <widget class="QCheckBox" name="g2_show_fit">
                       <property name="text">
                        <string>show fit?</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="g2_show_label">
+                      <property name="text">
+                       <string>show label?</string>
                       </property>
                      </widget>
                     </item>

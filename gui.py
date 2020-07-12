@@ -92,6 +92,7 @@ class Ui(QtWidgets.QMainWindow):
         kwargs = {
             'offset': self.sb_g2_offset.value(),
             'show_fit': self.g2_show_fit.isChecked(),
+            'show_label': self.g2_show_label.isChecked(),
             'q_range': (p[0], p[1]),
             't_range': (p[2], p[3]),
             'y_range': (p[4], p[5])
