@@ -460,7 +460,8 @@ class DataLoader(FileLocator):
 
         q = res["ql_sta"][0]
         seg_len = res["Iqp"].shape[1]
-        Iqp = res["Iqp"][0: max_point].reshape(-1, len(q))
+        # Iqp = res["Iqp"][0: max_point].reshape(-1, len(q))
+        Iqp = res["Iqp"][0: 1].reshape(-1, len(q))
         Iqp, xlabel, ylabel = norm_saxs_data(Iqp, q, **kwargs)
 
         # switch axes and flip ud so the image has high q on the top
@@ -501,12 +502,14 @@ class DataLoader(FileLocator):
             extent = (-0.5, Iqp.shape[1] // seg_len - 0.5,
                       np.min(q), np.max(q))
 
-        mp_hdl.show_image(Iqp, vmin=Iqp_vmin, vmax=Iqp_vmax,
-                          vline_freq=1,
-                          extent=extent,
-                          title=title + ylabel,
-                          ylabel=qlabel,
-                          xlabel=xlabel)
+        # mp_hdl.show_image(Iqp, vmin=Iqp_vmin, vmax=Iqp_vmax,
+        #                   vline_freq=1,
+        #                   extent=extent,
+        #                   title=title + ylabel,
+        #                   ylabel=qlabel,
+        #                   xlabel=xlabel)
+        mp_hdl.show_lines(np.fliplr(Iqp.T), xval=q, xlabel=qlabel,
+                          ylabel=ylabel)
 
 
     def read_data(self, labels, file_list=None, mask=None):
