@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QFileSystemModel
-from PyQt5.QtCore import QAbstractItemModel
+from PyQt5.QtCore import QAbstractItemMode
 from PyQt5.QtCore import QObject, pyqtSlot, QDir
 import sys
 import os
@@ -111,7 +111,7 @@ class Ui(QtWidgets.QMainWindow):
     def load_path(self, debug=False):
         if not debug:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',
-                                                 '/User/mqichu',
+                                                 '../cluster_results',
                                                  QFileDialog.ShowDirsOnly)
         else:
             f = './data/files2.txt'
