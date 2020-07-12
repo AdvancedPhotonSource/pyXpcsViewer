@@ -20,6 +20,7 @@ class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('xpcs.ui', self)
+        # self.list_view_target.dragMoveEvent().connect
         self.show()
         self.dl = None
         self.cache = None
@@ -29,13 +30,14 @@ class Ui(QtWidgets.QMainWindow):
     def load_data(self):
         if (len(self.dl.target_list)) == 0:
             return
+        self.reorder_target()
         # self.plot_g2()
         self.plot_saxs_2D()
         self.plot_saxs_1D()
         self.update_hdf_list()
         # self.plot_g2()
         # self.plot_stability_iq()
-        self.btn_load_data.setEnabled(False)
+        # self.btn_load_data.setEnabled(False)
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -150,10 +152,26 @@ class Ui(QtWidgets.QMainWindow):
         self.update_box(self.dl.target_list, mode='target')
 
         curr_hash = self.dl.hash(-1)
-        if prev_hash != curr_hash:
-            self.btn_load_data.setEnabled(True)
+        # if prev_hash != curr_hash:
+        #     self.btn_load_data.setEnabled(True)
 
         self.list_view_source.clearSelection()
+
+    def reorder_target(self):
+        target = []
+        prev_hash = self.dl.hash(-1)
+        self.list_view_target.selectAll()
+        for x in self.list_view_target.selectedIndexes():
+            target.append(x.data())
+        self.list_view_target.clearSelection()
+
+        self.dl.clear_target()
+        self.dl.add_target(target)
+        self.update_box(self.dl.target_list, mode='target')
+
+        curr_hash = self.dl.hash(-1)
+        # if prev_hash != curr_hash:
+        #     self.btn_load_data.setEnabled(True)
 
     def remove_target(self):
         prev_hash = self.dl.hash(-1)
@@ -165,9 +183,9 @@ class Ui(QtWidgets.QMainWindow):
         self.update_box(self.dl.target_list, mode='target')
 
         curr_hash = self.dl.hash(-1)
-        if prev_hash != curr_hash:
-            if len(self.dl.target_list) >= 1:
-                self.btn_load_data.setEnabled(True)
+        # if prev_hash != curr_hash:
+        #     if len(self.dl.target_list) >= 1:
+        #         self.btn_load_data.setEnabled(True)
 
     def trie_search(self):
         val = self.filter_str.text()

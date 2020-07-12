@@ -131,6 +131,9 @@
               <property name="editTriggers">
                <set>QAbstractItemView::NoEditTriggers</set>
               </property>
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
               <property name="selectionMode">
                <enum>QAbstractItemView::ContiguousSelection</enum>
               </property>
@@ -208,6 +211,21 @@
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
              <widget class="QListWidget" name="list_view_target">
+              <property name="editTriggers">
+               <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+              </property>
+              <property name="dragEnabled">
+               <bool>true</bool>
+              </property>
+              <property name="dragDropMode">
+               <enum>QAbstractItemView::InternalMove</enum>
+              </property>
+              <property name="defaultDropAction">
+               <enum>Qt::MoveAction</enum>
+              </property>
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
               <property name="selectionMode">
                <enum>QAbstractItemView::ContiguousSelection</enum>
               </property>
@@ -216,7 +234,7 @@
             <item row="1" column="0">
              <widget class="QPushButton" name="btn_load_data">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="text">
                <string>update</string>
@@ -1760,5 +1778,6 @@
   <slot>plot_stability_iq()</slot>
   <slot>plot_tauq()</slot>
   <slot>check_g2_number()</slot>
+  <slot>reorder_target()</slot>
  </slots>
 </ui>
