@@ -55,8 +55,14 @@ def create_slice(arr, x_range):
     start, end = 0, arr.size - 1
     while arr[start] < x_range[0]:
         start += 1
+        if start == arr.size:
+            break
+
     while arr[end] >= x_range[1]:
         end -= 1
+        if end == 0:
+            break
+
     return slice(start, end + 1)
 
 
@@ -112,7 +118,8 @@ class DataLoader(FileLocator):
 
         return tel, qd, g2, g2_err
 
-    def plot_g2_initialize(self, mp_hdl, num_fig, num_points, num_col=4):
+    def plot_g2_initialize(self, mp_hdl, num_fig, num_points, num_col=4,
+                           show_label=False):
         # adjust canvas size according to number of images
         num_row = (num_fig + num_col - 1) // num_col
 
@@ -155,8 +162,9 @@ class DataLoader(FileLocator):
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
                     # if there's only one point, do not add title; the title
                     # will be too long.
-                    if idx >= 1 and num_points < 10:
-                        ax.legend(fontsize=8)
+                    if show_label:
+                    # if idx >= 1 and num_points < 10:
+                         ax.legend(fontsize=8)
 
         # mp_hdl.fig.tight_layout()
         mp_hdl.obj = {
@@ -165,7 +173,8 @@ class DataLoader(FileLocator):
         }
 
     def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
-                offset=None, show_fit=False, max_points=50, bounds=None):
+                offset=None, show_fit=False, max_points=50, bounds=None,
+                show_label=False):
 
         msg = self.check_target()
         if msg != True:
@@ -190,7 +199,8 @@ class DataLoader(FileLocator):
 
         plot_target = 4
         if plot_target >= 2 or handler.axes is None:
-            self.plot_g2_initialize(handler, num_fig, num_points, 4)
+            self.plot_g2_initialize(handler, num_fig, num_points, 4,
+                                    show_label)
 
         # if plot_target >= 2:
         if True:
