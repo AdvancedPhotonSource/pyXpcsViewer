@@ -417,18 +417,31 @@ class DataLoader(FileLocator):
 
         if mp_hdl.shape == (1, 1) and len(mp_hdl.obj) == num_points:
             for n in range(num_points):
-                offset = -plot_offset * (n + 1)
                 line = mp_hdl.obj[n]
-                line.set_data(q[n], Iq[n] + offset)
+                if yscale == 'linear':
+                    offset = -plot_offset * (n + 1) * np.max(Iq[n])
+                    line.set_data(q[n], Iq[n] + offset)
+                else:
+                    offset = 10 ** (plot_offset * (n + 1))
+                    line.set_data(q[n], Iq[n] * offset)
+
                 line.set_label(self.target_list[n])
         else:
             mp_hdl.clear()
             ax = mp_hdl.subplots(1, 1)
             lin_obj = []
             for n in range(num_points):
-                offset = -plot_offset * (n + 1)
-                line, = ax.plot(q[n], Iq[n] + offset, 'o--', lw=0.5, alpha=0.8,
-                                markersize=2, label=self.target_list[n])
+                if yscale == 'linear':
+                    offset = -plot_offset * (n + 1) * np.max(Iq[n])
+                    line, = ax.plot(q[n], Iq[n] + offset, 'o--', lw=0.5,
+                                    alpha=0.8, markersize=2,
+                                    label=self.target_list[n])
+                else:
+                    offset = 10 ** (plot_offset * (n + 1))
+                    line, = ax.plot(q[n], Iq[n] * offset, 'o--', lw=0.5,
+                                    alpha=0.8, markersize=2,
+                                    label=self.target_list[n])
+
                 lin_obj.append(line)
             mp_hdl.obj = lin_obj
 
