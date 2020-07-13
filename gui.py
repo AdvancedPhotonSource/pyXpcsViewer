@@ -8,14 +8,14 @@ import numpy as np
 
 
 class Ui(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, path=None):
         super(Ui, self).__init__()
         uic.loadUi('xpcs.ui', self)
         # self.list_view_target.dragMoveEvent().connect
         self.show()
         self.dl = None
         self.cache = None
-        self.load_path()
+        self.load_path(path)
         self.g2_cache = {}
 
     def load_data(self):
@@ -108,13 +108,13 @@ class Ui(QtWidgets.QMainWindow):
         else:
             self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
-    def load_path(self, debug=False):
-        if not debug:
+    def load_path(self, path=None, debug=False):
+        if path is None:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',
                                                  '../cluster_results',
                                                  QFileDialog.ShowDirsOnly)
         else:
-            f = './data/files2.txt'
+            f = path
 
         if not os.path.isdir(f):
             return
@@ -251,5 +251,8 @@ class Ui(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    window = Ui()
+    if len(sys.argv) == 2:
+        window = Ui(sys.argv[1])
+    else:
+        window = Ui()
     app.exec_()
