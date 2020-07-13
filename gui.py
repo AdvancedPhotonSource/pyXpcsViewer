@@ -1,19 +1,10 @@
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QFileSystemModel
-# from PyQt5.QtCore import QAbstractItemMode
-from PyQt5.QtCore import QObject, pyqtSlot, QDir
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QFileDialog
 import sys
 import os
-from pyqtgraph import PlotWidget, ImageWindow
-import matplotlib.pyplot as plt
-import matplotlib
-import pyqtgraph as pg
-from matplot_qt import MplCanvas
 from data_loader import DataLoader
-from file_locator import FileLocator
 import numpy as np
-import time
-# from xpcs_ui import
+# import time
 
 
 class Ui(QtWidgets.QMainWindow):
