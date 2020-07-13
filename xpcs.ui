@@ -261,7 +261,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -324,13 +324,6 @@
               </item>
               <item row="0" column="1">
                <layout class="QGridLayout" name="gridLayout_3">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_12">
-                  <property name="text">
-                   <string>type:</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="1">
                  <widget class="QComboBox" name="cb_saxs2D_type">
                   <item>
@@ -379,7 +372,7 @@
                   </item>
                  </widget>
                 </item>
-                <item row="1" column="0" colspan="7">
+                <item row="1" column="0" colspan="6">
                  <widget class="QPushButton" name="pushButton_5">
                   <property name="minimumSize">
                    <size>
@@ -399,13 +392,20 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="6">
+                <item row="0" column="5">
                  <widget class="QCheckBox" name="saxs2d_autorotate">
                   <property name="text">
                    <string>auto-rotate?</string>
                   </property>
                   <property name="checked">
                    <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_12">
+                  <property name="text">
+                   <string>type:</string>
                   </property>
                  </widget>
                 </item>
