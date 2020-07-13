@@ -123,9 +123,10 @@ class DataLoader(FileLocator):
         # adjust canvas size according to number of images
         num_row = (num_fig + num_col - 1) // num_col
 
-        height = mp_hdl.height()
-        height = max(height, int(height / 3 * num_row))
-        canvas_size = min(height,  250 * num_row)
+        width = mp_hdl.width()
+        # height = mp_hdl.height()
+        canvas_size = max(750, int(width / num_col / 1.618 * num_row))
+        # canvas_size = min(height,  250 * num_row)
         mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
         mp_hdl.fig.clear()
         # mp_hdl.subplots(num_row, num_col, sharex=True, sharey=True)
@@ -239,6 +240,7 @@ class DataLoader(FileLocator):
         x_range = (np.min(tel) / 2.5, np.max(tel) * 2.5)
         handler.auto_scale(ylim=y_range, xlim=x_range)
         handler.fig.tight_layout()
+        handler.draw()
         handler.draw()
         return err_msg
 
