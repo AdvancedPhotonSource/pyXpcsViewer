@@ -109,7 +109,7 @@ class Ui(QtWidgets.QMainWindow):
             self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
     def load_path(self, path=None, debug=False):
-        if path is None:
+        if path in [None, False]:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',
                                                  '../cluster_results',
                                                  QFileDialog.ShowDirsOnly)
