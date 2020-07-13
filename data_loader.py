@@ -396,6 +396,7 @@ class DataLoader(FileLocator):
                      minXRange=sp[0] // 10,
                      minYRange=int(sp[0] / 10 / w0 * h0))
         vb.setAspectLocked(1.0)
+        vb.setMouseMode(vb.RectMode)
         # minYRange=sp[1] // 10)
         # maxXRange=sp[0] * 4,
                      # maxYRange=sp[1] * 4)
