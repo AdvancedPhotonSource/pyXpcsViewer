@@ -10,6 +10,12 @@ from PyQt5 import QtCore
 
 import os
 import h5py
+import logging
+
+logging_format = '%(asctime)s %(message)s'
+logging.basicConfig(level=logging.INFO, format=logging_format)
+logger = logging.getLogger(__name__)
+
 
 
 def get_min_max(data, min_percent=0, max_percent=100, **kwargs):

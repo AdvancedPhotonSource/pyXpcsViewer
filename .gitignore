@@ -147,3 +147,4 @@ cython_debug/
 .idea/xpcs_gui.iml
 .idea
 data/
+.loglogin
