@@ -770,7 +770,7 @@
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents">
+             <widget class="QWidget" name="g2_scroll_area">
               <property name="geometry">
                <rect>
                 <x>0</x>

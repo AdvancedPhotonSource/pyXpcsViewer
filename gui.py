@@ -102,7 +102,7 @@ class Ui(QtWidgets.QMainWindow):
             'show_label': self.g2_show_label.isChecked(),
             'q_range': (p[0], p[1]),
             't_range': (p[2], p[3]),
-            'y_range': (p[4], p[5])
+            'y_range': (p[4], p[5]),
         }
 
         bounds = self.check_number()

@@ -127,14 +127,23 @@ class DataLoader(FileLocator):
     def plot_g2_initialize(self, mp_hdl, num_fig, num_points, num_col=4,
                            show_label=False):
         # adjust canvas size according to number of images
-        if num_fig == 1:
-            num_col = 1
+        if num_fig < num_col:
+            num_col = num_fig
         num_row = (num_fig + num_col - 1) // num_col
-
+        if mp_hdl.parent().parent() is None:
+            aspect = 1 / 1.618
+            logger.info('using static aspect')
+        else:
+            t = mp_hdl.parent().parent()
+            aspect = t.height() / t.width()
+            logger.info('using dynamic aspect')
 
         width = mp_hdl.width()
         # height = mp_hdl.height()
-        canvas_size = max(750, int(width / num_col / 1.618 * num_row))
+        logger.info('aspect: {}'.format(aspect))
+        canvas_size = max(740, int(width / num_col * aspect * num_row))
+        logger.info('row, col: ({}, {})'.format(num_row, num_col))
+        logger.info('canvas size: ({}, {})'.format(width, canvas_size))
         # canvas_size = min(height,  250 * num_row)
         mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
         mp_hdl.fig.clear()
@@ -183,7 +192,7 @@ class DataLoader(FileLocator):
 
     def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
                 offset=None, show_fit=False, max_points=50, bounds=None,
-                show_label=False, num_col=4):
+                show_label=False, num_col=4, aspect=(1/1.618)):
 
         msg = self.check_target()
         if msg != True:
