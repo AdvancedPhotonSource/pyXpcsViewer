@@ -127,7 +127,10 @@ class DataLoader(FileLocator):
     def plot_g2_initialize(self, mp_hdl, num_fig, num_points, num_col=4,
                            show_label=False):
         # adjust canvas size according to number of images
+        if num_fig == 1:
+            num_col = 1
         num_row = (num_fig + num_col - 1) // num_col
+
 
         width = mp_hdl.width()
         # height = mp_hdl.height()
