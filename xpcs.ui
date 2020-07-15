@@ -261,7 +261,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -1421,7 +1421,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>188</x>
-     <y>545</y>
+     <y>542</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -1437,7 +1437,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>353</x>
-     <y>545</y>
+     <y>542</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -1489,7 +1489,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>188</x>
-     <y>545</y>
+     <y>542</y>
     </hint>
    </hints>
   </connection>
@@ -1532,8 +1532,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>605</x>
-     <y>863</y>
+     <x>747</x>
+     <y>855</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -1549,7 +1549,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1478</x>
-     <y>848</y>
+     <y>846</y>
     </hint>
     <hint type="destinationlabel">
      <x>1248</x>
@@ -1581,7 +1581,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1343</x>
-     <y>848</y>
+     <y>846</y>
     </hint>
     <hint type="destinationlabel">
      <x>1106</x>
@@ -1735,7 +1735,7 @@
   </connection>
   <connection>
    <sender>g2_qmax</sender>
-   <signal>textEdited(QString)</signal>
+   <signal>editingFinished()</signal>
    <receiver>mainwindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
