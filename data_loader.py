@@ -153,7 +153,7 @@ class DataLoader(FileLocator):
         for idx in range(num_points):
             for i in range(num_fig):
                 offset = 0.03 * idx
-                ax = mp_hdl.axes.ravel()[i]
+                ax = np.array(mp_hdl.axes).ravel()[i]
                 obj1 = ax.errorbar(x, y + offset,
                                    yerr=err, fmt='o', markersize=3,
                                    markerfacecolor='none',
@@ -217,7 +217,7 @@ class DataLoader(FileLocator):
                 for ifg in range(num_fig):
                     # add the title
                     if ipt == 0:
-                        ax = handler.axes.ravel()[ifg]
+                        ax = np.array(handler.axes).ravel()[ifg]
                         ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ifg])
                     # update info
                     loc = ipt * num_fig + ifg
