@@ -133,15 +133,17 @@ class DataLoader(FileLocator):
         if mp_hdl.parent().parent() is None:
             aspect = 1 / 1.618
             logger.info('using static aspect')
+            min_size = 740
         else:
             t = mp_hdl.parent().parent()
             aspect = t.height() / t.width()
             logger.info('using dynamic aspect')
+            min_size = t.height() - 20
 
         width = mp_hdl.width()
         # height = mp_hdl.height()
         logger.info('aspect: {}'.format(aspect))
-        canvas_size = max(740, int(width / num_col * aspect * num_row))
+        canvas_size = max(min_size, int(width / num_col * aspect * num_row))
         logger.info('row, col: ({}, {})'.format(num_row, num_col))
         logger.info('canvas size: ({}, {})'.format(width, canvas_size))
         # canvas_size = min(height,  250 * num_row)
@@ -255,7 +257,8 @@ class DataLoader(FileLocator):
                 if len(err_msg) == prev_len:
                     err_msg.append('---- fit finished without errors')
 
-        x_range = (np.min(tel) / 2.5, np.max(tel) * 2.5)
+        # x_range = (np.min(tel) / 2.5, np.max(tel) * 2.5)
+        x_range = t_range
         handler.auto_scale(ylim=y_range, xlim=x_range)
         handler.fig.tight_layout()
         handler.draw()

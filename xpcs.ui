@@ -896,7 +896,7 @@
                      </sizepolicy>
                     </property>
                     <property name="text">
-                     <string>1E-8</string>
+                     <string>2E-6</string>
                     </property>
                     <property name="placeholderText">
                      <string>min</string>
@@ -928,7 +928,7 @@
                      </sizepolicy>
                     </property>
                     <property name="text">
-                     <string>1</string>
+                     <string>0.5</string>
                     </property>
                     <property name="placeholderText">
                      <string>max</string>
