@@ -87,6 +87,13 @@ class Ui(QtWidgets.QMainWindow):
             return
         self.dl.plot_stability(self.mp_stab, plot_id, **kwargs)
 
+    def plot_intt(self):
+        kwargs = {
+            'max_points': self.sb_intt_max.value(),
+            'sampling': self.sb_intt_sampling.value()
+        }
+        self.dl.plot_intt(self.pg_intt, **kwargs)
+
     def plot_tauq(self):
         kwargs = {
             'max_q': self.sb_tauq_qmax.value(),

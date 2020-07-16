@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pyqtgraph as pg
 from matplotlib.ticker import FormatStrFormatter
 from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
@@ -483,6 +484,30 @@ class DataLoader(FileLocator):
             return ['No target files selected.']
         else:
             return True
+
+    def plot_intt(self, pg_hdl, max_points=128, sampling=-1):
+        msg = self.check_target()
+        if msg != True:
+            return msg
+
+        labels = ['Int_t', 't0']
+        num_points = min(max_points, len(self.target_list))
+        res = self.read_data(labels, self.target_list[0: num_points])
+        y = res["Int_t"][:, 1, :]
+        y = (y / np.max(y) * 120).astype(np.uint8)
+        if sampling > 0:
+            y = y[:, ::sampling]
+        else:
+            sampling = 1
+
+        t0 = res['t0'][0]
+        x = (np.arange(y.shape[1]) * sampling * t0).astype(np.float32)
+
+        pg_hdl.show_lines(y, xval=x, xlabel="Time (s)", ylabel="Intensity",
+                          loc='lower right', alpha=0.5,
+                          legend=self.target_list)
+        pg_hdl.axes.set_ylim(0, 128)
+        pg_hdl.draw()
 
     def plot_stability(self, mp_hdl, plot_id, method='1d', **kwargs):
         msg = self.check_target()

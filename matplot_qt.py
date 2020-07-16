@@ -120,7 +120,7 @@ class MplCanvas(FigureCanvasQTAgg):
         return
 
     def show_lines(self, data, xval=None, xlabel=None, ylabel=None,
-                   title=None, legend=None):
+                   title=None, legend=None, loc='best', alpha=0.85):
         if xval is None:
             xval = np.arange(data.shape[1])
 
@@ -133,7 +133,7 @@ class MplCanvas(FigureCanvasQTAgg):
             for n in range(data.shape[0]):
                 mk = markers[n % len(markers)]
                 line = ax.plot(xval, data[n], mk + '--', ms=3,
-                               alpha=0.85, label=legend[n])
+                               alpha=alpha, label=legend[n])
                 line_obj.append(line)
             self.obj = line_obj
 
@@ -142,7 +142,7 @@ class MplCanvas(FigureCanvasQTAgg):
             ax.set_ylabel(ylabel)
             # self.fig.tight_layout()
             if legend is not None:
-                ax.legend()
+                ax.legend(loc=loc)
 
         else:
             for n in range(data.shape[0]):
