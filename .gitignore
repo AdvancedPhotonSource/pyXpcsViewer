@@ -148,3 +148,4 @@ cython_debug/
 .idea
 data/
 .loglogin
+.vscode
