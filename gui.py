@@ -126,7 +126,7 @@ class Ui(QtWidgets.QMainWindow):
         if path in [None, False]:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',
                                                  '../cluster_results',
-                                                 QFileDialog.ShowDirsOnly)
+                                                 QFileDialog.ShowDirsOnly | QFileDialog.DontUseCustomDirectoryIcons)
         else:
             f = path
 
