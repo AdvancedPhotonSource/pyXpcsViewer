@@ -35,7 +35,7 @@ def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
 
 
 def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
-    ylabel = 'I'
+    ylabel = 'Intensity'
     if plot_norm == 1:
         Iq = Iq * np.square(q)
         ylabel = ylabel + 'q^2'
@@ -424,58 +424,40 @@ class DataLoader(FileLocator):
         # maxXRange=sp[0] * 4,
                      # maxYRange=sp[1] * 4)
 
-    def plot_saxs_1d(self, mp_hdl, plot_type='log', plot_norm=0,
-                     plot_offset=0, max_points=8):
+    def plot_saxs_1d(self, mp_hdl, **kwargs):
+        res = self.get_saxs_data()
+        q = res['ql_sta'][0]
+        Iq = res['Iq']
+        self.plot_saxs_line(mp_hdl, q, Iq, legend=self.target_list, **kwargs)
+
+    def plot_saxs_line(self, mp_hdl, q, Iq, plot_type='log', plot_norm=0,
+                     plot_offset=0, max_points=8, legend=None, title=None):
         msg = self.check_target()
         if msg != True:
             return msg
-
-        num_points = min(len(self.target_list), max_points)
-        res = self.get_saxs_data()
-        q = res['ql_sta']
-        Iq = res['Iq']
 
         Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm, plot_type)
         xscale = ['linear', 'log'][plot_type % 2]
         yscale = ['linear', 'log'][plot_type // 2]
 
-        if mp_hdl.shape == (1, 1) and len(mp_hdl.obj) == num_points:
-            for n in range(num_points):
-                line = mp_hdl.obj[n]
-                if yscale == 'linear':
-                    offset = -plot_offset * (n + 1) * np.max(Iq[n])
-                    line.set_data(q[n], Iq[n] + offset)
-                else:
-                    offset = 10 ** (plot_offset * (n + 1))
-                    line.set_data(q[n], Iq[n] * offset)
+        num_points = min(len(self.target_list), max_points)
+        for n in range(1, num_points):
+            if yscale == 'linear':
+                offset = -plot_offset * n * np.max(Iq[n])
+                Iq[n] = offset + Iq[n]
 
-                line.set_label(self.target_list[n])
-        else:
-            mp_hdl.clear()
-            ax = mp_hdl.subplots(1, 1)
-            lin_obj = []
-            for n in range(num_points):
-                if yscale == 'linear':
-                    offset = -plot_offset * (n + 1) * np.max(Iq[n])
-                    line, = ax.plot(q[n], Iq[n] + offset, 'o--', lw=0.5,
-                                    alpha=0.8, markersize=2,
-                                    label=self.target_list[n])
-                else:
-                    offset = 10 ** (plot_offset * (n + 1))
-                    line, = ax.plot(q[n], Iq[n] * offset, 'o--', lw=0.5,
-                                    alpha=0.8, markersize=2,
-                                    label=self.target_list[n])
+            elif yscale == 'log':
+                offset = 10 ** (plot_offset * n)
+                Iq[n] = Iq[n] / offset
 
-                lin_obj.append(line)
-            mp_hdl.obj = lin_obj
+        mp_hdl.show_lines(Iq, xval=q, xlabel=xlabel,
+                              ylabel=ylabel, legend=legend)
 
         mp_hdl.axes.legend()
         mp_hdl.axes.set_xlabel(xlabel)
         mp_hdl.axes.set_ylabel(ylabel)
+        mp_hdl.axes.set_title(title)
         mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
-
-        # do not use tight layout because the ylabel may not display fully.
-        # mp_hdl.fig.tight_layout()
         mp_hdl.draw()
         return
 
@@ -487,28 +469,14 @@ class DataLoader(FileLocator):
         # the detector figure is not oriented to image convention;
         return res
 
-    def get_stability_data(self, max_point=128, plot_id=0, **kwargs):
+    def get_stability_data(self, max_point=128, plot_id=0):
         # labels = ['Int_t', 'Iq', 'ql_sta']
         labels = ['Iqp', 'ql_sta']
         res = self.read_data(labels, [self.target_list[plot_id]])
-        # avg_size = (res['Int_t'].shape[2] + max_point - 1) // max_point
-        # int_t = res['Int_t'][:, 1, :]
-        # int_t = int_t / np.mean(int_t)
-        # cum_int = np.cumsum(int_t, axis=1)
-        # mean_int = np.diff(cum_int[:, ::avg_size]) / avg_size
-        # res['Int_t'] = mean_int
-
         q = res["ql_sta"][0]
-        seg_len = res["Iqp"].shape[1]
-        # Iqp = res["Iqp"][0: max_point].reshape(-1, len(q))
-        Iqp = res["Iqp"][0].reshape(-1, len(q))
-        Iqp, xlabel, ylabel = norm_saxs_data(Iqp, q, **kwargs)
-
-        # switch axes and flip ud so the image has high q on the top
-        Iqp = Iqp.swapaxes(0, 1)
-        res["Iqp"] = np.flipud(Iqp).astype(np.float32)
-
-        return res, xlabel, ylabel, seg_len
+        Iqp = res["Iqp"][0]
+        # res["Iqp"] = np.flipud(Iqp).astype(np.float32)
+        return q, Iqp
 
     def check_target(self):
         if self.target_list is None or len(self.target_list) < 1:
@@ -516,46 +484,34 @@ class DataLoader(FileLocator):
         else:
             return True
 
-    def plot_stability(self, mp_hdl, plot_id, **kwargs):
+    def plot_stability(self, mp_hdl, plot_id, method='1d', **kwargs):
         msg = self.check_target()
         if msg != True:
             return msg
+        q, Iqp = self.get_stability_data(plot_id)
 
-        res, qlabel, ylabel, seg_len = self.get_stability_data(plot_id,
-                                                               **kwargs)
+        if method == '1d':
+            self.plot_saxs_line(mp_hdl, q, Iqp, legend=None,
+                                title=self.target_list[plot_id], **kwargs)
+        # else:
+        #     Iqp_vmin, Iqp_vmax = get_min_max(Iqp, 1, 99, **kwargs)
 
-        if self.stab_cache['num_points'] != res['ql_sta'].shape[0]:
-            self.stab_cache['num_points'] = res['ql_sta'].shape[0]
-            mp_hdl.clear()
+        #     if seg_len >= Iqp.shape[1]:
+        #         title = 'Single-Scan SAXS:'
+        #         xlabel = 'Segment'
+        #         extent = (-0.5, Iqp.shape[1] - 0.5, np.min(q), np.max(q))
+        #     else:
+        #         title = 'Multi-Scan SAXS:'
+        #         xlabel = 'Scan number (each has %d segments)' % seg_len
+        #         extent = (-0.5, Iqp.shape[1] // seg_len - 0.5,
+        #                   np.min(q), np.max(q))
 
-        q = res['ql_sta'][0]
-        Iqp = res['Iqp']
-
-        Iqp_vmin, Iqp_vmax = get_min_max(Iqp, 1, 99, **kwargs)
-
-        if seg_len >= Iqp.shape[1]:
-            title = 'Single-Scan SAXS:'
-            xlabel = 'Segment'
-            extent = (-0.5, Iqp.shape[1] - 0.5, np.min(q), np.max(q))
-        else:
-            title = 'Multi-Scan SAXS:'
-            xlabel = 'Scan number (each has %d segments)' % seg_len
-            extent = (-0.5, Iqp.shape[1] // seg_len - 0.5,
-                      np.min(q), np.max(q))
-
-        # mp_hdl.show_image(Iqp, vmin=Iqp_vmin, vmax=Iqp_vmax,
-        #                   vline_freq=1,
-        #                   extent=extent,
-        #                   title=title + ylabel,
-        #                   ylabel=qlabel,
-        #                   xlabel=xlabel)
-        mp_hdl.show_lines(np.fliplr(Iqp.T), xval=q, xlabel=qlabel,
-                          ylabel=ylabel, legend=True)
-
-        mp_hdl.axes.set_yscale(kwargs['plot_type'])
-        mp_hdl.axes.set_title(self.target_list[plot_id])
-        mp_hdl.draw()
-
+        #     mp_hdl.show_image(Iqp, vmin=Iqp_vmin, vmax=Iqp_vmax,
+        #                       vline_freq=1,
+        #                       extent=extent,
+        #                       title=title + ylabel,
+        #                       ylabel=qlabel,
+        #                       xlabel=xlabel)
 
     def read_data(self, labels, file_list=None, mask=None):
         if file_list is None:

@@ -250,8 +250,8 @@
         <widget class="QTabWidget" name="tabWidget">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>40</horstretch>
-           <verstretch>40</verstretch>
+           <horstretch>60</horstretch>
+           <verstretch>60</verstretch>
           </sizepolicy>
          </property>
          <property name="minimumSize">
@@ -261,7 +261,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -616,14 +616,14 @@
                 </item>
                 <item>
                  <layout class="QGridLayout" name="gridLayout_20">
-                  <item row="1" column="2">
+                  <item row="1" column="4">
                    <widget class="QLabel" name="label_16">
                     <property name="text">
                      <string>normalization:</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="3">
+                  <item row="1" column="5">
                    <widget class="QComboBox" name="cb_stab_norm">
                     <property name="currentIndex">
                      <number>0</number>
@@ -660,18 +660,48 @@
                   <item row="1" column="1">
                    <widget class="QComboBox" name="cb_stab_type">
                     <property name="currentIndex">
-                     <number>0</number>
+                     <number>3</number>
                     </property>
                     <item>
                      <property name="text">
-                      <string>log</string>
+                      <string>I - q</string>
                      </property>
                     </item>
                     <item>
                      <property name="text">
-                      <string>linear</string>
+                      <string>I - log(q)</string>
                      </property>
                     </item>
+                    <item>
+                     <property name="text">
+                      <string>log(I) - q</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>log(I) - log(q)</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QLabel" name="label_24">
+                    <property name="text">
+                     <string>offset:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="3">
+                   <widget class="QDoubleSpinBox" name="sb_stab_offset">
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.050000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
+                    </property>
                    </widget>
                   </item>
                  </layout>
@@ -692,7 +722,7 @@
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>545</width>
+                  <width>357</width>
                   <height>20</height>
                  </size>
                 </property>
@@ -1057,6 +1087,24 @@
                 <string>Single Exp Fitting Bounds:</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_14">
+                <item row="0" column="1">
+                 <widget class="QPlainTextEdit" name="g2_err_msg">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>20</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Courier</family>
+                   </font>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Fit error message</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="0" column="0">
                  <layout class="QGridLayout" name="gridLayout_15">
                   <item row="0" column="2">
@@ -1141,24 +1189,6 @@
                    </widget>
                   </item>
                  </layout>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QPlainTextEdit" name="g2_err_msg">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                    <horstretch>20</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Courier</family>
-                   </font>
-                  </property>
-                  <property name="placeholderText">
-                   <string>Fit error message</string>
-                  </property>
-                 </widget>
                 </item>
                </layout>
               </widget>

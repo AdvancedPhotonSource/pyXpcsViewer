@@ -4,6 +4,7 @@ import sys
 import os
 from data_loader import DataLoader
 import numpy as np
+
 # import time
 import logging
 
@@ -78,7 +79,8 @@ class Ui(QtWidgets.QMainWindow):
 
     def plot_stability_iq(self):
         kwargs = {
-            'plot_type': ('log', 'linear')[self.cb_stab_type.currentIndex()],
+            'plot_type': self.cb_stab_type.currentIndex(),
+            'plot_offset': self.sb_stab_offset.value(),
             'plot_norm': self.cb_stab_norm.currentIndex()}
         plot_id = self.cb_stab.currentIndex()
         if plot_id < 0:

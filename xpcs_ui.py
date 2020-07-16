@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'xpcs.ui'
+# Form implementation generated from reading ui file 'xpcs_backup.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -93,20 +93,20 @@ class Ui_mainwindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
         self.scrollArea.setSizePolicy(sizePolicy)
-        self.scrollArea.setMinimumSize(QtCore.QSize(0, 640))
+        self.scrollArea.setMinimumSize(QtCore.QSize(0, 800))
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1552, 838))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1216, 830))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents.setSizePolicy(sizePolicy)
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.gridLayout_10 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
-        self.gridLayout_10.setObjectName("gridLayout_10")
+        self.gridLayout_9 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+        self.gridLayout_9.setObjectName("gridLayout_9")
         self.mf2 = MplCanvas(self.scrollAreaWidgetContents)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -115,7 +115,7 @@ class Ui_mainwindow(object):
         self.mf2.setSizePolicy(sizePolicy)
         self.mf2.setMinimumSize(QtCore.QSize(0, 0))
         self.mf2.setObjectName("mf2")
-        self.gridLayout_10.addWidget(self.mf2, 0, 0, 1, 1)
+        self.gridLayout_9.addWidget(self.mf2, 0, 0, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.gridLayout_8.addWidget(self.scrollArea, 0, 0, 1, 1)
         self.tabWidget.addTab(self.widget, "")
@@ -194,7 +194,7 @@ class Ui_mainwindow(object):
         mainwindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainwindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         self.pushButton_2.clicked.connect(mainwindow.add_target)
         self.pushButton_3.clicked.connect(mainwindow.remove_target)
         self.pushButton.clicked.connect(mainwindow.load_path)

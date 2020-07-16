@@ -1,13 +1,21 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
+from PyQt5 import QtWidgets
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.pyplot.style.use(['science', 'no-latex'])
 
+
 markers = [
     "o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"
 ]
+
+
+
+
+
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5.1, height=3.2, dpi=100):
@@ -116,16 +124,16 @@ class MplCanvas(FigureCanvasQTAgg):
         if xval is None:
             xval = np.arange(data.shape[1])
 
-        if legend is True:
-           legend_text = np.arange(data.shape[0])
+        if legend in [None, False]:
+           legend = np.arange(data.shape[0])
 
         if self.axes is None or data.shape[0] != len(self.obj):
             ax = self.subplots(1, 1)
             line_obj = []
             for n in range(data.shape[0]):
                 mk = markers[n % len(markers)]
-                line = ax.plot(xval, data[n], mk + '--',
-                               alpha=0.85, label=legend_text[n])
+                line = ax.plot(xval, data[n], mk + '--', ms=3,
+                               alpha=0.85, label=legend[n])
                 line_obj.append(line)
             self.obj = line_obj
 
@@ -141,7 +149,7 @@ class MplCanvas(FigureCanvasQTAgg):
                 line, = self.obj[n]
                 line.set_data(xval, data[n])
                 if legend is not None:
-                    line.set_label(legend_text[n])
+                    line.set_label(legend[n])
             self.auto_scale()
             self.axes.set_title(title)
             self.axes.set_xlabel(xlabel)
@@ -169,3 +177,17 @@ def adjust_yerr(err_obj, x, y, y_error):
                     x, yt, yb in zip(x, yerr_top, yerr_bot)]
 
     bars.set_segments(new_segments)
+
+
+MplToolbar = NavigationToolbar2QT
+# class MplToolbar(MplCanvas):
+#     def __init__(self, **kwargs):
+#         super(MplCanvas, self).__init__(**kwargs)
+#         toolbar = NavigationToolbar2QT(self.fig, self)
+#         layout = QtWidgets.QVBoxLayout()
+#         layout.addWidget(toolbar)
+#         layout.addWidget(self)
+#
+#         widget = QtWidgets.QWidget()
+#         widget.setLayout(layout)
+#         self.setCentralWidget(widget)
