@@ -37,6 +37,14 @@ avg_hdf_dict = {
 }
 
 
+def save_file(fname, fields, res):
+    with h5py.File(fname, 'a') as f:
+        for field in fields:
+            key = hdf_dict[field]
+            f[key] = res[field]
+    return
+
+
 def read_file(fields, fn, prefix='./data'):
     res = []
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
@@ -69,7 +77,7 @@ def read_multiple_files(fields, fn_list, prefix='./data', p_size=4):
     return res
 
 
-if __name__ == '__main__':
+def test_01():
     fn_list = [
         'N077_D100_att02_0001_0001-100000.hdf',
         'N077_D100_att02_0002_0001-100000.hdf',
@@ -92,3 +100,16 @@ if __name__ == '__main__':
         read_file(fields, i)
     s2 = time.perf_counter()
     print(s2 - s1)
+
+
+def test02():
+    fields = ['g2', 'Int_2D']
+    res={
+        'g2': np.random.uniform(0, 1, 100),
+        'Int_2D': np.random.uniform(0, 1, 100)
+    }
+    save_file('test.hdf', fields, res)
+
+
+if __name__ == '__main__':
+    test02()

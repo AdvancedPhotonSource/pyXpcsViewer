@@ -6,8 +6,9 @@ from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
-from hdf_reader import read_file
+from hdf_reader import read_file, save_file as hdf_save_file
 from PyQt5 import QtCore
+from shutil import copyfile
 
 import os
 import h5py
@@ -557,10 +558,32 @@ class DataLoader(FileLocator):
 
         return np_data
 
-    def average(self, baseline=1.03, chunk_size=256):
+    def average_outlier(self, hdl1, hdl2):
+        labels = ['Int_t', 'g2']
+        res = self.read_data(labels, file_list=self.target_list)
+        Int_t = res['Int_t'][:, 1, :].astype(np.float32)
+        Int_t = Int_t / np.max(Int_t)
+        intt_minmax = []
+        for n in range(len(self.target_list)):
+            intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
+        intt_minmax = np.array(intt_minmax).T.astype(np.float32)
+
+        g2_avg = np.mean(res['g2'][:, -10:, 1], axis=1)
+        g2_avg = np.array([g2_avg])
+
+        hdl1.show_scatter(intt_minmax, xlabel='Int-t min', ylabel='Int-t max')
+        hdl2.show_lines(g2_avg, xlabel='index', ylabel='g2 average')
+
+
+    def average(self, hdl1, hdl2, chunk_size=256, mask=None,
+                save_path=None, origin_path=None):
+        self.average_outlier(hdl1, hdl2)
+        return
+
         labels = ['Iq', 'g2', 'g2_err', 'Int_2D']
         g2 = self.read_data(['g2'], self.target_list)['g2']
-        mask = np.mean(g2[:, -10:, 1], axis=1) < baseline
+        # mask = np.mean(g2[:, -10:, 1], axis=1) < baseline
+        mask = np.ones(g2.shape[0])
 
         steps = (len(mask) + chunk_size - 1) // chunk_size
         result = {}
@@ -581,6 +604,14 @@ class DataLoader(FileLocator):
         num_points = np.sum(mask)
         for label in labels:
             result[label] = result[label] / num_points
+
+        if save_path is None:
+            return result
+        if origin_path is None:
+            origin_path = os.path.join(self.cwd, self.target_list[0])
+
+        copyfile(origin_path, save_path)
+        hdf_save_file(save_path, labels, result)
 
         return result
 

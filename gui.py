@@ -102,6 +102,40 @@ class Ui(QtWidgets.QMainWindow):
         self.tauq_msg.clear()
         self.tauq_msg.setText('\n'.join(msg))
 
+    def update_average_box(self):
+        if self.avg_use_source_path.isChecked():
+            self.avg_save_path.clear()
+            save_path = self.work_dir.text()
+            self.avg_save_path.setText(self.work_dir.text())
+        else:
+            save_path = self.avg_save_path.text()
+            while not os.path.isdir(save_path):
+                save_path = QFileDialog.getExistingDirectory(self,
+                                'Open directory', '../cluster_results',
+                                 QFileDialog.ShowDirsOnly | QFileDialog.DontUseCustomDirectoryIcons)
+            self.avg_save_path.setText(save_path)
+
+        if len(self.dl.id_list) > 0:
+            save_name = self.avg_save_name.text()
+            if save_name == '':
+                save_name = 'AVG_' + self.dl.target_list[0]
+                # save_name = self.dl.target_list[0]
+            self.avg_save_name.setText(save_name)
+            full_path = os.path.join(save_path, save_name)
+            if os.path.isfile(full_path):
+                self.show_error('file exist. change save name')
+
+    def do_average(self):
+        save_path = self.avg_save_path.text()
+        save_name = self.avg_save_name.text()
+
+        kwargs = {
+            'save_path': os.path.join(save_path, save_name),
+            'chunk_size': int(self.cb_avg_chunk_size.currentText())
+        }
+        # print(kwargs)
+        self.dl.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
+
     def plot_g2(self, max_points=3):
         p = self.check_g2_number()
         kwargs = {
@@ -142,6 +176,7 @@ class Ui(QtWidgets.QMainWindow):
         # self.add_target()
 
     def show_error(self, msg):
+        print('call show erro')
         error_dialog = QtWidgets.QErrorMessage()
         error_dialog.showMessage('\n'.join(msg))
 
@@ -170,6 +205,7 @@ class Ui(QtWidgets.QMainWindow):
         #     self.btn_load_data.setEnabled(True)
 
         self.list_view_source.clearSelection()
+        self.update_average_box()
 
     def reorder_target(self):
         target = []

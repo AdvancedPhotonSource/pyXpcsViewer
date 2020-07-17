@@ -137,10 +137,6 @@ class MplCanvas(FigureCanvasQTAgg):
                 line_obj.append(line)
             self.obj = line_obj
 
-            ax.set_title(title)
-            ax.set_xlabel(xlabel)
-            ax.set_ylabel(ylabel)
-            # self.fig.tight_layout()
             if legend is not None:
                 ax.legend(loc=loc)
 
@@ -151,13 +147,45 @@ class MplCanvas(FigureCanvasQTAgg):
                 if legend is not None:
                     line.set_label(legend[n])
             self.auto_scale()
-            self.axes.set_title(title)
-            self.axes.set_xlabel(xlabel)
-            self.axes.set_ylabel(ylabel)
 
+        self.axes.set_title(title)
+        self.axes.set_xlabel(xlabel)
+        self.axes.set_ylabel(ylabel)
         self.draw()
         return
 
+    def show_scatter(self, data, xlabel=None, ylabel=None,
+                   title=None, legend=None, loc='best', alpha=0.85):
+        if data.ndim != 2 or data.shape[0] != 2:
+            raise ValueError('input data shape not supported')
+        x, y = data[0], data[1]
+        c = np.arange(x.size)
+
+        # if legend in [None, False]:
+        #     legend = np.arange(len(x))
+
+        if self.axes is None:
+            ax = self.subplots(1, 1)
+            line_obj = []
+            line = ax.scatter(x, y, c=c)
+            self.fig.colorbar(line, ax=ax)
+            line_obj.append(line)
+            self.obj = line_obj
+            if legend is not None:
+                ax.legend(loc=loc)
+
+        else:
+            line, = self.obj[0]
+            line.set_data(x, y)
+            if legend is not None:
+                line.set_label(legend[0])
+            self.auto_scale()
+
+        self.axes.set_title(title)
+        self.axes.set_xlabel(xlabel)
+        self.axes.set_ylabel(ylabel)
+        self.draw()
+        return
 
 
 # https://github.com/matplotlib/matplotlib/issues/4556
