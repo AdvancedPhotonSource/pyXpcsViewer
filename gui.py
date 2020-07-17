@@ -125,6 +125,22 @@ class Ui(QtWidgets.QMainWindow):
             if os.path.isfile(full_path):
                 self.show_error('file exist. change save name')
 
+    def plot_outlier_intt(self):
+        kwargs = {
+            'g2_cutoff': self.avg_intt_num_clusters.value(),
+            'target': 'intt'
+        }
+        self.dl.average_plot_outlier(self.mp_avg_intt, self.mp_avg_g2,
+                                     **kwargs)
+
+    def plot_outlier_g2(self):
+        kwargs = {
+            'g2_cutoff': self.avg_g2_cutoff.value(),
+            'target': 'g2'
+        }
+        self.dl.average_plot_outlier(self.mp_avg_intt, self.mp_avg_g2,
+                                     **kwargs)
+
     def do_average(self):
         save_path = self.avg_save_path.text()
         save_name = self.avg_save_name.text()

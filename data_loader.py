@@ -9,6 +9,7 @@ from hdf_to_str import get_hdf_info
 from hdf_reader import read_file, save_file as hdf_save_file
 from PyQt5 import QtCore
 from shutil import copyfile
+from sklearn.cluster import KMeans as sk_kmeans
 
 import os
 import h5py
@@ -87,6 +88,11 @@ class DataLoader(FileLocator):
         }
         self.stab_cache = {
             'num_points': None
+        }
+        self.avg_cache = {
+            'file_list': None,
+            'intt_minmax': None,
+            'g2_avg': None
         }
 
 
@@ -558,27 +564,49 @@ class DataLoader(FileLocator):
 
         return np_data
 
-    def average_outlier(self, hdl1, hdl2):
-        labels = ['Int_t', 'g2']
-        res = self.read_data(labels, file_list=self.target_list)
-        Int_t = res['Int_t'][:, 1, :].astype(np.float32)
-        Int_t = Int_t / np.max(Int_t)
-        intt_minmax = []
-        for n in range(len(self.target_list)):
-            intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
-        intt_minmax = np.array(intt_minmax).T.astype(np.float32)
+    def average_plot_outlier(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
+                             target='g2'):
+        if self.avg_cache['file_list'] != tuple(self.target_list):
+            logger.info('avg cache not exist')
+            labels = ['Int_t', 'g2']
+            res = self.read_data(labels, file_list=self.target_list)
+            Int_t = res['Int_t'][:, 1, :].astype(np.float32)
+            Int_t = Int_t / np.max(Int_t)
+            intt_minmax = []
+            for n in range(len(self.target_list)):
+                intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
+            intt_minmax = np.array(intt_minmax).T.astype(np.float32)
+            g2_avg = np.mean(res['g2'][:, -10:, 1], axis=1)
+            cutoff_line = np.ones_like(g2_avg) * g2_cutoff
+            g2_avg = np.vstack([g2_avg, cutoff_line])
 
-        g2_avg = np.mean(res['g2'][:, -10:, 1], axis=1)
-        g2_avg = np.array([g2_avg])
+            self.avg_cache['file_list'] = tuple(self.target_list)
+            self.avg_cache['intt_minmax'] = intt_minmax
+            self.avg_cache['g2_avg'] = g2_avg
+        else:
+            logger.info('using avg cache')
+            intt_minmax = self.avg_cache['intt_minmax']
+            g2_avg = self.avg_cache['g2_avg']
 
-        hdl1.show_scatter(intt_minmax, xlabel='Int-t min', ylabel='Int-t max')
-        hdl2.show_lines(g2_avg, xlabel='index', ylabel='g2 average')
+        if target == 'intt':
+            y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
+            freq = np.bincount(y_pred)
+            valid_num = np.sum(y_pred == y_pred[freq.argmax()])
+            title = '%d / %d' % (valid_num, y_pred.size)
+            hdl1.show_scatter(intt_minmax, color=y_pred, xlabel='Int-t min',
+                              ylabel='Int-t max', title=title)
+        elif target == 'g2':
+            g2_avg[1, :] = g2_cutoff
+            valid_num = np.sum(g2_avg[0] >= g2_cutoff)
+            legend = ['data', 'cutoff']
+            title = '%d / %d' % (valid_num, g2_avg.shape[1])
+            hdl2.show_lines(g2_avg, xlabel='index', ylabel='g2 average',
+                            legend=legend, title=title)
+        else:
+            return
 
-
-    def average(self, hdl1, hdl2, chunk_size=256, mask=None,
-                save_path=None, origin_path=None):
-        self.average_outlier(hdl1, hdl2)
-        return
+    def average(self, chunk_size=256, mask=None, save_path=None,
+                origin_path=None):
 
         labels = ['Iq', 'g2', 'g2_err', 'Int_2D']
         g2 = self.read_data(['g2'], self.target_list)['g2']
