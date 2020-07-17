@@ -1,7 +1,7 @@
 #!/bin/bash
 WD=/home/beams/8IDIUSER/Documents/Miaoqi/xpcs_gui
 
-LOG_FILE=.log
+LOG_FILE=$WD/log/log.txt
 
 date >> $LOG_FILE
 echo "start new gui instance" >> $LOG_FILE
