@@ -14,6 +14,7 @@ def long_substr(data):
                     substr = data[0][i:i+j]
     return substr
 
+
 def is_substr(find, data):
     if len(data) < 1 and len(find) < 1:
         return False
@@ -21,6 +22,11 @@ def is_substr(find, data):
         if find not in data[i]:
             return False
     return True
+
+
+def get_suffix(file_name):
+    _, suffix = os.path.splitext(file_name)
+    return suffix
 
 
 def create_id(in_list, repeat=1, keep_slice=None):
@@ -94,7 +100,7 @@ class FileLocator(object):
         ans.sort()
         return len(ans), ans
 
-    def build(self, path):
+    def build(self, path, filter_list=['.hdf', '.h5']):
         if os.path.isfile(path):
             flist = []
             with open(path, 'r') as f:
@@ -104,8 +110,8 @@ class FileLocator(object):
             flist = os.listdir(path)
             self.cwd = path
 
-        # only keep hdf files
-        flist = [x for x in flist if '.hdf' in x]
+        flist = [x for x in flist if get_suffix(x) in filter_list]
+
         # filter configure files
         flist = [x for x in flist if not x.startswith('.')]
         flist.sort()
