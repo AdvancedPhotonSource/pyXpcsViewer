@@ -172,6 +172,10 @@ class Ui(QtWidgets.QMainWindow):
         else:
             self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
+    def reload_source(self):
+        self.dl.build()
+        self.update_box(self.dl.source_list, mode='source')
+
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',

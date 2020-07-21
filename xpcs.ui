@@ -1163,8 +1163,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1452</width>
-                <height>632</height>
+                <width>1524</width>
+                <height>702</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -1808,8 +1808,8 @@
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>188</x>
-     <y>542</y>
+     <x>167</x>
+     <y>534</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -1824,8 +1824,8 @@
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>353</x>
-     <y>542</y>
+     <x>311</x>
+     <y>534</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -1840,8 +1840,8 @@
    <slot>load_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>357</x>
-     <y>79</y>
+     <x>167</x>
+     <y>112</y>
     </hint>
     <hint type="destinationlabel">
      <x>776</x>
@@ -1856,8 +1856,8 @@
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>312</x>
-     <y>500</y>
+     <x>311</x>
+     <y>492</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -1872,12 +1872,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>312</x>
-     <y>500</y>
+     <x>311</x>
+     <y>492</y>
     </hint>
     <hint type="destinationlabel">
-     <x>188</x>
-     <y>542</y>
+     <x>167</x>
+     <y>534</y>
     </hint>
    </hints>
   </connection>
@@ -1888,7 +1888,7 @@
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>348</x>
+     <x>302</x>
      <y>924</y>
     </hint>
     <hint type="destinationlabel">
@@ -1904,7 +1904,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1477</x>
+     <x>1455</x>
      <y>874</y>
     </hint>
     <hint type="destinationlabel">
@@ -1920,7 +1920,7 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
+     <x>713</x>
      <y>855</y>
     </hint>
     <hint type="destinationlabel">
@@ -1936,7 +1936,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1477</x>
+     <x>1455</x>
      <y>846</y>
     </hint>
     <hint type="destinationlabel">
@@ -1952,7 +1952,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1477</x>
+     <x>1455</x>
      <y>902</y>
     </hint>
     <hint type="destinationlabel">
@@ -1968,7 +1968,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1342</x>
+     <x>1320</x>
      <y>846</y>
     </hint>
     <hint type="destinationlabel">
@@ -1984,7 +1984,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1342</x>
+     <x>1320</x>
      <y>902</y>
     </hint>
     <hint type="destinationlabel">
@@ -2000,7 +2000,7 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1342</x>
+     <x>1320</x>
      <y>874</y>
     </hint>
     <hint type="destinationlabel">
@@ -2016,7 +2016,7 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1170</x>
+     <x>1148</x>
      <y>916</y>
     </hint>
     <hint type="destinationlabel">
@@ -2032,7 +2032,7 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1537</x>
+     <x>1515</x>
      <y>913</y>
     </hint>
     <hint type="destinationlabel">
@@ -2064,7 +2064,7 @@
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
+     <x>476</x>
      <y>908</y>
     </hint>
     <hint type="destinationlabel">
@@ -2240,8 +2240,8 @@
    <slot>plot_outlier_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1740</x>
-     <y>644</y>
+     <x>1864</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
      <x>1633</x>
@@ -2256,12 +2256,28 @@
    <slot>plot_outlier_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>942</x>
-     <y>643</y>
+     <x>1091</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
      <x>887</x>
      <y>-4</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_11</sender>
+   <signal>clicked()</signal>
+   <receiver>mainwindow</receiver>
+   <slot>reload_source()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>216</x>
+     <y>100</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>730</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>
@@ -2288,5 +2304,6 @@
   <slot>do_average()</slot>
   <slot>plot_outlier_g2()</slot>
   <slot>plot_outlier_intt()</slot>
+  <slot>reload_source()</slot>
  </slots>
 </ui>

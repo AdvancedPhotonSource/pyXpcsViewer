@@ -100,9 +100,11 @@ class FileLocator(object):
         ans.sort()
         return len(ans), ans
 
-    def build(self, path, filter_list=['.hdf', '.h5']):
+    def build(self, path=None, filter_list=['.hdf', '.h5']):
+        if path is None:
+            path = self.path
+
         if os.path.isfile(path):
-            flist = []
             with open(path, 'r') as f:
                 flist = [x[:-1] for x in f]
             self.cwd = os.path.dirname(path)
