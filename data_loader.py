@@ -585,15 +585,23 @@ class DataLoader(FileLocator):
     def cache_data(self, max_number=1024, progress_bar=None):
         labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0', 't_el', 
                   'ql_dyn', 'g2', 'g2_err']
+
         file_list = self.target_list[slice(0, max_number)]
         total_num = len(file_list)
+        existing_keys = list(self.data_cache.keys())
+
         for n, fn in enumerate(file_list):
             if progress_bar is not None:
                 progress_bar.setValue((n + 1) / total_num * 100)
 
             if fn in self.data_cache.keys():
+                existing_keys.remove(fn)
                 continue
             self.data_cache[fn] = read_file(labels, fn, self.cwd, 'dict')
+
+        for key in existing_keys:
+            self.data_cache.pop(key, None)
+
         return
         
     def average_plot_outlier(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
