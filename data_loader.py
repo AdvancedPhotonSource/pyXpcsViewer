@@ -94,6 +94,7 @@ class DataLoader(FileLocator):
             'intt_minmax': None,
             'g2_avg': None
         }
+        self.data_cache = {}
 
 
     def hash(self, max_points=10):
@@ -563,7 +564,20 @@ class DataLoader(FileLocator):
             np_data[label] = np.array(temp)
 
         return np_data
-
+    
+    def cache_data(self, max_number=1024, progress_bar=None):
+        labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0', 't_el', 
+                  'ql_dyn', 'g2', 'g2_err']
+        file_list = self.target_list[slice(0, max_number)]
+        total_num = len(file_list)
+        for n, fn in enumerate(file_list):
+            if fn in self.data_cache.keys():
+                continue
+            self.data_cache[fn] = read_data(labels, fn, self.cwd, 'dict')
+            if progress_bar is not None:
+                progress_bar.setValue((n + 1) / total_num)
+        return
+        
     def average_plot_outlier(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
                              target='g2'):
         if self.avg_cache['file_list'] != tuple(self.target_list):
