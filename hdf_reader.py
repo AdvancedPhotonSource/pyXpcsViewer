@@ -45,8 +45,14 @@ def save_file(fname, fields, res):
     return
 
 
-def read_file(fields, fn, prefix='./data'):
-    res = []
+def read_file(fields, fn, prefix='./data', dtype='list'):
+    if dtype == 'list':
+        res = []
+    elif dtype == 'dict':
+        res = {}
+    else:
+        raise TypeError('dtype not supported.')
+
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
         for field in fields:
             if field == 't_el':
@@ -61,7 +67,10 @@ def read_file(fields, fn, prefix='./data'):
                     else:
                         link = avg_hdf_dict[field]
                         val = np.squeeze(HDF_Result.get(link))
-            res.append(val)
+            if dtype == 'list':
+                res.append(val)
+            elif dtype == 'dict':
+                res[field] = val
     return res
 
 

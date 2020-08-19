@@ -27,6 +27,9 @@ class Ui(QtWidgets.QMainWindow):
     def load_data(self):
         if (len(self.dl.target_list)) == 0:
             return
+        self.cache_data(progress_bar=self.progress_bar)
+        print('done')
+        return
         self.reorder_target()
         # self.plot_g2()
         self.plot_saxs_2D()
