@@ -41,14 +41,14 @@ def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
     ylabel = 'Intensity'
     if plot_norm == 1:
         Iq = Iq * np.square(q)
-        ylabel = ylabel + 'q^2'
+        ylabel = ylabel + ' * q^2'
     elif plot_norm == 2:
         Iq = Iq * np.square(np.square(q))
-        ylabel = ylabel + 'q^4'
+        ylabel = ylabel + ' * q^4'
     elif plot_norm == 3:
         baseline = Iq[0]
         Iq = Iq / baseline
-        ylabel = ylabel + '/I_0'
+        ylabel = ylabel + ' / I_0'
 
     # if plot_type == 'log':
     #     Iq = np.log10(Iq)
@@ -434,7 +434,7 @@ class DataLoader(FileLocator):
                      # maxYRange=sp[1] * 4)
 
     def plot_saxs_1d(self, mp_hdl, **kwargs):
-        res = self.get_saxs_data()
+        res = self.get_saxs_data(max_points=8)
         q = res['ql_sta'][0]
         Iq = res['Iq']
         self.plot_saxs_line(mp_hdl, q, Iq, legend=self.target_list, **kwargs)
@@ -470,7 +470,7 @@ class DataLoader(FileLocator):
         mp_hdl.draw()
         return
 
-    def get_saxs_data(self, max_points=128):
+    def get_saxs_data(self, max_points=1024):
         labels = ['Int_2D', 'Iq', 'ql_sta']
         file_list = self.target_list[0: max_points]
         res = self.read_data(labels, file_list)
@@ -546,7 +546,7 @@ class DataLoader(FileLocator):
         #                       ylabel=qlabel,
         #                       xlabel=xlabel)
 
-    def read_data(self, labels, file_list=None, mask=None):
+    def read_data2(self, labels, file_list=None, mask=None):
         if file_list is None:
             file_list = self.target_list
 
@@ -565,17 +565,35 @@ class DataLoader(FileLocator):
 
         return np_data
     
+    def read_data(self, labels, file_list=None, mask=None):
+        if file_list is None:
+            file_list = self.target_list
+
+        if mask is None:
+            mask = np.ones(shape=len(file_list), dtype=np.bool)
+
+        data = []
+        np_data = {}
+        for n, label in enumerate(labels):
+            temp = []
+            for n, fn in enumerate(file_list):
+                if mask[n]:
+                    temp.append(self.data_cache[fn][label])
+            np_data[label] = np.array(temp)
+        return np_data
+    
     def cache_data(self, max_number=1024, progress_bar=None):
         labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0', 't_el', 
                   'ql_dyn', 'g2', 'g2_err']
         file_list = self.target_list[slice(0, max_number)]
         total_num = len(file_list)
         for n, fn in enumerate(file_list):
+            if progress_bar is not None:
+                progress_bar.setValue((n + 1) / total_num * 100)
+
             if fn in self.data_cache.keys():
                 continue
-            self.data_cache[fn] = read_data(labels, fn, self.cwd, 'dict')
-            if progress_bar is not None:
-                progress_bar.setValue((n + 1) / total_num)
+            self.data_cache[fn] = read_file(labels, fn, self.cwd, 'dict')
         return
         
     def average_plot_outlier(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,

@@ -27,13 +27,12 @@ class Ui(QtWidgets.QMainWindow):
     def load_data(self):
         if (len(self.dl.target_list)) == 0:
             return
-        self.cache_data(progress_bar=self.progress_bar)
-        print('done')
-        return
+        self.dl.cache_data(progress_bar=self.progress_bar)
+
         self.reorder_target()
         # self.plot_g2()
-        self.plot_saxs_2D()
-        self.plot_saxs_1D()
+        # self.plot_saxs_2D()
+        # self.plot_saxs_1D()
         self.update_hdf_list()
         self.update_stab_list()
         # self.plot_g2()
@@ -130,7 +129,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def plot_outlier_intt(self):
         kwargs = {
-            'g2_cutoff': self.avg_intt_num_clusters.value(),
+            'num_clusters': self.avg_intt_num_clusters.value(),
             'target': 'intt'
         }
         self.dl.average_plot_outlier(self.mp_avg_intt, self.mp_avg_g2,
@@ -219,6 +218,7 @@ class Ui(QtWidgets.QMainWindow):
         prev_hash = self.dl.hash(-1)
         for x in self.list_view_source.selectedIndexes():
             target.append(x.data())
+        self.progress_bar.setValue(0)
 
         self.dl.add_target(target)
         self.update_box(self.dl.target_list, mode='target')
@@ -252,6 +252,7 @@ class Ui(QtWidgets.QMainWindow):
         for x in self.list_view_target.selectedIndexes():
             rmv_list.append(x.data())
 
+        self.progress_bar.setValue(0)
         self.dl.remove_target(rmv_list)
         self.update_box(self.dl.target_list, mode='target')
 
