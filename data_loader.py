@@ -594,10 +594,12 @@ class DataLoader(FileLocator):
             if progress_bar is not None:
                 progress_bar.setValue((n + 1) / total_num * 100)
 
-            if fn in self.data_cache.keys():
+            if fn in existing_keys:
+                # already exist
                 existing_keys.remove(fn)
-                continue
-            self.data_cache[fn] = read_file(labels, fn, self.cwd, 'dict')
+            else:
+                # read from file and output as a dictionary
+                self.data_cache[fn] = read_file(labels, fn, self.cwd, 'dict')
 
         for key in existing_keys:
             self.data_cache.pop(key, None)

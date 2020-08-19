@@ -203,6 +203,9 @@ class Ui(QtWidgets.QMainWindow):
         error_dialog.showMessage('\n'.join(msg))
 
     def update_box(self, file_list, mode='source'):
+        if file_list is None:
+            return
+
         if mode == 'source':
             self.list_view_source.clear()
             self.list_view_source.addItems(file_list)
