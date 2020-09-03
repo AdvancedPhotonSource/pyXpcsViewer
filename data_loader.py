@@ -6,7 +6,8 @@ from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
-from hdf_reader import read_file, get_analysis_type, save_file as hdf_save_file
+from hdf_reader import read_file, get_analysis_type, get_c2all_keys, \
+                       save_file as hdf_save_file
 from PyQt5 import QtCore
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
@@ -18,7 +19,6 @@ import logging
 logging_format = '%(asctime)s %(message)s'
 logging.basicConfig(level=logging.INFO, format=logging_format)
 logger = logging.getLogger(__name__)
-
 
 
 def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
@@ -95,7 +95,6 @@ class DataLoader(FileLocator):
             'g2_avg': None
         }
         self.data_cache = {}
-
 
     def hash(self, max_points=10):
         if self.target_list is None:
@@ -387,7 +386,7 @@ class DataLoader(FileLocator):
             return msg
         ans = self.get_saxs_data()['Int_2D']
         if plot_type == 'log':
-            ans = np.log10(ans + 1E-8)
+            ans = np.log10(ans + 0.1)
 
         ans = ans.astype(np.float32)
 
@@ -421,10 +420,10 @@ class DataLoader(FileLocator):
             margin_h = int((h1 / h0 * w0 - w1) / 2)
 
         vb = pg_hdl.getView()
-        vb.setLimits(xMin= -1 * margin_h,
-                     yMin= -1 * margin_v,
-                     xMax= 1 * sp[0] + margin_h,
-                     yMax= 1 * sp[1] + margin_v,
+        vb.setLimits(xMin=-1 * margin_h,
+                     yMin=-1 * margin_v,
+                     xMax=1 * sp[0] + margin_h,
+                     yMax=1 * sp[1] + margin_v,
                      minXRange=sp[0] // 10,
                      minYRange=int(sp[0] / 10 / w0 * h0))
         vb.setAspectLocked(1.0)
@@ -492,6 +491,33 @@ class DataLoader(FileLocator):
             return ['No target files selected.']
         else:
             return True
+    
+    def plot_twotime(self, hdl, current_file_index=0, plot_index=3, fr_bin=5):
+        msg = self.check_target()
+        if msg != True:
+            return msg
+
+        c2_key = '/exchange/C2T_all/g2_%05d' % plot_index
+        labels = [c2_key, 't0', 'g2_full', 'g2_partials']
+        res = self.read_data(labels, [self.target_list[current_file_index]])
+        c2_half = res[c2_key][0]
+
+        c2 = c2_half + np.transpose(c2_half)
+
+        c2_translate = np.zeros(c2.shape)
+        c2_translate[:, 0] = c2[:, -1]
+        c2_translate[:, 1:] = c2[:, :-1]
+
+        c2 = np.where(c2 > 1.3, c2_translate, c2)
+
+        t = fr_bin * res['t0'] * np.arange(len(c2))
+        t_min = np.min(t)
+        t_max = np.max(t)
+        
+        ax = hdl.subplots(1, 1)
+        ax.imshow(c2, interpolation='none', origin='lower',
+                  extent=([t_min, t_max, t_min, t_max]), cmap=plt.get_cmap('jet'))
+        hdl.draw()
 
     def plot_intt(self, pg_hdl, max_points=128, sampling=-1):
         msg = self.check_target()
@@ -581,15 +607,20 @@ class DataLoader(FileLocator):
                     temp.append(self.data_cache[fn][label])
             np_data[label] = np.array(temp)
         return np_data
-    
+
     def cache_data(self, max_number=1024, progress_bar=None):
-        labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0', 't_el', 
-                  'ql_dyn', 'g2', 'g2_err']
+        analysis_type = get_analysis_type(self.target_list[0], prefix=self.cwd)
+        if analysis_type == 'Twotime':
+            c2_key = get_c2all_keys(self.target_list[0], prefix=self.cwd)
+            labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0',
+                      'ql_dyn', 'g2_full', 'g2_partials'] + c2_key
+        else:
+            labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0', 't_el',
+                      'ql_dyn', 'g2', 'g2_err']
 
         file_list = self.target_list[slice(0, max_number)]
         total_num = len(file_list)
         existing_keys = list(self.data_cache.keys())
-        # dtype = (get_analysis_type(self.target_list[0], prefix=self.cwd))
 
         for n, fn in enumerate(file_list):
             if progress_bar is not None:

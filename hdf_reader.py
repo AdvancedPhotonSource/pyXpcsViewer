@@ -4,7 +4,7 @@ import numpy as np
 from multiprocessing import Pool
 import time
 
-hdf_dict = {
+hdf_dict_8idi = {
     'Iq': '/exchange/partition-mean-total',
     'Iqp': '/exchange/partition-mean-partial',
     'ql_sta': '/xpcs/sqlist',
@@ -22,8 +22,27 @@ hdf_dict = {
     'pix_dim': '/measurement/instrument/detector/x_pixel_size',
     'X_energy': '/measurement/instrument/source_begin/energy',
     'xdim': '/measurement/instrument/detector/x_dimension',
-    'ydim': '/measurement/instrument/detector/y_dimension'
+    'ydim': '/measurement/instrument/detector/y_dimension',
+    # for twotime datasets
+    'c2_half': '/exchange/C2T_all',
+    'g2_full': '/exchange/g2full',
+    'g2_partials': '/exchange/g2partials',
 }
+
+
+class HDF_Dict(dict):
+    def __init__(self, raw_hdf_dict):
+        self.__dict__.update(raw_hdf_dict)
+
+    def __getitem__(self, key):
+        if key in self.__dict__.keys():
+            ans = self.__dict__[key]
+        else:
+            ans = key
+        return ans
+
+
+hdf_dict = HDF_Dict(hdf_dict_8idi)
 
 avg_hdf_dict = {
     'Iq': '/Iq_ave',
@@ -42,6 +61,13 @@ def get_analysis_type(fn, prefix):
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
         val = HDF_Result.get(hdf_dict['type'])[()].decode()
     return val
+
+
+def get_c2all_keys(fn, prefix):
+    with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
+        val = np.array(HDF_Result.get(hdf_dict['c2_half']))
+    res = [os.path.join(hdf_dict['c2_half'], str(x)) for x in val]
+    return res
 
 
 def save_file(fname, fields, res):
@@ -67,13 +93,12 @@ def read_file(fields, fn, prefix='./data', dtype='list'):
                 val2 = np.squeeze(HDF_Result.get(hdf_dict['tau']))
                 val = val1 * val2
             else:
-                if field in hdf_dict.keys():
-                    link = hdf_dict[field]
-                    if link in HDF_Result.keys():
-                        val = np.squeeze(HDF_Result.get(link))
-                    else:
-                        link = avg_hdf_dict[field]
-                        val = np.squeeze(HDF_Result.get(link))
+                link = hdf_dict[field]
+                if link in HDF_Result.keys():
+                    val = np.squeeze(HDF_Result.get(link))
+                else:
+                    link = avg_hdf_dict[field]
+                    val = np.squeeze(HDF_Result.get(link))
             if dtype == 'list':
                 res.append(val)
             elif dtype == 'dict':

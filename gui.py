@@ -78,6 +78,13 @@ class Ui(QtWidgets.QMainWindow):
             'plot_offset': self.sb_saxs_offset.value(),
             'plot_norm': self.cb_saxs_norm.currentIndex()}
         self.dl.plot_saxs_1d(self.mp_saxs, **kwargs)
+    
+    def plot_twotime(self):
+        kwargs = {
+            # if nothing is selected, currentRow = -1; then plot 0th row;
+            'current_file_index': max(0, self.list_view_target.currentRow()),
+            'plot_index': 3}
+        self.dl.plot_twotime(self.mp_2t, **kwargs)
 
     def plot_stability_iq(self):
         kwargs = {
