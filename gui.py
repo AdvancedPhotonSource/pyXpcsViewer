@@ -25,7 +25,7 @@ class Ui(QtWidgets.QMainWindow):
         self.g2_cache = {}
 
     def load_data(self):
-        if (len(self.dl.target_list)) == 0:
+        if self.dl.target_list is None or (len(self.dl.target_list)) == 0:
             return
         self.dl.cache_data(progress_bar=self.progress_bar)
 

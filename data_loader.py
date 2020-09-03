@@ -6,7 +6,7 @@ from xpcs_fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
-from hdf_reader import read_file, save_file as hdf_save_file
+from hdf_reader import read_file, get_analysis_type, save_file as hdf_save_file
 from PyQt5 import QtCore
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
@@ -589,6 +589,7 @@ class DataLoader(FileLocator):
         file_list = self.target_list[slice(0, max_number)]
         total_num = len(file_list)
         existing_keys = list(self.data_cache.keys())
+        # dtype = (get_analysis_type(self.target_list[0], prefix=self.cwd))
 
         for n, fn in enumerate(file_list):
             if progress_bar is not None:

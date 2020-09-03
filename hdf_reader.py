@@ -9,6 +9,7 @@ hdf_dict = {
     'Iqp': '/exchange/partition-mean-partial',
     'ql_sta': '/xpcs/sqlist',
     'ql_dyn': '/xpcs/dqlist',
+    'type': '/xpcs/analysis_type',
     't0': '/measurement/instrument/detector/exposure_period',
     'tau': '/exchange/tau',
     'g2': '/exchange/norm-0-g2',
@@ -35,6 +36,12 @@ avg_hdf_dict = {
     'ql_dyn': '/ql_dyn',
     'Int_2D': '/Int_2D_ave',
 }
+
+
+def get_analysis_type(fn, prefix):
+    with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
+        val = HDF_Result.get(hdf_dict['type'])[()].decode()
+    return val
 
 
 def save_file(fname, fields, res):
