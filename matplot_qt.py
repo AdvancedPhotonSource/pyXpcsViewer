@@ -14,8 +14,6 @@ markers = [
 
 
 
-
-
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5.1, height=3.2, dpi=100):

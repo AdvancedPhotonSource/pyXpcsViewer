@@ -492,15 +492,19 @@ class DataLoader(FileLocator):
         else:
             return True
     
-    def plot_twotime(self, hdl, current_file_index=0, plot_index=3, fr_bin=5):
+    def plot_twotime(self, hdl, current_file_index=0, plot_index=3, fr_bin=5,
+                     cmap='jet'):
         msg = self.check_target()
         if msg != True:
             return msg
 
         c2_key = '/exchange/C2T_all/g2_%05d' % plot_index
         labels = [c2_key, 't0', 'g2_full', 'g2_partials']
+
         res = self.read_data(labels, [self.target_list[current_file_index]])
         c2_half = res[c2_key][0]
+        if c2_half is None:
+            return
 
         c2 = c2_half + np.transpose(c2_half)
 
@@ -513,10 +517,13 @@ class DataLoader(FileLocator):
         t = fr_bin * res['t0'] * np.arange(len(c2))
         t_min = np.min(t)
         t_max = np.max(t)
-        
+
+        hdl.clear() 
         ax = hdl.subplots(1, 1)
-        ax.imshow(c2, interpolation='none', origin='lower',
-                  extent=([t_min, t_max, t_min, t_max]), cmap=plt.get_cmap('jet'))
+        im = ax.imshow(c2, interpolation='none', origin='lower',
+                       extent=([t_min, t_max, t_min, t_max]),
+                       cmap=plt.get_cmap(cmap))
+        plt.colorbar(im, ax=ax)
         hdl.draw()
 
     def plot_intt(self, pg_hdl, max_points=128, sampling=-1):
@@ -604,7 +611,10 @@ class DataLoader(FileLocator):
             temp = []
             for n, fn in enumerate(file_list):
                 if mask[n]:
-                    temp.append(self.data_cache[fn][label])
+                    if label in self.data_cache[fn].keys():
+                        temp.append(self.data_cache[fn][label])
+                    else:
+                        temp.append(None)
             np_data[label] = np.array(temp)
         return np_data
 

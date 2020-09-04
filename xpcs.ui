@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>979</height>
+    <width>1783</width>
+    <height>985</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -26,7 +26,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QGridLayout" name="gridLayout_2">
+   <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QFrame" name="file_panel">
       <property name="sizePolicy">
@@ -41,7 +41,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QGridLayout" name="gridLayout">
+      <layout class="QGridLayout" name="gridLayout_32">
        <item row="0" column="0">
         <widget class="QSplitter" name="splitter_4">
          <property name="orientation">
@@ -1178,8 +1178,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1558</width>
-                 <height>717</height>
+                 <width>1421</width>
+                 <height>723</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1696,31 +1696,147 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_6">
+          <widget class="QWidget" name="tab_6_twotime">
            <attribute name="title">
             <string>Two Time</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_33">
+           <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="0">
-             <widget class="MplCanvas" name="mp_2t" native="true"/>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="MplCanvas" name="mp_2t" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>100</horstretch>
+                  <verstretch>100</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>600</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="MplCanvas" name="mp_2t_2" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>100</horstretch>
+                  <verstretch>100</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>600</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item row="1" column="0">
              <widget class="QGroupBox" name="groupBox_11">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>250</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>300</height>
+               </size>
+              </property>
               <property name="title">
                <string>GroupBox</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_32">
-               <item row="1" column="0">
-                <widget class="QPushButton" name="pushButton_12">
-                 <property name="text">
-                  <string>PushButton</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QComboBox" name="g2_index"/>
-               </item>
-              </layout>
+              <widget class="QPushButton" name="pushButton_12">
+               <property name="geometry">
+                <rect>
+                 <x>150</x>
+                 <y>130</y>
+                 <width>80</width>
+                 <height>23</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Plot</string>
+               </property>
+              </widget>
+              <widget class="QWidget" name="">
+               <property name="geometry">
+                <rect>
+                 <x>70</x>
+                 <y>80</y>
+                 <width>256</width>
+                 <height>26</height>
+                </rect>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="label_27">
+                  <property name="text">
+                   <string>q_index:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="twotime_q_index">
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="value">
+                   <number>3</number>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_28">
+                  <property name="text">
+                   <string>colormap:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cb_twotime_cmap">
+                  <item>
+                   <property name="text">
+                    <string>jet</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>hot</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>plasma</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>viridis</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>magma</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>gray</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -1821,7 +1937,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1920</width>
+     <width>1783</width>
      <height>20</height>
     </rect>
    </property>

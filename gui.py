@@ -83,7 +83,8 @@ class Ui(QtWidgets.QMainWindow):
         kwargs = {
             # if nothing is selected, currentRow = -1; then plot 0th row;
             'current_file_index': max(0, self.list_view_target.currentRow()),
-            'plot_index': 3}
+            'plot_index': self.twotime_q_index.value(),
+            'cmap': self.cb_twotime_cmap.currentText()}
         self.dl.plot_twotime(self.mp_2t, **kwargs)
 
     def plot_stability_iq(self):
