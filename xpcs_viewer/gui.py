@@ -4,6 +4,8 @@ import sys
 import os
 from data_loader import DataLoader
 import numpy as np
+from plotwidget import PlotWidget
+
 
 # import time
 import logging
@@ -16,7 +18,10 @@ logger = logging.getLogger(__name__)
 class Ui(QtWidgets.QMainWindow):
     def __init__(self, path=None):
         super(Ui, self).__init__()
-        uic.loadUi('xpcs.ui', self)
+        uic.loadUi('./ui/xpcs.ui', self)
+
+        a = PlotWidget('ui/example.ui', self.tab_5)
+        # print(type(self.cb_example))
         # self.list_view_target.dragMoveEvent().connect
         self.show()
         self.dl = None

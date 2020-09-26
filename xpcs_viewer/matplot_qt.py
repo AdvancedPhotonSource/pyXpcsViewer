@@ -1,7 +1,7 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PyQt5 import QtWidgets
+from PyQt5 import QtGui
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,6 +12,19 @@ markers = [
     "o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"
 ]
 
+
+# class MplWidget(QtGui.QWidget):
+#     """
+#     MplWidget combines a MplCanvas with a Toolbar
+#     """
+#     def __init__(self, parent=None):
+#         QtGui.QWidget.__init__(self, parent)
+#         self.hdl = MplCanvas()
+#         self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
+#         self.vbl = QtGui.QVBoxLayout()
+#         self.vbl.addWidget(self.hdl)
+#         self.vbl.addWidget(self.navi_toolbar)
+#         self.setLayout(self.vbl)
 
 
 class MplCanvas(FigureCanvasQTAgg):

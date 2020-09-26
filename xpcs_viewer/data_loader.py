@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyqtgraph as pg
 from matplotlib.ticker import FormatStrFormatter
-from xpcs_fitting import fit_xpcs, fit_tau
+from helper.fitting import fit_xpcs, fit_tau
 from file_locator import FileLocator
 from mpl_cmaps_in_ImageItem import pg_get_cmap
 from hdf_to_str import get_hdf_info
