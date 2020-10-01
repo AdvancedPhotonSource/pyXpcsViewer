@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1783</width>
-    <height>985</height>
+    <width>1680</width>
+    <height>949</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -268,27 +268,55 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QPushButton" name="btn_load_data">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="text">
-                  <string>update</string>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <item>
+                  <widget class="QCheckBox" name="box_auto_update">
+                   <property name="text">
+                    <string>auto</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="btn_load_data">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>update</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item row="2" column="0">
-                <widget class="QProgressBar" name="progress_bar">
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="value">
-                  <number>0</number>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_9">
+                 <item>
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>progress:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QProgressBar" name="progress_bar">
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="value">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -310,7 +338,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -608,7 +636,7 @@
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="MplCanvas" name="mp_saxs" native="true">
+             <widget class="MplCanvasBarV" name="mp_saxs" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -1178,8 +1206,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1421</width>
-                 <height>723</height>
+                 <width>1287</width>
+                 <height>666</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1190,7 +1218,7 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_10">
                 <item row="0" column="0">
-                 <widget class="MplCanvas" name="mp_g2" native="true">
+                 <widget class="MplCanvasBarH" name="mp_g2" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -1700,49 +1728,48 @@
            <attribute name="title">
             <string>Two Time</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_2">
+           <layout class="QGridLayout" name="gridLayout_33">
             <item row="0" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="MplCanvas" name="mp_2t" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>100</horstretch>
-                  <verstretch>100</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>300</width>
-                  <height>600</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="MplCanvas" name="mp_2t_2" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>100</horstretch>
-                  <verstretch>100</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>300</width>
-                  <height>600</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QSplitter" name="splitter_5">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <widget class="MplCanvasBarH" name="mp_2t_map" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>100</horstretch>
+                 <verstretch>100</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>200</height>
+                </size>
+               </property>
+              </widget>
+              <widget class="MplCanvasBarH" name="mp_2t" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>100</horstretch>
+                 <verstretch>100</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>200</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
             </item>
             <item row="1" column="0">
              <widget class="QGroupBox" name="groupBox_11">
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>250</height>
+                <height>100</height>
                </size>
               </property>
               <property name="maximumSize">
@@ -1754,89 +1781,116 @@
               <property name="title">
                <string>GroupBox</string>
               </property>
-              <widget class="QPushButton" name="pushButton_12">
-               <property name="geometry">
-                <rect>
-                 <x>150</x>
-                 <y>130</y>
-                 <width>80</width>
-                 <height>23</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Plot</string>
-               </property>
-              </widget>
-              <widget class="QWidget" name="">
-               <property name="geometry">
-                <rect>
-                 <x>70</x>
-                 <y>80</y>
-                 <width>256</width>
-                 <height>26</height>
-                </rect>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="label_27">
-                  <property name="text">
-                   <string>q_index:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="twotime_q_index">
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                  <property name="value">
-                   <number>3</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_28">
-                  <property name="text">
-                   <string>colormap:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="cb_twotime_cmap">
-                  <item>
-                   <property name="text">
-                    <string>jet</string>
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="0" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <spacer name="horizontalSpacer_14">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
                    </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>hot</string>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
                    </property>
-                  </item>
-                  <item>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_29">
                    <property name="text">
-                    <string>plasma</string>
+                    <string>Group:</string>
                    </property>
-                  </item>
-                  <item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="cb_twotime_group"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_27">
                    <property name="text">
-                    <string>viridis</string>
+                    <string>q_index:</string>
                    </property>
-                  </item>
-                  <item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="twotime_q_index">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="maximum">
+                    <number>9999</number>
+                   </property>
+                   <property name="value">
+                    <number>3</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_28">
                    <property name="text">
-                    <string>magma</string>
+                    <string>colormap:</string>
                    </property>
-                  </item>
-                  <item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="cb_twotime_cmap">
+                   <item>
+                    <property name="text">
+                     <string>jet</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>hot</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>plasma</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>viridis</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>magma</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>gray</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_12">
                    <property name="text">
-                    <string>gray</string>
+                    <string>Plot</string>
                    </property>
-                  </item>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_13">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -1937,8 +1991,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1783</width>
-     <height>20</height>
+     <width>1680</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -1957,6 +2011,18 @@
    <header>matplot_qt</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>MplCanvasBarH</class>
+   <extends>QWidget</extends>
+   <header>matplot_qt</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvasBarV</class>
+   <extends>QWidget</extends>
+   <header>matplot_qt</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -1967,8 +2033,8 @@
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>156</x>
-     <y>507</y>
+     <x>167</x>
+     <y>497</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -1983,8 +2049,8 @@
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>298</x>
-     <y>507</y>
+     <x>311</x>
+     <y>497</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -2015,8 +2081,8 @@
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>299</x>
-     <y>477</y>
+     <x>311</x>
+     <y>455</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -2031,12 +2097,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>299</x>
-     <y>477</y>
+     <x>311</x>
+     <y>455</y>
     </hint>
     <hint type="destinationlabel">
-     <x>156</x>
-     <y>507</y>
+     <x>167</x>
+     <y>497</y>
     </hint>
    </hints>
   </connection>
@@ -2047,8 +2113,8 @@
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>287</x>
-     <y>898</y>
+     <x>296</x>
+     <y>856</y>
     </hint>
     <hint type="destinationlabel">
      <x>345</x>
@@ -2063,8 +2129,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1438</x>
-     <y>885</y>
+     <x>1309</x>
+     <y>844</y>
     </hint>
     <hint type="destinationlabel">
      <x>1403</x>
@@ -2079,8 +2145,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>704</x>
-     <y>856</y>
+     <x>450</x>
+     <y>825</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -2095,8 +2161,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1438</x>
-     <y>856</y>
+     <x>1309</x>
+     <y>816</y>
     </hint>
     <hint type="destinationlabel">
      <x>1248</x>
@@ -2111,8 +2177,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1438</x>
-     <y>914</y>
+     <x>1309</x>
+     <y>872</y>
     </hint>
     <hint type="destinationlabel">
      <x>1583</x>
@@ -2127,8 +2193,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1307</x>
-     <y>856</y>
+     <x>1174</x>
+     <y>816</y>
     </hint>
     <hint type="destinationlabel">
      <x>1106</x>
@@ -2143,8 +2209,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1307</x>
-     <y>914</y>
+     <x>1174</x>
+     <y>872</y>
     </hint>
     <hint type="destinationlabel">
      <x>832</x>
@@ -2159,8 +2225,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1307</x>
-     <y>885</y>
+     <x>1174</x>
+     <y>844</y>
     </hint>
     <hint type="destinationlabel">
      <x>1051</x>
@@ -2175,8 +2241,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1140</x>
-     <y>925</y>
+     <x>1027</x>
+     <y>886</y>
     </hint>
     <hint type="destinationlabel">
      <x>585</x>
@@ -2191,8 +2257,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1514</x>
-     <y>925</y>
+     <x>1394</x>
+     <y>883</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
@@ -2207,8 +2273,8 @@
    <slot>plot_stability_iq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1154</x>
-     <y>891</y>
+     <x>730</x>
+     <y>870</y>
     </hint>
     <hint type="destinationlabel">
      <x>1081</x>
@@ -2223,8 +2289,8 @@
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>453</x>
-     <y>916</y>
+     <x>473</x>
+     <y>878</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
@@ -2239,8 +2305,8 @@
    <slot>plot_saxs_2D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1280</x>
-     <y>905</y>
+     <x>877</x>
+     <y>868</y>
     </hint>
     <hint type="destinationlabel">
      <x>401</x>
@@ -2255,8 +2321,8 @@
    <slot>plot_saxs_1D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1326</x>
-     <y>913</y>
+     <x>1245</x>
+     <y>872</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
@@ -2271,8 +2337,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>882</x>
-     <y>841</y>
+     <x>806</x>
+     <y>816</y>
     </hint>
     <hint type="destinationlabel">
      <x>1916</x>
@@ -2287,8 +2353,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1061</x>
-     <y>844</y>
+     <x>941</x>
+     <y>816</y>
     </hint>
     <hint type="destinationlabel">
      <x>1917</x>
@@ -2303,8 +2369,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>941</x>
-     <y>867</y>
+     <x>806</x>
+     <y>844</y>
     </hint>
     <hint type="destinationlabel">
      <x>1913</x>
@@ -2319,8 +2385,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1000</x>
-     <y>865</y>
+     <x>941</x>
+     <y>844</y>
     </hint>
     <hint type="destinationlabel">
      <x>1918</x>
@@ -2335,8 +2401,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>913</x>
-     <y>894</y>
+     <x>806</x>
+     <y>872</y>
     </hint>
     <hint type="destinationlabel">
      <x>1914</x>
@@ -2351,8 +2417,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1084</x>
-     <y>892</y>
+     <x>941</x>
+     <y>872</y>
     </hint>
     <hint type="destinationlabel">
      <x>1917</x>
@@ -2367,8 +2433,8 @@
    <slot>plot_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1210</x>
-     <y>892</y>
+     <x>955</x>
+     <y>878</y>
     </hint>
     <hint type="destinationlabel">
      <x>1927</x>
@@ -2383,8 +2449,8 @@
    <slot>do_average()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1302</x>
-     <y>908</y>
+     <x>443</x>
+     <y>873</y>
     </hint>
     <hint type="destinationlabel">
      <x>1068</x>
@@ -2399,8 +2465,8 @@
    <slot>plot_outlier_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1864</x>
-     <y>711</y>
+     <x>1516</x>
+     <y>687</y>
     </hint>
     <hint type="destinationlabel">
      <x>1633</x>
@@ -2415,8 +2481,8 @@
    <slot>plot_outlier_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1091</x>
-     <y>711</y>
+     <x>860</x>
+     <y>687</y>
     </hint>
     <hint type="destinationlabel">
      <x>887</x>
@@ -2447,12 +2513,284 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1005</x>
-     <y>722</y>
+     <x>1251</x>
+     <y>845</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
      <y>953</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>twotime_q_index</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_twotime()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>972</x>
+     <y>836</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>976</x>
+     <y>926</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_twotime_cmap</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>mainwindow</receiver>
+   <slot>plot_twotime()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1134</x>
+     <y>842</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1126</x>
+     <y>927</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>box_auto_update</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mainwindow</receiver>
+   <slot>load_data()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>64</x>
+     <y>839</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>68</x>
+     <y>922</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_saxs_type</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_10</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>851</x>
+     <y>818</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>873</x>
+     <y>857</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_saxs_offset</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>pushButton_10</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1007</x>
+     <y>826</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1001</x>
+     <y>864</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_saxs_norm</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_10</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1181</x>
+     <y>820</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1163</x>
+     <y>853</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_stab_type</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_7</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>678</x>
+     <y>809</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>666</x>
+     <y>845</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_stab_offset</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>pushButton_7</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>900</x>
+     <y>815</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>897</x>
+     <y>844</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_stab_norm</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_7</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1078</x>
+     <y>821</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1071</x>
+     <y>857</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_stab</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_7</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>981</x>
+     <y>787</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>981</x>
+     <y>858</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_intt_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>btn_intt</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>950</x>
+     <y>831</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>941</x>
+     <y>863</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_intt_sampling</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>btn_intt</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1083</x>
+     <y>823</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1016</x>
+     <y>859</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>avg_intt_num_clusters</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>pushButton_6</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>713</x>
+     <y>667</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>812</x>
+     <y>671</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>avg_g2_cutoff</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>pushButton_9</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1365</x>
+     <y>677</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1439</x>
+     <y>678</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_saxs2D_type</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_5</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>842</x>
+     <y>826</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>841</x>
+     <y>840</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_saxs2D_cmap</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_5</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1032</x>
+     <y>810</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1031</x>
+     <y>842</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saxs2d_autorotate</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>pushButton_5</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1121</x>
+     <y>818</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1121</x>
+     <y>842</y>
     </hint>
    </hints>
   </connection>
