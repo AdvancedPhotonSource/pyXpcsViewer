@@ -3,18 +3,13 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
 from PyQt5 import QtGui, QtWidgets, QtCore
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.pyplot.style.use(['science', 'no-latex'])
+# matplotlib.pyplot.style.use(['science', 'no-latex'])
 
-
-markers = [
-    "o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"
-]
+markers = ["o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"]
 
 
 class NavigationToolbarSimple(NavigationToolbar2QT):
-
     def __init__(self, *kw, **kwargs):
         super(NavigationToolbarSimple, self).__init__(*kw, **kwargs)
 
@@ -86,7 +81,6 @@ class MplCanvasBarScroll(QtGui.QWidget):
 
 
 class MplCanvas(FigureCanvasQTAgg):
-
     def __init__(self, parent=None, width=15, height=12, dpi=150):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         # self.axes = fig.add_subplot(111)
@@ -147,23 +141,33 @@ class MplCanvas(FigureCanvasQTAgg):
         adjust_yerr(err_obj, x, y, y_error)
         return
 
-    def show_image(self, data, vmin=None, vmax=None, extent=None,
-                   cmap='seismic', xlabel=None, ylabel=None, title=None,
-                   id_list=None, vline_freq=-1):
-
+    def show_image(self,
+                   data,
+                   vmin=None,
+                   vmax=None,
+                   extent=None,
+                   cmap='seismic',
+                   xlabel=None,
+                   ylabel=None,
+                   title=None,
+                   id_list=None,
+                   vline_freq=-1):
         def add_vline(ax, stop, vline_freq):
             if vline_freq < 0:
                 return
             for x in np.arange(vline_freq, stop - 1, vline_freq):
-            # for x in np.arange(1, stop // vline_freq - 1):
+                # for x in np.arange(1, stop // vline_freq - 1):
                 ax.axvline(x - 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
 
         if self.axes is None:
             ax = self.subplots(1, 1)
             add_vline(ax, data.shape[1], vline_freq)
-            im0 = ax.imshow(data, aspect='auto',
+            im0 = ax.imshow(data,
+                            aspect='auto',
                             cmap=plt.get_cmap(cmap),
-                            vmin=vmin, vmax=vmax, extent=extent,
+                            vmin=vmin,
+                            vmax=vmax,
+                            extent=extent,
                             interpolation=None)
             self.fig.colorbar(im0, ax=ax)
 
@@ -188,21 +192,32 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
         return
 
-    def show_lines(self, data, xval=None, xlabel=None, ylabel=None,
-                   title=None, legend=None, loc='best', alpha=0.85):
+    def show_lines(self,
+                   data,
+                   xval=None,
+                   xlabel=None,
+                   ylabel=None,
+                   title=None,
+                   legend=None,
+                   loc='best',
+                   alpha=0.85):
         if xval is None:
             xval = np.arange(data.shape[1])
 
         if legend in [None, False]:
-           legend = np.arange(data.shape[0])
+            legend = np.arange(data.shape[0])
 
         if self.axes is None or data.shape[0] != len(self.obj):
             ax = self.subplots(1, 1)
             line_obj = []
             for n in range(data.shape[0]):
                 mk = markers[n % len(markers)]
-                line = ax.plot(xval, data[n], mk + '--', ms=3,
-                               alpha=alpha, label=legend[n])
+                line = ax.plot(xval,
+                               data[n],
+                               mk + '--',
+                               ms=3,
+                               alpha=alpha,
+                               label=legend[n])
                 line_obj.append(line)
             self.obj = line_obj
 
@@ -223,8 +238,15 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
         return
 
-    def show_scatter(self, data, color=None, xlabel=None, ylabel=None,
-                   title=None, legend=None, loc='best', alpha=0.85):
+    def show_scatter(self,
+                     data,
+                     color=None,
+                     xlabel=None,
+                     ylabel=None,
+                     title=None,
+                     legend=None,
+                     loc='best',
+                     alpha=0.85):
         if data.ndim != 2 or data.shape[0] != 2:
             raise ValueError('input data shape not supported')
         x, y = data[0], data[1]
@@ -261,8 +283,10 @@ def adjust_yerr(err_obj, x, y, y_error):
     # err_top.set_ydata(yerr_top)
     # err_bot.set_ydata(yerr_bot)
 
-    new_segments = [np.array([[x, yt], [x, yb]]) for
-                    x, yt, yb in zip(x, yerr_top, yerr_bot)]
+    new_segments = [
+        np.array([[x, yt], [x, yb]])
+        for x, yt, yb in zip(x, yerr_top, yerr_bot)
+    ]
 
     bars.set_segments(new_segments)
 
