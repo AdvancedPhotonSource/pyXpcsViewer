@@ -3,6 +3,11 @@ import os
 import numpy as np
 from multiprocessing import Pool
 import time
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 hdf_dict_8idi = {
     'Iq': '/exchange/partition-mean-total',
@@ -63,10 +68,15 @@ def get_analysis_type(fn, prefix):
     return val
 
 
-def get_c2all_keys(fn, prefix):
+def get_key(fields, fn, prefix):
+    res = []
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
-        val = np.array(HDF_Result.get(hdf_dict['c2_half']))
-    res = [os.path.join(hdf_dict['c2_half'], str(x)) for x in val]
+        for key in fields:
+            if key not in HDF_Result:
+                res.append(None)
+            else:
+                val = np.squeeze(HDF_Result.get(key))
+                res.append(val)
     return res
 
 
@@ -86,6 +96,7 @@ def read_file(fields, fn, prefix='./data', dtype='list'):
     else:
         raise TypeError('dtype not supported.')
 
+    logger.info('start read')
     with h5py.File(os.path.join(prefix, fn), 'r') as HDF_Result:
         for field in fields:
             if field == 't_el':
@@ -103,6 +114,7 @@ def read_file(fields, fn, prefix='./data', dtype='list'):
                 res.append(val)
             elif dtype == 'dict':
                 res[field] = val
+    logger.info('end read')
     return res
 
 

@@ -36,6 +36,8 @@ def describe_numpy(arr):
 def read_h5py(hdl, path, level, guide_str0):
     if path not in hdl:
         return
+    if 'C2T_all' in path:
+        return ['C2T_all']
     result = []
 
     guide_mid = guide_str0 + '├──'
@@ -70,6 +72,7 @@ def read_h5py(hdl, path, level, guide_str0):
             result.append(guide + info)
         else:
             return
+
     return result
 
 

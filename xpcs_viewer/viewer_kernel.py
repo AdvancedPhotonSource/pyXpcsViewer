@@ -1,19 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pyqtgraph as pg
 from matplotlib.ticker import FormatStrFormatter
-from xpcs_fitting import fit_xpcs, fit_tau
-from file_locator import FileLocator
+from matplotlib.patches import Circle
+from helper.fitting import fit_xpcs, fit_tau
+from fileIO.file_locator import FileLocator
 from mpl_cmaps_in_ImageItem import pg_get_cmap
-from hdf_to_str import get_hdf_info
-from hdf_reader import read_file, get_analysis_type, get_c2all_keys, \
-                       save_file as hdf_save_file
+
 from PyQt5 import QtCore
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
+import h5py
 
 import os
-import h5py
 import logging
 
 logging_format = '%(asctime)s %(message)s'
@@ -50,12 +48,6 @@ def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
         Iq = Iq / baseline
         ylabel = ylabel + ' / I_0'
 
-    # if plot_type == 'log':
-    #     Iq = np.log10(Iq)
-    #     ylabel = '$log(%s)$' % ylabel
-    # else:
-    #     ylabel = '$%s$' % ylabel
-
     xlabel = '$q (\\AA^{-1})$'
     return Iq, xlabel, ylabel
 
@@ -75,52 +67,53 @@ def create_slice(arr, x_range):
     return slice(start, end + 1)
 
 
-class DataLoader(FileLocator):
-    def __init__(self, path):
+class ViewerKernel(FileLocator):
+    def __init__(self, path, statusbar=None):
         super().__init__(path)
-        # self.target_list
-        self.g2_cache = {
-            'num_points': None,
-            'hash_val': None,
-            'res': None,
-            'plot_condition': tuple([None, None, None]),
-            'fit_val': {}
+        self.statusbar = statusbar
+
+        self.meta = {
+            # twotime
+            'twotime_fname': None,
+            'twotime_dqmap': None,
+            'twotime_ready': False,
+            # avg
+            'avg_file_list': None,
+            'avg_intt_minmax': None,
+            'avg_g2_avg': None,
+            # g2
+            'g2_num_points': None,
+            'g2_hash_val': None,
+            'g2_res': None,
+            'g2_plot_condition': tuple([None, None, None]),
+            'g2_fit_val': {}
         }
-        self.stab_cache = {
-            'num_points': None
-        }
-        self.avg_cache = {
-            'file_list': None,
-            'intt_minmax': None,
-            'g2_avg': None
-        }
-        self.data_cache = {}
+
+    def show_message(self, msg):
+        if self.statusbar is not None:
+            self.statusbar.showMessage(msg)
+        logger.info(msg)
 
     def hash(self, max_points=10):
-        if self.target_list is None:
+        if self.target is None:
             return hash(None)
         elif max_points <= 0:   # use all items
-            val = hash(tuple(self.target_list))
+            val = hash(tuple(self.target))
         else:
-            val = hash(tuple(self.target_list[0: max_points]))
+            val = hash(tuple(self.target[0: max_points]))
         return val
 
-    def get_hdf_info(self, fname):
-        if not os.path.isfile(os.path.join(self.cwd, fname)):
-            return ['None']
-        return get_hdf_info(self.cwd, fname)
-
     def get_g2_data(self, max_points=10, q_range=None, t_range=None):
-        labels = ['Iq', 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-        file_list = self.target_list
+        labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
+        file_list = self.target
 
         hash_val = self.hash(max_points)
-        if self.g2_cache['hash_val'] == hash_val:
-            res = self.g2_cache['res']
+        if self.meta['g2_hash_val'] == hash_val:
+            res = self.meta['g2_res']
         else:
-            res = self.read_data(labels, file_list[0: max_points])
-            self.g2_cache['hash_val'] = hash_val
-            self.g2_cache['res'] = res
+            res = self.get_list(labels, file_list[0: max_points])
+            self.meta['g2_hash_val'] = hash_val
+            self.meta['g2_res'] = res
 
         tslice = create_slice(res['t_el'][0], t_range)
         qslice = create_slice(res['ql_dyn'][0], q_range)
@@ -140,12 +133,12 @@ class DataLoader(FileLocator):
         num_row = (num_fig + num_col - 1) // num_col
         if mp_hdl.parent().parent() is None:
             aspect = 1 / 1.618
-            logger.info('using static aspect')
+            logger.info('using static aspect ratio')
             min_size = 740
         else:
             t = mp_hdl.parent().parent()
             aspect = t.height() / t.width()
-            logger.info('using dynamic aspect')
+            logger.info('using dynamic aspect ratio')
             min_size = t.height() - 20
 
         width = mp_hdl.width()
@@ -204,20 +197,16 @@ class DataLoader(FileLocator):
                 offset=None, show_fit=False, max_points=50, bounds=None,
                 show_label=False, num_col=4, aspect=(1/1.618)):
 
-        msg = self.check_target()
-        if msg != True:
-            return msg
-
-        num_points = min(len(self.target_list), max_points)
-        new_condition = (tuple(self.target_list[:num_points]),
+        num_points = min(len(self.target), max_points)
+        new_condition = (tuple(self.target[:num_points]),
                          (q_range, t_range, y_range, offset),
                          bounds)
-        # if self.g2_cache['plot_condition'] == new_condition:
+        # if self.meta['g2_plot_condition'] == new_condition:
         #     return ['No target files selected or change in setting.']
         # else:
         #     cmp = tuple(i != j for i, j in
-        #                 zip(new_condition, self.g2_cache['plot_condition']))
-        #     self.g2_cache['plot_condition'] = new_condition
+        #                 zip(new_condition, self.meta['g2_plot_condition']))
+        #     self.meta['g2_plot_condition'] = new_condition
         #     plot_target = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
 
         tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
@@ -249,9 +238,9 @@ class DataLoader(FileLocator):
             for ipt in range(num_points):
                 fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt],
                                             b=bounds)
-                self.g2_cache['fit_val'][self.target_list[ipt]] = fit_val
+                self.meta['g2_fit_val'][self.target[ipt]] = fit_val
                 offset_i = -1 * offset * (ipt + 1)
-                err_msg.append(self.target_list[ipt])
+                err_msg.append(self.target[ipt])
                 prev_len = len(err_msg)
                 for ifg in range(num_fig):
                     loc = ipt * num_fig + ifg
@@ -274,14 +263,16 @@ class DataLoader(FileLocator):
         return err_msg
 
     def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
-        num_points = len(self.g2_cache['fit_val'])
+        num_points = len(self.meta['g2_fit_val'])
         if num_points == 0:
-            return ['g2 fitting not ready']
-        labels = list(self.g2_cache['fit_val'].keys())
+            msg = 'g2 fitting not ready'
+            self.show_message(msg)
+            return [msg]
+        labels = list(self.meta['g2_fit_val'].keys())
 
         # prepare fit values
         fit_val = []
-        for _, val in self.g2_cache['fit_val'].items():
+        for _, val in self.meta['g2_fit_val'].items():
             fit_val.append(val)
         fit_val = np.hstack(fit_val).swapaxes(0, 1)
         q = fit_val[::7]
@@ -313,7 +304,7 @@ class DataLoader(FileLocator):
                                                    tau_err[n][sl])
                 line2 = ax.plot(xf, yf / s)
                 fit_val.append('fn: %s, slope = %.4f, intercept = %.4f' % (
-                               self.target_list[n], slope, intercept))
+                               self.target[n], slope, intercept))
 
             ax.set_xlabel('$q (\\AA^{-1})$')
             ax.set_ylabel('$\\tau \\times 10^4$')
@@ -328,7 +319,7 @@ class DataLoader(FileLocator):
     def get_detector_extent(self, file_list):
         labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
                   'xdim', 'ydim']
-        res = self.read_data(labels, file_list)
+        res = self.get_list(labels, file_list)
         extents = []
         for n in range(len(file_list)):
             pix2q = res['pix_dim'][n] / res['det_dist'][n] * \
@@ -346,9 +337,9 @@ class DataLoader(FileLocator):
         return extents
 
     def plot_saxs_2d_mpl(self, mp_hdl=None, scale='log', max_points=8):
-        extents = self.get_detector_extent(self.target_list)
+        extents = self.get_detector_extent(self.target)
         res = self.get_saxs_data()
-        ans = res['Int_2D']
+        ans = res['saxs_2d']
         if scale == 'log':
             ans = np.log10(ans + 1E-8)
         num_fig = min(max_points, len(extents))
@@ -381,10 +372,8 @@ class DataLoader(FileLocator):
 
     def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet',
                      autorotate=False):
-        msg = self.check_target()
-        if msg != True:
-            return msg
-        ans = self.get_saxs_data()['Int_2D']
+
+        ans = self.get_saxs_data()['saxs_2d']
         if plot_type == 'log':
             ans = np.log10(ans + 0.1)
 
@@ -428,27 +417,24 @@ class DataLoader(FileLocator):
                      minYRange=int(sp[0] / 10 / w0 * h0))
         vb.setAspectLocked(1.0)
         vb.setMouseMode(vb.RectMode)
-        # minYRange=sp[1] // 10)
-        # maxXRange=sp[0] * 4,
-                     # maxYRange=sp[1] * 4)
+
 
     def plot_saxs_1d(self, mp_hdl, **kwargs):
         res = self.get_saxs_data(max_points=8)
         q = res['ql_sta'][0]
-        Iq = res['Iq']
-        self.plot_saxs_line(mp_hdl, q, Iq, legend=self.target_list, **kwargs)
+        Iq = res["saxs_1d"]
+        sl = slice(0, min(q.size, Iq.shape[1]))
+        self.plot_saxs_line(mp_hdl, q[sl], Iq[:, sl],
+                            legend=self.target, **kwargs)
 
     def plot_saxs_line(self, mp_hdl, q, Iq, plot_type='log', plot_norm=0,
-                     plot_offset=0, max_points=8, legend=None, title=None):
-        msg = self.check_target()
-        if msg != True:
-            return msg
+                       plot_offset=0, max_points=8, legend=None, title=None):
 
         Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm, plot_type)
         xscale = ['linear', 'log'][plot_type % 2]
         yscale = ['linear', 'log'][plot_type // 2]
 
-        num_points = min(len(self.target_list), max_points)
+        num_points = min(len(self.target), max_points)
         for n in range(1, num_points):
             if yscale == 'linear':
                 offset = -plot_offset * n * np.max(Iq[n])
@@ -470,95 +456,206 @@ class DataLoader(FileLocator):
         return
 
     def get_saxs_data(self, max_points=1024):
-        labels = ['Int_2D', 'Iq', 'ql_sta']
-        file_list = self.target_list[0: max_points]
-        res = self.read_data(labels, file_list)
+        labels = ['saxs_2d', "saxs_1d", 'ql_sta']
+        file_list = self.target[0: max_points]
+        res = self.get_list(labels, file_list)
         # ans = np.swapaxes(ans, 1, 2)
         # the detector figure is not oriented to image convention;
         return res
 
     def get_stability_data(self, max_point=128, plot_id=0):
-        # labels = ['Int_t', 'Iq', 'ql_sta']
+        # labels = ['Int_t', "saxs_1d", 'ql_sta']
         labels = ['Iqp', 'ql_sta']
-        res = self.read_data(labels, [self.target_list[plot_id]])
+        res = self.get_list(labels, [self.target[plot_id]])
         q = res["ql_sta"][0]
         Iqp = res["Iqp"][0]
         # res["Iqp"] = np.flipud(Iqp).astype(np.float32)
         return q, Iqp
 
-    def check_target(self):
-        if self.target_list is None or len(self.target_list) < 1:
-            return ['No target files selected.']
-        else:
-            return True
-    
-    def plot_twotime(self, hdl, current_file_index=0, plot_index=3, fr_bin=5,
+    def setup_twotime(self, file_index=0, group='xpcs'):
+        fname = self.target[file_index]
+        res = []
+        with h5py.File(os.path.join(self.cwd, fname), 'r') as f:
+            for key in f.keys():
+                if 'xpcs' in key:
+                    res.append(key)
+        return res
+
+    def get_twotime_qindex(self, ix, iy, hdl):
+        shape = self.meta['twotime_dqmap'].shape
+        if len(hdl.axes[0].patches) >= 1:
+            hdl.axes[0].patches.pop()
+        if len(hdl.axes[1].patches) >= 1:
+            hdl.axes[1].patches.pop()
+
+        h = np.argmin(np.abs(np.arange(shape[1]) - ix))
+        v = np.argmin(np.abs(np.arange(shape[0]) - iy))
+        mark0 = Circle((ix, iy), radius=5, color='white')
+        hdl.axes[0].add_patch(mark0)
+        mark1 = Circle((ix, iy), radius=5, color='white')
+        hdl.axes[1].add_patch(mark1)
+        hdl.draw()
+
+        return self.meta['twotime_dqmap'][v, h]
+
+    def plot_twotime_map(self, hdl, fname=None, group='xpcs', cmap='jet',
+                         scale='log', auto_crop=True):
+        if fname is None:
+            fname = self.target[0]
+
+        if fname == self.meta['twotime_fname'] and \
+                group == self.meta['twotime_group']:
+            return
+
+        rpath = os.path.join(group, 'output_data')
+        rpath = self.get(fname, [rpath], 'raw')[rpath]
+
+        key_dqmap = os.path.join(group, 'dqmap')
+        key_saxs = os.path.join(rpath, 'pixelSum')
+
+        dqmap, saxs = self.get(fname, [key_dqmap, key_saxs], 'raw',
+                               ret_type='list')
+
+        # acquire time scale
+        key_frames = [os.path.join(group, 'stride_frames'),
+                      os.path.join(group, 'avg_frames')]
+        stride, avg = self.get(fname, key_frames, 'raw', ret_type='list')
+        t0, t1 = self.get_cached(fname, ['t0', 't1'], ret_type='list')
+        time_scale = max(t0, t1) * stride * avg
+
+        self.meta['twotime_key'] = rpath
+        self.meta['twotime_group'] = group
+        self.meta['twotime_scale'] = time_scale
+
+        if self.type == 'Twotime':
+            key_c2t = os.path.join(rpath, 'C2T_all')
+            print(key_c2t)
+            id_all = self.get(fname, [key_c2t], 'raw')[key_c2t]
+            self.meta['twotime_idlist'] = [int(x[3:]) for x in id_all]
+
+        if auto_crop:
+            idx = np.nonzero(dqmap >= 1)
+            sl_v = slice(np.min(idx[0]), np.max(idx[0]))
+            sl_h = slice(np.min(idx[1]), np.max(idx[1]))
+            dqmap = dqmap[sl_v, sl_h]
+            saxs = saxs[sl_v, sl_h]
+
+        if dqmap.shape[0] > dqmap.shape[1]:
+            dqmap = np.swapaxes(dqmap, 0, 1)
+            saxs = np.swapaxes(saxs, 0, 1)
+
+        self.meta['twotime_dqmap'] = dqmap
+        self.meta['twotime_fname'] = fname
+        self.meta['twotime_saxs'] = saxs
+        self.meta['twotime_ready'] = True
+
+        if scale == 'log':
+            saxs = np.log10(saxs + 1)
+
+        hdl.clear()
+        ax = hdl.subplots(1, 2, sharex=True, sharey=True)
+        im0 = ax[0].imshow(saxs, cmap=plt.get_cmap(cmap))
+        im1 = ax[1].imshow(dqmap,  cmap=plt.get_cmap(cmap))
+        plt.colorbar(im0, ax=ax[0])
+        plt.colorbar(im1, ax=ax[1])
+        hdl.draw()
+
+    def plot_twotime(self, hdl, current_file_index=0, plot_index=1,
                      cmap='jet'):
-        msg = self.check_target()
-        if msg != True:
-            return msg
 
-        c2_key = '/exchange/C2T_all/g2_%05d' % plot_index
-        labels = [c2_key, 't0', 'g2_full', 'g2_partials']
+        if self.type != 'Twotime':
+            self.show_message('Analysis type must be twotime.')
+            return
 
-        res = self.read_data(labels, [self.target_list[current_file_index]])
-        c2_half = res[c2_key][0]
+        if plot_index not in self.meta['twotime_idlist']:
+            self.show_message('plot_index is not found.')
+            return
+
+        c2_key = os.path.join(self.meta['twotime_key'],
+                              'C2T_all/g2_%05d' % plot_index)
+
+        labels = ['g2_full', 'g2_partials']
+
+        res = self.get_list(labels, [self.target[current_file_index]])
+        c2 = self.get(self.target[current_file_index], [c2_key],
+                      mode='raw')
+
+        c2_half = c2[c2_key]
+
         if c2_half is None:
             return
 
         c2 = c2_half + np.transpose(c2_half)
-
         c2_translate = np.zeros(c2.shape)
         c2_translate[:, 0] = c2[:, -1]
         c2_translate[:, 1:] = c2[:, :-1]
 
         c2 = np.where(c2 > 1.3, c2_translate, c2)
 
-        t = fr_bin * res['t0'] * np.arange(len(c2))
+        t = self.meta['twotime_scale'] * np.arange(len(c2))
         t_min = np.min(t)
         t_max = np.max(t)
 
         hdl.clear() 
-        ax = hdl.subplots(1, 1)
-        im = ax.imshow(c2, interpolation='none', origin='lower',
-                       extent=([t_min, t_max, t_min, t_max]),
-                       cmap=plt.get_cmap(cmap))
-        plt.colorbar(im, ax=ax)
+        ax = hdl.subplots(1, 2)
+        im = ax[0].imshow(c2, interpolation='none', origin='lower',
+                          extent=([t_min, t_max, t_min, t_max]),
+                          cmap=plt.get_cmap(cmap))
+        plt.colorbar(im, ax=ax[0])
+        ax[0].set_ylabel('t1')
+        ax[0].set_xlabel('t2')
+
+        # the first element in the list seems to deviate from the rest a lot
+        g2f = res['g2_full'][0][:, plot_index - 1][1:]
+        g2p = res['g2_partials'][0][:, :, plot_index - 1].T
+        g2p = g2p[:, 1:]
+
+        t = self.meta['twotime_scale'] * np.arange(g2f.size)
+        ax[1].plot(t, g2f, lw=3, color='blue', alpha=0.5)
+        for n in range(g2p.shape[0]):
+            t = self.meta['twotime_scale'] * np.arange(g2p[n].size)
+            ax[1].plot(t, g2p[n], label='partial%d' % n, alpha=0.5)
+        ax[1].set_xscale('log')
+        ax[1].set_ylabel('g2')
+        ax[1].set_xlabel('t')
+        hdl.fig.tight_layout()
+
         hdl.draw()
 
     def plot_intt(self, pg_hdl, max_points=128, sampling=-1):
-        msg = self.check_target()
-        if msg != True:
-            return msg
-
         labels = ['Int_t', 't0']
-        num_points = min(max_points, len(self.target_list))
-        res = self.read_data(labels, self.target_list[0: num_points])
+        num_points = min(max_points, len(self.target))
+
+        res = self.get_list(labels, self.target[0: num_points])
+        t0 = self.get_cached(self.target[0], ['t0'], ret_type='list')[0]
         y = res["Int_t"][:, 1, :]
-        y = (y / np.max(y) * 120).astype(np.uint8)
+
+        ret = np.cumsum(a, dtype=float)
+        ret[n:] = ret[n:] - ret[:-n]
+        return ret[n - 1:] / n
+
         if sampling > 0:
             y = y[:, ::sampling]
         else:
             sampling = 1
 
-        t0 = res['t0'][0]
         x = (np.arange(y.shape[1]) * sampling * t0).astype(np.float32)
 
-        pg_hdl.show_lines(y, xval=x, xlabel="Time (s)", ylabel="Intensity",
+        pg_hdl.show_lines(y, xval=x, xlabel="Time (s)",
+                          ylabel="Intensity (ph/pixel)",
                           loc='lower right', alpha=0.5,
-                          legend=self.target_list)
-        pg_hdl.axes.set_ylim(0, 128)
+                          legend=self.target)
         pg_hdl.draw()
 
     def plot_stability(self, mp_hdl, plot_id, method='1d', **kwargs):
-        msg = self.check_target()
-        if msg != True:
-            return msg
-        q, Iqp = self.get_stability_data(plot_id)
 
+        q, Iqp = self.get_stability_data(plot_id)
+        sl = slice(0, min(q.size, Iqp.shape[1]))
+        q = q[sl]
+        Iqp = Iqp[:, sl]
         if method == '1d':
             self.plot_saxs_line(mp_hdl, q, Iqp, legend=None,
-                                title=self.target_list[plot_id], **kwargs)
+                                title=self.target[plot_id], **kwargs)
         # else:
         #     Iqp_vmin, Iqp_vmax = get_min_max(Iqp, 1, 99, **kwargs)
 
@@ -579,107 +676,42 @@ class DataLoader(FileLocator):
         #                       ylabel=qlabel,
         #                       xlabel=xlabel)
 
-    def read_data2(self, labels, file_list=None, mask=None):
-        if file_list is None:
-            file_list = self.target_list
-
-        if mask is None:
-            mask = np.ones(shape=len(file_list), dtype=np.bool)
-
-        data = []
-        for n, fn in enumerate(file_list):
-            if mask[n]:
-                data.append(read_file(labels, fn, self.cwd))
-
-        np_data = {}
-        for n, label in enumerate(labels):
-            temp = [x[n] for x in data]
-            np_data[label] = np.array(temp)
-
-        return np_data
-    
-    def read_data(self, labels, file_list=None, mask=None):
-        if file_list is None:
-            file_list = self.target_list
-
-        if mask is None:
-            mask = np.ones(shape=len(file_list), dtype=np.bool)
-
-        data = []
-        np_data = {}
-        for n, label in enumerate(labels):
-            temp = []
-            for n, fn in enumerate(file_list):
-                if mask[n]:
-                    if label in self.data_cache[fn].keys():
-                        temp.append(self.data_cache[fn][label])
-                    else:
-                        temp.append(None)
-            np_data[label] = np.array(temp)
-        return np_data
-
-    def cache_data(self, max_number=1024, progress_bar=None):
-        analysis_type = get_analysis_type(self.target_list[0], prefix=self.cwd)
-        if analysis_type == 'Twotime':
-            c2_key = get_c2all_keys(self.target_list[0], prefix=self.cwd)
-            labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0',
-                      'ql_dyn', 'g2_full', 'g2_partials'] + c2_key
-        else:
-            labels = ['Int_2D', 'Iq', 'Iqp', 'ql_sta', 'Int_t', 't0', 't_el',
-                      'ql_dyn', 'g2', 'g2_err']
-
-        file_list = self.target_list[slice(0, max_number)]
-        total_num = len(file_list)
-        existing_keys = list(self.data_cache.keys())
-
-        for n, fn in enumerate(file_list):
-            if progress_bar is not None:
-                progress_bar.setValue((n + 1) / total_num * 100)
-
-            if fn in existing_keys:
-                # already exist
-                existing_keys.remove(fn)
-            else:
-                # read from file and output as a dictionary
-                self.data_cache[fn] = read_file(labels, fn, self.cwd, 'dict')
-
-        for key in existing_keys:
-            self.data_cache.pop(key, None)
-
-        return
-        
     def average_plot_outlier(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
                              target='g2'):
-        if self.avg_cache['file_list'] != tuple(self.target_list):
+        if self.meta['avg_file_list'] != tuple(self.target):
             logger.info('avg cache not exist')
             labels = ['Int_t', 'g2']
-            res = self.read_data(labels, file_list=self.target_list)
+            res = self.get_list(labels, file_list=self.target)
             Int_t = res['Int_t'][:, 1, :].astype(np.float32)
             Int_t = Int_t / np.max(Int_t)
             intt_minmax = []
-            for n in range(len(self.target_list)):
+            for n in range(len(self.target)):
                 intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
             intt_minmax = np.array(intt_minmax).T.astype(np.float32)
             g2_avg = np.mean(res['g2'][:, -10:, 1], axis=1)
             cutoff_line = np.ones_like(g2_avg) * g2_cutoff
             g2_avg = np.vstack([g2_avg, cutoff_line])
 
-            self.avg_cache['file_list'] = tuple(self.target_list)
-            self.avg_cache['intt_minmax'] = intt_minmax
-            self.avg_cache['g2_avg'] = g2_avg
+            self.meta['avg_file_list'] = tuple(self.target)
+            self.meta['avg_intt_minmax'] = intt_minmax
+            self.meta['avg_g2_avg'] = g2_avg
+            self.meta['avg_intt_mask'] = np.ones(len(self.target))
+            self.meta['avg_g2_mask'] = np.ones(len(self.target))
         else:
             logger.info('using avg cache')
-            intt_minmax = self.avg_cache['intt_minmax']
-            g2_avg = self.avg_cache['g2_avg']
+            intt_minmax = self.meta['avg_intt_minmax']
+            g2_avg = self.meta['avg_g2_avg']
 
         if target == 'intt':
             y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
             freq = np.bincount(y_pred)
+            self.meta['avg_intt_mask'] = y_pred == y_pred[freq.argmax()]
             valid_num = np.sum(y_pred == y_pred[freq.argmax()])
             title = '%d / %d' % (valid_num, y_pred.size)
             hdl1.show_scatter(intt_minmax, color=y_pred, xlabel='Int-t min',
                               ylabel='Int-t max', title=title)
         elif target == 'g2':
+            self.meta['avg_g2_mask'] = g2_avg[0] >= g2_cutoff
             g2_avg[1, :] = g2_cutoff
             valid_num = np.sum(g2_avg[0] >= g2_cutoff)
             legend = ['data', 'cutoff']
@@ -689,13 +721,12 @@ class DataLoader(FileLocator):
         else:
             return
 
-    def average(self, chunk_size=256, mask=None, save_path=None,
-                origin_path=None):
+    def average(self, chunk_size=256, save_path=None, origin_path=None):
 
-        labels = ['Iq', 'g2', 'g2_err', 'Int_2D']
-        g2 = self.read_data(['g2'], self.target_list)['g2']
-        # mask = np.mean(g2[:, -10:, 1], axis=1) < baseline
-        mask = np.ones(g2.shape[0])
+        labels = ["saxs_1d", 'g2', 'g2_err', 'saxs_2d']
+
+        mask = np.logical_and(self.meta['avg_g2_mask'],
+                              self.meta['avg_intt_mask'])
 
         steps = (len(mask) + chunk_size - 1) // chunk_size
         result = {}
@@ -704,7 +735,7 @@ class DataLoader(FileLocator):
             end = chunk_size * (n + 1)
             end = min(len(mask), end)
             slice0 = slice(beg, end)
-            values = self.read_data(labels, file_list=self.target_list[slice0],
+            values = self.get_list(labels, file_list=[self.target[slice0]],
                                     mask=mask[slice0])
             if n == 0:
                 for label in labels:
@@ -720,16 +751,16 @@ class DataLoader(FileLocator):
         if save_path is None:
             return result
         if origin_path is None:
-            origin_path = os.path.join(self.cwd, self.target_list[0])
+            origin_path = os.path.join(self.cwd, self.target[0])
 
         copyfile(origin_path, save_path)
-        hdf_save_file(save_path, labels, result)
+        self.put(save_path, labels, result, mode='raw')
 
         return result
 
 
 if __name__ == "__main__":
     flist = os.listdir('./data')
-    dv = DataLoader('./data', flist)
+    dv = ViewerKernel('./data', flist)
     dv.average()
     # dv.plot_g2()
