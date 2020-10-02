@@ -1,15 +1,9 @@
-import matplotlib.pyplot as plt
-# from matplot_qt import MplCanvas
-from PyQt5 import QtWidgets, uic
-import os
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import uic, QtWidgets
 from helper.utlis import norm_saxs_data
 import numpy as np
 
 
-
 class PlotWidget(object):
-
     def __init__(self, ui_fname, tab_widget, name='saxs1d', plot_args=None,
                  data_labels=None):
         super(PlotWidget, self).__init__()
@@ -63,7 +57,7 @@ class SAXS1D(PlotWidget):
         self.tab.pushButton_10.clicked.connect(self.plot)
 
     def plot(self):
-
+        pass
 
     def prepare_data(self, target, dloader, max_points=1024):
         super(SAXS1D, self).prepare_data(target, dloader, max_points)
