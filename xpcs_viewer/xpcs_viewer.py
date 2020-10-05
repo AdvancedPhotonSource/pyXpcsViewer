@@ -6,6 +6,9 @@ from viewer_kernel import ViewerKernel
 import numpy as np
 import logging
 
+import sys
+from threading import Thread
+from pyqtconsole.console import PythonConsole
 
 logging_format = '%(asctime)s %(message)s'
 logging.basicConfig(level=logging.INFO, format=logging_format)
@@ -22,7 +25,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         self.vk = None
         self.cache = None
-        self.load_path(path)
+        # self.load_path(path)
 
         self.g2_cache = {}
 
@@ -43,6 +46,20 @@ class XpcsViewer(QtWidgets.QMainWindow):
             7: "twotime",
             8: "exp_setup",
             9: "log"}
+
+        width = self.console_panel.width()
+        height = self.console_panel.height()
+        self.console = PythonConsole(self.console_panel)
+        self.console.eval_in_thread()
+        self.console.setFixedWidth(width)
+        self.console.setFixedHeight(height)
+
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.Expanding)
+
+        sizePolicy.setHorizontalStretch(100)
+        sizePolicy.setVerticalStretch(100)
+        self.console.setSizePolicy(sizePolicy)
 
     def init_tab(self):
         if self.state != 3:
