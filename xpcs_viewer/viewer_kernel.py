@@ -136,8 +136,8 @@ class ViewerKernel(FileLocator):
             logger.info('using static aspect ratio')
             min_size = 740
         else:
-            t = mp_hdl.parent().parent()
-            aspect = t.height() / t.width()
+            t = mp_hdl.parent().parent().parent()
+            aspect = t.height() / mp_hdl.width()
             logger.info('using dynamic aspect ratio')
             min_size = t.height() - 20
 
