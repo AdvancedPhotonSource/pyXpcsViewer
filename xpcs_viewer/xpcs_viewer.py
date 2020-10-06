@@ -218,14 +218,16 @@ class XpcsViewer(QtWidgets.QMainWindow):
             return
         kwargs = {
             'max_points': self.sb_intt_max.value(),
-            'sampling': self.sb_intt_sampling.value()
+            'sampling': self.sb_intt_sampling.value(),
+            'window': self.sb_window.value(),
         }
+        print(kwar)
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
     def plot_tauq(self):
         if not self.check_status():
             return
-        if self.vk.type != 'Multitau': return
+        if self.vk.type not in ['Multitau', 'MULTITAU']: return
 
         kwargs = {
             'max_q': self.sb_tauq_qmax.value(),
@@ -235,7 +237,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.tauq_msg.setText('\n'.join(msg))
 
     def update_average_box(self):
-        if self.vk.type != 'Multitau': return
+        if self.vk.type not in ['Multitau', 'MULTITAU']: return
 
         if self.avg_use_source_path.isChecked():
             self.avg_save_path.clear()
@@ -296,7 +298,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
 
     def plot_g2(self, max_points=3):
-        if not self.check_status() or self.vk.type != 'Multitau':
+        if not self.check_status() or self.vk.type not in ['Multitau', 'MULTITAU']:
             return
 
         p = self.check_g2_number()

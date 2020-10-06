@@ -947,7 +947,7 @@ class Ui_mainwindow(object):
         self.label_22.setText(_translate("mainwindow", "offset:"))
         self.label_23.setText(_translate("mainwindow", "normalization:"))
         self.cb_saxs_norm.setItemText(0, _translate("mainwindow", "none"))
-        self.cb_saxs_norm.setItemText(1, _translate("mainwindow", "I\' = Iq2"))
+        self.cb_saxs_norm.setItemext(1, _translate("mainwindow", "I\' = Iq2"))
         self.cb_saxs_norm.setItemText(2, _translate("mainwindow", "I\' = Iq4"))
         self.cb_saxs_norm.setItemText(3, _translate("mainwindow", "I\' = I/Io"))
         self.pushButton_10.setText(_translate("mainwindow", "Plot 1D SAXS"))
