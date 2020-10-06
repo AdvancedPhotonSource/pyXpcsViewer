@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>XPCS_GUI</string>
+   <string>XPCS_Viewer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -338,7 +338,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -679,7 +679,7 @@
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>120</height>
+                <height>150</height>
                </size>
               </property>
               <property name="title">
@@ -883,6 +883,27 @@
                <string>Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_23">
+               <item row="0" column="5">
+                <widget class="QSpinBox" name="sb_intt_sampling">
+                 <property name="value">
+                  <number>20</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="4">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>sampling:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="6">
+                <widget class="QPushButton" name="btn_intt">
+                 <property name="text">
+                  <string>plot Intensity-T</string>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_9">
                  <property name="text">
@@ -898,23 +919,19 @@
                 </widget>
                </item>
                <item row="0" column="2">
-                <widget class="QLabel" name="label_11">
+                <widget class="QLabel" name="label_31">
                  <property name="text">
-                  <string>sampling:</string>
+                  <string>avg window:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="3">
-                <widget class="QSpinBox" name="sb_intt_sampling">
-                 <property name="value">
-                  <number>20</number>
+                <widget class="QSpinBox" name="sb_window">
+                 <property name="maximum">
+                  <number>999</number>
                  </property>
-                </widget>
-               </item>
-               <item row="1" column="0" colspan="4">
-                <widget class="QPushButton" name="btn_intt">
-                 <property name="text">
-                  <string>plot Intensity-T</string>
+                 <property name="value">
+                  <number>10</number>
                  </property>
                 </widget>
                </item>
@@ -1218,7 +1235,7 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_10">
                 <item row="0" column="0">
-                 <widget class="MplCanvasBarH" name="mp_g2" native="true">
+                 <widget class="MplCanvasBarV" name="mp_g2" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -1779,7 +1796,7 @@
                </size>
               </property>
               <property name="title">
-               <string>GroupBox</string>
+               <string>Twotime Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_2">
                <item row="0" column="0">
@@ -1977,6 +1994,18 @@
            <attribute name="title">
             <string>Log</string>
            </attribute>
+           <layout class="QGridLayout" name="gridLayout_34">
+            <item row="0" column="0">
+             <widget class="QWidget" name="console_panel" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>100</horstretch>
+                <verstretch>100</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </widget>
         </widget>

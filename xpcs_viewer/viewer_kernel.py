@@ -136,8 +136,8 @@ class ViewerKernel(FileLocator):
             logger.info('using static aspect ratio')
             min_size = 740
         else:
-            t = mp_hdl.parent().parent()
-            aspect = t.height() / t.width()
+            t = mp_hdl.parent().parent().parent()
+            aspect = t.height() / mp_hdl.width()
             logger.info('using dynamic aspect ratio')
             min_size = t.height() - 20
 
@@ -375,7 +375,7 @@ class ViewerKernel(FileLocator):
 
         ans = self.get_saxs_data()['saxs_2d']
         if plot_type == 'log':
-            ans = np.log10(ans + 0.1)
+            ans = np.log10(ans + 0.001)
 
         ans = ans.astype(np.float32)
 
@@ -602,8 +602,8 @@ class ViewerKernel(FileLocator):
                           extent=([t_min, t_max, t_min, t_max]),
                           cmap=plt.get_cmap(cmap))
         plt.colorbar(im, ax=ax[0])
-        ax[0].set_ylabel('t1')
-        ax[0].set_xlabel('t2')
+        ax[0].set_ylabel('t1 (s)')
+        ax[0].set_xlabel('t2 (s)')
 
         # the first element in the list seems to deviate from the rest a lot
         g2f = res['g2_full'][0][:, plot_index - 1][1:]
@@ -617,12 +617,12 @@ class ViewerKernel(FileLocator):
             ax[1].plot(t, g2p[n], label='partial%d' % n, alpha=0.5)
         ax[1].set_xscale('log')
         ax[1].set_ylabel('g2')
-        ax[1].set_xlabel('t')
+        ax[1].set_xlabel('t (s)')
         hdl.fig.tight_layout()
 
         hdl.draw()
 
-    def plot_intt(self, pg_hdl, max_points=128, sampling=-1):
+    def plot_intt(self, pg_hdl, max_points=128, window=5, sampling=-1):
         labels = ['Int_t', 't0']
         num_points = min(max_points, len(self.target))
 
@@ -630,9 +630,9 @@ class ViewerKernel(FileLocator):
         t0 = self.get_cached(self.target[0], ['t0'], ret_type='list')[0]
         y = res["Int_t"][:, 1, :]
 
-        ret = np.cumsum(a, dtype=float)
-        ret[n:] = ret[n:] - ret[:-n]
-        return ret[n - 1:] / n
+        if window > 1:
+            y = np.cumsum(y, dtype=float, axis=1)
+            y = (y[:, window:] - y[:, :-window]) / window
 
         if sampling > 0:
             y = y[:, ::sampling]
@@ -641,6 +641,7 @@ class ViewerKernel(FileLocator):
 
         x = (np.arange(y.shape[1]) * sampling * t0).astype(np.float32)
 
+        pg_hdl.clear()
         pg_hdl.show_lines(y, xval=x, xlabel="Time (s)",
                           ylabel="Intensity (ph/pixel)",
                           loc='lower right', alpha=0.5,
