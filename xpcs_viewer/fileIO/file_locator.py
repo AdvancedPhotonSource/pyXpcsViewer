@@ -106,7 +106,7 @@ class FileLocator(object):
                 f[key2] = result[key]
             return
 
-    def get(self, fname, fields, mode='raw', ret_type='dict'):
+    def get(self, fname, fields_raw, mode='raw', ret_type='dict'):
         """
         get the values for the various keys listed in fields for a single
         file;
@@ -118,6 +118,8 @@ class FileLocator(object):
         fname = os.path.join(self.cwd, fname)
         ret = {}
 
+        # python will modify mutable list;
+        fields = fields_raw.copy()
         fields_org = fields.copy()
         flag = False
         if 't_el' in fields:
@@ -231,6 +233,7 @@ class FileLocator(object):
                 # read from file and output as a dictionary
                 logger.info('preload start')
                 self.cache[fn] = self.get(fn, labels, 'alias')
+                print(fn, self.cache[fn].keys())
                 logger.info('preload stop')
 
         if flag_del:
