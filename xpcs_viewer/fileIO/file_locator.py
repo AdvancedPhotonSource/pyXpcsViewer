@@ -173,7 +173,8 @@ class FileLocator(object):
             raise TypeError('ret_type not support')
 
     def get_type(self, fname):
-        return self.get(fname, ['type'], mode='alias')['type']
+        ret = self.get(fname, ['type'], mode='alias')['type']
+        return ret.capitalize()
 
     def get_list(self, labels, file_list=None, mask=None):
         """
