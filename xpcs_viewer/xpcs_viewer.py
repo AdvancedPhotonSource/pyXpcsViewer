@@ -280,9 +280,16 @@ class XpcsViewer(QtWidgets.QMainWindow):
             return
 
         kwargs = {
-            'g2_cutoff': self.avg_g2_cutoff.value(),
+            'avg_blmin': self.avg_blmin.value(),
+            'avg_blmax': self.avg_blmax.value(),
+            'avg_qindex': self.avg_qindex.value(),
+            'avg_window': self.avg_window.value(),
             'target': 'g2'
         }
+        if kwargs['avg_blmax'] <= kwargs['avg_blmin']:
+            self.statusbar.showMessage('check avg min/max values.')
+            return
+
         self.vk.average_plot_outlier(self.mp_avg_intt, self.mp_avg_g2,
                                      **kwargs)
 
@@ -295,7 +302,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         kwargs = {
             'save_path': os.path.join(save_path, save_name),
-            'chunk_size': int(self.cb_avg_chunk_size.currentText())
+            'chunk_size': int(self.cb_avg_chunk_size.currentText()),
+            'p_bar': self.avg_progressbar,
         }
         self.vk.average(**kwargs)
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
