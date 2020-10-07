@@ -232,10 +232,7 @@ class FileLocator(object):
                 existing_keys.remove(fn)
             else:
                 # read from file and output as a dictionary
-                logger.info('preload start')
                 self.cache[fn] = self.get(fn, labels, 'alias')
-                print(fn, self.cache[fn].keys())
-                logger.info('preload stop')
 
         if flag_del:
             for key in existing_keys:

@@ -677,8 +677,44 @@ class ViewerKernel(FileLocator):
         #                       ylabel=qlabel,
         #                       xlabel=xlabel)
 
-    def average_plot_outlier(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
-                             target='g2'):
+    def average_plot_outlier(self, hdl1, hdl2,
+                             target='g2', avg_blmin=0.95, avg_blmax=1.05,
+                             avg_qindex=5, avg_window=10):
+
+        if self.meta['avg_file_list'] != tuple(self.target):
+            logger.info('avg cache not exist')
+            labels = ['g2']
+
+            g2 = self.get_list(labels, file_list=self.target)['g2']
+
+            self.meta['avg_file_list'] = tuple(self.target)
+            self.meta['avg_g2'] = g2
+            self.meta['avg_g2_mask'] = np.ones(len(self.target))
+
+        else:
+            logger.info('using avg cache')
+            g2 = self.meta['avg_g2']
+
+        g2_avg = np.mean(g2[:, -avg_window:, avg_qindex], axis=1)
+        cut_min = np.ones_like(g2_avg) * avg_blmin
+        cut_max = np.ones_like(g2_avg) * avg_blmax
+        g2_avg = np.vstack([g2_avg, cut_min, cut_max])
+
+        mask_min = g2_avg[0] >= avg_blmin
+        mask_max = g2_avg[0] <= avg_blmax
+        mask = np.logical_and(mask_min, mask_max)
+        self.meta['avg_g2_mask'] = mask
+        valid_num = np.sum(mask)
+
+        legend = ['data', 'cutoff_min', 'cutoff_max']
+
+        title = '%d / %d' % (valid_num, g2_avg.shape[1])
+
+        hdl2.show_lines(g2_avg, xlabel='index', ylabel='g2 average',
+                        legend=legend, title=title)
+
+    def average_plot_v0(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
+                                 target='g2'):
         if self.meta['avg_file_list'] != tuple(self.target):
             logger.info('avg cache not exist')
             labels = ['Int_t', 'g2']
@@ -722,22 +758,27 @@ class ViewerKernel(FileLocator):
         else:
             return
 
-    def average(self, chunk_size=256, save_path=None, origin_path=None):
+    def average(self, chunk_size=256, save_path=None, origin_path=None,
+                p_bar=None):
 
         labels = ["saxs_1d", 'g2', 'g2_err', 'saxs_2d']
 
-        mask = np.logical_and(self.meta['avg_g2_mask'],
-                              self.meta['avg_intt_mask'])
+        # mask = np.logical_and(self.meta['avg_g2_mask'],
+        #                       self.meta['avg_intt_mask'])
+        mask = self.meta['avg_g2_mask']
 
         steps = (len(mask) + chunk_size - 1) // chunk_size
         result = {}
         for n in range(steps):
+            logger.info('n = {}'.format(n))
+            if p_bar is not None:
+                p_bar.setValue((n + 1) / steps * 100)
             beg = chunk_size * (n + 0)
             end = chunk_size * (n + 1)
             end = min(len(mask), end)
-            slice0 = slice(beg, end)
-            values = self.get_list(labels, file_list=[self.target[slice0]],
-                                    mask=mask[slice0])
+            sl = slice(beg, end)
+            values = self.get_list(labels, file_list=self.target[sl],
+                                   mask=mask[sl])
             if n == 0:
                 for label in labels:
                     result[label] = np.sum(values[label], axis=0)
@@ -754,6 +795,7 @@ class ViewerKernel(FileLocator):
         if origin_path is None:
             origin_path = os.path.join(self.cwd, self.target[0])
 
+        logger.info('create file: {}'.format(save_path))
         copyfile(origin_path, save_path)
         self.put(save_path, labels, result, mode='raw')
 
