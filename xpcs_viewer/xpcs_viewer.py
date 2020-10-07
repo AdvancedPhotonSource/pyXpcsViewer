@@ -5,6 +5,7 @@ import os
 from viewer_kernel import ViewerKernel
 import numpy as np
 import logging
+from plotwidget import SAXS1D
 
 import sys
 from threading import Thread
@@ -25,7 +26,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         self.vk = None
         self.cache = None
-        # self.load_path(path)
+        self.load_path(path)
 
         self.g2_cache = {}
 
@@ -47,19 +48,21 @@ class XpcsViewer(QtWidgets.QMainWindow):
             8: "exp_setup",
             9: "log"}
 
-        width = self.console_panel.width()
-        height = self.console_panel.height()
-        self.console = PythonConsole(self.console_panel)
-        self.console.eval_in_thread()
-        self.console.setFixedWidth(width)
-        self.console.setFixedHeight(height)
+        # width = self.console_panel.width()
+        # height = self.console_panel.height()
+        # self.console = PythonConsole(self.console_panel)
+        # self.console.eval_in_thread()
+        # self.console.setFixedWidth(width)
+        # self.console.setFixedHeight(height)
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                           QtWidgets.QSizePolicy.Expanding)
+        # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+        #                                    QtWidgets.QSizePolicy.Expanding)
 
-        sizePolicy.setHorizontalStretch(100)
-        sizePolicy.setVerticalStretch(100)
-        self.console.setSizePolicy(sizePolicy)
+        # sizePolicy.setHorizontalStretch(100)
+        # sizePolicy.setVerticalStretch(100)
+        # self.console.setSizePolicy(sizePolicy)
+
+        # self.saxs1d = SAXS1D(self.tab12)
 
     def init_tab(self):
         if self.state != 3:
@@ -68,6 +71,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         idx = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[idx]
+        self.statusbar.showMessage('plot {}'.format(tab_name), 500)
 
         if tab_name == 'saxs_2d':
             self.plot_saxs_2D()
@@ -85,7 +89,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
         elif tab_name == 'stability':
             self.update_stab_list()
 
-    def load_data(self, init_flag=True):
+    def load_data(self):
+
         if self.state <= 1:
             self.statusbar.showMessage('Work directory or target not ready.',
                                        1000)
@@ -94,15 +99,14 @@ class XpcsViewer(QtWidgets.QMainWindow):
             self.statusbar.showMessage('Files are preloaded already. skip',
                                        1000)
             return
-        # the state must be 2
-        # self.reorder_target()
-        self.update_hdf_list()
-        # self.update_stab_list()
-        self.vk.preload_data(progress_bar=self.progress_bar)
 
+        # the state must be 2
+        self.vk.preload_data(progress_bar=self.progress_bar)
         self.state = 3
-        if init_flag:
-            self.init_tab()
+
+        self.update_hdf_list()
+        self.update_stab_list()
+        self.init_tab()
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -221,7 +225,6 @@ class XpcsViewer(QtWidgets.QMainWindow):
             'sampling': self.sb_intt_sampling.value(),
             'window': self.sb_window.value(),
         }
-        print(kwar)
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
     def plot_tauq(self):
@@ -438,7 +441,6 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.update_box(self.vk.target, mode='target')
         if self.box_auto_update.isChecked():
             self.load_data()
-            self.init_tab()
 
     def trie_search(self):
         val = self.filter_str.text()
@@ -516,6 +518,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         if show_msg and not flag:
             error_dialog = QtWidgets.QErrorMessage(self)
             error_dialog.showMessage(msg)
+            raise
 
         self.statusbar.showMessage(msg)
 
