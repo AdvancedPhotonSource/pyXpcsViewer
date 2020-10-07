@@ -1,23 +1,23 @@
 from PyQt5 import uic, QtWidgets
 from helper.utlis import norm_saxs_data
 import numpy as np
+from saxs1d import Ui_Form as Saxs1DUi
 
 
 class PlotWidget(object):
-    def __init__(self, ui_fname, tab_widget, name='saxs1d', plot_args=None,
-                 data_labels=None):
+    def __init__(self, name='saxs1d', plot_args=None, data_labels=None):
         super(PlotWidget, self).__init__()
-        self.tab = QtWidgets.QWidget()
-        tab_widget.addTab(self.tab, name)
-        uic.loadUi(ui_fname, self.tab)
         self.plot_args = plot_args
-        self.data = None
+        self.data = []
         self.data_labels = data_labels
 
-    def get_kwargs(self):
+    def get_kwargs(self, keys=None):
+        if keys is None:
+            keys = self.plot_args
+
         kwargs = {}
-        for k in self.plot_args:
-            key = self.tab.__dict__[k]
+        for k in keys:
+            key = self.__dict__[k]
             if isinstance(key, QtWidgets.QDoubleSpinBox):
                 val = key.value()
             elif isinstance(key, QtWidgets.QComboBox):
@@ -25,11 +25,11 @@ class PlotWidget(object):
             kwargs[k] = val
         return kwargs
 
-    def prepare_data(self, target, dloader, labels=None, max_points=1024):
+    def _prepare_data(self, target, ds, labels=None, max_points=1024):
         file_list = target[slice(0, max_points)]
         if labels is None:
             labels = self.data_labels
-        self.data = dloader.read_data(labels, file_list)
+        self.data = ds.read_data(labels, file_list)
         return
 
     def init_plot(self):
@@ -42,29 +42,31 @@ class PlotWidget(object):
         pass
 
 
-class SAXS1D(PlotWidget):
-    def __init__(self, tab_widget):
+class SAXS1D(PlotWidget, Saxs1DUi):
+    def __init__(self, parent):
         ui_fname = './ui/saxs1d.ui'
         name = 'saxs1d'
         plot_args = ['pa_offset', 'pa_type', 'pa_norm']
         data_labels = ['Int_2D', 'Iq', 'ql_sta']
 
-        super(SAXS1D, self).__init__(ui_fname, tab_widget, name, plot_args,
-                                     data_labels)
+        PlotWidget.__init__(self, name, plot_args, data_labels)
+        Saxs1DUi.__init__(self)
+        self.parent = parent
         self.setup_ui()
 
     def setup_ui(self):
-        self.tab.pushButton_10.clicked.connect(self.plot)
+        # reuse setupUi method from Ui
+        self.setupUi(self.parent)
+        self.pushButton_10.clicked.connect(self.plot)
 
     def plot(self):
-        pass
+        print(self.get_kwargs())
 
     def prepare_data(self, target, dloader, max_points=1024):
-        super(SAXS1D, self).prepare_data(target, dloader, max_points)
+        self.prepare_data(target, dloader, max_points)
         q = self.data['q'][0]
         Iq = self.data['Iq']
         legend = target[slice(0, max_points)]
-
         self.data = [q, Iq, legend]
 
     def init_plot(self, pa_type='log', pa_norm=0, pa_offset=0, max_points=8,
@@ -104,10 +106,6 @@ if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     Form = QtWidgets.QWidget()
-    tabWidget = QtWidgets.QTabWidget(Form)
-    a = SAXS1D(tabWidget)
-    print(a.get_kwargs())
-    # a = SAXS1D_base()
-    print(dir(a.tab))
+    a = SAXS1D(Form)
     Form.show()
     sys.exit(app.exec_())
