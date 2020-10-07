@@ -18,7 +18,8 @@ class NavigationToolbarSimple(NavigationToolbar2QT):
         pass
 
 
-class MplCanvasBarH(QtGui.QWidget):
+# # # # # # class MplCanvasBarH(QtGui.QWidget):
+class MplCanvasBarH(QtWidgets.QWidget):
     """
     MplWidget combines a MplCanvas with a horizontal toolbar
     """
@@ -34,7 +35,8 @@ class MplCanvasBarH(QtGui.QWidget):
         self.setLayout(self.hbl)
 
 
-class MplCanvasBarV(QtGui.QWidget):
+#  class MplCanvasBarV(QtGui.QWidget):
+class MplCanvasBarV(QtWidgets.QWidget):
     """
     MplWidget combines a MplCanvas with a horizontal toolbar
     """
@@ -48,7 +50,8 @@ class MplCanvasBarV(QtGui.QWidget):
         self.setLayout(self.vbl)
 
 
-class MplCanvasBar(QtGui.QWidget):
+# class MplCanvasBar(QtGui.QWidget):
+class MplCanvasBar(QtWidgets.QWidget):
     """
     MplWidget combines a MplCanvas with a Toolbar
     """
@@ -63,22 +66,22 @@ class MplCanvasBar(QtGui.QWidget):
         self.setLayout(self.vbl)
 
 
-class MplCanvasBarScroll(QtGui.QWidget):
-    """
-    MplWidget combines a Scroll MplCanvas with a Toolbar
-    """
-    def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
-        self.scrollArea = QtWidgets.QScrollArea(self)
-        self.scrollWidget = QtWidgets.QWidget()
-        self.hdl = MplCanvas(self.scrollWidget)
-        self.scrollArea.setWidget(self.scrollWidget)
-        self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
-        self.vbl = QtGui.QVBoxLayout()
-        self.vbl.addWidget(self.scrollWidget)
-        self.vbl.addWidget(self.navi_toolbar)
-        self.setLayout(self.vbl)
-
+# class MplCanvasBarScroll(QtGui.QWidget):
+#     """
+#     MplWidget combines a Scroll MplCanvas with a Toolbar
+#     """
+#     def __init__(self, parent=None):
+#         QtGui.QWidget.__init__(self, parent)
+#         self.scrollArea = QtWidgets.QScrollArea(self)
+#         self.scrollWidget = QtWidgets.QWidget()
+#         self.hdl = MplCanvas(self.scrollWidget)
+#         self.scrollArea.setWidget(self.scrollWidget)
+#         self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
+#         self.vbl = QtGui.QVBoxLayout()
+#         self.vbl.addWidget(self.scrollWidget)
+#         self.vbl.addWidget(self.navi_toolbar)
+#         self.setLayout(self.vbl)
+#
 
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=15, height=12, dpi=100):
