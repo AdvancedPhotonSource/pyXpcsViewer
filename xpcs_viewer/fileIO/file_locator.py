@@ -263,7 +263,7 @@ class FileLocator(object):
             self.id_list = create_id(self.target, 1)
         else:
         # if many files are added; then ignore the type check;
-            logger.info('type check is disabled. too many files added'))
+            logger.info('type check is disabled. too many files added')
             self.target = alist.copy()
             self.id_list = alist.copy()
 

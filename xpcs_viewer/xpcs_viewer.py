@@ -20,20 +20,20 @@ class XpcsViewer(QtWidgets.QMainWindow):
     def __init__(self, path=None):
         super(XpcsViewer, self).__init__()
         uic.loadUi('./ui/xpcs.ui', self)
+        self.tabWidget.setCurrentIndex(0)
         self.show()
+
         # finite states
         self.state = 0
 
         self.vk = None
         self.cache = None
-        self.load_path(path)
-
-        self.g2_cache = {}
+        if path is not None:
+            self.load_path(path)
 
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
 
-        self.tabWidget.setCurrentIndex(0)
         self.tabWidget.currentChanged.connect(self.init_tab)
         self.list_view_target.indexesMoved.connect(self.reorder_target)
         self.tab_dict = {
@@ -46,7 +46,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
             6: "diffusion",
             7: "twotime",
             8: "exp_setup",
-            9: "log"}
+            9: "log",
+            10: "None"}
 
         # width = self.console_panel.width()
         # height = self.console_panel.height()
@@ -88,6 +89,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
             self.update_hdf_list()
         elif tab_name == 'stability':
             self.update_stab_list()
+        elif tab_name == 'average':
+            self.update_average_box()
 
     def load_data(self):
 
@@ -228,9 +231,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
     def plot_tauq(self):
-        if not self.check_status():
+        if not self.check_status() or self.vk.type != 'Multitau':
             return
-        if self.vk.type not in ['Multitau', 'MULTITAU']: return
 
         kwargs = {
             'max_q': self.sb_tauq_qmax.value(),
@@ -240,7 +242,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.tauq_msg.setText('\n'.join(msg))
 
     def update_average_box(self):
-        if self.vk.type not in ['Multitau', 'MULTITAU']: return
+        if not self.check_status() or self.vk.type != 'Multitau':
+            return
 
         if self.avg_use_source_path.isChecked():
             self.avg_save_path.clear()
@@ -251,7 +254,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
             while not os.path.isdir(save_path):
                 save_path = QFileDialog.getExistingDirectory(self,
                                 'Open directory', '../cluster_results',
-                                 QFileDialog.ShowDirsOnly | QFileDialog.DontUseCustomDirectoryIcons)
+                                 QFileDialog.ShowDirsOnly)
             self.avg_save_path.setText(save_path)
 
         if len(self.vk.id_list) > 0:
@@ -309,7 +312,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
 
     def plot_g2(self, max_points=3):
-        if not self.check_status() or self.vk.type not in ['Multitau', 'MULTITAU']:
+        if not self.check_status() or self.vk.type != 'Multitau':
             return
 
         p = self.check_g2_number()
@@ -345,6 +348,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
             f = path
 
         if not os.path.isdir(f):
+            self.statusbar.showMessage('{} is not a folder. Abort.'.format(f))
             return
 
         curr_work_dir = self.work_dir.text()
@@ -353,6 +357,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         # if f == curr_work_dir; then the state is kept the same;
         if f != curr_work_dir or self.state == 0:
             self.state = 1
+
         self.work_dir.setText(f)
         self.vk = ViewerKernel(f, self.statusbar)
         self.update_box(self.vk.source_list, mode='source')
@@ -368,14 +373,13 @@ class XpcsViewer(QtWidgets.QMainWindow):
         elif mode == 'target':
             self.list_view_target.clear()
             self.list_view_target.addItems(file_list)
-            self.box_target.setTitle('Target: %5d \t [Type: %s]' % (
+            self.box_target.setTitle('Target: %5d \t [Type: %s] ' % (
                 len(file_list), self.vk.type))
 
         self.statusbar.showMessage('Target file list updated.')
         return
 
     def add_target(self):
-
         if self.state == 0:
             msg = 'path has not been specified.'
             self.statusbar.showMessage(msg)
@@ -409,12 +413,11 @@ class XpcsViewer(QtWidgets.QMainWindow):
             msg = 'more than one xpcs analysis type detected'
             self.statusbar.showMessage(msg)
 
-        self.update_average_box()
+        # self.update_average_box()
         if self.box_auto_update.isChecked():
             self.load_data()
 
     def reorder_target(self):
-        print('reorder now:', self.state, self.vk.target)
         target = []
         self.list_view_target.selectAll()
         for x in self.list_view_target.selectedIndexes():
@@ -526,6 +529,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         if show_msg and not flag:
             error_dialog = QtWidgets.QErrorMessage(self)
             error_dialog.showMessage(msg)
+            logger.error(msg)
             raise
 
         self.statusbar.showMessage(msg)
@@ -536,6 +540,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) == 2:
+        # use arg[1] as the starting directory
         window = XpcsViewer(sys.argv[1])
     else:
         window = XpcsViewer()
