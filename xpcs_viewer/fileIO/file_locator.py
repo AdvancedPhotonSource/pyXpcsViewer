@@ -245,23 +245,28 @@ class FileLocator(object):
             return ['None']
         return get_hdf_info(self.cwd, fname)
 
-    def add_target(self, alist):
+    def add_target(self, alist, threshold=64):
         if alist in [[], None]:
             return
         if self.type is None:
             self.type = self.get_type(alist[0])
-            self.target = [alist[0]]
 
         single_flag = True
-        for x in alist:
-            if x in self.target:
-                continue
-            if self.get_type(x) == self.type:
-                self.target.append(x)
-            else:
-                single_flag = False
 
-        self.id_list = create_id(self.target, 1)
+        if len(alist) <= threshold:
+            for x in alist:
+                if x not in self.target:
+                    if self.get_type(x) == self.type:
+                        self.target.append(x)
+                    else:
+                        single_flag = False
+            self.id_list = create_id(self.target, 1)
+        else:
+        # if many files are added; then ignore the type check;
+            logger.info('type check is disabled. too many files added'))
+            self.target = alist.copy()
+            self.id_list = alist.copy()
+
         logger.info('length of target = %d' % len(self.target))
         return single_flag
 
