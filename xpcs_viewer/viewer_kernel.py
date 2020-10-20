@@ -4,7 +4,8 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib.patches import Circle
 from helper.fitting import fit_xpcs, fit_tau
 from fileIO.file_locator import FileLocator
-from mpl_cmaps_in_ImageItem import pg_get_cmap
+
+
 
 from PyQt5 import QtCore
 from shutil import copyfile
@@ -371,53 +372,27 @@ class ViewerKernel(FileLocator):
         mp_hdl.draw()
 
     def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet',
-                     autorotate=False):
+                     autorotate=False, epsilon=0.001):
 
         ans = self.get_saxs_data()['saxs_2d']
-        if plot_type == 'log':
-            ans = np.log10(ans + 0.001)
 
+        if plot_type == 'log':
+            ans = np.log10(ans + epsilon)
         ans = ans.astype(np.float32)
 
-        if autorotate is True:
-            if ans.shape[1] > ans.shape[2]:
-                ans = ans.swapaxes(1, 2)
+        if autorotate is True and ans.shape[1] > ans.shape[2]:
+            ans = ans.swapaxes(1, 2)
 
-        sp = ans.T.shape
+        pg_hdl.set_colormap(cmap)
 
-        pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
-        pg_hdl.setColorMap(pg_cmap)
-
-        if ans.shape[0] > 1:
+        if ans.ndim == 3:
             xvals = np.arange(ans.shape[0])
-            pg_hdl.setImage(ans.swapaxes(1, 2), xvals=xvals)
+            pg_hdl.setImage(ans, xvals=xvals)
         else:
-            pg_hdl.setImage(ans[0].swapaxes(0, 1))
+            pg_hdl.setImage(ans[0])
 
-        # pg_hdl.getFrame
-        fs = pg_hdl.frameSize()
-        w0, h0 = fs.width(), fs.height()
-        w1, h1 = sp[0], sp[1]
-
-        if w1 / w0 > h1 / h0:
-            # the fig is wider than the canvas
-            margin_v = int((w1 / w0 * h0 - h1) / 2)
-            margin_h = 0
-        else:
-            # the canvas is wider than the figure
-            margin_v = 0
-            margin_h = int((h1 / h0 * w0 - w1) / 2)
-
-        vb = pg_hdl.getView()
-        vb.setLimits(xMin=-1 * margin_h,
-                     yMin=-1 * margin_v,
-                     xMax=1 * sp[0] + margin_h,
-                     yMax=1 * sp[1] + margin_v,
-                     minXRange=sp[0] // 10,
-                     minYRange=int(sp[0] / 10 / w0 * h0))
-        vb.setAspectLocked(1.0)
-        vb.setMouseMode(vb.RectMode)
-
+        sp = ans.shape[-2:]
+        pg_hdl.adjust_viewbox(sp)
 
     def plot_saxs_1d(self, mp_hdl, **kwargs):
         res = self.get_saxs_data(max_points=8)
