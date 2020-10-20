@@ -417,12 +417,14 @@ class ViewerKernel(FileLocator):
             ans = np.log10(ans + epsilon)
         ans = ans.astype(np.float32)
 
-        if autorotate is True and ans.shape[1] > ans.shape[2]:
+        rotate = False
+        if autorotate and ans.shape[1] > ans.shape[2]:
             ans = ans.swapaxes(1, 2)
+            rotate = True
 
         pg_hdl.set_colormap(cmap)
 
-        if ans.ndim == 3:
+        if ans.shape[0] > 1:
             xvals = np.arange(ans.shape[0])
             pg_hdl.setImage(ans, xvals=xvals)
         else:
@@ -431,9 +433,11 @@ class ViewerKernel(FileLocator):
         sp = ans.shape[-2:]
         pg_hdl.adjust_viewbox(sp)
 
+        return rotate
+
     def plot_saxs_1d(self, mp_hdl, **kwargs):
         res = self.get_saxs_data(max_points=8)
-        q = res['ql_sta'][0]
+        q = np.sort(res['ql_sta'][0])
         Iq = res["saxs_1d"]
         sl = slice(0, min(q.size, Iq.shape[1]))
         self.plot_saxs_line(mp_hdl,
@@ -464,7 +468,7 @@ class ViewerKernel(FileLocator):
                 Iq[n] = offset + Iq[n]
 
             elif yscale == 'log':
-                offset = 10 ** (plot_offset * n)
+                offset = 10**(plot_offset * n)
                 Iq[n] = Iq[n] / offset
 
         mp_hdl.show_lines(Iq,
@@ -521,6 +525,7 @@ class ViewerKernel(FileLocator):
         mark1 = Circle((ix, iy), radius=5, color='white')
         hdl.axes[1].add_patch(mark1)
         hdl.draw()
+        self.meta['twotime_pos'] = (v, h)
 
         return self.meta['twotime_dqmap'][v, h]
 
@@ -563,7 +568,6 @@ class ViewerKernel(FileLocator):
 
         if self.type == 'Twotime':
             key_c2t = os.path.join(rpath, 'C2T_all')
-            print(key_c2t)
             id_all = self.get(fname, [key_c2t], 'raw')[key_c2t]
             self.meta['twotime_idlist'] = [int(x[3:]) for x in id_all]
 
@@ -599,11 +603,19 @@ class ViewerKernel(FileLocator):
 
         if self.type != 'Twotime':
             self.show_message('Analysis type must be twotime.')
-            return
+            return None
 
         if plot_index not in self.meta['twotime_idlist']:
             self.show_message('plot_index is not found.')
-            return
+            return None
+
+        # check if a twotime selected point is already there; if so
+        if 'twotime_pos' not in self.meta or self.meta['twotime_dqmap'][
+                self.meta['twotime_pos']] != plot_index:
+            v, h = np.where(self.meta['twotime_dqmap'] == plot_index)
+            ret = (np.mean(v), np.mean(h))
+        else:
+            ret = None
 
         c2_key = os.path.join(self.meta['twotime_key'],
                               'C2T_all/g2_%05d' % plot_index)
@@ -616,7 +628,7 @@ class ViewerKernel(FileLocator):
         c2_half = c2[c2_key]
 
         if c2_half is None:
-            return
+            return None
 
         c2 = c2_half + np.transpose(c2_half)
         c2_translate = np.zeros(c2.shape)
@@ -656,6 +668,8 @@ class ViewerKernel(FileLocator):
         hdl.fig.tight_layout()
 
         hdl.draw()
+
+        return ret
 
     def plot_intt(self, pg_hdl, max_points=128, window=5, sampling=-1):
         labels = ['Int_t', 't0']
