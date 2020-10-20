@@ -5,8 +5,6 @@ from matplotlib.patches import Circle
 from helper.fitting import fit_xpcs, fit_tau
 from fileIO.file_locator import FileLocator
 
-
-
 from PyQt5 import QtCore
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
@@ -36,7 +34,28 @@ def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
     return vmin, vmax
 
 
-def norm_saxs_data(Iq, q, plot_norm=0, plot_type='log'):
+def norm_saxs_data(Iq, q, plot_norm=0):
+    """
+    normalize small angle scattering data to enhance the visual difference;
+    log / linear plot is handled by matplotlib ax objects;
+    Args:
+        Iq: SAXS Intensity, numpy.ndarray
+        q: wave transfer;
+        plot_norm: [0, 1, 2, 3]
+            0: no normalization
+            1: q^2
+            2: q^4
+            3: I / I0
+    Return:
+        Iq: normalized SAXS data
+        xlabel: 
+        ylabel:
+    Raise:
+        ValueError: if plot_norm not in [0, 1, 2, 3]
+    """
+    if plot_norm not in range(4):
+        raise ValueError('plot_norm must be in [0, 1, 2, 3]')
+
     ylabel = 'Intensity'
     if plot_norm == 1:
         Iq = Iq * np.square(q)
@@ -98,10 +117,10 @@ class ViewerKernel(FileLocator):
     def hash(self, max_points=10):
         if self.target is None:
             return hash(None)
-        elif max_points <= 0:   # use all items
+        elif max_points <= 0:  # use all items
             val = hash(tuple(self.target))
         else:
-            val = hash(tuple(self.target[0: max_points]))
+            val = hash(tuple(self.target[0:max_points]))
         return val
 
     def get_g2_data(self, max_points=10, q_range=None, t_range=None):
@@ -112,7 +131,7 @@ class ViewerKernel(FileLocator):
         if self.meta['g2_hash_val'] == hash_val:
             res = self.meta['g2_res']
         else:
-            res = self.get_list(labels, file_list[0: max_points])
+            res = self.get_list(labels, file_list[0:max_points])
             self.meta['g2_hash_val'] = hash_val
             self.meta['g2_res'] = res
 
@@ -126,7 +145,11 @@ class ViewerKernel(FileLocator):
 
         return tel, qd, g2, g2_err
 
-    def plot_g2_initialize(self, mp_hdl, num_fig, num_points, num_col=4,
+    def plot_g2_initialize(self,
+                           mp_hdl,
+                           num_fig,
+                           num_points,
+                           num_col=4,
                            show_label=False):
         # adjust canvas size according to number of images
         if num_fig < num_col:
@@ -167,8 +190,11 @@ class ViewerKernel(FileLocator):
             for i in range(num_fig):
                 offset = 0.03 * idx
                 ax = np.array(mp_hdl.axes).ravel()[i]
-                obj1 = ax.errorbar(x, y + offset,
-                                   yerr=err, fmt='o', markersize=3,
+                obj1 = ax.errorbar(x,
+                                   y + offset,
+                                   yerr=err,
+                                   fmt='o',
+                                   markersize=3,
                                    markerfacecolor='none',
                                    label='{}'.format(self.id_list[idx]))
                 err_obj.append(obj1)
@@ -184,9 +210,9 @@ class ViewerKernel(FileLocator):
                     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
                     # if there's only one point, do not add title; the title
                     # will be too long.
-                    if show_label and i == num_fig -1:
-                    # if idx >= 1 and num_points < 10:
-                         ax.legend(fontsize=8)
+                    if show_label and i == num_fig - 1:
+                        # if idx >= 1 and num_points < 10:
+                        ax.legend(fontsize=8)
 
         # mp_hdl.fig.tight_layout()
         mp_hdl.obj = {
@@ -194,14 +220,22 @@ class ViewerKernel(FileLocator):
             'lin': lin_obj,
         }
 
-    def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
-                offset=None, show_fit=False, max_points=50, bounds=None,
-                show_label=False, num_col=4, aspect=(1/1.618)):
+    def plot_g2(self,
+                handler,
+                q_range=None,
+                t_range=None,
+                y_range=None,
+                offset=None,
+                show_fit=False,
+                max_points=50,
+                bounds=None,
+                show_label=False,
+                num_col=4,
+                aspect=(1 / 1.618)):
 
         num_points = min(len(self.target), max_points)
         new_condition = (tuple(self.target[:num_points]),
-                         (q_range, t_range, y_range, offset),
-                         bounds)
+                         (q_range, t_range, y_range, offset), bounds)
         # if self.meta['g2_plot_condition'] == new_condition:
         #     return ['No target files selected or change in setting.']
         # else:
@@ -217,8 +251,11 @@ class ViewerKernel(FileLocator):
 
         plot_target = 4
         if plot_target >= 2 or handler.axes is None:
-            self.plot_g2_initialize(handler, num_fig, num_points,
-                                    show_label=show_label, num_col=num_col)
+            self.plot_g2_initialize(handler,
+                                    num_fig,
+                                    num_points,
+                                    show_label=show_label,
+                                    num_col=num_col)
 
         # if plot_target >= 2:
         if True:
@@ -237,7 +274,10 @@ class ViewerKernel(FileLocator):
         err_msg = []
         if show_fit:
             for ipt in range(num_points):
-                fit_res, fit_val = fit_xpcs(tel, qd, g2[ipt], g2_err[ipt],
+                fit_res, fit_val = fit_xpcs(tel,
+                                            qd,
+                                            g2[ipt],
+                                            g2_err[ipt],
                                             b=bounds)
                 self.meta['g2_fit_val'][self.target[ipt]] = fit_val
                 offset_i = -1 * offset * (ipt + 1)
@@ -245,7 +285,8 @@ class ViewerKernel(FileLocator):
                 prev_len = len(err_msg)
                 for ifg in range(num_fig):
                     loc = ipt * num_fig + ifg
-                    handler.update_lin(loc, fit_res[ifg]['fit_x'],
+                    handler.update_lin(loc,
+                                       fit_res[ifg]['fit_x'],
                                        fit_res[ifg]['fit_y'] + offset_i,
                                        visible=show_fit)
                     msg = fit_res[ifg]['err_msg']
@@ -288,24 +329,25 @@ class ViewerKernel(FileLocator):
         fit_val = []
 
         if True:
-        # if hdl.axes is None:
+            # if hdl.axes is None:
             hdl.clear()
             ax = hdl.subplots(1, 1)
             line_obj = []
             # for n in range(tau.shape[0]):
             for n in range(tau.shape[0]):
-                s = 10 ** (offset * n)
-                line = ax.errorbar(q[n][sl], tau[n][sl] / s,
+                s = 10**(offset * n)
+                line = ax.errorbar(q[n][sl],
+                                   tau[n][sl] / s,
                                    yerr=tau_err[n][sl] / s,
-                                   fmt='o-', markersize=3,
-                                   label=self.id_list[n]
-                                   )
+                                   fmt='o-',
+                                   markersize=3,
+                                   label=self.id_list[n])
                 line_obj.append(line)
                 slope, intercept, xf, yf = fit_tau(q[n][sl], tau[n][sl],
                                                    tau_err[n][sl])
                 line2 = ax.plot(xf, yf / s)
-                fit_val.append('fn: %s, slope = %.4f, intercept = %.4f' % (
-                               self.target[n], slope, intercept))
+                fit_val.append('fn: %s, slope = %.4f, intercept = %.4f' %
+                               (self.target[n], slope, intercept))
 
             ax.set_xlabel('$q (\\AA^{-1})$')
             ax.set_ylabel('$\\tau \\times 10^4$')
@@ -318,8 +360,10 @@ class ViewerKernel(FileLocator):
             return fit_val
 
     def get_detector_extent(self, file_list):
-        labels = ['ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy',
-                  'xdim', 'ydim']
+        labels = [
+            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
+            'ydim'
+        ]
         res = self.get_list(labels, file_list)
         extents = []
         for n in range(len(file_list)):
@@ -360,10 +404,12 @@ class ViewerKernel(FileLocator):
             img_obj = []
             for n in range(num_fig):
                 ax = axes.flatten()[n]
-                img = ax.imshow(ans[n], cmap=plt.get_cmap('jet'),
-                                # norm=LogNorm(vmin=1e-7, vmax=1e-4),
-                                interpolation=None,
-                                extent=extents[n])
+                img = ax.imshow(
+                    ans[n],
+                    cmap=plt.get_cmap('jet'),
+                    # norm=LogNorm(vmin=1e-7, vmax=1e-4),
+                    interpolation=None,
+                    extent=extents[n])
                 img_obj.append(img)
                 ax.set_title(self.id_list[n])
                 # ax.axis('off')
@@ -371,8 +417,12 @@ class ViewerKernel(FileLocator):
             mp_hdl.fig.tight_layout()
         mp_hdl.draw()
 
-    def plot_saxs_2d(self, pg_hdl, plot_type='log', cmap='jet',
-                     autorotate=False, epsilon=0.001):
+    def plot_saxs_2d(self,
+                     pg_hdl,
+                     plot_type='log',
+                     cmap='jet',
+                     autorotate=False,
+                     epsilon=0.001):
 
         ans = self.get_saxs_data()['saxs_2d']
 
@@ -399,11 +449,22 @@ class ViewerKernel(FileLocator):
         q = res['ql_sta'][0]
         Iq = res["saxs_1d"]
         sl = slice(0, min(q.size, Iq.shape[1]))
-        self.plot_saxs_line(mp_hdl, q[sl], Iq[:, sl],
-                            legend=self.target, **kwargs)
+        self.plot_saxs_line(mp_hdl,
+                            q[sl],
+                            Iq[:, sl],
+                            legend=self.target,
+                            **kwargs)
 
-    def plot_saxs_line(self, mp_hdl, q, Iq, plot_type='log', plot_norm=0,
-                       plot_offset=0, max_points=8, legend=None, title=None):
+    def plot_saxs_line(self,
+                       mp_hdl,
+                       q,
+                       Iq,
+                       plot_type='log',
+                       plot_norm=0,
+                       plot_offset=0,
+                       max_points=8,
+                       legend=None,
+                       title=None):
 
         Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm, plot_type)
         xscale = ['linear', 'log'][plot_type % 2]
@@ -416,11 +477,14 @@ class ViewerKernel(FileLocator):
                 Iq[n] = offset + Iq[n]
 
             elif yscale == 'log':
-                offset = 10 ** (plot_offset * n)
+                offset = 10**(plot_offset * n)
                 Iq[n] = Iq[n] / offset
 
-        mp_hdl.show_lines(Iq, xval=q, xlabel=xlabel,
-                              ylabel=ylabel, legend=legend)
+        mp_hdl.show_lines(Iq,
+                          xval=q,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          legend=legend)
 
         mp_hdl.axes.legend()
         mp_hdl.axes.set_xlabel(xlabel)
@@ -432,7 +496,7 @@ class ViewerKernel(FileLocator):
 
     def get_saxs_data(self, max_points=1024):
         labels = ['saxs_2d', "saxs_1d", 'ql_sta']
-        file_list = self.target[0: max_points]
+        file_list = self.target[0:max_points]
         res = self.get_list(labels, file_list)
         # ans = np.swapaxes(ans, 1, 2)
         # the detector figure is not oriented to image convention;
@@ -473,8 +537,13 @@ class ViewerKernel(FileLocator):
 
         return self.meta['twotime_dqmap'][v, h]
 
-    def plot_twotime_map(self, hdl, fname=None, group='xpcs', cmap='jet',
-                         scale='log', auto_crop=True):
+    def plot_twotime_map(self,
+                         hdl,
+                         fname=None,
+                         group='xpcs',
+                         cmap='jet',
+                         scale='log',
+                         auto_crop=True):
         if fname is None:
             fname = self.target[0]
 
@@ -488,12 +557,15 @@ class ViewerKernel(FileLocator):
         key_dqmap = os.path.join(group, 'dqmap')
         key_saxs = os.path.join(rpath, 'pixelSum')
 
-        dqmap, saxs = self.get(fname, [key_dqmap, key_saxs], 'raw',
+        dqmap, saxs = self.get(fname, [key_dqmap, key_saxs],
+                               'raw',
                                ret_type='list')
 
         # acquire time scale
-        key_frames = [os.path.join(group, 'stride_frames'),
-                      os.path.join(group, 'avg_frames')]
+        key_frames = [
+            os.path.join(group, 'stride_frames'),
+            os.path.join(group, 'avg_frames')
+        ]
         stride, avg = self.get(fname, key_frames, 'raw', ret_type='list')
         t0, t1 = self.get_cached(fname, ['t0', 't1'], ret_type='list')
         time_scale = max(t0, t1) * stride * avg
@@ -530,7 +602,7 @@ class ViewerKernel(FileLocator):
         hdl.clear()
         ax = hdl.subplots(1, 2, sharex=True, sharey=True)
         im0 = ax[0].imshow(saxs, cmap=plt.get_cmap(cmap))
-        im1 = ax[1].imshow(dqmap,  cmap=plt.get_cmap(cmap))
+        im1 = ax[1].imshow(dqmap, cmap=plt.get_cmap(cmap))
         plt.colorbar(im0, ax=ax[0])
         plt.colorbar(im1, ax=ax[1])
         hdl.draw()
@@ -552,8 +624,7 @@ class ViewerKernel(FileLocator):
         labels = ['g2_full', 'g2_partials']
 
         res = self.get_list(labels, [self.target[current_file_index]])
-        c2 = self.get(self.target[current_file_index], [c2_key],
-                      mode='raw')
+        c2 = self.get(self.target[current_file_index], [c2_key], mode='raw')
 
         c2_half = c2[c2_key]
 
@@ -571,9 +642,11 @@ class ViewerKernel(FileLocator):
         t_min = np.min(t)
         t_max = np.max(t)
 
-        hdl.clear() 
+        hdl.clear()
         ax = hdl.subplots(1, 2)
-        im = ax[0].imshow(c2, interpolation='none', origin='lower',
+        im = ax[0].imshow(c2,
+                          interpolation='none',
+                          origin='lower',
                           extent=([t_min, t_max, t_min, t_max]),
                           cmap=plt.get_cmap(cmap))
         plt.colorbar(im, ax=ax[0])
@@ -601,7 +674,7 @@ class ViewerKernel(FileLocator):
         labels = ['Int_t', 't0']
         num_points = min(max_points, len(self.target))
 
-        res = self.get_list(labels, self.target[0: num_points])
+        res = self.get_list(labels, self.target[0:num_points])
         t0 = self.get_cached(self.target[0], ['t0'], ret_type='list')[0]
         y = res["Int_t"][:, 1, :]
 
@@ -617,9 +690,12 @@ class ViewerKernel(FileLocator):
         x = (np.arange(y.shape[1]) * sampling * t0).astype(np.float32)
 
         pg_hdl.clear()
-        pg_hdl.show_lines(y, xval=x, xlabel="Time (s)",
+        pg_hdl.show_lines(y,
+                          xval=x,
+                          xlabel="Time (s)",
                           ylabel="Intensity (ph/pixel)",
-                          loc='lower right', alpha=0.5,
+                          loc='lower right',
+                          alpha=0.5,
                           legend=self.target)
         pg_hdl.draw()
 
@@ -630,8 +706,12 @@ class ViewerKernel(FileLocator):
         q = q[sl]
         Iqp = Iqp[:, sl]
         if method == '1d':
-            self.plot_saxs_line(mp_hdl, q, Iqp, legend=None,
-                                title=self.target[plot_id], **kwargs)
+            self.plot_saxs_line(mp_hdl,
+                                q,
+                                Iqp,
+                                legend=None,
+                                title=self.target[plot_id],
+                                **kwargs)
         # else:
         #     Iqp_vmin, Iqp_vmax = get_min_max(Iqp, 1, 99, **kwargs)
 
@@ -652,9 +732,14 @@ class ViewerKernel(FileLocator):
         #                       ylabel=qlabel,
         #                       xlabel=xlabel)
 
-    def average_plot_outlier(self, hdl1, hdl2,
-                             target='g2', avg_blmin=0.95, avg_blmax=1.05,
-                             avg_qindex=5, avg_window=10):
+    def average_plot_outlier(self,
+                             hdl1,
+                             hdl2,
+                             target='g2',
+                             avg_blmin=0.95,
+                             avg_blmax=1.05,
+                             avg_qindex=5,
+                             avg_window=10):
 
         if self.meta['avg_file_list'] != tuple(self.target):
             logger.info('avg cache not exist')
@@ -685,11 +770,18 @@ class ViewerKernel(FileLocator):
 
         title = '%d / %d' % (valid_num, g2_avg.shape[1])
 
-        hdl2.show_lines(g2_avg, xlabel='index', ylabel='g2 average',
-                        legend=legend, title=title)
+        hdl2.show_lines(g2_avg,
+                        xlabel='index',
+                        ylabel='g2 average',
+                        legend=legend,
+                        title=title)
 
-    def average_plot_v0(self, hdl1, hdl2, num_clusters=2, g2_cutoff=1.03,
-                                 target='g2'):
+    def average_plot_v0(self,
+                        hdl1,
+                        hdl2,
+                        num_clusters=2,
+                        g2_cutoff=1.03,
+                        target='g2'):
         if self.meta['avg_file_list'] != tuple(self.target):
             logger.info('avg cache not exist')
             labels = ['Int_t', 'g2']
@@ -715,25 +807,35 @@ class ViewerKernel(FileLocator):
             g2_avg = self.meta['avg_g2_avg']
 
         if target == 'intt':
-            y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
+            y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(
+                intt_minmax.T)
             freq = np.bincount(y_pred)
             self.meta['avg_intt_mask'] = y_pred == y_pred[freq.argmax()]
             valid_num = np.sum(y_pred == y_pred[freq.argmax()])
             title = '%d / %d' % (valid_num, y_pred.size)
-            hdl1.show_scatter(intt_minmax, color=y_pred, xlabel='Int-t min',
-                              ylabel='Int-t max', title=title)
+            hdl1.show_scatter(intt_minmax,
+                              color=y_pred,
+                              xlabel='Int-t min',
+                              ylabel='Int-t max',
+                              title=title)
         elif target == 'g2':
             self.meta['avg_g2_mask'] = g2_avg[0] >= g2_cutoff
             g2_avg[1, :] = g2_cutoff
             valid_num = np.sum(g2_avg[0] >= g2_cutoff)
             legend = ['data', 'cutoff']
             title = '%d / %d' % (valid_num, g2_avg.shape[1])
-            hdl2.show_lines(g2_avg, xlabel='index', ylabel='g2 average',
-                            legend=legend, title=title)
+            hdl2.show_lines(g2_avg,
+                            xlabel='index',
+                            ylabel='g2 average',
+                            legend=legend,
+                            title=title)
         else:
             return
 
-    def average(self, chunk_size=256, save_path=None, origin_path=None,
+    def average(self,
+                chunk_size=256,
+                save_path=None,
+                origin_path=None,
                 p_bar=None):
 
         labels = ["saxs_1d", 'g2', 'g2_err', 'saxs_2d']
@@ -752,7 +854,8 @@ class ViewerKernel(FileLocator):
             end = chunk_size * (n + 1)
             end = min(len(mask), end)
             sl = slice(beg, end)
-            values = self.get_list(labels, file_list=self.target[sl],
+            values = self.get_list(labels,
+                                   file_list=self.target[sl],
                                    mask=mask[sl])
             if n == 0:
                 for label in labels:
