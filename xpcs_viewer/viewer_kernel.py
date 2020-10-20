@@ -406,7 +406,7 @@ class ViewerKernel(FileLocator):
                      plot_type='log',
                      cmap='jet',
                      autorotate=False,
-                     epsilon=0.001):
+                     epsilon=None):
         if pg_hdl is None:
             from pyqtgraph_handler import ImageViewDev
             pg_hdl = ImageViewDev()
@@ -414,6 +414,9 @@ class ViewerKernel(FileLocator):
         ans = self.get_saxs_data()['saxs_2d']
 
         if plot_type == 'log':
+            if epsilon is None or epsilon < 0:
+                temp = ans[0]
+                epsilon = np.min(temp[temp > 0])
             ans = np.log10(ans + epsilon)
         ans = ans.astype(np.float32)
 
