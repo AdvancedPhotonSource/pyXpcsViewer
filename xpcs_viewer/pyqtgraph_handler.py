@@ -30,8 +30,8 @@ class ImageViewDev(ImageView):
                      yMin=-margin_v,
                      xMax=target_shape[1] + margin_h,
                      yMax=target_shape[0] + margin_v,
-                     minXRange=target_shape[1] / 10,
-                     minYRange=target_shape[0] / 10)
+                     minXRange=target_shape[1] / 20,
+                     minYRange=target_shape[1] / 20 * h0 / w0)
         vb.setMouseMode(vb.RectMode)
         vb.setAspectLocked(1.0)
     
