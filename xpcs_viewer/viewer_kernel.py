@@ -155,25 +155,10 @@ class ViewerKernel(FileLocator):
         if num_fig < num_col:
             num_col = num_fig
         num_row = (num_fig + num_col - 1) // num_col
-        if mp_hdl.parent().parent() is None:
-            aspect = 1 / 1.618
-            logger.info('using static aspect ratio')
-            min_size = 740
-        else:
-            t = mp_hdl.parent().parent().parent()
-            aspect = t.height() / mp_hdl.width()
-            logger.info('using dynamic aspect ratio')
-            min_size = t.height() - 20
 
-        width = mp_hdl.width()
-        # height = mp_hdl.height()
-        logger.info('aspect: {}'.format(aspect))
-        canvas_size = max(min_size, int(width / num_col * aspect * num_row))
-        logger.info('row, col: ({}, {})'.format(num_row, num_col))
-        logger.info('canvas size: ({}, {})'.format(width, canvas_size))
-        # canvas_size = min(height,  250 * num_row)
-        mp_hdl.setMinimumSize(QtCore.QSize(0, canvas_size))
+        mp_hdl.adjust_canvas_size(num_col, num_row)
         mp_hdl.fig.clear()
+
         # mp_hdl.subplots(num_row, num_col, sharex=True, sharey=True)
         mp_hdl.subplots(num_row, num_col)
         mp_hdl.obj = None
@@ -333,7 +318,6 @@ class ViewerKernel(FileLocator):
             hdl.clear()
             ax = hdl.subplots(1, 1)
             line_obj = []
-            # for n in range(tau.shape[0]):
             for n in range(tau.shape[0]):
                 s = 10**(offset * n)
                 line = ax.errorbar(q[n][sl],
@@ -418,11 +402,14 @@ class ViewerKernel(FileLocator):
         mp_hdl.draw()
 
     def plot_saxs_2d(self,
-                     pg_hdl,
+                     pg_hdl=None,
                      plot_type='log',
                      cmap='jet',
                      autorotate=False,
                      epsilon=0.001):
+        if pg_hdl is None:
+            from pyqtgraph_handler import ImageViewDev
+            pg_hdl = ImageViewDev()
 
         ans = self.get_saxs_data()['saxs_2d']
 
@@ -466,7 +453,7 @@ class ViewerKernel(FileLocator):
                        legend=None,
                        title=None):
 
-        Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm, plot_type)
+        Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
         xscale = ['linear', 'log'][plot_type % 2]
         yscale = ['linear', 'log'][plot_type // 2]
 
@@ -477,7 +464,7 @@ class ViewerKernel(FileLocator):
                 Iq[n] = offset + Iq[n]
 
             elif yscale == 'log':
-                offset = 10**(plot_offset * n)
+                offset = 10 ** (plot_offset * n)
                 Iq[n] = Iq[n] / offset
 
         mp_hdl.show_lines(Iq,

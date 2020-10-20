@@ -21,7 +21,7 @@ class NavigationToolbarSimple(NavigationToolbar2QT):
 # # # # # # class MplCanvasBarH(QtGui.QWidget):
 class MplCanvasBarH(QtWidgets.QWidget):
     """
-    MplWidget combines a MplCanvas with a horizontal toolbar
+    MplWidget combines a MplCanvas with a vertical toolbar
     """
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -50,6 +50,7 @@ class MplCanvasBarV(QtWidgets.QWidget):
         self.setLayout(self.vbl)
 
 
+
 # class MplCanvasBar(QtGui.QWidget):
 class MplCanvasBar(QtWidgets.QWidget):
     """
@@ -65,23 +66,6 @@ class MplCanvasBar(QtWidgets.QWidget):
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
         self.setLayout(self.vbl)
 
-
-# class MplCanvasBarScroll(QtGui.QWidget):
-#     """
-#     MplWidget combines a Scroll MplCanvas with a Toolbar
-#     """
-#     def __init__(self, parent=None):
-#         QtGui.QWidget.__init__(self, parent)
-#         self.scrollArea = QtWidgets.QScrollArea(self)
-#         self.scrollWidget = QtWidgets.QWidget()
-#         self.hdl = MplCanvas(self.scrollWidget)
-#         self.scrollArea.setWidget(self.scrollWidget)
-#         self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
-#         self.vbl = QtGui.QVBoxLayout()
-#         self.vbl.addWidget(self.scrollWidget)
-#         self.vbl.addWidget(self.navi_toolbar)
-#         self.setLayout(self.vbl)
-#
 
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=15, height=12, dpi=100):
@@ -102,6 +86,18 @@ class MplCanvas(FigureCanvasQTAgg):
         self.fig.clear()
         self.axes = None
         self.obj = None
+    
+    def adjust_canvas_size(self, num_col, num_row):
+        t = self.parent().parent().parent()
+        if t is None:
+            aspect = 1 / 1.618
+        else:
+            aspect = t.height() / self.width()
+
+        min_size = t.height() - 20
+        width = self.width()
+        canvas_size = max(min_size, int(width / num_col * aspect * num_row))
+        self.setMinimumSize(QtCore.QSize(0, canvas_size))
 
     def clear_axes(self):
         if self.axes is None:
