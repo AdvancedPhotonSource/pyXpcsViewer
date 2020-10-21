@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic, QtGui
+from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog
 import sys
 import os
@@ -23,19 +23,6 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(0)
         self.show()
 
-        # finite states
-        self.state = 0
-
-        self.vk = None
-        self.cache = None
-        if path is not None:
-            self.load_path(path)
-
-        self.mp_2t_map.hdl.mpl_connect('button_press_event',
-                                       self.update_twotime_qindex)
-
-        self.tabWidget.currentChanged.connect(self.init_tab)
-        self.list_view_target.indexesMoved.connect(self.reorder_target)
         self.tab_dict = {
             0: "saxs_2d",
             1: "saxs_1d",
@@ -47,7 +34,23 @@ class XpcsViewer(QtWidgets.QMainWindow):
             7: "twotime",
             8: "exp_setup",
             9: "log",
-            10: "None"}
+            10: "None"
+        }
+
+        # finite states
+        self.data_state = 0
+        self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int)
+
+        self.vk = None
+        self.cache = None
+        if path is not None:
+            self.load_path(path)
+
+        self.mp_2t_map.hdl.mpl_connect('button_press_event',
+                                       self.update_twotime_qindex)
+
+        self.tabWidget.currentChanged.connect(self.init_tab)
+        self.list_view_target.indexesMoved.connect(self.reorder_target)
 
         # width = self.console_panel.width()
         # height = self.console_panel.height()
@@ -63,16 +66,17 @@ class XpcsViewer(QtWidgets.QMainWindow):
         # sizePolicy.setVerticalStretch(100)
         # self.console.setSizePolicy(sizePolicy)
 
-        # self.saxs1d = SAXS1D(self.tab12)
-
     def init_tab(self):
-        if self.state != 3:
+        if self.data_state != 3:
             return
         self.statusbar.clearMessage()
 
         idx = self.tabWidget.currentIndex()
+        if self.plot_state[idx] > 0:
+            return
+
         tab_name = self.tab_dict[idx]
-        self.statusbar.showMessage('plot {}'.format(tab_name), 500)
+        self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
 
         if tab_name == 'saxs_2d':
             self.plot_saxs_2D()
@@ -92,23 +96,26 @@ class XpcsViewer(QtWidgets.QMainWindow):
         elif tab_name == 'average':
             self.update_average_box()
 
+        self.plot_state[idx] = 1
+
     def load_data(self):
 
-        if self.state <= 1:
+        if self.data_state <= 1:
             self.statusbar.showMessage('Work directory or target not ready.',
                                        1000)
             return
-        elif self.state == 3:
+        elif self.data_state == 3:
             self.statusbar.showMessage('Files are preloaded already. skip',
                                        1000)
             return
 
         # the state must be 2
         self.vk.preload_data(progress_bar=self.progress_bar)
-        self.state = 3
+        self.data_state = 3
+        self.plot_state[:] = 0
 
-        self.update_hdf_list()
-        self.update_stab_list()
+        # self.update_hdf_list()
+        # self.update_stab_list()
         self.init_tab()
 
     def update_hdf_list(self):
@@ -144,8 +151,10 @@ class XpcsViewer(QtWidgets.QMainWindow):
         kwargs = {
             'plot_type': self.cb_saxs2D_type.currentText(),
             'cmap': self.cb_saxs2D_cmap.currentText(),
-            'autorotate': self.saxs2d_autorotate.isChecked()}
-        self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
+            'autorotate': self.saxs2d_autorotate.isChecked()
+        }
+        flag = self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
+        self.saxs2d_flag.setText(str(flag))
 
     def plot_saxs_1D(self):
         if not self.check_status():
@@ -154,7 +163,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
         kwargs = {
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
-            'plot_norm': self.cb_saxs_norm.currentIndex()}
+            'plot_norm': self.cb_saxs_norm.currentIndex()
+        }
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
 
     def init_twotime(self):
@@ -202,11 +212,14 @@ class XpcsViewer(QtWidgets.QMainWindow):
             # if nothing is selected, currentRow = -1; then plot 0th row;
             'current_file_index': max(0, self.list_view_target.currentRow()),
             'plot_index': self.twotime_q_index.value(),
-            'cmap': self.cb_twotime_cmap.currentText()}
+            'cmap': self.cb_twotime_cmap.currentText()
+        }
         if kwargs['plot_index'] == 0:
             self.statusbar.showMessage("No twotime data for plot_indx = 0.")
             return
-        self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
+        ret = self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
+        if ret is not None:
+            self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
 
     def plot_stability_iq(self):
         if not self.check_status():
@@ -214,7 +227,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
         kwargs = {
             'plot_type': self.cb_stab_type.currentIndex(),
             'plot_offset': self.sb_stab_offset.value(),
-            'plot_norm': self.cb_stab_norm.currentIndex()}
+            'plot_norm': self.cb_stab_norm.currentIndex()
+        }
         plot_id = self.cb_stab.currentIndex()
         if plot_id < 0:
             return
@@ -236,7 +250,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         kwargs = {
             'max_q': self.sb_tauq_qmax.value(),
-            'offset': self.sb_tauq_offset.value()}
+            'offset': self.sb_tauq_offset.value()
+        }
         msg = self.vk.plot_tauq(hdl=self.mp_tauq, **kwargs)
         self.tauq_msg.clear()
         self.tauq_msg.setText('\n'.join(msg))
@@ -252,9 +267,9 @@ class XpcsViewer(QtWidgets.QMainWindow):
         else:
             save_path = self.avg_save_path.text()
             while not os.path.isdir(save_path):
-                save_path = QFileDialog.getExistingDirectory(self,
-                                'Open directory', '../cluster_results',
-                                 QFileDialog.ShowDirsOnly)
+                save_path = QFileDialog.getExistingDirectory(
+                    self, 'Open directory', '../cluster_results',
+                    QFileDialog.ShowDirsOnly)
             self.avg_save_path.setText(save_path)
 
         if len(self.vk.id_list) > 0:
@@ -327,7 +342,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
         }
 
         bounds = self.check_number()
-        err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl, bounds=bounds,
+        err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
+                                  bounds=bounds,
                                   **kwargs)
         self.g2_err_msg.clear()
         if err_msg is None:
@@ -355,8 +371,9 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         # either choose a new work_dir or initialize from state=0
         # if f == curr_work_dir; then the state is kept the same;
-        if f != curr_work_dir or self.state == 0:
-            self.state = 1
+        if f != curr_work_dir or self.data_state == 0:
+            self.data_state = 1
+            self.plot_state[:] = 0
 
         self.work_dir.setText(f)
         self.vk = ViewerKernel(f, self.statusbar)
@@ -373,14 +390,14 @@ class XpcsViewer(QtWidgets.QMainWindow):
         elif mode == 'target':
             self.list_view_target.clear()
             self.list_view_target.addItems(file_list)
-            self.box_target.setTitle('Target: %5d \t [Type: %s] ' % (
-                len(file_list), self.vk.type))
+            self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
+                                     (len(file_list), self.vk.type))
 
         self.statusbar.showMessage('Target file list updated.')
         return
 
     def add_target(self):
-        if self.state == 0:
+        if self.data_state == 0:
             msg = 'path has not been specified.'
             self.statusbar.showMessage(msg)
             return
@@ -398,7 +415,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         flag_single = self.vk.add_target(target)
         self.list_view_source.clearSelection()
 
-        # no change in self.state
+        # no change in self.data_state
         if curr_target == tuple(self.vk.target):
             self.progress_bar.setValue(100)
             return
@@ -406,8 +423,9 @@ class XpcsViewer(QtWidgets.QMainWindow):
         # the target list has changed;
         self.update_box(self.vk.target, mode='target')
 
-        if self.state in [1, 2, 3]:
-            self.state = 2
+        if self.data_state in [1, 2, 3]:
+            self.data_state = 2
+            self.plot_state[:] = 0
 
         if not flag_single:
             msg = 'more than one xpcs analysis type detected'
@@ -432,7 +450,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
             print('no reorder')
 
     def remove_target(self):
-        if self.state in [0, 1]:
+        if self.data_state in [0, 1]:
             self.statusbar.showMessage('Target is not ready.', 1000)
             return
 
@@ -445,9 +463,10 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         # if all files are removed; then go to state 1
         if self.vk.target in [[], None]:
-            self.state = 1
+            self.data_state = 1
         else:
-            self.state = 2
+            self.data_state = 2
+        self.plot_state[:] = 0
 
         self.update_box(self.vk.target, mode='target')
         if self.box_auto_update.isChecked():
@@ -463,8 +482,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.list_view_source.selectAll()
 
     def check_g2_number(self, default_val=(0, 0.0092, 1E-8, 1, 0.95, 1.35)):
-        keys = (self.g2_qmin, self.g2_qmax,
-                self.g2_tmin, self.g2_tmax,
+        keys = (self.g2_qmin, self.g2_qmax, self.g2_tmin, self.g2_tmax,
                 self.g2_ymin, self.g2_ymax)
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
@@ -489,8 +507,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
         return vals
 
     def check_number(self, default_val=(1e-6, 1e-2, 0.01, 0.20, 0.95, 1.05)):
-        keys = (self.tau_min, self.tau_max,
-                self.bkg_min, self.bkg_max,
+        keys = (self.tau_min, self.tau_max, self.bkg_min, self.bkg_max,
                 self.cts_min, self.cts_max)
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
@@ -516,11 +533,11 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
     def check_status(self, show_msg=True):
         flag = False
-        if self.state == 0:
+        if self.data_state == 0:
             msg = "The working directory hasn't be specified."
-        elif self.state == 1:
+        elif self.data_state == 1:
             msg = "No target files have been selected."
-        elif self.state == 2:
+        elif self.data_state == 2:
             msg = "Target files haven't been loaded."
         else:
             msg = "%d file(s) is selected" % len(self.vk.target)
@@ -530,7 +547,6 @@ class XpcsViewer(QtWidgets.QMainWindow):
             error_dialog = QtWidgets.QErrorMessage(self)
             error_dialog.showMessage(msg)
             logger.error(msg)
-            raise
 
         self.statusbar.showMessage(msg)
 
@@ -539,7 +555,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
         window = XpcsViewer(sys.argv[1])
     else:
