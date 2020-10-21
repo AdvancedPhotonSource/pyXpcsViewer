@@ -95,6 +95,9 @@ class XpcsViewer(QtWidgets.QMainWindow):
             self.update_stab_list()
         elif tab_name == 'average':
             self.update_average_box()
+        elif tab_name == 'g2':
+            pass
+            # self.plot_g2(10)
 
         self.plot_state[idx] = 1
 
@@ -110,7 +113,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
             return
 
         # the state must be 2
-        self.vk.preload_data(progress_bar=self.progress_bar)
+        self.vk.load(progress_bar=self.progress_bar)
         self.data_state = 3
         self.plot_state[:] = 0
 
@@ -288,10 +291,8 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
         kwargs = {
             'num_clusters': self.avg_intt_num_clusters.value(),
-            'target': 'intt'
         }
-        self.vk.average_plot_outlier(self.mp_avg_intt, self.mp_avg_g2,
-                                     **kwargs)
+        self.vk.average_plot_cluster(self.mp_avg_intt, **kwargs)
 
     def plot_outlier_g2(self):
         if not self.check_status() or self.vk.type != 'Multitau':

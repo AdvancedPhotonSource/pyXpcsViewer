@@ -338,7 +338,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -346,7 +346,7 @@
            </attribute>
            <layout class="QGridLayout" name="gridLayout_26">
             <item row="0" column="0">
-             <widget class="ImageView" name="pg_saxs" native="true">
+             <widget class="ImageViewDev" name="pg_saxs" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -401,6 +401,16 @@
                </item>
                <item row="0" column="1">
                 <layout class="QGridLayout" name="gridLayout_3">
+                 <item row="0" column="4">
+                  <widget class="QCheckBox" name="saxs2d_autorotate">
+                   <property name="text">
+                    <string>auto-rotate?</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="1">
                   <widget class="QComboBox" name="cb_saxs2D_type">
                    <item>
@@ -449,6 +459,13 @@
                    </item>
                   </widget>
                  </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_13">
+                   <property name="text">
+                    <string>colormap:</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="1" column="0" colspan="6">
                   <widget class="QPushButton" name="pushButton_5">
                    <property name="minimumSize">
@@ -462,27 +479,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_13">
-                   <property name="text">
-                    <string>colormap:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="5">
-                  <widget class="QCheckBox" name="saxs2d_autorotate">
-                   <property name="text">
-                    <string>auto-rotate?</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_12">
                    <property name="text">
                     <string>type:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QLabel" name="saxs2d_flag">
+                   <property name="text">
+                    <string>None</string>
                    </property>
                   </widget>
                  </item>
@@ -792,32 +799,6 @@
                  </item>
                 </layout>
                </item>
-               <item row="0" column="0">
-                <spacer name="horizontalSpacer_6">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>357</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="1" column="2">
-                <spacer name="horizontalSpacer_5">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>544</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="0" column="2">
                 <spacer name="horizontalSpacer_9">
                  <property name="orientation">
@@ -831,14 +812,14 @@
                  </property>
                 </spacer>
                </item>
-               <item row="1" column="0">
-                <spacer name="horizontalSpacer_10">
+               <item row="0" column="0">
+                <spacer name="horizontalSpacer_6">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>40</width>
+                   <width>357</width>
                    <height>20</height>
                   </size>
                  </property>
@@ -2071,11 +2052,6 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab12">
-           <attribute name="title">
-            <string>Page</string>
-           </attribute>
-          </widget>
          </widget>
         </widget>
        </item>
@@ -2104,12 +2080,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ImageView</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>MplCanvasBarH</class>
    <extends>QWidget</extends>
    <header>matplot_qt</header>
@@ -2119,6 +2089,12 @@
    <class>MplCanvasBarV</class>
    <extends>QWidget</extends>
    <header>matplot_qt</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ImageViewDev</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph_handler</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -2563,8 +2539,8 @@
    <slot>plot_outlier_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1516</x>
-     <y>687</y>
+     <x>1624</x>
+     <y>679</y>
     </hint>
     <hint type="destinationlabel">
      <x>1633</x>
@@ -2579,8 +2555,8 @@
    <slot>plot_outlier_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>860</x>
-     <y>687</y>
+     <x>784</x>
+     <y>697</y>
     </hint>
     <hint type="destinationlabel">
      <x>887</x>
@@ -2819,12 +2795,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>713</x>
-     <y>667</y>
+     <x>629</x>
+     <y>691</y>
     </hint>
     <hint type="destinationlabel">
-     <x>812</x>
-     <y>671</y>
+     <x>784</x>
+     <y>697</y>
     </hint>
    </hints>
   </connection>
@@ -2835,8 +2811,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1365</x>
-     <y>677</y>
+     <x>1212</x>
+     <y>690</y>
     </hint>
     <hint type="destinationlabel">
      <x>1439</x>
@@ -2889,6 +2865,22 @@
     <hint type="destinationlabel">
      <x>1121</x>
      <y>842</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_window</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>btn_intt</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1020</x>
+     <y>825</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>979</x>
+     <y>857</y>
     </hint>
    </hints>
   </connection>
