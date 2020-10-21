@@ -131,7 +131,7 @@ class ViewerKernel(FileLocator):
         if self.meta['g2_hash_val'] == hash_val:
             res = self.meta['g2_res']
         else:
-            res = self.get_list(labels, file_list[0:max_points])
+            res = self.fetch(labels, file_list[0:max_points])
             self.meta['g2_hash_val'] = hash_val
             self.meta['g2_res'] = res
 
@@ -216,7 +216,8 @@ class ViewerKernel(FileLocator):
                 bounds=None,
                 show_label=False,
                 num_col=4,
-                aspect=(1 / 1.618)):
+                prepare=False,
+                ):
 
         num_points = min(len(self.target), max_points)
         new_condition = (tuple(self.target[:num_points]),
@@ -232,6 +233,9 @@ class ViewerKernel(FileLocator):
         tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
                                                t_range=t_range,
                                                max_points=max_points)
+        if prepare:
+            return np.min(tel), np.max(tel)
+
         num_fig = g2.shape[2]
 
         plot_target = 4
@@ -348,7 +352,7 @@ class ViewerKernel(FileLocator):
             'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
             'ydim'
         ]
-        res = self.get_list(labels, file_list)
+        res = self.fetch(labels, file_list)
         extents = []
         for n in range(len(file_list)):
             pix2q = res['pix_dim'][n] / res['det_dist'][n] * \
@@ -487,11 +491,35 @@ class ViewerKernel(FileLocator):
         mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
         mp_hdl.draw()
         return
+    
+    def prepare_data(self, mode='saxs1d', max_points=1024):
+        if mode not in ['saxs1d', 'saxs2d', 'stability', 'intt', 'g2']:
+            raise ValueError('mode not supported')
+        
+        cache_name = mode + '_data'
+        if cache_name in self.meta:
+            return self.meta[cache_name]
+        
+        if mode == 'saxs1d':
+            labels = ["saxs_1d", 'ql_sta']
+        elif mode == 'saxs2d':
+            labels = ["saxs_2d"]
+        elif mode == 'stability':
+            labels = ['Iqp', 'ql_sta']
+        elif mode == 'intt':
+            labels = ['Int_t', 't0']
+        elif mode == 'g2':
+            labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
+        
+        res = self.fetch(labels, file_list, )
+
+        
+        return
 
     def get_saxs_data(self, max_points=1024):
         labels = ['saxs_2d', "saxs_1d", 'ql_sta']
         file_list = self.target[0:max_points]
-        res = self.get_list(labels, file_list)
+        res = self.fetch(labels, file_list)
         # ans = np.swapaxes(ans, 1, 2)
         # the detector figure is not oriented to image convention;
         return res
@@ -499,7 +527,7 @@ class ViewerKernel(FileLocator):
     def get_stability_data(self, max_point=128, plot_id=0):
         # labels = ['Int_t', "saxs_1d", 'ql_sta']
         labels = ['Iqp', 'ql_sta']
-        res = self.get_list(labels, [self.target[plot_id]])
+        res = self.fetch(labels, [self.target[plot_id]])
         q = res["ql_sta"][0]
         Iqp = res["Iqp"][0]
         # res["Iqp"] = np.flipud(Iqp).astype(np.float32)
@@ -625,7 +653,7 @@ class ViewerKernel(FileLocator):
 
         labels = ['g2_full', 'g2_partials']
 
-        res = self.get_list(labels, [self.target[current_file_index]])
+        res = self.fetch(labels, [self.target[current_file_index]])
         c2 = self.get(self.target[current_file_index], [c2_key], mode='raw')
 
         c2_half = c2[c2_key]
@@ -678,7 +706,7 @@ class ViewerKernel(FileLocator):
         labels = ['Int_t', 't0']
         num_points = min(max_points, len(self.target))
 
-        res = self.get_list(labels, self.target[0:num_points])
+        res = self.fetch(labels, self.target[0:num_points])
         t0 = self.get_cached(self.target[0], ['t0'], ret_type='list')[0]
         y = res["Int_t"][:, 1, :]
 
@@ -745,11 +773,12 @@ class ViewerKernel(FileLocator):
                              avg_qindex=5,
                              avg_window=10):
 
-        if self.meta['avg_file_list'] != tuple(self.target):
+        if self.meta['avg_file_list'] != tuple(self.target) or \
+                'avg_g2' not in self.meta:
             logger.info('avg cache not exist')
             labels = ['g2']
 
-            g2 = self.get_list(labels, file_list=self.target)['g2']
+            g2 = self.fetch(labels, file_list=self.target)['g2']
 
             self.meta['avg_file_list'] = tuple(self.target)
             self.meta['avg_g2'] = g2
@@ -780,61 +809,39 @@ class ViewerKernel(FileLocator):
                         legend=legend,
                         title=title)
 
-    def average_plot_v0(self,
-                        hdl1,
-                        hdl2,
-                        num_clusters=2,
-                        g2_cutoff=1.03,
-                        target='g2'):
-        if self.meta['avg_file_list'] != tuple(self.target):
+    def average_plot_cluster(self,
+                             hdl1,
+                             num_clusters=2):
+        if self.meta['avg_file_list'] != tuple(self.target) or \
+                'avg_intt_minmax' not in self.meta:
             logger.info('avg cache not exist')
-            labels = ['Int_t', 'g2']
-            res = self.get_list(labels, file_list=self.target)
+            labels = ['Int_t']
+            res = self.fetch(labels, file_list=self.target)
             Int_t = res['Int_t'][:, 1, :].astype(np.float32)
             Int_t = Int_t / np.max(Int_t)
             intt_minmax = []
             for n in range(len(self.target)):
                 intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
             intt_minmax = np.array(intt_minmax).T.astype(np.float32)
-            g2_avg = np.mean(res['g2'][:, -10:, 1], axis=1)
-            cutoff_line = np.ones_like(g2_avg) * g2_cutoff
-            g2_avg = np.vstack([g2_avg, cutoff_line])
 
             self.meta['avg_file_list'] = tuple(self.target)
             self.meta['avg_intt_minmax'] = intt_minmax
-            self.meta['avg_g2_avg'] = g2_avg
             self.meta['avg_intt_mask'] = np.ones(len(self.target))
-            self.meta['avg_g2_mask'] = np.ones(len(self.target))
+
         else:
             logger.info('using avg cache')
             intt_minmax = self.meta['avg_intt_minmax']
-            g2_avg = self.meta['avg_g2_avg']
 
-        if target == 'intt':
-            y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(
-                intt_minmax.T)
-            freq = np.bincount(y_pred)
-            self.meta['avg_intt_mask'] = y_pred == y_pred[freq.argmax()]
-            valid_num = np.sum(y_pred == y_pred[freq.argmax()])
-            title = '%d / %d' % (valid_num, y_pred.size)
-            hdl1.show_scatter(intt_minmax,
-                              color=y_pred,
-                              xlabel='Int-t min',
-                              ylabel='Int-t max',
-                              title=title)
-        elif target == 'g2':
-            self.meta['avg_g2_mask'] = g2_avg[0] >= g2_cutoff
-            g2_avg[1, :] = g2_cutoff
-            valid_num = np.sum(g2_avg[0] >= g2_cutoff)
-            legend = ['data', 'cutoff']
-            title = '%d / %d' % (valid_num, g2_avg.shape[1])
-            hdl2.show_lines(g2_avg,
-                            xlabel='index',
-                            ylabel='g2 average',
-                            legend=legend,
-                            title=title)
-        else:
-            return
+        y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
+        freq = np.bincount(y_pred)
+        self.meta['avg_intt_mask'] = y_pred == y_pred[freq.argmax()]
+        valid_num = np.sum(y_pred == y_pred[freq.argmax()])
+        title = '%d / %d' % (valid_num, y_pred.size)
+        hdl1.show_scatter(intt_minmax,
+                          color=y_pred,
+                          xlabel='Int-t min',
+                          ylabel='Int-t max',
+                          title=title)
 
     def average(self,
                 chunk_size=256,
@@ -858,7 +865,7 @@ class ViewerKernel(FileLocator):
             end = chunk_size * (n + 1)
             end = min(len(mask), end)
             sl = slice(beg, end)
-            values = self.get_list(labels,
+            values = self.fetch(labels,
                                    file_list=self.target[sl],
                                    mask=mask[sl])
             if n == 0:

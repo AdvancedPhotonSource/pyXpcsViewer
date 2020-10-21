@@ -111,17 +111,20 @@ class FileLocator(object):
         get the values for the various keys listed in fields for a single
         file;
         :param fname:
-        :param fields: list of keys [key1, key2, ..., ]
+        :param fields_raw: list of keys [key1, key2, ..., ]
         :param mode: ['raw' | 'alias']; alias is defined in self.hdf_key
-        :return: dictionary of values;
+                     otherwise the raw hdf key will be used
+        :param ret_type: return dictonary if 'dict', list if it is 'list'
+        :return: dictionary or dictionary;
         """
         fname = os.path.join(self.cwd, fname)
         ret = {}
 
-        # python will modify mutable list;
+        # python will modify mutable lists;
         fields = fields_raw.copy()
         fields_org = fields.copy()
         flag = False
+        # t_el is not defined in the HDF keys; t_el = t0 * tau
         if 't_el' in fields:
             flag = True
             fields.remove('t_el')
@@ -139,6 +142,7 @@ class FileLocator(object):
                 if key2 not in HDF_Result:
                     val = None
                 elif 'C2T_all' in key2:
+                    # C2T_allxxx has to be converted by numpy.array
                     val = np.array(HDF_Result.get(key2))
                 else:
                     val = HDF_Result.get(key2)[()]
@@ -176,17 +180,15 @@ class FileLocator(object):
         ret = self.get(fname, ['type'], mode='alias')['type']
         return ret.capitalize()
 
-    def get_list(self, labels, file_list=None, mask=None):
+    def fetch(self, labels, file_list, mask=None):
         """
-        get the keys for multiple keys and multiple files
+        fetch the keys in labels for each file in filelist; either from cache
+        or from the files if not cached.
         :param labels: [key1, key2, ...]
         :param file_list:
         :param mask:
         :return:
         """
-        if file_list is None:
-            file_list = self.target
-
         if mask is None:
             mask = np.ones(shape=len(file_list), dtype=np.bool)
 
@@ -207,8 +209,8 @@ class FileLocator(object):
             np_data[key] = np.array(temp)
         return np_data
 
-    def preload_data(self, file_list=None, max_number=1024,
-                     progress_bar=None, flag_del=True):
+    def load(self, file_list=None, max_number=1024,
+             progress_bar=None, flag_del=True):
         if self.type == 'Twotime':
             labels = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0',
                       't1', 'ql_dyn', 'g2_full', 'g2_partials', 'type']
