@@ -205,19 +205,20 @@ class ViewerKernel(FileLocator):
             'lin': lin_obj,
         }
 
-    def plot_g2(self,
-                handler,
-                q_range=None,
-                t_range=None,
-                y_range=None,
-                offset=None,
-                show_fit=False,
-                max_points=50,
-                bounds=None,
-                show_label=False,
-                num_col=4,
-                prepare=False,
-                ):
+    def plot_g2(
+        self,
+        handler,
+        q_range=None,
+        t_range=None,
+        y_range=None,
+        offset=None,
+        show_fit=False,
+        max_points=50,
+        bounds=None,
+        show_label=False,
+        num_col=4,
+        prepare=False,
+    ):
 
         num_points = min(len(self.target), max_points)
         new_condition = (tuple(self.target[:num_points]),
@@ -447,6 +448,7 @@ class ViewerKernel(FileLocator):
         q = np.sort(res['ql_sta'][0])
         Iq = res["saxs_1d"]
         sl = slice(0, min(q.size, Iq.shape[1]))
+        mp_hdl.clear()
         self.plot_saxs_line(mp_hdl,
                             q[sl],
                             Iq[:, sl],
@@ -491,15 +493,15 @@ class ViewerKernel(FileLocator):
         mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
         mp_hdl.draw()
         return
-    
+
     def prepare_data(self, mode='saxs1d', max_points=1024):
         if mode not in ['saxs1d', 'saxs2d', 'stability', 'intt', 'g2']:
             raise ValueError('mode not supported')
-        
+
         cache_name = mode + '_data'
         if cache_name in self.meta:
             return self.meta[cache_name]
-        
+
         if mode == 'saxs1d':
             labels = ["saxs_1d", 'ql_sta']
         elif mode == 'saxs2d':
@@ -510,10 +512,9 @@ class ViewerKernel(FileLocator):
             labels = ['Int_t', 't0']
         elif mode == 'g2':
             labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-        
-        res = self.fetch(labels, file_list, )
 
-        
+        res = self.fetch(labels, file_list)
+
         return
 
     def get_saxs_data(self, max_points=1024):
@@ -629,7 +630,10 @@ class ViewerKernel(FileLocator):
         plt.colorbar(im1, ax=ax[1])
         hdl.draw()
 
-    def plot_twotime(self, hdl, current_file_index=0, plot_index=1,
+    def plot_twotime(self,
+                     hdl,
+                     current_file_index=0,
+                     plot_index=1,
                      cmap='jet'):
 
         if self.type != 'Twotime':
@@ -809,9 +813,7 @@ class ViewerKernel(FileLocator):
                         legend=legend,
                         title=title)
 
-    def average_plot_cluster(self,
-                             hdl1,
-                             num_clusters=2):
+    def average_plot_cluster(self, hdl1, num_clusters=2):
         if self.meta['avg_file_list'] != tuple(self.target) or \
                 'avg_intt_minmax' not in self.meta:
             logger.info('avg cache not exist')
@@ -866,8 +868,8 @@ class ViewerKernel(FileLocator):
             end = min(len(mask), end)
             sl = slice(beg, end)
             values = self.fetch(labels,
-                                   file_list=self.target[sl],
-                                   mask=mask[sl])
+                                file_list=self.target[sl],
+                                mask=mask[sl])
             if n == 0:
                 for label in labels:
                     result[label] = np.sum(values[label], axis=0)
