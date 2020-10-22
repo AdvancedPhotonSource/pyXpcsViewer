@@ -112,10 +112,14 @@ class XpcsViewer(QtWidgets.QMainWindow):
                                        1000)
             return
 
+        self.statusbar.showMessage('Loading hdf files into RAM ... ')
+
         # the state must be 2
         self.vk.load(progress_bar=self.progress_bar)
+
         self.data_state = 3
         self.plot_state[:] = 0
+        self.statusbar.showMessage('Files loaded.')
 
         # self.update_hdf_list()
         # self.update_stab_list()
@@ -157,7 +161,10 @@ class XpcsViewer(QtWidgets.QMainWindow):
             'autorotate': self.saxs2d_autorotate.isChecked()
         }
         flag = self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
-        self.saxs2d_flag.setText(str(flag))
+        if flag:
+            self.saxs2d_flag.setText('Rotated')
+        else:
+            self.saxs2d_flag.setText('Not Rotated')
 
     def plot_saxs_1D(self):
         if not self.check_status():
@@ -289,6 +296,10 @@ class XpcsViewer(QtWidgets.QMainWindow):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
 
+        if len(self.vk.target) < 5:
+            self.statusbar.showMessage('At least 5 files needed', 1000)        
+            return
+
         kwargs = {
             'num_clusters': self.avg_intt_num_clusters.value(),
         }
@@ -296,6 +307,10 @@ class XpcsViewer(QtWidgets.QMainWindow):
 
     def plot_outlier_g2(self):
         if not self.check_status() or self.vk.type != 'Multitau':
+            return
+
+        if len(self.vk.target) < 5:
+            self.statusbar.showMessage('At least 5 files needed', 1000)        
             return
 
         kwargs = {
