@@ -338,7 +338,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -2699,11 +2699,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>678</x>
+     <x>772</x>
      <y>809</y>
     </hint>
     <hint type="destinationlabel">
-     <x>666</x>
+     <x>760</x>
      <y>845</y>
     </hint>
    </hints>
@@ -2715,7 +2715,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>900</x>
+     <x>994</x>
      <y>815</y>
     </hint>
     <hint type="destinationlabel">
@@ -2731,7 +2731,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1078</x>
+     <x>1172</x>
      <y>821</y>
     </hint>
     <hint type="destinationlabel">
