@@ -193,30 +193,23 @@ class MplCanvas(FigureCanvasQTAgg):
 
     def show_lines(self,
                    data,
-                   xval=None,
                    xlabel=None,
                    ylabel=None,
                    title=None,
                    legend=None,
                    loc='best',
                    alpha=0.85):
-        if xval is None:
-            xval = np.arange(data.shape[1])
 
         if legend in [None, False]:
-            legend = np.arange(data.shape[0])
+            legend = np.arange(len(data))
 
-        if self.axes is None or data.shape[0] != len(self.obj):
+        if self.axes is None or len(data) != len(self.obj):
             ax = self.subplots(1, 1)
             line_obj = []
-            for n in range(data.shape[0]):
+            for n in range(len(data)):
                 mk = markers[n % len(markers)]
-                line = ax.plot(xval,
-                               data[n],
-                               mk + '--',
-                               ms=3,
-                               alpha=alpha,
-                               label=legend[n])
+                line = ax.plot(data[n][0], data[n][1], mk + '--', ms=3,
+                               alpha=alpha, label=legend[n])
                 line_obj.append(line)
             self.obj = line_obj
 
@@ -224,9 +217,9 @@ class MplCanvas(FigureCanvasQTAgg):
                 ax.legend(loc=loc)
 
         else:
-            for n in range(data.shape[0]):
+            for n in range(len(data)):
                 line, = self.obj[n]
-                line.set_data(xval, data[n])
+                line.set_data(data[n][0], data[n][1])
                 if legend is not None:
                     line.set_label(legend[n])
             self.auto_scale()
