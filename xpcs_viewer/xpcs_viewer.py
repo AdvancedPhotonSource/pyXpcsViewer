@@ -404,7 +404,6 @@ class XpcsViewer(QtWidgets.QMainWindow):
         self.vk = ViewerKernel2(f, self.statusbar)
         self.thread = QThread()
         self.vk.moveToThread(self.thread)
-        # self.vk.start()
         self.update_box(self.vk.source_list, mode='source')
 
     def update_box(self, file_list, mode='source'):
