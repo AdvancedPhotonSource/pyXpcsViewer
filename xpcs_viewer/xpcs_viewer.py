@@ -1,11 +1,13 @@
+from os import stat
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import QThread, QObject
 import sys
 import os
 from viewer_kernel import ViewerKernel
 import numpy as np
 import logging
-from plotwidget import SAXS1D
+import time
 
 import sys
 from threading import Thread
@@ -14,6 +16,12 @@ from pyqtconsole.console import PythonConsole
 logging_format = '%(asctime)s %(message)s'
 logging.basicConfig(level=logging.INFO, format=logging_format)
 logger = logging.getLogger(__name__)
+
+
+class ViewerKernel2(ViewerKernel, QObject):
+    def __init__(self, path, statusbar=None):
+        ViewerKernel.__init__(self, path, statusbar)
+        QThread.__init__(self)
 
 
 class XpcsViewer(QtWidgets.QMainWindow):
@@ -113,6 +121,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
             return
 
         self.statusbar.showMessage('Loading hdf files into RAM ... ')
+        time.sleep(0.01)
 
         # the state must be 2
         self.vk.load(progress_bar=self.progress_bar)
@@ -392,7 +401,9 @@ class XpcsViewer(QtWidgets.QMainWindow):
             self.plot_state[:] = 0
 
         self.work_dir.setText(f)
-        self.vk = ViewerKernel(f, self.statusbar)
+        self.vk = ViewerKernel2(f, self.statusbar)
+        self.thread = QThread()
+        self.vk.moveToThread(self.thread)
         self.update_box(self.vk.source_list, mode='source')
 
     def update_box(self, file_list, mode='source'):
