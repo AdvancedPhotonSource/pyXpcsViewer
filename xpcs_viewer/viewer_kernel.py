@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.patches import Circle
-from helper.fitting import fit_xpcs, fit_tau
-from file_locator import FileLocator
-from module import saxs2d, saxs1d, intt, stability, g2mod
+from .helper.fitting import fit_xpcs, fit_tau
+from .file_locator import FileLocator
+from .module import saxs2d, saxs1d, intt, stability, g2mod
 
 from PyQt5 import QtCore
 from shutil import copyfile

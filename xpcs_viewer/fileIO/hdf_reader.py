@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 # choose aps 8idi data format
-key_fname = 'configure/aps_8idi.json'
+key_fname = '/Users/mqichu/Documents/local_dev/xpcs_gui/xpcs_viewer/configure/aps_8idi.json'
 with open(key_fname) as f:
     hdf_key = json.load(f)
 

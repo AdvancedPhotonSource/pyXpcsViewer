@@ -1,8 +1,8 @@
 import marisa_trie
 import os
 from os.path import commonprefix
-from fileIO.hdf_to_str import get_hdf_info
-from fileIO.hdf_reader import get, put, get_type, XpcsFile as xf
+from .fileIO.hdf_to_str import get_hdf_info
+from .fileIO.hdf_reader import get, put, get_type, XpcsFile as xf
 import logging
 import h5py
 import json
@@ -90,11 +90,11 @@ class FileLocator(object):
             # 2G
             self.max_cache_size = 1024 ** 3 * 2
 
-        if key_fname is not None:
-            with open(key_fname) as f:
-                self.hdf_key = json.load(f)
-        else:
-            self.hdf_key = None
+        # if key_fname is not None:
+        #     with open(key_fname) as f:
+        #         self.hdf_key = json.load(f)
+        # else:
+        #     self.hdf_key = None
 
     def get_cached(self, fname, fields, ret_type='list'):
         ret = {}
