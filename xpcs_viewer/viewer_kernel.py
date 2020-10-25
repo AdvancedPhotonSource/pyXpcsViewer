@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.patches import Circle
 from helper.fitting import fit_xpcs, fit_tau
-from fileIO.file_locator import FileLocator
+from file_locator import FileLocator
+from module import saxs2d, saxs1d, intt, stability, g2mod
 
 from PyQt5 import QtCore
 from shutil import copyfile
@@ -124,24 +125,26 @@ class ViewerKernel(FileLocator):
         return val
 
     def get_g2_data(self, max_points=10, q_range=None, t_range=None):
-        labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-        file_list = self.target
+        xf_list = self.get_xf_list(max_points)
+        tel, qd, g2, g2_err = g2mod.get_data(xf_list, q_range, t_range)
 
-        hash_val = self.hash(max_points)
-        if self.meta['g2_hash_val'] == hash_val:
-            res = self.meta['g2_res']
-        else:
-            res = self.fetch(labels, file_list[0:max_points])
-            self.meta['g2_hash_val'] = hash_val
-            self.meta['g2_res'] = res
+        # labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
 
-        tslice = create_slice(res['t_el'][0], t_range)
-        qslice = create_slice(res['ql_dyn'][0], q_range)
+        # hash_val = self.hash(max_points)
+        # if self.meta['g2_hash_val'] == hash_val:
+        #     res = self.meta['g2_res']
+        # else:
+        #     res = self.fetch(labels, file_list[0:max_points])
+        #     # self.meta['g2_hash_val'] = hash_val
+        #     # self.meta['g2_res'] = res
 
-        tel = res['t_el'][0][tslice]
-        qd = res['ql_dyn'][0][qslice]
-        g2 = res['g2'][:, tslice, qslice]
-        g2_err = res['g2_err'][:, tslice, qslice]
+        # tslice = create_slice(xf_list[0].t_el, t_range)
+        # qslice = create_slice(xf_list[0].ql_dyn, q_range)
+
+        # tel = res['t_el'][0][tslice]
+        # qd = res['ql_dyn'][0][qslice]
+        # g2 = res['g2'][:, tslice, qslice]
+        # g2_err = res['g2_err'][:, tslice, qslice]
 
         return tel, qd, g2, g2_err
 
@@ -237,7 +240,7 @@ class ViewerKernel(FileLocator):
         if prepare:
             return np.min(tel), np.max(tel)
 
-        num_fig = g2.shape[2]
+        num_fig = g2[0].shape[1]
 
         plot_target = 4
         if plot_target >= 2 or handler.axes is None:
@@ -254,18 +257,18 @@ class ViewerKernel(FileLocator):
                     # add the title
                     if ipt == 0:
                         ax = np.array(handler.axes).ravel()[ifg]
-                        ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ifg])
+                        ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ipt][ifg])
                     # update info
                     loc = ipt * num_fig + ifg
                     offset_i = -1 * offset * (ipt + 1)
-                    handler.update_err(loc, tel, g2[ipt][:, ifg] + offset_i,
+                    handler.update_err(loc, tel[ipt], g2[ipt][:, ifg] + offset_i,
                                        g2_err[ipt][:, ifg])
 
         err_msg = []
         if show_fit:
             for ipt in range(num_points):
-                fit_res, fit_val = fit_xpcs(tel,
-                                            qd,
+                fit_res, fit_val = fit_xpcs(tel[ipt],
+                                            qd[ipt],
                                             g2[ipt],
                                             g2_err[ipt],
                                             b=bounds)
@@ -348,191 +351,13 @@ class ViewerKernel(FileLocator):
 
             return fit_val
 
-    def get_detector_extent(self, file_list):
-        labels = [
-            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
-            'ydim'
-        ]
-        res = self.fetch(labels, file_list)
-        extents = []
-        for n in range(len(file_list)):
-            pix2q = res['pix_dim'][n] / res['det_dist'][n] * \
-                    (2 * np.pi / (12.398 / res['X_energy'][n]))
+    def plot_saxs_2d(self, *args, **kwargs):
+        ans = [self.cache[fn].saxs_2d for fn in self.target]
+        saxs2d.plot(ans, *args, **kwargs)
 
-            qy_min = (0 - res['ccd_x0'][n]) * pix2q
-            qy_max = (res['xdim'][n] - res['ccd_x0'][n]) * pix2q
-
-            qx_min = (0 - res['ccd_y0'][n]) * pix2q
-            qx_max = (res['ydim'][n] - res['ccd_y0'][n]) * pix2q
-            temp = (qy_min, qy_max, qx_min, qx_max)
-
-            extents.append(temp)
-
-        return extents
-
-    def plot_saxs_2d_mpl(self, mp_hdl=None, scale='log', max_points=8):
-        extents = self.get_detector_extent(self.target)
-        res = self.get_saxs_data()
-        ans = res['saxs_2d']
-        if scale == 'log':
-            ans = np.log10(ans + 1E-8)
-        num_fig = min(max_points, len(extents))
-        num_col = (num_fig + 1) // 2
-        ax_shape = (2, num_col)
-
-        if mp_hdl.axes is not None and mp_hdl.axes.shape == ax_shape:
-            axes = mp_hdl.axes
-            for n in range(num_fig):
-                img = mp_hdl.obj[n]
-                img.set_data(ans[n])
-                ax = axes.flatten()[n]
-                ax.set_title(self.id_list[n])
-        else:
-            mp_hdl.clear()
-            axes = mp_hdl.subplots(2, num_col, sharex=True, sharey=True)
-            img_obj = []
-            for n in range(num_fig):
-                ax = axes.flatten()[n]
-                img = ax.imshow(
-                    ans[n],
-                    cmap=plt.get_cmap('jet'),
-                    # norm=LogNorm(vmin=1e-7, vmax=1e-4),
-                    interpolation=None,
-                    extent=extents[n])
-                img_obj.append(img)
-                ax.set_title(self.id_list[n])
-                # ax.axis('off')
-            mp_hdl.obj = img_obj
-            mp_hdl.fig.tight_layout()
-        mp_hdl.draw()
-
-    def plot_saxs_2d(self,
-                     pg_hdl=None,
-                     plot_type='log',
-                     cmap='jet',
-                     autorotate=False,
-                     epsilon=None):
-        if pg_hdl is None:
-            from pyqtgraph_handler import ImageViewDev
-            pg_hdl = ImageViewDev()
-
-        ans = self.get_saxs_data()['saxs_2d']
-
-        if plot_type == 'log':
-            if epsilon is None or epsilon < 0:
-                temp = ans[0]
-                epsilon = np.min(temp[temp > 0])
-            ans = np.log10(ans + epsilon)
-        ans = ans.astype(np.float32)
-
-        rotate = False
-        if autorotate and ans.shape[1] > ans.shape[2]:
-            ans = ans.swapaxes(1, 2)
-            rotate = True
-
-        pg_hdl.set_colormap(cmap)
-
-        if ans.shape[0] > 1:
-            xvals = np.arange(ans.shape[0])
-            pg_hdl.setImage(ans, xvals=xvals)
-        else:
-            pg_hdl.setImage(ans[0])
-
-        sp = ans.shape[-2:]
-        pg_hdl.adjust_viewbox(sp)
-
-        return rotate
-
-    def plot_saxs_1d(self, mp_hdl, **kwargs):
-        res = self.get_saxs_data(max_points=8)
-        q = np.sort(res['ql_sta'][0])
-        Iq = res["saxs_1d"]
-        sl = slice(0, min(q.size, Iq.shape[1]))
-        mp_hdl.clear()
-        self.plot_saxs_line(mp_hdl,
-                            q[sl],
-                            Iq[:, sl],
-                            legend=self.target,
-                            **kwargs)
-
-    def plot_saxs_line(self,
-                       mp_hdl,
-                       q,
-                       Iq,
-                       plot_type='log',
-                       plot_norm=0,
-                       plot_offset=0,
-                       max_points=8,
-                       legend=None,
-                       title=None):
-
-        Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
-        xscale = ['linear', 'log'][plot_type % 2]
-        yscale = ['linear', 'log'][plot_type // 2]
-
-        num_points = min(len(self.target), max_points)
-        for n in range(1, num_points):
-            if yscale == 'linear':
-                offset = -plot_offset * n * np.max(Iq[n])
-                Iq[n] = offset + Iq[n]
-
-            elif yscale == 'log':
-                offset = 10**(plot_offset * n)
-                Iq[n] = Iq[n] / offset
-
-        mp_hdl.show_lines(Iq,
-                          xval=q,
-                          xlabel=xlabel,
-                          ylabel=ylabel,
-                          legend=legend)
-
-        mp_hdl.axes.legend()
-        mp_hdl.axes.set_xlabel(xlabel)
-        mp_hdl.axes.set_ylabel(ylabel)
-        mp_hdl.axes.set_title(title)
-        mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
-        mp_hdl.draw()
-        return
-
-    def prepare_data(self, mode='saxs1d', max_points=1024):
-        if mode not in ['saxs1d', 'saxs2d', 'stability', 'intt', 'g2']:
-            raise ValueError('mode not supported')
-
-        cache_name = mode + '_data'
-        if cache_name in self.meta:
-            return self.meta[cache_name]
-
-        if mode == 'saxs1d':
-            labels = ["saxs_1d", 'ql_sta']
-        elif mode == 'saxs2d':
-            labels = ["saxs_2d"]
-        elif mode == 'stability':
-            labels = ['Iqp', 'ql_sta']
-        elif mode == 'intt':
-            labels = ['Int_t', 't0']
-        elif mode == 'g2':
-            labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-
-        res = self.fetch(labels, file_list)
-
-        return
-
-    def get_saxs_data(self, max_points=1024):
-        labels = ['saxs_2d', "saxs_1d", 'ql_sta']
-        file_list = self.target[0:max_points]
-        res = self.fetch(labels, file_list)
-        # ans = np.swapaxes(ans, 1, 2)
-        # the detector figure is not oriented to image convention;
-        return res
-
-    def get_stability_data(self, max_point=128, plot_id=0):
-        # labels = ['Int_t', "saxs_1d", 'ql_sta']
-        labels = ['Iqp', 'ql_sta']
-        res = self.fetch(labels, [self.target[plot_id]])
-        q = res["ql_sta"][0]
-        Iqp = res["Iqp"][0]
-        # res["Iqp"] = np.flipud(Iqp).astype(np.float32)
-        return q, Iqp
+    def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
+        xf_list = [self.cache[fn] for fn in self.target[slice(0, max_points)]]
+        saxs1d.plot(xf_list, mp_hdl, **kwargs)
 
     def setup_twotime(self, file_index=0, group='xpcs'):
         fname = self.target[file_index]
@@ -576,13 +401,12 @@ class ViewerKernel(FileLocator):
             return
 
         rpath = os.path.join(group, 'output_data')
-        rpath = self.get(fname, [rpath], 'raw')[rpath]
+        rpath = self.get(fname, [rpath], mode='raw')[rpath]
 
         key_dqmap = os.path.join(group, 'dqmap')
         key_saxs = os.path.join(rpath, 'pixelSum')
 
-        dqmap, saxs = self.get(fname, [key_dqmap, key_saxs],
-                               'raw',
+        dqmap, saxs = self.get(fname, [key_dqmap, key_saxs], mode='raw',
                                ret_type='list')
 
         # acquire time scale
@@ -590,7 +414,7 @@ class ViewerKernel(FileLocator):
             os.path.join(group, 'stride_frames'),
             os.path.join(group, 'avg_frames')
         ]
-        stride, avg = self.get(fname, key_frames, 'raw', ret_type='list')
+        stride, avg = self.get(fname, key_frames, mode='raw', ret_type='list')
         t0, t1 = self.get_cached(fname, ['t0', 't1'], ret_type='list')
         time_scale = max(t0, t1) * stride * avg
 
@@ -600,7 +424,7 @@ class ViewerKernel(FileLocator):
 
         if self.type == 'Twotime':
             key_c2t = os.path.join(rpath, 'C2T_all')
-            id_all = self.get(fname, [key_c2t], 'raw')[key_c2t]
+            id_all = self.get(fname, [key_c2t], mode='raw')[key_c2t]
             self.meta['twotime_idlist'] = [int(x[3:]) for x in id_all]
 
         if auto_crop:
@@ -706,67 +530,13 @@ class ViewerKernel(FileLocator):
 
         return ret
 
-    def plot_intt(self, pg_hdl, max_points=128, window=5, sampling=-1):
-        labels = ['Int_t', 't0']
-        num_points = min(max_points, len(self.target))
+    def plot_intt(self, pg_hdl, max_points=128, **kwargs):
+        xf_list = self.get_xf_list(max_points)
+        intt.plot(xf_list, pg_hdl, self.target, **kwargs)
 
-        res = self.fetch(labels, self.target[0:num_points])
-        t0 = self.get_cached(self.target[0], ['t0'], ret_type='list')[0]
-        y = res["Int_t"][:, 1, :]
-
-        if window > 1:
-            y = np.cumsum(y, dtype=float, axis=1)
-            y = (y[:, window:] - y[:, :-window]) / window
-
-        if sampling > 0:
-            y = y[:, ::sampling]
-        else:
-            sampling = 1
-
-        x = (np.arange(y.shape[1]) * sampling * t0).astype(np.float32)
-
-        pg_hdl.clear()
-        pg_hdl.show_lines(y,
-                          xval=x,
-                          xlabel="Time (s)",
-                          ylabel="Intensity (ph/pixel)",
-                          loc='lower right',
-                          alpha=0.5,
-                          legend=self.target)
-        pg_hdl.draw()
-
-    def plot_stability(self, mp_hdl, plot_id, method='1d', **kwargs):
-
-        q, Iqp = self.get_stability_data(plot_id)
-        sl = slice(0, min(q.size, Iqp.shape[1]))
-        q = q[sl]
-        Iqp = Iqp[:, sl]
-        if method == '1d':
-            self.plot_saxs_line(mp_hdl,
-                                q,
-                                Iqp,
-                                legend=None,
-                                title=self.target[plot_id],
-                                **kwargs)
-        # else:
-        #     Iqp_vmin, Iqp_vmax = get_min_max(Iqp, 1, 99, **kwargs)
-
-        #     if seg_len >= Iqp.shape[1]:
-        #         title = 'Single-Scan SAXS:'
-        #         xlabel = 'Segment'
-        #         extent = (-0.5, Iqp.shape[1] - 0.5, np.min(q), np.max(q))
-        #     else:
-        #         title = 'Multi-Scan SAXS:'
-        #         xlabel = 'Scan number (each has %d segments)' % seg_len
-        #         extent = (-0.5, Iqp.shape[1] // seg_len - 0.5,
-        #                   np.min(q), np.max(q))
-
-        #     mp_hdl.show_image(Iqp, vmin=Iqp_vmin, vmax=Iqp_vmax,
-        #                       vline_freq=1,
-        #                       extent=extent,
-        #                       title=title + ylabel,
-        #                       ylabel=qlabel,
-        #                       xlabel=xlabel)
+    def plot_stability(self, mp_hdl, plot_id, **kwargs):
+        fc = self.cache[self.target[plot_id]]
+        stability.plot(fc, mp_hdl, **kwargs)
 
     def average_plot_outlier(self,
                              hdl1,
