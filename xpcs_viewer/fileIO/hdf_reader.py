@@ -94,7 +94,7 @@ def get_type(fname):
 
 
 class XpcsFile(object):
-    def __init__(self, fname, cwd='../../data'):
+    def __init__(self, fname, cwd='../../data', labels=None):
 
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
@@ -131,18 +131,37 @@ class XpcsFile(object):
         pass
     
     def load(self, labels=None):
-        if self.type == 'Twotime':
-            labels = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0',
-                      't1', 'ql_dyn', 'g2_full', 'g2_partials', 'type']
-        else:
-            labels = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0',
-                      't1', 't_el', 'ql_dyn', 'g2', 'g2_err', 'type']
-
+        if labels is None:
+            if self.type == 'Twotime':
+                labels = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0',
+                          't1', 'ql_dyn', 'g2_full', 'g2_partials', 'type']
+            else:
+                labels = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0',
+                          't1', 't_el', 'ql_dyn', 'g2', 'g2_err', 'type']
+        
         ret = get(self.full_path, labels, 'alias')
         return ret
     
     def at(self, key):
         return self.__dict__[key]
+    
+    def get_detector_extent(self):
+        labels = [
+            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
+            'ydim']
+        res = get(self.full_path, labels, mode='alias', ret_type='dict')
+
+        wlength = 12.398 / res['X_energy']
+        pix2q = res['pix_dim'] / res['det_dist'] * (2 * np.pi / wlength)
+
+        qy_min = (0 - res['ccd_x0']) * pix2q
+        qy_max = (res['xdim'] - res['ccd_x0']) * pix2q
+
+        qx_min = (0 - res['ccd_y0']) * pix2q
+        qx_max = (res['ydim'] - res['ccd_y0']) * pix2q
+        extent = (qy_min, qy_max, qx_min, qx_max)
+
+        return extent
 
 
 def test1():

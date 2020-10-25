@@ -274,6 +274,9 @@
                    <property name="text">
                     <string>auto</string>
                    </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1268,8 +1271,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1287</width>
-                 <height>666</height>
+                 <width>98</width>
+                 <height>34</height>
                 </rect>
                </property>
                <property name="sizePolicy">
