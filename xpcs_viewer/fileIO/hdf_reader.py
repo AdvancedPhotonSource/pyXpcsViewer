@@ -10,10 +10,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# choose aps 8idi data format
-key_fname = '/Users/mqichu/Documents/local_dev/xpcs_gui/xpcs_viewer/configure/aps_8idi.json'
+# read the default.json in the home_directory 
+home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+key_fname = os.path.join(home_dir, 'default.json')
+
+# if no such file; then use 8idi configure
+if not os.path.isfile(key_fname):
+    from .aps_8idi import key
+    with open(key_fname, 'w') as f:
+        json.dump(key, f, indent=4)
+    logger.info('no key configuration files found; using APS-8IDI')
+
+
 with open(key_fname) as f:
-    hdf_key = json.load(f)
+    try:
+        hdf_key = json.load(f)
+    except JSONDecodeError as e:
+        from .aps_8idi import key
+        hdf_key = key
 
 
 def put(save_path, fields, result, mode='raw'):
