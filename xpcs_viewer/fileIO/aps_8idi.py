@@ -1,4 +1,4 @@
-{
+key = {
   "saxs_1d": "/exchange/partition-mean-total",
   "Iqp": "/exchange/partition-mean-partial",
   "ql_sta": "/xpcs/sqlist",

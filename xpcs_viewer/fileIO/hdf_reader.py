@@ -25,7 +25,8 @@ if not os.path.isfile(key_fname):
 with open(key_fname) as f:
     try:
         hdf_key = json.load(f)
-    except JSONDecodeError as e:
+    except json.JSONDecodeError as e:
+        logger.info('default.json in .xpcs_viewer is damaged.')
         from .aps_8idi import key
         hdf_key = key
 
