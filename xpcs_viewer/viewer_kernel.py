@@ -579,5 +579,3 @@ class ViewerKernel(FileLocator):
 if __name__ == "__main__":
     flist = os.listdir('./data')
     dv = ViewerKernel('./data', flist)
-    dv.average()
-    # dv.plot_g2()
