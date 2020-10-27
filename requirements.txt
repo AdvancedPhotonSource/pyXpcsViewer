@@ -1,8 +1,9 @@
-# Name                    Version                   Build  Channel
 numpy>=1.18.1
-pyqt5~=5.15.0
-scipy~=1.4.1
-scikit-learn~=0.22.1
-pyqtgraph~=0.10.0
-h5py~=2.10.0
-matplotlib~=3.1.3
+pyqt5>=5.9.2
+scipy>=1.2.0
+scikit-learn>=0.22.1
+pyqtgraph>=0.10.0
+h5py>=2.7.0
+matplotlib>=3.2.2
+marisa-trie>=0.7.5
+python>=3.7.0

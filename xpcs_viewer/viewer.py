@@ -1,21 +1,32 @@
-from os import stat
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import QThread, QObject
+from PyQt5.QtCore import QThread, QObject, Qt
+
+
 import sys
 import os
-from viewer_kernel import ViewerKernel
 import numpy as np
-import logging
 import time
-
 import sys
-from threading import Thread
-from pyqtconsole.console import PythonConsole
 
-logging_format = '%(asctime)s %(message)s'
-logging.basicConfig(level=logging.INFO, format=logging_format)
+
+# log file
+import logging
+format = logging.Formatter('%(asctime)s %(message)s')
+home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+if not os.path.isdir(home_dir):
+    os.mkdir(home_dir)
+log_filename = os.path.join(home_dir, 'viewer.log')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(name)-24s: %(message)s',
+                    handlers=[
+                        logging.FileHandler(log_filename, mode='a'),
+                        logging.StreamHandler()])
 logger = logging.getLogger(__name__)
+
+
+from .viewer_kernel import ViewerKernel
+from .viewer_ui import Ui_mainwindow as Ui
 
 
 class ViewerKernel2(ViewerKernel, QObject):
@@ -24,12 +35,14 @@ class ViewerKernel2(ViewerKernel, QObject):
         QThread.__init__(self)
 
 
-class XpcsViewer(QtWidgets.QMainWindow):
+class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None):
+        logger.info('Viewer starts: {}'.format(path))
         super(XpcsViewer, self).__init__()
-        uic.loadUi('./ui/xpcs.ui', self)
-        self.tabWidget.setCurrentIndex(0)
+        self.setupUi(self)
         self.show()
+
+        self.tabWidget.setCurrentIndex(0)
 
         self.tab_dict = {
             0: "saxs_2d",
@@ -82,8 +95,9 @@ class XpcsViewer(QtWidgets.QMainWindow):
         idx = self.tabWidget.currentIndex()
         if self.plot_state[idx] > 0:
             return
-
         tab_name = self.tab_dict[idx]
+
+        logger.info('switch to tab %d: %s', idx, tab_name)
         self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
 
         if tab_name == 'saxs_2d':
@@ -121,7 +135,7 @@ class XpcsViewer(QtWidgets.QMainWindow):
             return
 
         self.statusbar.showMessage('Loading hdf files into RAM ... ')
-        time.sleep(0.01)
+        logger.info('loading hdf files into RAM')
 
         # the state must be 2
         self.vk.load(progress_bar=self.progress_bar)
@@ -580,11 +594,16 @@ class XpcsViewer(QtWidgets.QMainWindow):
         return flag
 
 
-if __name__ == "__main__":
+def run():
     app = QtWidgets.QApplication(sys.argv)
+    app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
         window = XpcsViewer(sys.argv[1])
     else:
         window = XpcsViewer()
     app.exec_()
+
+
+if __name__ == '__main__':
+    run()

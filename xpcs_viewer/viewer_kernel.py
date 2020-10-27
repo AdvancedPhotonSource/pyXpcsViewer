@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.patches import Circle
-from helper.fitting import fit_xpcs, fit_tau
-from file_locator import FileLocator
-from module import saxs2d, saxs1d, intt, stability, g2mod
+from .helper.fitting import fit_xpcs, fit_tau
+from .file_locator import FileLocator
+from .module import saxs2d, saxs1d, intt, stability, g2mod
 
 from PyQt5 import QtCore
 from shutil import copyfile
@@ -14,78 +14,8 @@ import h5py
 import os
 import logging
 
-logging_format = '%(asctime)s %(message)s'
-logging.basicConfig(level=logging.INFO, format=logging_format)
+
 logger = logging.getLogger(__name__)
-
-
-def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
-    vmin = np.percentile(data.ravel(), min_percent)
-    vmax = np.percentile(data.ravel(), max_percent)
-
-    if 'plot_norm' in kwargs and 'plot_type' in kwargs:
-        if kwargs['plot_norm'] == 3:
-            if kwargs['plot_type'] == 'log':
-                t = max(abs(vmin), abs(vmax))
-                vmin, vmax = -t, t
-            else:
-                t = max(abs(1 - vmin), abs(vmax - 1))
-                vmin, vmax = 1 - t, 1 + t
-
-    return vmin, vmax
-
-
-def norm_saxs_data(Iq, q, plot_norm=0):
-    """
-    normalize small angle scattering data to enhance the visual difference;
-    log / linear plot is handled by matplotlib ax objects;
-    Args:
-        Iq: SAXS Intensity, numpy.ndarray
-        q: wave transfer;
-        plot_norm: [0, 1, 2, 3]
-            0: no normalization
-            1: q^2
-            2: q^4
-            3: I / I0
-    Return:
-        Iq: normalized SAXS data
-        xlabel: 
-        ylabel:
-    Raise:
-        ValueError: if plot_norm not in [0, 1, 2, 3]
-    """
-    if plot_norm not in range(4):
-        raise ValueError('plot_norm must be in [0, 1, 2, 3]')
-
-    ylabel = 'Intensity'
-    if plot_norm == 1:
-        Iq = Iq * np.square(q)
-        ylabel = ylabel + ' * q^2'
-    elif plot_norm == 2:
-        Iq = Iq * np.square(np.square(q))
-        ylabel = ylabel + ' * q^4'
-    elif plot_norm == 3:
-        baseline = Iq[0]
-        Iq = Iq / baseline
-        ylabel = ylabel + ' / I_0'
-
-    xlabel = '$q (\\AA^{-1})$'
-    return Iq, xlabel, ylabel
-
-
-def create_slice(arr, x_range):
-    start, end = 0, arr.size - 1
-    while arr[start] < x_range[0]:
-        start += 1
-        if start == arr.size:
-            break
-
-    while arr[end] >= x_range[1]:
-        end -= 1
-        if end == 0:
-            break
-
-    return slice(start, end + 1)
 
 
 class ViewerKernel(FileLocator):
@@ -127,24 +57,6 @@ class ViewerKernel(FileLocator):
     def get_g2_data(self, max_points=10, q_range=None, t_range=None):
         xf_list = self.get_xf_list(max_points)
         tel, qd, g2, g2_err = g2mod.get_data(xf_list, q_range, t_range)
-
-        # labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-
-        # hash_val = self.hash(max_points)
-        # if self.meta['g2_hash_val'] == hash_val:
-        #     res = self.meta['g2_res']
-        # else:
-        #     res = self.fetch(labels, file_list[0:max_points])
-        #     # self.meta['g2_hash_val'] = hash_val
-        #     # self.meta['g2_res'] = res
-
-        # tslice = create_slice(xf_list[0].t_el, t_range)
-        # qslice = create_slice(xf_list[0].ql_dyn, q_range)
-
-        # tel = res['t_el'][0][tslice]
-        # qd = res['ql_dyn'][0][qslice]
-        # g2 = res['g2'][:, tslice, qslice]
-        # g2_err = res['g2_err'][:, tslice, qslice]
 
         return tel, qd, g2, g2_err
 
@@ -666,5 +578,3 @@ class ViewerKernel(FileLocator):
 if __name__ == "__main__":
     flist = os.listdir('./data')
     dv = ViewerKernel('./data', flist)
-    dv.average()
-    # dv.plot_g2()
