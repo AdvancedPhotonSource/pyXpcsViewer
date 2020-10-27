@@ -1,11 +1,14 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import QThread, QObject
+from PyQt5.QtCore import QThread, QObject, Qt
+
+
 import sys
 import os
 import numpy as np
 import time
 import sys
+
 
 # log file
 import logging
@@ -591,8 +594,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return flag
 
 
-def pyxpcsviewer():
+def run():
     app = QtWidgets.QApplication(sys.argv)
+    app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
         window = XpcsViewer(sys.argv[1])
@@ -602,4 +606,4 @@ def pyxpcsviewer():
 
 
 if __name__ == '__main__':
-    pyxpcsviewer()
+    run()

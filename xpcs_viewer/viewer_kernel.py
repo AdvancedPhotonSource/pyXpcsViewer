@@ -14,8 +14,7 @@ import h5py
 import os
 import logging
 
-logging_format = '%(asctime)s %(message)s'
-logging.basicConfig(level=logging.INFO, format=logging_format)
+
 logger = logging.getLogger(__name__)
 
 
