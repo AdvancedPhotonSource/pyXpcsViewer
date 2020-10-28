@@ -1,6 +1,9 @@
 
 def create_slice(arr, x_range):
     start, end = 0, arr.size - 1
+    if x_range is None:
+        return slice(start, end + 1)
+
     while arr[start] < x_range[0]:
         start += 1
         if start == arr.size:
@@ -15,8 +18,6 @@ def create_slice(arr, x_range):
 
 
 def get_data(xf_list, q_range=None, t_range=None):
-    labels = ["saxs_1d", 'g2', 'g2_err', 't_el', 'ql_sta', 'ql_dyn']
-
     tslice = create_slice(xf_list[0].t_el, t_range)
     qslice = create_slice(xf_list[0].ql_dyn, q_range)
 

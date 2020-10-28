@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>mainwindow</class>
- <widget class="QMainWindow" name="mainwindow">
+ <class>mainWindow</class>
+ <widget class="QMainWindow" name="mainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -18,6 +18,10 @@
   </property>
   <property name="windowTitle">
    <string>XPCS_Viewer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources/icons.qrc">
+    <normaloff>:/newPrefix/icons8-giraffe-full-body-100.png</normaloff>:/newPrefix/icons8-giraffe-full-body-100.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -1271,8 +1275,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>98</width>
-                 <height>34</height>
+                 <width>1287</width>
+                 <height>666</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2101,12 +2105,14 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>pushButton_2</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2122,7 +2128,7 @@
   <connection>
    <sender>pushButton_3</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2138,7 +2144,7 @@
   <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>load_path()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2154,7 +2160,7 @@
   <connection>
    <sender>filter_str</sender>
    <signal>textChanged(QString)</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2186,7 +2192,7 @@
   <connection>
    <sender>btn_load_data</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2202,7 +2208,7 @@
   <connection>
    <sender>cts_max</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2218,7 +2224,7 @@
   <connection>
    <sender>pushButton_4</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2234,7 +2240,7 @@
   <connection>
    <sender>tau_max</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2250,7 +2256,7 @@
   <connection>
    <sender>bkg_max</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2266,7 +2272,7 @@
   <connection>
    <sender>tau_min</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2282,7 +2288,7 @@
   <connection>
    <sender>bkg_min</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2298,7 +2304,7 @@
   <connection>
    <sender>cts_min</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2314,7 +2320,7 @@
   <connection>
    <sender>hdf_list</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2330,7 +2336,7 @@
   <connection>
    <sender>hdf_key_filter</sender>
    <signal>returnPressed()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2346,7 +2352,7 @@
   <connection>
    <sender>pushButton_7</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_stability_iq()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2362,7 +2368,7 @@
   <connection>
    <sender>pushButton_8</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2378,7 +2384,7 @@
   <connection>
    <sender>pushButton_5</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_saxs_2D()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2394,7 +2400,7 @@
   <connection>
    <sender>pushButton_10</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_saxs_1D()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2410,7 +2416,7 @@
   <connection>
    <sender>g2_qmin</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2426,7 +2432,7 @@
   <connection>
    <sender>g2_qmax</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2442,7 +2448,7 @@
   <connection>
    <sender>g2_tmin</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2458,7 +2464,7 @@
   <connection>
    <sender>g2_tmax</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2474,7 +2480,7 @@
   <connection>
    <sender>g2_ymin</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2490,7 +2496,7 @@
   <connection>
    <sender>g2_ymax</sender>
    <signal>editingFinished()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2506,7 +2512,7 @@
   <connection>
    <sender>btn_intt</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_intt()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2522,7 +2528,7 @@
   <connection>
    <sender>btn_start_avg</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>do_average()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2538,7 +2544,7 @@
   <connection>
    <sender>pushButton_9</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_outlier_g2()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2554,7 +2560,7 @@
   <connection>
    <sender>pushButton_6</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_outlier_intt()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2570,7 +2576,7 @@
   <connection>
    <sender>pushButton_11</sender>
    <signal>clicked()</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>reload_source()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2586,7 +2592,7 @@
   <connection>
    <sender>pushButton_12</sender>
    <signal>clicked(bool)</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2602,7 +2608,7 @@
   <connection>
    <sender>twotime_q_index</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2618,7 +2624,7 @@
   <connection>
    <sender>cb_twotime_cmap</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2634,7 +2640,7 @@
   <connection>
    <sender>box_auto_update</sender>
    <signal>stateChanged(int)</signal>
-   <receiver>mainwindow</receiver>
+   <receiver>mainWindow</receiver>
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2884,6 +2890,22 @@
     <hint type="destinationlabel">
      <x>979</x>
      <y>857</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>avg_blmin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>pushButton_9</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1037</x>
+     <y>689</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1504</x>
+     <y>673</y>
     </hint>
    </hints>
   </connection>

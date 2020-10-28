@@ -1,0 +1,16 @@
+#!/bin/bash
+WD=/home/beams/8IDIUSER/Documents/Miaoqi/xpcs_gui
+
+
+if [ "$1" != "" ]; then
+    target_folder=$(realpath $1)
+else
+    target_folder=$(pwd)
+fi
+
+if [ -d $target_folder ]; then
+    cd $WD
+    /APSshare/anaconda3/x86_64/bin/python -c "from xpcs_viewer import run; run()" $target_folder
+else
+    echo "no such directory: " $1 or $target_folder
+fi

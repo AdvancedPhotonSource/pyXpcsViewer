@@ -8,12 +8,21 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from .plothandler import MplCanvas, MplCanvasBarH, MplCanvasBarV, ImageViewDev
+import os
+
+
+resource_dir = os.path.join(os.path.dirname(__file__), 'ui/resources')
 
 class Ui_mainwindow(object):
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
         mainwindow.resize(1680, 949)
         mainwindow.setMinimumSize(QtCore.QSize(1024, 800))
+        self.centralwidget = QtWidgets.QWidget(mainwindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(resource_dir + "/icons8-giraffe-full-body-100.png"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        mainwindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(mainwindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -1000,6 +1009,7 @@ class Ui_mainwindow(object):
         self.sb_intt_sampling.valueChanged['int'].connect(self.btn_intt.click)
         self.avg_intt_num_clusters.valueChanged['int'].connect(self.pushButton_6.click)
         self.avg_blmax.valueChanged['double'].connect(self.pushButton_9.click)
+        self.avg_blmin.valueChanged['double'].connect(self.pushButton_9.click)
         self.cb_saxs2D_type.currentIndexChanged['int'].connect(self.pushButton_5.click)
         self.cb_saxs2D_cmap.currentIndexChanged['int'].connect(self.pushButton_5.click)
         self.saxs2d_autorotate.stateChanged['int'].connect(self.pushButton_5.click)
