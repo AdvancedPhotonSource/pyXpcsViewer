@@ -1,0 +1,1 @@
+recursive-include xpcs_viewer/ui/resources *.png
