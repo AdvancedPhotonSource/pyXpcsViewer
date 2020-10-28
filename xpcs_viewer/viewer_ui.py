@@ -8,12 +8,21 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from .plothandler import MplCanvas, MplCanvasBarH, MplCanvasBarV, ImageViewDev
+import os
+
+
+resource_dir = os.path.join(os.path.dirname(__file__), 'ui/resources')
 
 class Ui_mainwindow(object):
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
         mainwindow.resize(1680, 949)
         mainwindow.setMinimumSize(QtCore.QSize(1024, 800))
+        self.centralwidget = QtWidgets.QWidget(mainwindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(resource_dir + "/icons8-giraffe-full-body-100.png"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        mainwindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(mainwindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
