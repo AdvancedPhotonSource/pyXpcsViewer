@@ -1009,6 +1009,7 @@ class Ui_mainwindow(object):
         self.sb_intt_sampling.valueChanged['int'].connect(self.btn_intt.click)
         self.avg_intt_num_clusters.valueChanged['int'].connect(self.pushButton_6.click)
         self.avg_blmax.valueChanged['double'].connect(self.pushButton_9.click)
+        self.avg_blmin.valueChanged['double'].connect(self.pushButton_9.click)
         self.cb_saxs2D_type.currentIndexChanged['int'].connect(self.pushButton_5.click)
         self.cb_saxs2D_cmap.currentIndexChanged['int'].connect(self.pushButton_5.click)
         self.saxs2d_autorotate.stateChanged['int'].connect(self.pushButton_5.click)
