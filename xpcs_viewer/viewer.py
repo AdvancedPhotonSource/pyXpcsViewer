@@ -68,7 +68,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk = None
         self.cache = None
         if path is not None:
+            self.start_wd = path
             self.load_path(path)
+        else:
+            # use home directory
+            self.start_wd = os.path.expanduser('~')
 
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
@@ -397,7 +401,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',
-                                                 '../cluster_results',
+                                                 self.start_wd,
                                                  QFileDialog.ShowDirsOnly)
         else:
             f = path
