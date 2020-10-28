@@ -13,10 +13,13 @@ import h5py
 
 import os
 import logging
+import sys
+from .helper.logwriter import LoggerWriter
 
 
 logger = logging.getLogger(__name__)
-
+sys.stdout = LoggerWriter(logger.debug)
+sys.stderr = LoggerWriter(logger.warning)
 
 class ViewerKernel(FileLocator):
     def __init__(self, path, statusbar=None):
@@ -450,21 +453,15 @@ class ViewerKernel(FileLocator):
         fc = self.cache[self.target[plot_id]]
         stability.plot(fc, mp_hdl, **kwargs)
 
-    def average_plot_outlier(self,
-                             hdl1,
-                             hdl2,
-                             target='g2',
-                             avg_blmin=0.95,
-                             avg_blmax=1.05,
-                             avg_qindex=5,
-                             avg_window=10):
+    def average_plot_outlier(self, hdl, avg_blmin=0.95, avg_blmax=1.05,
+                             avg_qindex=5, avg_window=10):
 
         if self.meta['avg_file_list'] != tuple(self.target) or \
                 'avg_g2' not in self.meta:
             logger.info('avg cache not exist')
-            labels = ['g2']
-
-            g2 = self.fetch(labels, file_list=self.target)['g2']
+            xf_list = self.get_xf_list()
+            _, _, g2, _ = g2mod.get_data(xf_list)
+            g2 = np.array(g2)
 
             self.meta['avg_file_list'] = tuple(self.target)
             self.meta['avg_g2'] = g2
@@ -489,11 +486,11 @@ class ViewerKernel(FileLocator):
 
         title = '%d / %d' % (valid_num, g2_avg.shape[1])
 
-        hdl2.show_lines(g2_avg,
-                        xlabel='index',
-                        ylabel='g2 average',
-                        legend=legend,
-                        title=title)
+        hdl.show_lines(g2_avg,
+                       xlabel='index',
+                       ylabel='g2 average',
+                       legend=legend,
+                       title=title)
 
     def average_plot_cluster(self, hdl1, num_clusters=2):
         if self.meta['avg_file_list'] != tuple(self.target) or \
@@ -532,6 +529,8 @@ class ViewerKernel(FileLocator):
                 save_path=None,
                 origin_path=None,
                 p_bar=None):
+        # TODO: need to comfirm the format to use.
+        return
 
         labels = ["saxs_1d", 'g2', 'g2_err', 'saxs_2d']
 
