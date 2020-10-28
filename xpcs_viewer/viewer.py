@@ -6,12 +6,12 @@ from PyQt5.QtCore import QThread, QObject, Qt
 import sys
 import os
 import numpy as np
-import time
 import sys
 
 
 # log file
 import logging
+from .helper.logwriter import LoggerWriter
 format = logging.Formatter('%(asctime)s %(message)s')
 home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
 if not os.path.isdir(home_dir):
@@ -22,7 +22,10 @@ logging.basicConfig(level=logging.INFO,
                     handlers=[
                         logging.FileHandler(log_filename, mode='a'),
                         logging.StreamHandler()])
+
 logger = logging.getLogger(__name__)
+sys.stdout = LoggerWriter(logger.debug)
+sys.stderr = LoggerWriter(logger.warning)
 
 
 from .viewer_kernel import ViewerKernel
@@ -340,15 +343,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'avg_blmin': self.avg_blmin.value(),
             'avg_blmax': self.avg_blmax.value(),
             'avg_qindex': self.avg_qindex.value(),
-            'avg_window': self.avg_window.value(),
-            'target': 'g2'
-        }
+            'avg_window': self.avg_window.value() }
         if kwargs['avg_blmax'] <= kwargs['avg_blmin']:
             self.statusbar.showMessage('check avg min/max values.')
             return
 
-        self.vk.average_plot_outlier(self.mp_avg_intt, self.mp_avg_g2,
-                                     **kwargs)
+        self.vk.average_plot_outlier(self.mp_avg_g2, **kwargs)
 
     def do_average(self):
         if not self.check_status() or self.vk.type != 'Multitau':
@@ -595,8 +595,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
 
 def run():
+    QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
-    app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
         window = XpcsViewer(sys.argv[1])
