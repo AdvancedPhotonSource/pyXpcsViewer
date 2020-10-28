@@ -115,6 +115,9 @@ class FileLocator(object):
     
     def get_xf_list(self, max_points=128):
         ret = []
+        if max_points <= 0:
+            max_points = len(self.target)
+
         for fn in self.target[slice(0, max_points)]:
             ret.append(self.cache[fn])
         return ret

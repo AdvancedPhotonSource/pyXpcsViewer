@@ -58,10 +58,17 @@ class ViewerKernel(FileLocator):
         return val
 
     def get_g2_data(self, max_points=10, q_range=None, t_range=None):
+        flag = True
         xf_list = self.get_xf_list(max_points)
         tel, qd, g2, g2_err = g2mod.get_data(xf_list, q_range, t_range)
 
-        return tel, qd, g2, g2_err
+        t_shape = set([t.shape for t in tel])
+        q_shape = set([q.shape for q in qd])
+        if len(t_shape) != 1 or len(q_shape) != 1:
+            logger.info('the data files are not consistent in tau or q')
+            flag = False
+
+        return flag, tel, qd, g2, g2_err
 
     def plot_g2_initialize(self,
                            mp_hdl,
@@ -149,11 +156,14 @@ class ViewerKernel(FileLocator):
         #     self.meta['g2_plot_condition'] = new_condition
         #     plot_target = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
 
-        tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
-                                               t_range=t_range,
-                                               max_points=max_points)
+        flag, tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
+                                                     t_range=t_range,
+                                                     max_points=max_points)
         if prepare:
             return np.min(tel), np.max(tel)
+        
+        if not flag:
+            return
 
         num_fig = g2[0].shape[1]
 
@@ -460,7 +470,9 @@ class ViewerKernel(FileLocator):
                 'avg_g2' not in self.meta:
             logger.info('avg cache not exist')
             xf_list = self.get_xf_list()
-            _, _, g2, _ = g2mod.get_data(xf_list)
+            flag, _, _, g2, _ = self.get_g2_data(max_points=-1)
+            if not flag:
+                return
             g2 = np.array(g2)
 
             self.meta['avg_file_list'] = tuple(self.target)
