@@ -202,6 +202,13 @@ class MplCanvas(FigureCanvasQTAgg):
 
         if legend in [None, False]:
             legend = np.arange(len(data))
+        
+        if isinstance(data, np.ndarray):
+            x = np.arange(data.shape[1])
+            data2 = []
+            for n in range(data.shape[0]):
+                data2.append([x, data[n]])
+            data = data2
 
         if self.axes is None or len(data) != len(self.obj):
             ax = self.subplots(1, 1)
