@@ -29,7 +29,7 @@ sys.stderr = LoggerWriter(logger.warning)
 
 
 from .viewer_kernel import ViewerKernel
-from .viewer_ui import Ui_mainwindow as Ui
+from .viewer_ui import Ui_mainWindow as Ui
 
 
 class ViewerKernel2(ViewerKernel, QObject):
