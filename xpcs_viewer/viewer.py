@@ -24,8 +24,8 @@ logging.basicConfig(level=logging.INFO,
                         logging.StreamHandler()])
 
 logger = logging.getLogger(__name__)
-sys.stdout = LoggerWriter(logger.debug)
-sys.stderr = LoggerWriter(logger.warning)
+# sys.stdout = LoggerWriter(logger.debug)
+# sys.stderr = LoggerWriter(logger.warning)
 
 
 from .viewer_kernel import ViewerKernel
@@ -125,7 +125,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'average':
             self.update_average_box()
         elif tab_name == 'g2':
-            pass
+            self.set_g2_range()
             # self.plot_g2(10)
 
         self.plot_state[idx] = 1
@@ -368,6 +368,21 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         self.vk.average(**kwargs)
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
+    
+    def set_g2_range(self, max_points=3):
+        flag, tel, _, _, _ = self.vk.get_g2_data(max_points)
+        if not flag:
+            self.statusbar.showMessage('g2 data is not consistent. abort')
+        t_min = np.min(tel)
+        t_max = np.max(tel)
+
+        def to_e(x):
+            return '%.2e' % x
+
+        self.tau_min.setText(to_e(t_min / 5))
+        self.tau_max.setText(to_e(t_max * 5))
+        self.g2_tmin.setText(to_e(t_min / 2))
+        self.g2_tmax.setText(to_e(t_max / 2))
 
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
