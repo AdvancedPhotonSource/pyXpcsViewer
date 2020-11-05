@@ -7,6 +7,7 @@ import logging
 import h5py
 import json
 import numpy as np
+from collections import deque
 
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,7 @@ class FileLocator(object):
         self.cwd = None
         self.trie = None
         self.source_list = None
-        self.target = []
+        self.target = deque([])
         self.id_list = None
         self.build(path)
         self.type = None
@@ -113,12 +114,24 @@ class FileLocator(object):
     def get(self, fname, fields_raw, **kwargs):
         return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
     
+    def get_fn_tuple(self, max_points=128):
+        # compile the filenames upto max_points to a tuple
+        if max_points <= 0:
+            max_points = len(self.target)
+
+        ret = []
+        for n in range(min(max_points, len(self.target))):
+            ret.append(self.target[n])
+        return tuple(ret)
+    
     def get_xf_list(self, max_points=128):
         ret = []
         if max_points <= 0:
             max_points = len(self.target)
 
-        for fn in self.target[slice(0, max_points)]:
+        # for fn in self.target[slice(0, max_points)]:
+        for n in range(min(max_points, len(self.target))):
+            fn = self.target[n]
             ret.append(self.cache[fn])
         return ret
 
@@ -156,12 +169,12 @@ class FileLocator(object):
      
         if file_list in [None, []]:
             file_list = self.target
-        file_list = file_list[slice(0, max_number)]
 
-        total_num = len(file_list)
+        total_num = min(max_number, len(file_list))
         existing_keys = list(self.cache.keys())
 
-        for n, fn in enumerate(file_list):
+        for n in range(total_num):
+            fn = self.target[n]
             if progress_bar is not None:
                 progress_bar.setValue((n + 1) / total_num * 100)
 
@@ -202,21 +215,21 @@ class FileLocator(object):
         else:
         # if many files are added; then ignore the type check;
             logger.info('type check is disabled. too many files added')
-            self.target = alist.copy()
+            self.target = deque(alist)
             self.id_list = alist.copy()
         
-
         logger.info('length of target = %d' % len(self.target))
         return single_flag
 
     def clear_target(self):
-        self.target = []
+        self.target = deque([])
         self.id_list = None
         self.type = None
 
     def remove_target(self, rlist):
-        if rlist is None or self.target is None:
+        if rlist is None or self.target is None or len(self.target) < 1:
             return
+
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
