@@ -400,7 +400,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
 
         bounds = self.check_number()
-        err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
+        # err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
+        err_msg = self.vk.plot_g2(handler=self.mp_g2,
                                   bounds=bounds,
                                   **kwargs)
         self.g2_err_msg.clear()
@@ -522,7 +523,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.remove_target(rmv_list)
 
         # if all files are removed; then go to state 1
-        if self.vk.target in [[], None]:
+        if self.vk.target in [[], None] or len(self.vk.target) == 0:
             self.data_state = 1
         else:
             self.data_state = 2
@@ -548,7 +549,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for n, key in enumerate(keys):
             try:
                 val = float(key.text())
-            except:
+            except Exception:
                 key.setText(str(default_val[n]))
                 return
             else:
@@ -573,7 +574,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for n, key in enumerate(keys):
             try:
                 val = float(key.text())
-            except:
+            except Exception:
                 key.setText(str(default_val[n]))
                 return
             else:

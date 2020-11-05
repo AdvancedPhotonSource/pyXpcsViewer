@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from .plothandler import MplCanvas, MplCanvasBarH, MplCanvasBarV, ImageViewDev
+from .plothandler import MplCanvas, MplCanvasBarH, MplCanvasBarV, ImageViewDev, PlotWidgetDev
 import os
 
 resource_dir = os.path.join(os.path.dirname(__file__), 'ui/resources')
@@ -596,7 +596,8 @@ class Ui_mainWindow(object):
         self.g2_scroll_area.setObjectName("g2_scroll_area")
         self.gridLayout_10 = QtWidgets.QGridLayout(self.g2_scroll_area)
         self.gridLayout_10.setObjectName("gridLayout_10")
-        self.mp_g2 = MplCanvasBarV(self.g2_scroll_area)
+        # self.mp_g2 = MplCanvasBarV(self.g2_scroll_area)
+        self.mp_g2 = PlotWidgetDev(self.g2_scroll_area)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(30)

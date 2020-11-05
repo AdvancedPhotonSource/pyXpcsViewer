@@ -1,5 +1,7 @@
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
+from pyqtgraph import ErrorBarItem
+import pyqtgraph as pg
 import logging
 
 
@@ -46,7 +48,6 @@ def get_data(xf_list, q_range=None, t_range=None):
         flag = False
 
     return flag, tel, qd, g2, g2_err
-
 
 
 def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
@@ -101,3 +102,31 @@ def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
         'lin': lin_obj,
     }
 
+
+def pg_plot(hdl, tel, qd, g2, g2_err, num_col):
+
+    num_fig = g2[0].shape[1]
+    col = min(num_fig, num_col)
+    row = (num_fig + col - 1) // col
+    hdl.adjust_canvas_size(num_col=col, num_row=row)
+    axes = []
+    hdl.clear()
+    for n in range(num_fig):
+        i_col = n % col
+        i_row = n // col
+        m = 0
+        t = hdl.addPlot(row=i_row, col=i_col, title='q=%.5f Å⁻¹' % qd[0][n])
+        print(tel[m])
+        print(g2_err[m][:, n])
+        line = pg.ErrorBarItem(x=tel[m], y=g2[m][:, n],
+                               top=g2_err[m][:, n],
+                               bottom=g2_err[m][:, n],
+                               pen=(255, 0, 0))
+        # line2 = pg.plot(tel[m], g2[m][:, n], pen=(255, 0, 0))
+        t.setLogMode(x=True, y=None)
+        t.addItem(line)
+
+        # for m in range(len(g2)):
+        #     t.plot()
+        axes.append(t)
+    return

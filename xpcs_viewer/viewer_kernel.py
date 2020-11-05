@@ -91,7 +91,8 @@ class ViewerKernel(FileLocator):
         if not flag:
             return
 
-        num_fig = g2[0].shape[1]
+        g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col)
+        return
 
         plot_target = 4
         if plot_target >= 2 or handler.axes is None:
