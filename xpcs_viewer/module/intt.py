@@ -22,7 +22,7 @@ def plot(xf_list, pg_hdl, legend, **kwargs):
 
     pg_hdl.clear()
     pg_hdl.show_lines(data,
-                      xlabel="Time (s)",
+                      xlabel="Frame Index",
                       ylabel="Intensity (ph/pixel)",
                       loc='lower right',
                       alpha=0.5,
