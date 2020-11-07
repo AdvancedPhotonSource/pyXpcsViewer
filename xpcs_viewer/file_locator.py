@@ -40,7 +40,18 @@ def get_suffix(file_name):
     return suffix
 
 
-def create_id(in_list, repeat=1, keep_slice=None):
+def create_id(in_list):
+    ret = []
+    for x in in_list:
+        idx_1 = x.find('_')
+        idx_2 = x.rfind('_', 0, len(x))
+        idx_3 = x.rfind('_', 0, idx_2)
+        ret.append(x[0: idx_1] + '_' + x[idx_3: idx_2])
+
+    return ret
+
+
+def create_id3(in_list, repeat=1, keep_slice=None):
     out_list = [x[::-1] for x in in_list]
     prefix = commonprefix(out_list)
     out_list = [x.replace(prefix, '') for x in out_list]
@@ -183,7 +194,10 @@ class FileLocator(object):
                 existing_keys.remove(fn)
             else:
                 # read from file and output as a dictionary
-                self.cache[fn] = xf(fn, self.cwd)
+                try:
+                    self.cache[fn] = xf(fn, self.cwd)
+                except Exception:
+                    logger.info("failed to load file: %s", fn)
 
         if flag_del:
             for key in existing_keys:
@@ -211,7 +225,7 @@ class FileLocator(object):
                         self.target.append(x)
                     else:
                         single_flag = False
-            self.id_list = create_id(self.target, 1)
+            self.id_list = create_id(self.target)
         else:
         # if many files are added; then ignore the type check;
             logger.info('type check is disabled. too many files added')
