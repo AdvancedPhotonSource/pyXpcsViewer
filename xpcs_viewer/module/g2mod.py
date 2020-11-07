@@ -8,6 +8,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 fn_tuple = None
+colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+symbols = ['o', 's', 't', 'd', '+']
 
 
 def create_slice(arr, x_range):
@@ -103,30 +105,52 @@ def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
     }
 
 
-def pg_plot(hdl, tel, qd, g2, g2_err, num_col):
+def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
+            labels=None):
 
     num_fig = g2[0].shape[1]
     col = min(num_fig, num_col)
     row = (num_fig + col - 1) // col
+
     hdl.adjust_canvas_size(num_col=col, num_row=row)
-    axes = []
     hdl.clear()
+    # a bug in pyqtgraph; the log scale in x-axis doesn't apply
+    xrange = np.log10(xrange)
+    if labels is None:
+        labels = [None] * len(g2)
+
     for n in range(num_fig):
         i_col = n % col
         i_row = n // col
-        m = 0
         t = hdl.addPlot(row=i_row, col=i_col, title='q=%.5f Å⁻¹' % qd[0][n])
-        print(tel[m])
-        print(g2_err[m][:, n])
-        line = pg.ErrorBarItem(x=tel[m], y=g2[m][:, n],
-                               top=g2_err[m][:, n],
-                               bottom=g2_err[m][:, n],
-                               pen=(255, 0, 0))
-        # line2 = pg.plot(tel[m], g2[m][:, n], pen=(255, 0, 0))
-        t.setLogMode(x=True, y=None)
-        t.addItem(line)
+        for m in range(len(g2)):
+            if labels[0] is not None:
+               t.addLegend()
 
-        # for m in range(len(g2)):
-        #     t.plot()
-        axes.append(t)
+            if offset is not None:
+                y = g2[m][:, n] + m * offset
+            else:
+                y = g2[m][:, n]
+            color = colors[m % len(colors)]
+            symbol = symbols[m % len(symbols)]
+            pg_plot_one_g2(t, tel[m], y, g2_err[m][:, n], color,
+                           label=labels[m], symbol=symbol)
+            t.setRange(xRange=xrange, yRange=yrange)
+
+    return
+
+
+def pg_plot_one_g2(ax, x, y, dy, color, label, symbol):
+    pen = pg.mkPen(color=color, width=3)
+
+    line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
+                           pen=pen)
+    if label is None:
+        ax.plot(x, y, symbol=symbol, name=label, symbolSize=2, symbolBrush=pg.mkBrush(color=color))
+        # ax.plot(x, y, pen=pen, brush=pg.mkBrush(2.5), symbol=symbol, symbolSize=5)
+    else:
+        ax.plot(x, y, symbol=symbol, name=label, symbolSize=2, symbolBrush=pg.mkBrush(color=color))
+        # ax.plot(x, y, symbol=symbol, name=label, symbolSize=5)
+    ax.setLogMode(x=True, y=None)
+    ax.addItem(line)
     return
