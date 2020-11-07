@@ -92,7 +92,7 @@ class ViewerKernel(FileLocator):
             return
         
         if show_label:
-            labels = self.target
+            labels = self.id_list
         else:
             labels = None
 
@@ -213,7 +213,7 @@ class ViewerKernel(FileLocator):
 
     def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        saxs1d.plot(xf_list, mp_hdl, **kwargs)
+        saxs1d.plot(xf_list, mp_hdl, legend=self.id_list, **kwargs)
         logger.info('finish saxs1d')
 
     def setup_twotime(self, file_index=0, group='xpcs'):
@@ -389,7 +389,7 @@ class ViewerKernel(FileLocator):
 
     def plot_intt(self, pg_hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        intt.plot(xf_list, pg_hdl, self.target, **kwargs)
+        intt.plot(xf_list, pg_hdl, self.id_list, **kwargs)
 
     def plot_stability(self, mp_hdl, plot_id, **kwargs):
         fc = self.cache[self.target[plot_id]]
