@@ -123,10 +123,10 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
         i_col = n % col
         i_row = n // col
         t = hdl.addPlot(row=i_row, col=i_col, title='q=%.5f Å⁻¹' % qd[0][n])
-        for m in range(len(g2)):
-            if labels[0] is not None:
-               t.addLegend()
+        if labels[0] is not None:
+            t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
 
+        for m in range(len(g2)):
             if offset is not None:
                 y = g2[m][:, n] + m * offset
             else:
