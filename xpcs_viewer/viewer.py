@@ -381,8 +381,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.tau_min.setText(to_e(t_min / 5))
         self.tau_max.setText(to_e(t_max * 5))
-        self.g2_tmin.setText(to_e(t_min / 2))
-        self.g2_tmax.setText(to_e(t_max / 2))
+        self.g2_tmin.setText(to_e(t_min / 1.1))
+        self.g2_tmax.setText(to_e(t_max * 1.1))
 
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':

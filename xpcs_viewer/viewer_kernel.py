@@ -63,7 +63,7 @@ class ViewerKernel(FileLocator):
 
     def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
                 offset=None, show_fit=False, max_points=50, bounds=None,
-                show_label=False, num_col=4, prepare=False):
+                show_label=False, num_col=4):
 
         num_points = min(len(self.target), max_points)
         fn_tuple = self.get_fn_tuple(max_points)
@@ -90,8 +90,14 @@ class ViewerKernel(FileLocator):
 
         if not flag:
             return
+        
+        if show_label:
+            labels = self.target
+        else:
+            labels = None
 
-        g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col)
+        g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range, y_range,
+                      offset=offset, labels=labels)
         return
 
         plot_target = 4
