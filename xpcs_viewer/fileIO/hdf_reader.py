@@ -104,6 +104,15 @@ def get_type(fname):
     return ret.capitalize()
 
 
+def create_id(fname):
+    x = os.path.basename(fname)
+    idx_1 = x.find('_')
+    idx_2 = x.rfind('_', 0, len(x))
+    idx_3 = x.rfind('_', 0, idx_2)
+    ret = x[0: idx_1] + '_' + x[idx_3: idx_2]
+    return ret
+
+
 class XpcsFile(object):
     def __init__(self, fname, cwd='../../data', labels=None):
 
@@ -113,6 +122,7 @@ class XpcsFile(object):
         self.type = get_type(self.full_path)
         attr = self.load()
         self.__dict__.update(attr)
+        self.label = create_id(fname)
 
     def __str2__(self):
         ans = ['File:' + str(self.full_path)]
