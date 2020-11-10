@@ -145,12 +145,9 @@ def pg_plot_one_g2(ax, x, y, dy, color, label, symbol):
 
     line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
                            pen=pen)
-    if label is None:
-        ax.plot(x, y, symbol=symbol, name=label, symbolSize=2, symbolBrush=pg.mkBrush(color=color))
-        # ax.plot(x, y, pen=pen, brush=pg.mkBrush(2.5), symbol=symbol, symbolSize=5)
-    else:
-        ax.plot(x, y, symbol=symbol, name=label, symbolSize=2, symbolBrush=pg.mkBrush(color=color))
-        # ax.plot(x, y, symbol=symbol, name=label, symbolSize=5)
+    ax.plot(x, y, pen=None, symbol=symbol, name=label, symbolSize=3,
+            symbolBrush=pg.mkBrush(color=color))
+
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
     return
