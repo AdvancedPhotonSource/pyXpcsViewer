@@ -109,6 +109,8 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             labels=None):
 
     num_fig = g2[0].shape[1]
+    num_points = len(g2)
+
     col = min(num_fig, num_col)
     row = (num_fig + col - 1) // col
 
@@ -117,16 +119,17 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
     xrange = np.log10(xrange)
     if labels is None:
-        labels = [None] * len(g2)
+        labels = [None] * num_points 
 
     for n in range(num_fig):
         i_col = n % col
         i_row = n // col
         t = hdl.addPlot(row=i_row, col=i_col, title='q=%.5f Å⁻¹' % qd[0][n])
+        ax1 = t.plot()
         if labels[0] is not None:
             t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
 
-        for m in range(len(g2)):
+        for m in range(num_points):
             if offset is not None:
                 y = g2[m][:, n] + m * offset
             else:
@@ -134,20 +137,46 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             color = colors[m % len(colors)]
             symbol = symbols[m % len(symbols)]
             pg_plot_one_g2(t, tel[m], y, g2_err[m][:, n], color,
-                           label=labels[m], symbol=symbol)
+                           label=labels[m], symbol=symbol, ax1=ax1)
             t.setRange(xRange=xrange, yRange=yrange)
 
     return
 
 
-def pg_plot_one_g2(ax, x, y, dy, color, label, symbol):
+def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, ax1):
     pen = pg.mkPen(color=color, width=3)
 
     line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
                            pen=pen)
-    ax.plot(x, y, pen=None, symbol=symbol, name=label, symbolSize=3,
-            symbolBrush=pg.mkBrush(color=color))
+    ax1.setData(x, y, pen=None, symbol=symbol, name=label, symbolSize=3,
+                symbolBrush=pg.mkBrush(color=color))
 
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
     return
+
+
+def plot_fit(hdl, tel, qd, g2, g2_err, bounds, offset=0):
+    err_msg = []
+    num_points = len(g2)
+    num_fig = g2[0].shape[1]
+    for ipt in range(len(g2)):
+        fit_res, fit_val = fit_xpcs(tel[ipt], qd[ipt], g2[ipt], g2_err[ipt],
+                                    b=bounds)
+        offset_i = -1 * offset * (ipt + 1)
+        err_msg.append(self.target[ipt])
+        prev_len = len(err_msg)
+        for ifg in range(num_fig):
+            loc = ipt * num_fig + ifg
+            hdl.update_lin(loc,
+                           fit_res[ifg]['fit_x'],
+                           fit_res[ifg]['fit_y'] + offset_i)
+            msg = fit_res[ifg]['err_msg']
+            if msg is not None:
+                err_msg.append('----' + msg)
+
+        if len(err_msg) == prev_len:
+            err_msg.append('---- fit finished without errors')
+
+    hdl.draw()
+    return err_msg
