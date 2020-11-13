@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QThread, QObject, Qt
 

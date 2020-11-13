@@ -3,6 +3,7 @@ import os
 import numpy as np
 import json
 import logging
+import pyqtgraph as pg
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,11 @@ with open(key_fname) as f:
         logger.info('default.json in .xpcs_viewer is damaged.')
         from .aps_8idi import key
         hdf_key = key
+    
+
+# colors and symbols for plots
+colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+symbols = ['o', 's', 't', 'd', '+']
 
 
 def put(save_path, fields, result, mode='raw'):
@@ -100,8 +106,13 @@ def get(fname, fields_raw, mode='raw', ret_type='dict'):
 
 
 def get_type(fname):
-    ret = get(fname, ['type'], mode='alias')['type']
-    return ret.capitalize()
+    try:
+        ret = get(fname, ['type'], mode='alias')['type']
+        ret.capitalize()
+    except Exception:
+        return None
+    else:
+        return ret
 
 
 def create_id(fname):
@@ -188,6 +199,20 @@ class XpcsFile(object):
         extent = (qy_min, qy_max, qx_min, qx_max)
 
         return extent
+
+    def pg_plot_g2(self, qrange, ax, idx):
+        color = colors[idx // len(colors)]
+        symbol = symbols[idx // len(symbols)]
+
+        pen = pg.mkPen(color=color, width=3)
+        line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
+                               pen=pen)
+        ax.plot(x, y, pen=None, symbol=symbol, name=self.label, symbolSize=3,
+                symbolBrush=pg.mkBrush(color=color))
+
+        ax.setLogMode(x=True, y=None)
+        ax.addItem(line)
+        return
 
 
 def test1():
