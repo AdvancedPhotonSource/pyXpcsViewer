@@ -221,13 +221,21 @@ class FileLocator(object):
         if len(alist) <= threshold:
             for x in alist:
                 if x not in self.target:
-                    if self.get_type(x) == self.type:
-                        self.target.append(x)
-                    else:
+                    t = self.get_type(x)
+                    if t not in ['Multitau', 'Twotime']:
+                        logger.info('Failed to get type for %s', x)
+                        continue
+                    if self.type is None:
+                        self.type = t
+                    elif t != self.type:
+                        logger.info('Mixed analysis type for %s. Discard', x)
                         single_flag = False
+                        continue
+                    self.target.append(x)
+
             self.id_list = create_id(self.target)
         else:
-        # if many files are added; then ignore the type check;
+            # if many files are added; then ignore the type check;
             logger.info('type check is disabled. too many files added')
             self.target = deque(alist)
             self.id_list = alist.copy()
@@ -241,14 +249,17 @@ class FileLocator(object):
         self.type = None
 
     def remove_target(self, rlist):
-        if rlist is None or self.target is None or len(self.target) < 1:
+        if rlist is None or len(self.target) == 0:
             return
 
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
-        if self.target in [None, []]:
+
+        if self.target is None or len(self.target) == 0:
             self.clear_target()
+        else:
+            self.id_list = create_id(self.target)
 
     def search(self, val):
         ans = self.trie.keys(val)
