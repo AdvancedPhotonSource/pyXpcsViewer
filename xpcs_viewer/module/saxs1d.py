@@ -56,7 +56,6 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 def plot(xf_list, mp_hdl, plot_type='log', plot_norm=0, plot_offset=0,
          max_points=8, legend=None, title=None):
 
-
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
 

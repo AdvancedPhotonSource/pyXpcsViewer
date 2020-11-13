@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QThread, QObject, Qt
 
@@ -24,12 +24,12 @@ logging.basicConfig(level=logging.INFO,
                         logging.StreamHandler()])
 
 logger = logging.getLogger(__name__)
-sys.stdout = LoggerWriter(logger.debug)
-sys.stderr = LoggerWriter(logger.warning)
+# sys.stdout = LoggerWriter(logger.debug)
+# sys.stderr = LoggerWriter(logger.warning)
 
 
 from .viewer_kernel import ViewerKernel
-from .viewer_ui import Ui_mainwindow as Ui
+from .viewer_ui import Ui_mainWindow as Ui
 
 
 class ViewerKernel2(ViewerKernel, QObject):
@@ -68,7 +68,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk = None
         self.cache = None
         if path is not None:
+            self.start_wd = path
             self.load_path(path)
+        else:
+            # use home directory
+            self.start_wd = os.path.expanduser('~')
 
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
@@ -121,7 +125,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'average':
             self.update_average_box()
         elif tab_name == 'g2':
-            pass
+            self.set_g2_range()
             # self.plot_g2(10)
 
         self.plot_state[idx] = 1
@@ -364,6 +368,21 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         self.vk.average(**kwargs)
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
+    
+    def set_g2_range(self, max_points=3):
+        flag, tel, _, _, _ = self.vk.get_g2_data(max_points)
+        if not flag:
+            self.statusbar.showMessage('g2 data is not consistent. abort')
+        t_min = np.min(tel)
+        t_max = np.max(tel)
+
+        def to_e(x):
+            return '%.2e' % x
+
+        self.tau_min.setText(to_e(t_min / 5))
+        self.tau_max.setText(to_e(t_max * 5))
+        self.g2_tmin.setText(to_e(t_min / 1.1))
+        self.g2_tmax.setText(to_e(t_max * 1.1))
 
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
@@ -381,7 +400,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
 
         bounds = self.check_number()
-        err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
+        # err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
+        err_msg = self.vk.plot_g2(handler=self.mp_g2,
                                   bounds=bounds,
                                   **kwargs)
         self.g2_err_msg.clear()
@@ -397,7 +417,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
             f = QFileDialog.getExistingDirectory(self, 'Open directory',
-                                                 '../cluster_results',
+                                                 self.start_wd,
                                                  QFileDialog.ShowDirsOnly)
         else:
             f = path
@@ -503,7 +523,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.remove_target(rmv_list)
 
         # if all files are removed; then go to state 1
-        if self.vk.target in [[], None]:
+        if self.vk.target in [[], None] or len(self.vk.target) == 0:
             self.data_state = 1
         else:
             self.data_state = 2
@@ -529,7 +549,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for n, key in enumerate(keys):
             try:
                 val = float(key.text())
-            except:
+            except Exception:
                 key.setText(str(default_val[n]))
                 return
             else:
@@ -554,7 +574,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for n, key in enumerate(keys):
             try:
                 val = float(key.text())
-            except:
+            except Exception:
                 key.setText(str(default_val[n]))
                 return
             else:

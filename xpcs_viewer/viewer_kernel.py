@@ -18,8 +18,8 @@ from .helper.logwriter import LoggerWriter
 
 
 logger = logging.getLogger(__name__)
-sys.stdout = LoggerWriter(logger.debug)
-sys.stderr = LoggerWriter(logger.warning)
+# sys.stdout = LoggerWriter(logger.debug)
+# sys.stderr = LoggerWriter(logger.warning)
 
 class ViewerKernel(FileLocator):
     def __init__(self, path, statusbar=None):
@@ -37,8 +37,7 @@ class ViewerKernel(FileLocator):
             'avg_g2_avg': None,
             # g2
             'g2_num_points': None,
-            'g2_hash_val': None,
-            'g2_res': None,
+            'g2_data': None,
             'g2_plot_condition': tuple([None, None, None]),
             'g2_fit_val': {}
         }
@@ -57,123 +56,55 @@ class ViewerKernel(FileLocator):
             val = hash(tuple(self.target[0:max_points]))
         return val
 
-    def get_g2_data(self, max_points=10, q_range=None, t_range=None):
-        flag = True
+    def get_g2_data(self, max_points, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        tel, qd, g2, g2_err = g2mod.get_data(xf_list, q_range, t_range)
-
-        t_shape = set([t.shape for t in tel])
-        q_shape = set([q.shape for q in qd])
-        if len(t_shape) != 1 or len(q_shape) != 1:
-            logger.info('the data files are not consistent in tau or q')
-            flag = False
-
+        flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
         return flag, tel, qd, g2, g2_err
 
-    def plot_g2_initialize(self,
-                           mp_hdl,
-                           num_fig,
-                           num_points,
-                           num_col=4,
-                           show_label=False):
-        # adjust canvas size according to number of images
-        if num_fig < num_col:
-            num_col = num_fig
-        num_row = (num_fig + num_col - 1) // num_col
-
-        mp_hdl.adjust_canvas_size(num_col, num_row)
-        mp_hdl.fig.clear()
-
-        # mp_hdl.subplots(num_row, num_col, sharex=True, sharey=True)
-        mp_hdl.subplots(num_row, num_col)
-        mp_hdl.obj = None
-
-        # dummy x y fit line
-        x = np.logspace(-5, 0, 32)
-        y = np.exp(-x / 1E-3) * 0.25 + 1.0
-        err = y / 40
-
-        err_obj = []
-        lin_obj = []
-
-        for idx in range(num_points):
-            for i in range(num_fig):
-                offset = 0.03 * idx
-                ax = np.array(mp_hdl.axes).ravel()[i]
-                obj1 = ax.errorbar(x,
-                                   y + offset,
-                                   yerr=err,
-                                   fmt='o',
-                                   markersize=3,
-                                   markerfacecolor='none',
-                                   label='{}'.format(self.id_list[idx]))
-                err_obj.append(obj1)
-
-                obj2 = ax.plot(x, y + offset)
-                obj2[0].set_visible(False)
-                lin_obj.append(obj2)
-
-                # last image
-                if idx == num_points - 1:
-                    # ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
-                    ax.set_xscale('log')
-                    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-                    # if there's only one point, do not add title; the title
-                    # will be too long.
-                    if show_label and i == num_fig - 1:
-                        # if idx >= 1 and num_points < 10:
-                        ax.legend(fontsize=8)
-
-        # mp_hdl.fig.tight_layout()
-        mp_hdl.obj = {
-            'err': err_obj,
-            'lin': lin_obj,
-        }
-
-    def plot_g2(
-        self,
-        handler,
-        q_range=None,
-        t_range=None,
-        y_range=None,
-        offset=None,
-        show_fit=False,
-        max_points=50,
-        bounds=None,
-        show_label=False,
-        num_col=4,
-        prepare=False,
-    ):
+    def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
+                offset=None, show_fit=False, max_points=50, bounds=None,
+                show_label=False, num_col=4):
 
         num_points = min(len(self.target), max_points)
-        new_condition = (tuple(self.target[:num_points]),
-                         (q_range, t_range, y_range, offset), bounds)
-        # if self.meta['g2_plot_condition'] == new_condition:
-        #     return ['No target files selected or change in setting.']
-        # else:
-        #     cmp = tuple(i != j for i, j in
-        #                 zip(new_condition, self.meta['g2_plot_condition']))
-        #     self.meta['g2_plot_condition'] = new_condition
-        #     plot_target = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
+        fn_tuple = self.get_fn_tuple(max_points)
+        new_condition = (fn_tuple, (q_range, t_range, y_range, offset), bounds)
 
-        flag, tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
-                                                     t_range=t_range,
-                                                     max_points=max_points)
-        if prepare:
-            return np.min(tel), np.max(tel)
-        
+        plot_level = 0
+        if self.meta['g2_plot_condition'] == new_condition:
+            logger.info('skip')
+        else:
+            cmp = tuple(i != j for i, j in
+                        zip(new_condition, self.meta['g2_plot_condition']))
+            self.meta['g2_plot_condition'] = new_condition
+            plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
+
+        if plot_level >= 2:
+            # either filename or range changed; re-generate the data
+            flag, tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
+                                                         t_range=t_range,
+                                                         max_points=max_points)
+            self.meta['g2_data'] = (flag, tel, qd, g2, g2_err)
+        else:
+            # if only the fitting parameters changed; load data from cache
+            flag, tel, qd, g2, g2_err = self.meta['g2_data']
+
         if not flag:
             return
+        
+        if show_label:
+            labels = self.id_list
+        else:
+            labels = None
 
-        num_fig = g2[0].shape[1]
+        g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range, y_range,
+                      offset=offset, labels=labels)
+        return
 
         plot_target = 4
         if plot_target >= 2 or handler.axes is None:
-            self.plot_g2_initialize(handler,
-                                    num_fig,
-                                    num_points,
-                                    show_label=show_label,
-                                    num_col=num_col)
+            g2mod.plot_empty(handler, num_fig, num_points,
+                             show_label=show_label, num_col=num_col,
+                             labels=self.target)
 
         # if plot_target >= 2:
         if True:
@@ -281,8 +212,9 @@ class ViewerKernel(FileLocator):
         saxs2d.plot(ans, *args, **kwargs)
 
     def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
-        xf_list = [self.cache[fn] for fn in self.target[slice(0, max_points)]]
-        saxs1d.plot(xf_list, mp_hdl, **kwargs)
+        xf_list = self.get_xf_list(max_points)
+        saxs1d.plot(xf_list, mp_hdl, legend=self.id_list, **kwargs)
+        logger.info('finish saxs1d')
 
     def setup_twotime(self, file_index=0, group='xpcs'):
         fname = self.target[file_index]
@@ -457,7 +389,7 @@ class ViewerKernel(FileLocator):
 
     def plot_intt(self, pg_hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        intt.plot(xf_list, pg_hdl, self.target, **kwargs)
+        intt.plot(xf_list, pg_hdl, self.id_list, **kwargs)
 
     def plot_stability(self, mp_hdl, plot_id, **kwargs):
         fc = self.cache[self.target[plot_id]]

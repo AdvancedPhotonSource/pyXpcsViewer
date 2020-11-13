@@ -7,6 +7,7 @@ import logging
 import h5py
 import json
 import numpy as np
+from collections import deque
 
 
 logger = logging.getLogger(__name__)
@@ -39,7 +40,18 @@ def get_suffix(file_name):
     return suffix
 
 
-def create_id(in_list, repeat=1, keep_slice=None):
+def create_id(in_list):
+    ret = []
+    for x in in_list:
+        idx_1 = x.find('_')
+        idx_2 = x.rfind('_', 0, len(x))
+        idx_3 = x.rfind('_', 0, idx_2)
+        ret.append(x[0: idx_1] + '_' + x[idx_3: idx_2])
+
+    return ret
+
+
+def create_id3(in_list, repeat=1, keep_slice=None):
     out_list = [x[::-1] for x in in_list]
     prefix = commonprefix(out_list)
     out_list = [x.replace(prefix, '') for x in out_list]
@@ -81,7 +93,7 @@ class FileLocator(object):
         self.cwd = None
         self.trie = None
         self.source_list = None
-        self.target = []
+        self.target = deque([])
         self.id_list = None
         self.build(path)
         self.type = None
@@ -113,12 +125,24 @@ class FileLocator(object):
     def get(self, fname, fields_raw, **kwargs):
         return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
     
+    def get_fn_tuple(self, max_points=128):
+        # compile the filenames upto max_points to a tuple
+        if max_points <= 0:
+            max_points = len(self.target)
+
+        ret = []
+        for n in range(min(max_points, len(self.target))):
+            ret.append(self.target[n])
+        return tuple(ret)
+    
     def get_xf_list(self, max_points=128):
         ret = []
         if max_points <= 0:
             max_points = len(self.target)
 
-        for fn in self.target[slice(0, max_points)]:
+        # for fn in self.target[slice(0, max_points)]:
+        for n in range(min(max_points, len(self.target))):
+            fn = self.target[n]
             ret.append(self.cache[fn])
         return ret
 
@@ -156,12 +180,12 @@ class FileLocator(object):
      
         if file_list in [None, []]:
             file_list = self.target
-        file_list = file_list[slice(0, max_number)]
 
-        total_num = len(file_list)
+        total_num = min(max_number, len(file_list))
         existing_keys = list(self.cache.keys())
 
-        for n, fn in enumerate(file_list):
+        for n in range(total_num):
+            fn = self.target[n]
             if progress_bar is not None:
                 progress_bar.setValue((n + 1) / total_num * 100)
 
@@ -170,7 +194,10 @@ class FileLocator(object):
                 existing_keys.remove(fn)
             else:
                 # read from file and output as a dictionary
-                self.cache[fn] = xf(fn, self.cwd)
+                try:
+                    self.cache[fn] = xf(fn, self.cwd)
+                except Exception:
+                    logger.info("failed to load file: %s", fn)
 
         if flag_del:
             for key in existing_keys:
@@ -194,34 +221,45 @@ class FileLocator(object):
         if len(alist) <= threshold:
             for x in alist:
                 if x not in self.target:
-                    if self.get_type(x) == self.type:
-                        self.target.append(x)
-                    else:
+                    t = self.get_type(x)
+                    if t not in ['Multitau', 'Twotime']:
+                        logger.info('Failed to get type for %s', x)
+                        continue
+                    if self.type is None:
+                        self.type = t
+                    elif t != self.type:
+                        logger.info('Mixed analysis type for %s. Discard', x)
                         single_flag = False
-            self.id_list = create_id(self.target, 1)
+                        continue
+                    self.target.append(x)
+
+            self.id_list = create_id(self.target)
         else:
-        # if many files are added; then ignore the type check;
+            # if many files are added; then ignore the type check;
             logger.info('type check is disabled. too many files added')
-            self.target = alist.copy()
+            self.target = deque(alist)
             self.id_list = alist.copy()
         
-
         logger.info('length of target = %d' % len(self.target))
         return single_flag
 
     def clear_target(self):
-        self.target = []
+        self.target = deque([])
         self.id_list = None
         self.type = None
 
     def remove_target(self, rlist):
-        if rlist is None or self.target is None:
+        if rlist is None or len(self.target) == 0:
             return
+
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
-        if self.target in [None, []]:
+
+        if self.target is None or len(self.target) == 0:
             self.clear_target()
+        else:
+            self.id_list = create_id(self.target)
 
     def search(self, val):
         ans = self.trie.keys(val)
