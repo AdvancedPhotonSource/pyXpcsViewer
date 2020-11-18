@@ -1,19 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
 from matplotlib.patches import Circle
-from .helper.fitting import fit_xpcs, fit_tau
+from .helper.fitting import fit_tau
 from .file_locator import FileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod
 
-from PyQt5 import QtCore
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
 import h5py
 
 import os
 import logging
-import sys
 from .helper.logwriter import LoggerWriter
 
 
@@ -99,59 +96,6 @@ class ViewerKernel(FileLocator):
         g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range, y_range,
                       offset=offset, labels=labels)
         return
-
-        plot_target = 4
-        if plot_target >= 2 or handler.axes is None:
-            g2mod.plot_empty(handler, num_fig, num_points,
-                             show_label=show_label, num_col=num_col,
-                             labels=self.target)
-
-        # if plot_target >= 2:
-        if True:
-            for ipt in range(num_points):
-                for ifg in range(num_fig):
-                    # add the title
-                    if ipt == 0:
-                        ax = np.array(handler.axes).ravel()[ifg]
-                        ax.set_title('Q=%.4f $\\AA^{-1}$' % qd[ipt][ifg])
-                    # update info
-                    loc = ipt * num_fig + ifg
-                    offset_i = -1 * offset * (ipt + 1)
-                    handler.update_err(loc, tel[ipt], g2[ipt][:, ifg] + offset_i,
-                                       g2_err[ipt][:, ifg])
-
-        err_msg = []
-        if show_fit:
-            for ipt in range(num_points):
-                fit_res, fit_val = fit_xpcs(tel[ipt],
-                                            qd[ipt],
-                                            g2[ipt],
-                                            g2_err[ipt],
-                                            b=bounds)
-                self.meta['g2_fit_val'][self.target[ipt]] = fit_val
-                offset_i = -1 * offset * (ipt + 1)
-                err_msg.append(self.target[ipt])
-                prev_len = len(err_msg)
-                for ifg in range(num_fig):
-                    loc = ipt * num_fig + ifg
-                    handler.update_lin(loc,
-                                       fit_res[ifg]['fit_x'],
-                                       fit_res[ifg]['fit_y'] + offset_i,
-                                       visible=show_fit)
-                    msg = fit_res[ifg]['err_msg']
-                    if msg is not None:
-                        err_msg.append('----' + msg)
-
-                if len(err_msg) == prev_len:
-                    err_msg.append('---- fit finished without errors')
-
-        # x_range = (np.min(tel) / 2.5, np.max(tel) * 2.5)
-        x_range = t_range
-        handler.auto_scale(ylim=y_range, xlim=x_range)
-        handler.fig.tight_layout()
-        handler.draw()
-        handler.draw()
-        return err_msg
 
     def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
         num_points = len(self.meta['g2_fit_val'])
