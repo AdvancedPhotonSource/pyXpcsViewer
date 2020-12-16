@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from .helper.fitting import fit_tau
 from .file_locator import FileLocator
-from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq
+from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
 
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
@@ -154,145 +154,25 @@ class ViewerKernel(FileLocator):
     def plot_twotime_map(self,
                          hdl,
                          fname=None,
-                         group='xpcs',
-                         cmap='jet',
-                         scale='log',
-                         auto_crop=True):
+                         **kwargs,
+                         ):
         if fname is None:
             fname = self.target[0]
 
-        if fname == self.meta['twotime_fname'] and \
-                group == self.meta['twotime_group']:
-            return
+        xfile = self.cache[fname]
+        twotime.plot_twotime_map(xfile, hdl, meta=self.meta, **kwargs)
+        return
 
-        rpath = os.path.join(group, 'output_data')
-        rpath = self.get(fname, [rpath], mode='raw')[rpath]
-
-        key_dqmap = os.path.join(group, 'dqmap')
-        key_saxs = os.path.join(rpath, 'pixelSum')
-
-        dqmap, saxs = self.get(fname, [key_dqmap, key_saxs], mode='raw',
-                               ret_type='list')
-
-        # acquire time scale
-        key_frames = [
-            os.path.join(group, 'stride_frames'),
-            os.path.join(group, 'avg_frames')
-        ]
-        stride, avg = self.get(fname, key_frames, mode='raw', ret_type='list')
-        t0, t1 = self.get_cached(fname, ['t0', 't1'], ret_type='list')
-        time_scale = max(t0, t1) * stride * avg
-
-        self.meta['twotime_key'] = rpath
-        self.meta['twotime_group'] = group
-        self.meta['twotime_scale'] = time_scale
-
-        if self.type == 'Twotime':
-            key_c2t = os.path.join(rpath, 'C2T_all')
-            id_all = self.get(fname, [key_c2t], mode='raw')[key_c2t]
-            self.meta['twotime_idlist'] = [int(x[3:]) for x in id_all]
-
-        if auto_crop:
-            idx = np.nonzero(dqmap >= 1)
-            sl_v = slice(np.min(idx[0]), np.max(idx[0]))
-            sl_h = slice(np.min(idx[1]), np.max(idx[1]))
-            dqmap = dqmap[sl_v, sl_h]
-            saxs = saxs[sl_v, sl_h]
-
-        if dqmap.shape[0] > dqmap.shape[1]:
-            dqmap = np.swapaxes(dqmap, 0, 1)
-            saxs = np.swapaxes(saxs, 0, 1)
-
-        self.meta['twotime_dqmap'] = dqmap
-        self.meta['twotime_fname'] = fname
-        self.meta['twotime_saxs'] = saxs
-        self.meta['twotime_ready'] = True
-
-        if scale == 'log':
-            saxs = np.log10(saxs + 1)
-
-        hdl.clear()
-        ax = hdl.subplots(1, 2, sharex=True, sharey=True)
-        im0 = ax[0].imshow(saxs, cmap=plt.get_cmap(cmap))
-        im1 = ax[1].imshow(dqmap, cmap=plt.get_cmap(cmap))
-        plt.colorbar(im0, ax=ax[0])
-        plt.colorbar(im1, ax=ax[1])
-        hdl.draw()
-
-    def plot_twotime(self,
-                     hdl,
-                     current_file_index=0,
-                     plot_index=1,
-                     cmap='jet'):
+    def plot_twotime(self, hdl, current_file_index=0, plot_index=1, **kwargs):
 
         if self.type != 'Twotime':
             self.show_message('Analysis type must be twotime.')
             return None
 
-        if plot_index not in self.meta['twotime_idlist']:
-            self.show_message('plot_index is not found.')
-            return None
-
-        # check if a twotime selected point is already there; if so
-        if 'twotime_pos' not in self.meta or self.meta['twotime_dqmap'][
-                self.meta['twotime_pos']] != plot_index:
-            v, h = np.where(self.meta['twotime_dqmap'] == plot_index)
-            ret = (np.mean(v), np.mean(h))
-        else:
-            ret = None
-
-        c2_key = os.path.join(self.meta['twotime_key'],
-                              'C2T_all/g2_%05d' % plot_index)
-
-        labels = ['g2_full', 'g2_partials']
-
-        res = self.fetch(labels, [self.target[current_file_index]])
-        c2 = self.get(self.target[current_file_index], [c2_key], mode='raw')
-
-        c2_half = c2[c2_key]
-
-        if c2_half is None:
-            return None
-
-        c2 = c2_half + np.transpose(c2_half)
-        c2_translate = np.zeros(c2.shape)
-        c2_translate[:, 0] = c2[:, -1]
-        c2_translate[:, 1:] = c2[:, :-1]
-
-        c2 = np.where(c2 > 1.3, c2_translate, c2)
-
-        t = self.meta['twotime_scale'] * np.arange(len(c2))
-        t_min = np.min(t)
-        t_max = np.max(t)
-
-        hdl.clear()
-        ax = hdl.subplots(1, 2)
-        im = ax[0].imshow(c2,
-                          interpolation='none',
-                          origin='lower',
-                          extent=([t_min, t_max, t_min, t_max]),
-                          cmap=plt.get_cmap(cmap))
-        plt.colorbar(im, ax=ax[0])
-        ax[0].set_ylabel('t1 (s)')
-        ax[0].set_xlabel('t2 (s)')
-
-        # the first element in the list seems to deviate from the rest a lot
-        g2f = res['g2_full'][0][:, plot_index - 1][1:]
-        g2p = res['g2_partials'][0][:, :, plot_index - 1].T
-        g2p = g2p[:, 1:]
-
-        t = self.meta['twotime_scale'] * np.arange(g2f.size)
-        ax[1].plot(t, g2f, lw=3, color='blue', alpha=0.5)
-        for n in range(g2p.shape[0]):
-            t = self.meta['twotime_scale'] * np.arange(g2p[n].size)
-            ax[1].plot(t, g2p[n], label='partial%d' % n, alpha=0.5)
-        ax[1].set_xscale('log')
-        ax[1].set_ylabel('g2')
-        ax[1].set_xlabel('t (s)')
-        hdl.fig.tight_layout()
-
-        hdl.draw()
-
+        fname = self.target[current_file_index]
+        xfile = self.cache[fname]
+        ret = twotime.plot_twotime(xfile, hdl, plot_index=plot_index,
+                                   meta=self.meta, **kwargs)
         return ret
 
     def plot_intt(self, pg_hdl, max_points=128, **kwargs):
