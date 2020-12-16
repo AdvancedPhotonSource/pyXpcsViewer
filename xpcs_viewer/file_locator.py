@@ -2,7 +2,8 @@ import marisa_trie
 import os
 from os.path import commonprefix
 from .fileIO.hdf_to_str import get_hdf_info
-from .fileIO.hdf_reader import get, put, get_type, XpcsFile as xf
+from .fileIO.hdf_reader import get, put, get_type
+from .xpcs_file import XpcsFile as xf
 import logging
 import numpy as np
 from collections import deque
@@ -128,8 +129,9 @@ class FileLocator(object):
             ret.append(self.target[n])
         return tuple(ret)
 
-    def get_xf_list(self, max_points=128):
+    def get_xf_list(self, max_points=8):
         ret = []
+
         if max_points <= 0:
             max_points = len(self.target)
 

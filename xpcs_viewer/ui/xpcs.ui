@@ -205,6 +205,13 @@
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="pushButton_13">
+                <property name="text">
+                 <string>edit</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="pushButton_3">
                 <property name="maximumSize">
                  <size>
@@ -1275,8 +1282,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>98</width>
-                 <height>34</height>
+                 <width>1527</width>
+                 <height>696</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2116,7 +2123,7 @@
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>167</x>
+     <x>119</x>
      <y>497</y>
     </hint>
     <hint type="destinationlabel">
@@ -2184,7 +2191,7 @@
      <y>455</y>
     </hint>
     <hint type="destinationlabel">
-     <x>167</x>
+     <x>119</x>
      <y>497</y>
     </hint>
    </hints>
@@ -2212,8 +2219,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1429</x>
+     <y>874</y>
     </hint>
     <hint type="destinationlabel">
      <x>1403</x>
@@ -2228,8 +2235,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>450</x>
+     <y>855</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -2244,8 +2251,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1429</x>
+     <y>846</y>
     </hint>
     <hint type="destinationlabel">
      <x>1248</x>
@@ -2260,8 +2267,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1429</x>
+     <y>902</y>
     </hint>
     <hint type="destinationlabel">
      <x>1583</x>
@@ -2276,8 +2283,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1294</x>
+     <y>846</y>
     </hint>
     <hint type="destinationlabel">
      <x>1106</x>
@@ -2292,8 +2299,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1294</x>
+     <y>902</y>
     </hint>
     <hint type="destinationlabel">
      <x>832</x>
@@ -2308,8 +2315,8 @@
    <slot>check_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1294</x>
+     <y>874</y>
     </hint>
     <hint type="destinationlabel">
      <x>1051</x>
@@ -2324,8 +2331,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>784</x>
-     <y>123</y>
+     <x>1147</x>
+     <y>916</y>
     </hint>
     <hint type="destinationlabel">
      <x>585</x>
@@ -2340,8 +2347,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>694</x>
-     <y>123</y>
+     <x>1514</x>
+     <y>913</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
@@ -2356,8 +2363,8 @@
    <slot>plot_stability_iq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>944</x>
+     <y>900</y>
     </hint>
     <hint type="destinationlabel">
      <x>1081</x>
@@ -2372,8 +2379,8 @@
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>464</x>
-     <y>158</y>
+     <x>473</x>
+     <y>908</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
@@ -2388,8 +2395,8 @@
    <slot>plot_saxs_2D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>982</x>
+     <y>898</y>
     </hint>
     <hint type="destinationlabel">
      <x>401</x>
@@ -2404,8 +2411,8 @@
    <slot>plot_saxs_1D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>949</x>
+     <y>900</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
@@ -2420,8 +2427,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>926</x>
+     <y>846</y>
     </hint>
     <hint type="destinationlabel">
      <x>1916</x>
@@ -2436,8 +2443,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1061</x>
+     <y>846</y>
     </hint>
     <hint type="destinationlabel">
      <x>1917</x>
@@ -2452,8 +2459,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>926</x>
+     <y>874</y>
     </hint>
     <hint type="destinationlabel">
      <x>1913</x>
@@ -2468,8 +2475,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1061</x>
+     <y>874</y>
     </hint>
     <hint type="destinationlabel">
      <x>1918</x>
@@ -2484,8 +2491,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>926</x>
+     <y>902</y>
     </hint>
     <hint type="destinationlabel">
      <x>1914</x>
@@ -2500,8 +2507,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>123</y>
+     <x>1061</x>
+     <y>902</y>
     </hint>
     <hint type="destinationlabel">
      <x>1917</x>
@@ -2516,8 +2523,8 @@
    <slot>plot_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1000</x>
+     <y>908</y>
     </hint>
     <hint type="destinationlabel">
      <x>1919</x>
@@ -2596,8 +2603,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>112</y>
+     <x>1371</x>
+     <y>890</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -2612,8 +2619,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>112</y>
+     <x>1125</x>
+     <y>886</y>
     </hint>
     <hint type="destinationlabel">
      <x>976</x>
@@ -2628,8 +2635,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>112</y>
+     <x>1300</x>
+     <y>888</y>
     </hint>
     <hint type="destinationlabel">
      <x>1126</x>
@@ -2660,12 +2667,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>991</x>
+     <y>862</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>949</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2676,12 +2683,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1165</x>
+     <y>860</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>949</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2692,12 +2699,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1362</x>
+     <y>862</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>949</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2708,12 +2715,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>989</x>
+     <y>858</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>944</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2724,12 +2731,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1165</x>
+     <y>856</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>944</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2740,12 +2747,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1364</x>
+     <y>858</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>944</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2756,12 +2763,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>947</x>
+     <y>824</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>944</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2772,12 +2779,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1032</x>
+     <y>868</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1000</x>
+     <y>908</y>
     </hint>
    </hints>
   </connection>
@@ -2788,12 +2795,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1307</x>
+     <y>868</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1000</x>
+     <y>908</y>
     </hint>
    </hints>
   </connection>
@@ -2836,12 +2843,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1012</x>
+     <y>860</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>982</x>
+     <y>898</y>
     </hint>
    </hints>
   </connection>
@@ -2852,12 +2859,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1184</x>
+     <y>860</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>982</x>
+     <y>898</y>
     </hint>
    </hints>
   </connection>
@@ -2868,12 +2875,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>434</x>
-     <y>108</y>
+     <x>1291</x>
+     <y>856</y>
     </hint>
     <hint type="destinationlabel">
-     <x>434</x>
-     <y>108</y>
+     <x>982</x>
+     <y>898</y>
     </hint>
    </hints>
   </connection>
@@ -2884,12 +2891,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1182</x>
+     <y>868</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
-     <y>112</y>
+     <x>1000</x>
+     <y>908</y>
     </hint>
    </hints>
   </connection>
@@ -2941,6 +2948,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_13</sender>
+   <signal>clicked()</signal>
+   <receiver>mainWindow</receiver>
+   <slot>edit_label()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>172</x>
+     <y>494</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>23</x>
+     <y>949</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>signal1()</signal>
@@ -2966,5 +2989,6 @@
   <slot>plot_outlier_intt()</slot>
   <slot>reload_source()</slot>
   <slot>plot_twotime()</slot>
+  <slot>edit_label()</slot>
  </slots>
 </ui>
