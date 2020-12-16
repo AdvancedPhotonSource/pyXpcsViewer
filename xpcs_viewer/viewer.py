@@ -1,6 +1,9 @@
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QFileDialog, QDialog
 from PyQt5.QtCore import QThread, QObject, Qt
+
+# from pyqtgraph.Qt import QtWidgets
+# from pyqtgraph import QtCore, QtGui
 
 
 import sys
@@ -11,6 +14,8 @@ import sys
 
 # log file
 import logging
+
+from numpy.lib.function_base import select
 from .helper.logwriter import LoggerWriter
 format = logging.Formatter('%(asctime)s %(message)s')
 home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
@@ -30,6 +35,17 @@ logger = logging.getLogger(__name__)
 
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
+
+
+from PyQt5 import uic
+qt_creator_file = "/Users/mqichu/local_dev/xpcs_gui/xpcs_viewer/ui/label_edittor.ui"
+# LabelEdittorUI, _ = uic.loadUiType(qt_creator_file)
+
+class LabelEdittor(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        uic.loadUi(qt_creator_file, self)
+        self.show()
 
 
 class ViewerKernel2(ViewerKernel, QObject):
@@ -79,6 +95,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.tabWidget.currentChanged.connect(self.init_tab)
         self.list_view_target.indexesMoved.connect(self.reorder_target)
+        self.list_view_target.itemSelectionChanged.connect(self.update_selection)
 
         # width = self.console_panel.width()
         # height = self.console_panel.height()
@@ -93,6 +110,25 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # sizePolicy.setHorizontalStretch(100)
         # sizePolicy.setVerticalStretch(100)
         # self.console.setSizePolicy(sizePolicy)
+    def get_selected_rows(self):
+        selected_index = self.list_view_target.selectedIndexes()
+        selected_row = [x.row() for x in selected_index]
+        # the selected index is ordered;
+        selected_row.sort()
+        return selected_row
+
+    def update_selection(self):
+        if self.data_state < 3:
+            self.init_tab()
+        
+        rows = self.get_selected_rows()
+        idx = self.tabWidget.currentIndex()
+        tab_name = self.tab_dict[idx]
+
+        if tab_name == 'saxs_2d':
+            self.pg_saxs.setCurrentIndex(rows[0])
+        elif tab_name == 'saxs_1d':
+            self.plot_saxs_1D()
 
     def init_tab(self):
         if self.data_state != 3:
@@ -103,6 +139,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.plot_state[idx] > 0:
             return
         tab_name = self.tab_dict[idx]
+        
+        selected_index = self.list_view_target.selectedIndexes()
+        selected_row = [x.row() for x in selected_index]
+        print('current row', selected_row)
 
         logger.info('switch to tab %d: %s', idx, tab_name)
         self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
@@ -203,7 +243,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
-            'plot_norm': self.cb_saxs_norm.currentIndex()
+            'plot_norm': self.cb_saxs_norm.currentIndex(),
+            'rows': self.get_selected_rows()
         }
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
 
@@ -261,6 +302,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if ret is not None:
             self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
 
+    def edit_label(self):
+        x = LabelEdittor(self)
+
     def plot_stability_iq(self):
         if not self.check_status():
             return
@@ -281,6 +325,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'max_points': self.sb_intt_max.value(),
             'sampling': self.sb_intt_sampling.value(),
             'window': self.sb_window.value(),
+            'rows': self.get_selected_rows()
         }
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
@@ -435,9 +480,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_state[:] = 0
 
         self.work_dir.setText(f)
-        self.vk = ViewerKernel2(f, self.statusbar)
-        self.thread = QThread()
-        self.vk.moveToThread(self.thread)
+        self.vk = ViewerKernel(f, self.statusbar)
+        # self.thread = QThread()
+        # self.vk.moveToThread(self.thread)
         self.update_box(self.vk.source_list, mode='source')
 
     def update_box(self, file_list, mode='source'):

@@ -14,7 +14,7 @@ def smooth_data(fc, window, sampling):
     return x, y
 
 
-def plot(xf_list, pg_hdl, legend, **kwargs):
+def plot(xf_list, pg_hdl, legend, rows=None, **kwargs):
     data = []
     for fc in xf_list:
         x, y = smooth_data(fc, **kwargs)
@@ -25,7 +25,7 @@ def plot(xf_list, pg_hdl, legend, **kwargs):
                       xlabel="Frame Index",
                       ylabel="Intensity (ph/pixel)",
                       loc='lower right',
-                      alpha=0.5,
-                      legend=legend)
+                      legend=legend,
+                      rows=rows)
     pg_hdl.draw()
 

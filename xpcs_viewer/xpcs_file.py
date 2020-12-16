@@ -55,6 +55,57 @@ class XpcsFile(object):
     def at(self, key):
         return self.__dict__[key]
 
+    def __getattr__(self, item):
+        if item in self.__dict__:
+            return self[item]
+
+    def get_time_scale(self, group='xpcs'):
+        # acquire time scale for twotime analysis
+        key_frames = [
+            os.path.join(group, 'stride_frames'),
+            os.path.join(group, 'avg_frames')
+        ]
+        stride, avg = get(self.full_path,
+                          key_frames,
+                          mode='raw',
+                          ret_type='list')
+        time_scale = max(self.t0, self.t1) * stride * avg
+        return time_scale
+
+    def get_twotime_maps(self, group='xpcs'):
+        rpath = os.path.join(group, 'output_data')
+        rpath = get(self.full_path, [rpath], mode='raw')[rpath]
+
+        key_dqmap = os.path.join(group, 'dqmap')
+        key_saxs = os.path.join(rpath, 'pixelSum')
+
+        dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
+                          mode='raw',
+                          ret_type='list')
+
+        if self.type == 'Twotime':
+            key_c2t = os.path.join(rpath, 'C2T_all')
+            idlist = get(self.full_path, [key_c2t], mode='raw')[key_c2t]
+            idlist = [int(x[3:]) for x in idlist]
+        else:
+            idlist = [None]
+        return dqmap, saxs, rpath, idlist
+
+    def get_twotime_c2(self, twotime_key, plot_index):
+        c2_key = os.path.join(twotime_key, 'C2T_all/g2_%05d' % plot_index)
+
+        c2_half = get(self.full_path, [c2_key], mode='raw')[c2_key]
+
+        if c2_half is None:
+            return None
+
+        c2 = c2_half + np.transpose(c2_half)
+        c2_translate = np.zeros(c2.shape)
+        c2_translate[:, 0] = c2[:, -1]
+        c2_translate[:, 1:] = c2[:, :-1]
+        c2 = np.where(c2 > 1.3, c2_translate, c2)
+        return c2
+
     def get_detector_extent(self):
         labels = [
             'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
@@ -73,7 +124,7 @@ class XpcsFile(object):
         extent = (qy_min, qy_max, qx_min, qx_max)
 
         return extent
-    
+
     def plot_saxs2d(self, *args, **kwargs):
         from pyqtgraph.Qt import QtGui
         app = QtGui.QApplication([])
@@ -86,9 +137,13 @@ class XpcsFile(object):
         symbol = symbols[idx // len(symbols)]
 
         pen = pg.mkPen(color=color, width=3)
-        line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
-                               pen=pen)
-        ax.plot(x, y, pen=None, symbol=symbol, name=self.label, symbolSize=3,
+        line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
+        ax.plot(x,
+                y,
+                pen=None,
+                symbol=symbol,
+                name=self.label,
+                symbolSize=3,
                 symbolBrush=pg.mkBrush(color=color))
 
         ax.setLogMode(x=True, y=None)
@@ -103,3 +158,7 @@ def test1():
     # af = XpcsFile(path='A178_SMB_C_BR_Hetero_SI35_att0_Lq0_001_0001-0768_Twotime.hdf')
     # print(af)
     # print(af.getattr('saxs_2d'))
+
+
+if __name__ == '__main__':
+    test1()

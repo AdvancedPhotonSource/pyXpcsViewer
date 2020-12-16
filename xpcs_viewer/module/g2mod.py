@@ -4,12 +4,31 @@ from pyqtgraph import ErrorBarItem
 import pyqtgraph as pg
 import logging
 from ..helper.fitting import fit_xpcs
+import random
 
 
 logger = logging.getLogger(__name__)
 
 fn_tuple = None
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+# colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+colors = [
+    (192,0,0),
+    (255,0,0),
+    (255,164,0),
+    (146,208,80),
+    (0,176,80),
+    (0,176,240),
+    (0,112,192),
+    (0,32,96),
+    (112,48,160),
+    (54,96,146),
+    (150,54,52),
+    (118,147,60),
+    (96,73,122),
+    (49,134,155),
+    (226,107,10),
+]
+random.shuffle(colors)
 symbols = ['o', 's', 't', 'd', '+']
 
 
@@ -108,6 +127,7 @@ def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
 
 def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             labels=None, show_fit=False, bounds=None):
+    random.shuffle(colors)
 
     if offset is None:
         offset = 0
