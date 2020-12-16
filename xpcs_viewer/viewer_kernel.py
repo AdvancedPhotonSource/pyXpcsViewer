@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from .helper.fitting import fit_tau
 from .file_locator import FileLocator
-from .module import saxs2d, saxs1d, intt, stability, g2mod
+from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq
 
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
@@ -40,9 +40,18 @@ class ViewerKernel(FileLocator):
         }
 
     def show_message(self, msg):
+        if msg in [None, [None]]:
+            return
+
+        if isinstance(msg, list):
+            for t in msg:
+                logger.info(t)
+            msg = '\n'.join(msg)
+        else:
+            logger.info(msg)
+
         if self.statusbar is not None:
-            self.statusbar.showMessage(msg)
-        logger.info(msg)
+            self.statusbar.showMessage(msg, 1500)
 
     def hash(self, max_points=10):
         if self.target is None:
@@ -93,63 +102,18 @@ class ViewerKernel(FileLocator):
         else:
             labels = None
 
-        g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range, y_range,
-                      offset=offset, labels=labels)
+        res = g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range,
+                            y_range, offset=offset, labels=labels,
+                            show_fit=show_fit, bounds=bounds)
+        self.meta['g2_fit_val'] = res
         return
 
     def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
-        num_points = len(self.meta['g2_fit_val'])
-        if num_points == 0:
-            msg = 'g2 fitting not ready'
-            self.show_message(msg)
-            return [msg]
-        labels = list(self.meta['g2_fit_val'].keys())
-
-        # prepare fit values
-        fit_val = []
-        for _, val in self.meta['g2_fit_val'].items():
-            fit_val.append(val)
-        fit_val = np.hstack(fit_val).swapaxes(0, 1)
-        q = fit_val[::7]
-        sl = q[0] <= max_q
-
-        tau = fit_val[1::7]
-        cts = fit_val[3::7]
-
-        tau_err = fit_val[4::7]
-        cts_err = fit_val[6::7]
-
-        fit_val = []
-
-        if True:
-            # if hdl.axes is None:
-            hdl.clear()
-            ax = hdl.subplots(1, 1)
-            line_obj = []
-            for n in range(tau.shape[0]):
-                s = 10**(offset * n)
-                line = ax.errorbar(q[n][sl],
-                                   tau[n][sl] / s,
-                                   yerr=tau_err[n][sl] / s,
-                                   fmt='o-',
-                                   markersize=3,
-                                   label=self.id_list[n])
-                line_obj.append(line)
-                slope, intercept, xf, yf = fit_tau(q[n][sl], tau[n][sl],
-                                                   tau_err[n][sl])
-                line2 = ax.plot(xf, yf / s)
-                fit_val.append('fn: %s, slope = %.4f, intercept = %.4f' %
-                               (self.target[n], slope, intercept))
-
-            ax.set_xlabel('$q (\\AA^{-1})$')
-            ax.set_ylabel('$\\tau \\times 10^4$')
-            ax.legend()
-            ax.set_xscale('log')
-            ax.set_yscale('log')
-            hdl.obj = line_obj
-            hdl.draw()
-
-            return fit_val
+        msg = tauq.plot(self.meta['g2_fit_val'], labels=self.id_list, hdl=hdl,
+                        max_q=max_q, offset=offset)
+        hdl.draw()
+        self.show_message(msg)
+        return msg
 
     def plot_saxs_2d(self, *args, **kwargs):
         ans = [self.cache[fn].saxs_2d for fn in self.target]
