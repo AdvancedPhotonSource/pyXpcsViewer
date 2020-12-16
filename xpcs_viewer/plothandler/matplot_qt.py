@@ -198,11 +198,19 @@ class MplCanvas(FigureCanvasQTAgg):
                    title=None,
                    legend=None,
                    loc='best',
-                   alpha=0.85):
+                   rows=None
+                   ):
 
         if legend in [None, False]:
             legend = np.arange(len(data))
-        
+
+        if rows in [None, []]:
+            alpha = np.ones(len(data)) * 0.75
+        else:
+            alpha = np.ones(len(data)) * 0.15
+            for t in rows:
+                alpha[t] = 1.0
+
         if isinstance(data, np.ndarray):
             x = np.arange(data.shape[1])
             data2 = []
@@ -216,7 +224,7 @@ class MplCanvas(FigureCanvasQTAgg):
             for n in range(len(data)):
                 mk = markers[n % len(markers)]
                 line = ax.plot(data[n][0], data[n][1], mk + '--', ms=3,
-                               alpha=alpha, label=legend[n])
+                               alpha=alpha[n], label=legend[n])
                 line_obj.append(line)
             self.obj = line_obj
 
