@@ -3,12 +3,32 @@ from matplotlib.ticker import FormatStrFormatter
 from pyqtgraph import ErrorBarItem
 import pyqtgraph as pg
 import logging
+from ..helper.fitting import fit_xpcs
+import random
 
 
 logger = logging.getLogger(__name__)
 
 fn_tuple = None
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+# colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+colors = [
+    (192,0,0),
+    (255,0,0),
+    (255,164,0),
+    (146,208,80),
+    (0,176,80),
+    (0,176,240),
+    (0,112,192),
+    (0,32,96),
+    (112,48,160),
+    (54,96,146),
+    (150,54,52),
+    (118,147,60),
+    (96,73,122),
+    (49,134,155),
+    (226,107,10),
+]
+random.shuffle(colors)
 symbols = ['o', 's', 't', 'd', '+']
 
 
@@ -53,7 +73,7 @@ def get_data(xf_list, q_range=None, t_range=None):
 
 
 def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
-               labels=None):
+               labels=None, show_fit=False):
     # adjust canvas size according to the number of images
     if num_fig < num_col:
         num_col = num_fig
@@ -106,7 +126,11 @@ def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
 
 
 def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
-            labels=None):
+            labels=None, show_fit=False, bounds=None):
+    random.shuffle(colors)
+
+    if offset is None:
+        offset = 0
 
     num_fig = g2[0].shape[1]
     num_points = len(g2)
@@ -119,28 +143,50 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
     xrange = np.log10(xrange)
     if labels is None:
-        labels = [None] * num_points 
+        labels = [None] * num_points
 
+    axes = []
     for n in range(num_fig):
         i_col = n % col
         i_row = n // col
         t = hdl.addPlot(row=i_row, col=i_col, title='q=%.5f Å⁻¹' % qd[0][n])
+        axes.append(t)
         ax1 = t.plot()
         if labels[0] is not None:
             t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
 
         for m in range(num_points):
-            if offset is not None:
-                y = g2[m][:, n] + m * offset
-            else:
-                y = g2[m][:, n]
+            y = g2[m][:, n] + m * offset
             color = colors[m % len(colors)]
             symbol = symbols[m % len(symbols)]
             pg_plot_one_g2(t, tel[m], y, g2_err[m][:, n], color,
                            label=labels[m], symbol=symbol, ax1=ax1)
             t.setRange(xRange=xrange, yRange=yrange)
 
-    return
+    if not show_fit:
+        return None
+
+    err_msg = []
+    fit_val_dict = {}
+    for m in range(num_points):
+        fit_res, fit_val = fit_xpcs(tel[m], qd[m], g2[m], g2_err[m],
+                                    b=bounds)
+        fit_val_dict[m] = fit_val
+        err_msg.append(labels[m])
+        prev_len = len(err_msg)
+        for n in range(num_fig):
+            ax = axes[n]
+            color = colors[m % len(colors)]
+
+            y = fit_res[n]['fit_y'] + m * offset
+            ax.plot(fit_res[n]['fit_x'], y, pen=pg.mkPen(color, width=2))
+            # msg = fit_res[m]['err_msg']
+            # if msg is not None:
+            #     err_msg.append('----' + msg)
+
+        # if len(err_msg) == prev_len:
+        #     err_msg.append('---- fit finished without errors')
+    return fit_val_dict
 
 
 def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, ax1):
@@ -154,29 +200,3 @@ def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, ax1):
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
     return
-
-
-def plot_fit(hdl, tel, qd, g2, g2_err, bounds, offset=0):
-    err_msg = []
-    num_points = len(g2)
-    num_fig = g2[0].shape[1]
-    for ipt in range(len(g2)):
-        fit_res, fit_val = fit_xpcs(tel[ipt], qd[ipt], g2[ipt], g2_err[ipt],
-                                    b=bounds)
-        offset_i = -1 * offset * (ipt + 1)
-        err_msg.append(self.target[ipt])
-        prev_len = len(err_msg)
-        for ifg in range(num_fig):
-            loc = ipt * num_fig + ifg
-            hdl.update_lin(loc,
-                           fit_res[ifg]['fit_x'],
-                           fit_res[ifg]['fit_y'] + offset_i)
-            msg = fit_res[ifg]['err_msg']
-            if msg is not None:
-                err_msg.append('----' + msg)
-
-        if len(err_msg) == prev_len:
-            err_msg.append('---- fit finished without errors')
-
-    hdl.draw()
-    return err_msg

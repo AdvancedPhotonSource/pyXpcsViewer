@@ -108,7 +108,7 @@ def get(fname, fields_raw, mode='raw', ret_type='dict'):
 def get_type(fname):
     try:
         ret = get(fname, ['type'], mode='alias')['type']
-        ret.capitalize()
+        ret = ret.capitalize()
     except Exception:
         return None
     else:
@@ -134,17 +134,6 @@ class XpcsFile(object):
         attr = self.load()
         self.__dict__.update(attr)
         self.label = create_id(fname)
-
-    def __str2__(self):
-        ans = ['File:' + str(self.full_path)]
-        for key, val in self.__dict__.items():
-            if isinstance(val, np.ndarray) and val.size > 1:
-                val = str(val.shape)
-            else:
-                val = str(val)
-            ans.append(f"   {key.ljust(12)}: {val.ljust(30)}")
-
-        return '\n'.join(ans)
 
     def __str__(self):
         ans = ['File:' + str(self.full_path)]

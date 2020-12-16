@@ -2,13 +2,11 @@ import marisa_trie
 import os
 from os.path import commonprefix
 from .fileIO.hdf_to_str import get_hdf_info
-from .fileIO.hdf_reader import get, put, get_type, XpcsFile as xf
+from .fileIO.hdf_reader import get, put, get_type
+from .xpcs_file import XpcsFile as xf
 import logging
-import h5py
-import json
 import numpy as np
 from collections import deque
-
 
 logger = logging.getLogger(__name__)
 pjoin = os.path.join
@@ -20,9 +18,9 @@ def long_substr(data):
     substr = ''
     if len(data) > 1 and len(data[0]) > 0:
         for i in range(len(data[0])):
-            for j in range(len(data[0])-i+1):
-                if j > len(substr) and is_substr(data[0][i:i+j], data):
-                    substr = data[0][i:i+j]
+            for j in range(len(data[0]) - i + 1):
+                if j > len(substr) and is_substr(data[0][i:i + j], data):
+                    substr = data[0][i:i + j]
     return substr
 
 
@@ -46,7 +44,7 @@ def create_id(in_list):
         idx_1 = x.find('_')
         idx_2 = x.rfind('_', 0, len(x))
         idx_3 = x.rfind('_', 0, idx_2)
-        ret.append(x[0: idx_1] + '_' + x[idx_3: idx_2])
+        ret.append(x[0:idx_1] + '_' + x[idx_3:idx_2])
 
     return ret
 
@@ -87,7 +85,9 @@ def create_id2(in_list, repeat=1, keep_slice=None):
 
 
 class FileLocator(object):
-    def __init__(self, path, key_fname='./configure/aps_8idi.json',
+    def __init__(self,
+                 path,
+                 key_fname='./configure/aps_8idi.json',
                  max_cache_size=None):
         self.path = path
         self.cwd = None
@@ -100,13 +100,7 @@ class FileLocator(object):
         self.cache = {}
         if max_cache_size is None:
             # 2G
-            self.max_cache_size = 1024 ** 3 * 2
-
-        # if key_fname is not None:
-        #     with open(key_fname) as f:
-        #         self.hdf_key = json.load(f)
-        # else:
-        #     self.hdf_key = None
+            self.max_cache_size = 1024**3 * 2
 
     def get_cached(self, fname, fields, ret_type='list'):
         ret = {}
@@ -121,10 +115,10 @@ class FileLocator(object):
 
     def get_type(self, fname):
         return get_type(pjoin(self.cwd, fname))
-    
+
     def get(self, fname, fields_raw, **kwargs):
         return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
-    
+
     def get_fn_tuple(self, max_points=128):
         # compile the filenames upto max_points to a tuple
         if max_points <= 0:
@@ -134,9 +128,10 @@ class FileLocator(object):
         for n in range(min(max_points, len(self.target))):
             ret.append(self.target[n])
         return tuple(ret)
-    
-    def get_xf_list(self, max_points=128):
+
+    def get_xf_list(self, max_points=8):
         ret = []
+
         if max_points <= 0:
             max_points = len(self.target)
 
@@ -175,9 +170,12 @@ class FileLocator(object):
             np_data[key] = np.array(temp)
         return np_data
 
-    def load(self, file_list=None, max_number=1024,
-             progress_bar=None, flag_del=True):
-     
+    def load(self,
+             file_list=None,
+             max_number=1024,
+             progress_bar=None,
+             flag_del=True):
+
         if file_list in [None, []]:
             file_list = self.target
 
@@ -239,7 +237,7 @@ class FileLocator(object):
             logger.info('type check is disabled. too many files added')
             self.target = deque(alist)
             self.id_list = alist.copy()
-        
+
         logger.info('length of target = %d' % len(self.target))
         return single_flag
 

@@ -33,7 +33,7 @@ def list_to_numpy(ans, autorotate=True):
     return ret, rotate
 
 
-def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', autorotate=False,
+def plot(ans, pg_hdl=None, plot_type='log', cmap=None, autorotate=False,
          epsilon=None):
 
     ans, rotate = list_to_numpy(ans, autorotate)
@@ -52,7 +52,8 @@ def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', autorotate=False,
         ans = ans.swapaxes(1, 2)
         rotate = True
 
-    pg_hdl.set_colormap(cmap)
+    if cmap is not None:
+        pg_hdl.set_colormap(cmap)
 
     if ans.shape[0] > 1:
         xvals = np.arange(ans.shape[0])
