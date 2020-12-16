@@ -123,7 +123,7 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
     xrange = np.log10(xrange)
     if labels is None:
-        labels = [None] * num_points 
+        labels = [None] * num_points
 
     axes = []
     for n in range(num_fig):
@@ -144,12 +144,14 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             t.setRange(xRange=xrange, yRange=yrange)
 
     if not show_fit:
-        return
+        return None
 
     err_msg = []
+    fit_val_dict = {}
     for m in range(num_points):
         fit_res, fit_val = fit_xpcs(tel[m], qd[m], g2[m], g2_err[m],
                                     b=bounds)
+        fit_val_dict[m] = fit_val
         err_msg.append(labels[m])
         prev_len = len(err_msg)
         for n in range(num_fig):
@@ -164,7 +166,7 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
 
         # if len(err_msg) == prev_len:
         #     err_msg.append('---- fit finished without errors')
-    return
+    return fit_val_dict
 
 
 def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, ax1):
@@ -178,5 +180,3 @@ def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, ax1):
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
     return
-
-
