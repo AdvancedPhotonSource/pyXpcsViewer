@@ -3,6 +3,7 @@ import numpy as np
 from .fileIO.hdf_reader import get, put, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .module import saxs2d
+import pyqtgraph as pg
 
 # colors and symbols for plots
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
@@ -11,7 +12,7 @@ symbols = ['o', 's', 't', 'd', '+']
 
 class XpcsFile(object):
     def __init__(self, fname, cwd='../../data', labels=None):
-
+        self.fname = fname
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
 
@@ -149,7 +150,25 @@ class XpcsFile(object):
         ax.setLogMode(x=True, y=None)
         ax.addItem(line)
         return
+    
+    def get_pg_tree(self):
+        data = self.load()
+        n = 0
+        for key, val in data.items():
+            if isinstance(val, np.ndarray):
+                if val.size > 4096:
+                    data[key] = 'data size is too large'
+                # suqeeze one-element array
+                if val.size == 1:
+                    data[key] = float(val)
+        
+        data['type'] = self.type
+        data['label'] = self.label
 
+        tree = pg.DataTreeWidget(data=data)
+        tree.setWindowTitle(self.fname)
+        tree.resize(600, 800)
+        return tree
 
 def test1():
     cwd = '../../../xpcs_data'
