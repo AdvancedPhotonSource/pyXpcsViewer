@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>979</height>
+    <width>1440</width>
+    <height>803</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,7 +20,7 @@
    <string>XPCS_Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/icons.qrc">
+   <iconset>
     <normaloff>:/newPrefix/icons8-giraffe-full-body-100.png</normaloff>:/newPrefix/icons8-giraffe-full-body-100.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -205,13 +205,6 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_13">
-                <property name="text">
-                 <string>edit</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QPushButton" name="pushButton_3">
                 <property name="maximumSize">
                  <size>
@@ -306,6 +299,13 @@
                    </property>
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_13">
+                   <property name="text">
+                    <string>view</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
                <item row="2" column="0">
@@ -352,7 +352,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -415,16 +415,6 @@
                </item>
                <item row="0" column="1">
                 <layout class="QGridLayout" name="gridLayout_3">
-                 <item row="0" column="4">
-                  <widget class="QCheckBox" name="saxs2d_autorotate">
-                   <property name="text">
-                    <string>auto-rotate?</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="1">
                   <widget class="QComboBox" name="cb_saxs2D_type">
                    <item>
@@ -500,10 +490,13 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="5">
-                  <widget class="QLabel" name="saxs2d_flag">
+                 <item row="0" column="4" colspan="2">
+                  <widget class="QCheckBox" name="saxs2d_autorotate">
                    <property name="text">
-                    <string>None</string>
+                    <string>auto-rotate?</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -850,7 +843,7 @@
            </attribute>
            <layout class="QGridLayout" name="gridLayout_27">
             <item row="0" column="0" colspan="3">
-             <widget class="MplCanvas" name="pg_intt" native="true">
+             <widget class="PlotWidgetDev" name="pg_intt" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -1282,8 +1275,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1527</width>
-                 <height>696</height>
+                 <width>1047</width>
+                 <height>520</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1294,7 +1287,7 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_10">
                 <item row="0" column="0">
-                 <widget class="MplCanvasBarV" name="mp_g2" native="true">
+                 <widget class="PlotWidgetDev" name="mp_g2" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -1462,25 +1455,6 @@
                  </item>
                  <item row="0" column="0">
                   <layout class="QGridLayout" name="gridLayout_19">
-                   <item row="0" column="0" colspan="3">
-                    <widget class="QPushButton" name="pushButton_4">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>plot</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_8">
                      <property name="text">
@@ -1533,6 +1507,44 @@
                      <property name="text">
                       <string>show fit?</string>
                      </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QPushButton" name="pushButton_4">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>plot</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="g2_plot_type">
+                     <item>
+                      <property name="text">
+                       <string>multiple</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>single</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>single-combined</string>
+                      </property>
+                     </item>
                     </widget>
                    </item>
                   </layout>
@@ -2079,7 +2091,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1920</width>
+     <width>1440</width>
      <height>22</height>
     </rect>
    </property>
@@ -2107,6 +2119,12 @@
   </customwidget>
   <customwidget>
    <class>ImageViewDev</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph_handler</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlotWidgetDev</class>
    <extends>QWidget</extends>
    <header>pyqtgraph_handler</header>
    <container>1</container>

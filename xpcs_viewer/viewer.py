@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QDialog
 from PyQt5.QtCore import QThread, QObject, Qt
+import pyqtgraph as pg
 
 # from pyqtgraph.Qt import QtWidgets
 # from pyqtgraph import QtCore, QtGui
@@ -14,6 +15,8 @@ import sys
 
 # log file
 import logging
+
+
 
 from numpy.lib.function_base import select
 from .helper.logwriter import LoggerWriter
@@ -29,6 +32,17 @@ logging.basicConfig(level=logging.INFO,
                         logging.StreamHandler()])
 
 logger = logging.getLogger(__name__)
+
+
+def exception_hook(exc_type, exc_value, exc_traceback):
+    logger.error(
+        "Uncaught exception",
+        exc_info=(exc_type, exc_value, exc_traceback)
+    )
+
+sys.excepthook = exception_hook
+
+
 # sys.stdout = LoggerWriter(logger.debug)
 # sys.stderr = LoggerWriter(logger.warning)
 
@@ -142,7 +156,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         
         selected_index = self.list_view_target.selectedIndexes()
         selected_row = [x.row() for x in selected_index]
-        print('current row', selected_row)
 
         logger.info('switch to tab %d: %s', idx, tab_name)
         self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
@@ -230,11 +243,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'cmap': self.cb_saxs2D_cmap.currentText(),
             'autorotate': self.saxs2d_autorotate.isChecked()
         }
-        flag = self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
-        if flag:
-            self.saxs2d_flag.setText('Rotated')
-        else:
-            self.saxs2d_flag.setText('Not Rotated')
+        self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
     def plot_saxs_1D(self):
         if not self.check_status():
@@ -303,7 +312,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
 
     def edit_label(self):
-        x = LabelEdittor(self)
+        # self.le = LabelEdittor()
+        if not self.check_status():
+            return
+        rows = self.get_selected_rows()
+        self.tree = self.vk.get_pg_tree(rows)
+        self.tree.show()
 
     def plot_stability_iq(self):
         if not self.check_status():
@@ -415,6 +429,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
     
     def set_g2_range(self, max_points=3):
+        if not self.check_status() or self.vk.type != 'Multitau':
+            return
+
         flag, tel, _, _, _ = self.vk.get_g2_data(max_points)
         if not flag:
             self.statusbar.showMessage('g2 data is not consistent. abort')
@@ -439,6 +456,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'offset': self.sb_g2_offset.value(),
             'show_fit': self.g2_show_fit.isChecked(),
             'show_label': self.g2_show_label.isChecked(),
+            'plot_type': self.g2_plot_type.currentText(),
             'q_range': (p[0], p[1]),
             't_range': (p[2], p[3]),
             'y_range': (p[4], p[5]),

@@ -209,7 +209,8 @@ class MplCanvas(FigureCanvasQTAgg):
         else:
             alpha = np.ones(len(data)) * 0.15
             for t in rows:
-                alpha[t] = 1.0
+                if t < len(data):
+                    alpha[t] = 1.0
 
         if isinstance(data, np.ndarray):
             x = np.arange(data.shape[1])

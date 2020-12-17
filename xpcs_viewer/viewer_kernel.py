@@ -66,10 +66,16 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(max_points)
         flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
         return flag, tel, qd, g2, g2_err
+    
+    def get_pg_tree(self, rows):
+        if rows in [None, []]:
+            rows = [0]
+        xfile = self.cache[self.target[rows[0]]]
+        return xfile.get_pg_tree()
 
     def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
                 offset=None, show_fit=False, max_points=50, bounds=None,
-                show_label=False, num_col=4):
+                show_label=False, num_col=4, plot_type='multiple'):
 
         num_points = min(len(self.target), max_points)
         fn_tuple = self.get_fn_tuple(max_points)
@@ -102,9 +108,12 @@ class ViewerKernel(FileLocator):
         else:
             labels = None
 
+        # labels = self.id_list
+
         res = g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range,
                             y_range, offset=offset, labels=labels,
-                            show_fit=show_fit, bounds=bounds)
+                            show_fit=show_fit, bounds=bounds,
+                            plot_type=plot_type)
         self.meta['g2_fit_val'] = res
         return
 

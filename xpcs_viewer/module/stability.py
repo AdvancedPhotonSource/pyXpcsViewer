@@ -18,7 +18,7 @@ def plot(fc, mp_hdl, plot_type='log', plot_norm=0, plot_offset=0, legend=None,
     data = []
     for n in range(Iqp.shape[0]):
         Iq, q = Iqp[n], q
-        Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
+        Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
         Iq = offset_intensity(Iq, n, plot_offset, yscale)
         data.append([q, Iq])
 
