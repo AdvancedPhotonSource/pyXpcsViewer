@@ -243,11 +243,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'cmap': self.cb_saxs2D_cmap.currentText(),
             'autorotate': self.saxs2d_autorotate.isChecked()
         }
-        flag = self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
-        if flag:
-            self.saxs2d_flag.setText('Rotated')
-        else:
-            self.saxs2d_flag.setText('Not Rotated')
+        self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
     def plot_saxs_1D(self):
         if not self.check_status():
