@@ -37,6 +37,16 @@ def norm_saxs_data(Iq, q, plot_norm=0):
     if plot_norm not in range(4):
         raise ValueError('plot_norm must be in [0, 1, 2, 3]')
 
+    # make sure the dimesions match and orders are right
+    if Iq.size != q.size:
+        size = min(Iq.size, q.size)
+        Iq = Iq[-size:]
+        q = q[-size:]
+
+    sort_idx = np.argsort(q)
+    q = q[sort_idx]
+    Iq = Iq[sort_idx]
+
     ylabel = 'Intensity'
     if plot_norm == 1:
         Iq = Iq * np.square(q)
@@ -50,7 +60,7 @@ def norm_saxs_data(Iq, q, plot_norm=0):
         ylabel = ylabel + ' / I_0'
 
     xlabel = '$q (\\AA^{-1})$'
-    return Iq, xlabel, ylabel
+    return Iq, q, xlabel, ylabel
 
 
 def plot(xf_list, mp_hdl, plot_type='log', plot_norm=0, plot_offset=0,
@@ -62,7 +72,8 @@ def plot(xf_list, mp_hdl, plot_type='log', plot_norm=0, plot_offset=0,
     data = []
     for n, fi in enumerate(xf_list[slice(0, max_points)]):
         Iq, q = fi.saxs_1d, fi.ql_sta
-        Iq, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
+
+        Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
         Iq = offset_intensity(Iq, n, plot_offset, yscale)
         data.append([q, Iq])
 
