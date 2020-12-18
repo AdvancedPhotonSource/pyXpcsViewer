@@ -72,6 +72,8 @@ def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
         lr = pg.LinearRegionItem([cen - width, cen + width])
         # lr.setZValue(-10)
         t.addItem(lr)
+    t.setLabel('bottom', 'Frame Index')
+    t.setLabel('left', 'Intensity (cts / pixel)')
 
     tf = pg_hdl.addPlot(row=1, col=0, title='Fourier Spectrum')
     tf.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
@@ -83,6 +85,8 @@ def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
         y = y[sl]
         tf.plot(data[n][0][sl], y, pen=pg.mkPen(colors[n], width=1),
                 name=legend[n])
+    tf.setLabel('bottom', 'Frequency (Hz)')
+    tf.setLabel('left', 'FFT Intensity')
 
     tz = pg_hdl.addPlot(row=1, col=1, title='Zoom In')
     tz.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
@@ -99,5 +103,8 @@ def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
     lr.sigRegionChanged.connect(updatePlot)
     tz.sigXRangeChanged.connect(updateRegion)
     updatePlot()
+
+    tz.setLabel('bottom', 'Frame Index')
+    tz.setLabel('left', 'Intensity (cts / pixel)')
 
     return
