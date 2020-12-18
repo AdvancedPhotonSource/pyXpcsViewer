@@ -27,12 +27,12 @@ class ImageViewDev(ImageView):
             margin_h = int((h1 / h0 * w0 - w1) / 2)
 
         vb = self.getView()
-        xMin, xMax = vb.viewRange()[0]
-        yMin, yMax = vb.viewRange()[1]
-        # xMin = min(xMin, -margin_h)
-        # xMax = max(xMax, target_shape[1] + margin_h)
-        # yMin = min(yMin, -margin_v)
-        # yMax = max(yMax, target_shape[0] + margin_v)
+        # xMin, xMax = vb.viewRange()[0]
+        # yMin, yMax = vb.viewRange()[1]
+        xMin = -margin_h
+        xMax = target_shape[1] + margin_h
+        yMin = -margin_v
+        yMax = target_shape[0] + margin_v
 
         vb.setLimits(xMin=xMin,
                      xMax=xMax,
