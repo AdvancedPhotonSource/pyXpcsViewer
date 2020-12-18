@@ -13,13 +13,12 @@ from pyqtgraph.Qt import QtWidgets
 from pyqtgraph import QtCore, QtGui
 
 from .plothandler import MplCanvas, MplCanvasBarH, MplCanvasBarV, ImageViewDev, PlotWidgetDev
-import os
 
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1440, 803)
+        mainWindow.resize(1920, 979)
         mainWindow.setMinimumSize(QtCore.QSize(1024, 800))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons8-giraffe-full-body-100.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -387,7 +386,6 @@ class Ui_mainWindow(object):
         self.tab_4.setObjectName("tab_4")
         self.gridLayout_27 = QtWidgets.QGridLayout(self.tab_4)
         self.gridLayout_27.setObjectName("gridLayout_27")
-        # self.pg_intt = MplCanvas(self.tab_4)
         self.pg_intt = PlotWidgetDev(self.tab_4)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -403,7 +401,7 @@ class Ui_mainWindow(object):
         self.gridLayout_23 = QtWidgets.QGridLayout(self.groupBox_7)
         self.gridLayout_23.setObjectName("gridLayout_23")
         self.sb_intt_sampling = QtWidgets.QSpinBox(self.groupBox_7)
-        self.sb_intt_sampling.setProperty("value", 20)
+        self.sb_intt_sampling.setProperty("value", 1)
         self.sb_intt_sampling.setObjectName("sb_intt_sampling")
         self.gridLayout_23.addWidget(self.sb_intt_sampling, 0, 5, 1, 1)
         self.label_11 = QtWidgets.QLabel(self.groupBox_7)
@@ -424,7 +422,7 @@ class Ui_mainWindow(object):
         self.gridLayout_23.addWidget(self.label_31, 0, 2, 1, 1)
         self.sb_window = QtWidgets.QSpinBox(self.groupBox_7)
         self.sb_window.setMaximum(999)
-        self.sb_window.setProperty("value", 10)
+        self.sb_window.setProperty("value", 1)
         self.sb_window.setObjectName("sb_window")
         self.gridLayout_23.addWidget(self.sb_window, 0, 3, 1, 1)
         self.gridLayout_27.addWidget(self.groupBox_7, 1, 1, 1, 1)
@@ -588,7 +586,7 @@ class Ui_mainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.g2_scroll_area = QtWidgets.QWidget()
-        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 1047, 520))
+        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 1527, 696))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -959,7 +957,7 @@ class Ui_mainWindow(object):
         self.gridLayout.addWidget(self.file_panel, 0, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1440, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1920, 22))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
@@ -967,7 +965,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(9)
+        self.tabWidget.setCurrentIndex(3)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
         self.cb_stab_type.setCurrentIndex(3)
@@ -1013,14 +1011,14 @@ class Ui_mainWindow(object):
         self.sb_stab_offset.valueChanged['double'].connect(self.pushButton_7.click)
         self.cb_stab_norm.currentIndexChanged['int'].connect(self.pushButton_7.click)
         self.cb_stab.currentIndexChanged['int'].connect(self.pushButton_7.click)
-        self.sb_intt_max.valueChanged['int'].connect(self.btn_intt.click)
-        self.sb_intt_sampling.valueChanged['int'].connect(self.btn_intt.click)
+        self.sb_intt_max.editingFinished.connect(self.btn_intt.click)
+        self.sb_intt_sampling.editingFinished.connect(self.btn_intt.click)
         self.avg_intt_num_clusters.valueChanged['int'].connect(self.pushButton_6.click)
         self.avg_blmax.valueChanged['double'].connect(self.pushButton_9.click)
         self.cb_saxs2D_type.currentIndexChanged['int'].connect(self.pushButton_5.click)
         self.cb_saxs2D_cmap.currentIndexChanged['int'].connect(self.pushButton_5.click)
         self.saxs2d_autorotate.stateChanged['int'].connect(self.pushButton_5.click)
-        self.sb_window.valueChanged['int'].connect(self.btn_intt.click)
+        self.sb_window.editingFinished.connect(self.btn_intt.click)
         self.avg_blmin.valueChanged['double'].connect(self.pushButton_9.click)
         self.list_view_source.doubleClicked['QModelIndex'].connect(self.pushButton_2.click)
         self.list_view_target.itemDoubleClicked['QListWidgetItem*'].connect(self.pushButton_3.click)
