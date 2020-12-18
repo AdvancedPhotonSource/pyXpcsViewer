@@ -283,8 +283,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         """
         ix, iy = event.xdata, event.ydata
         qindex = self.vk.get_twotime_qindex(ix, iy, self.mp_2t_map.hdl)
-        self.twotime_q_index.setValue(qindex)
-        self.plot_twotime()
+
+        # qindex is linked to plot_twotime(); avoid double shot
+        if qindex != self.twotime_q_index.value():
+            self.twotime_q_index.setValue(qindex)
+            self.plot_twotime()
 
     def plot_twotime(self):
         """
@@ -308,8 +311,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("No twotime data for plot_indx = 0.")
             return
         ret = self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
-        if ret is not None:
-            self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
+        # if ret is not None:
+        #     self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
 
     def edit_label(self):
         # self.le = LabelEdittor()
