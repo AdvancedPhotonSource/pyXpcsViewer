@@ -196,6 +196,9 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
                 ax = axes[0]
                 label = labels[m] + ' q=%.5f Å⁻¹' % qd[0][n]
 
+            ax.setLabel('bottom', 'tau (s)')
+            ax.setLabel('left', 'g2')
+
             symbol = symbols[m % len(symbols)]
 
             x = tel[m]
