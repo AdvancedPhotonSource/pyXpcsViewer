@@ -12,6 +12,10 @@ def get_twotime_qindex(meta, ix, iy, hdl):
 
     h = np.argmin(np.abs(np.arange(shape[1]) - ix))
     v = np.argmin(np.abs(np.arange(shape[0]) - iy))
+
+    meta['twotime_pos'] = (v, h)
+    plot_id = meta['twotime_dqmap'][v, h]
+
     color = np.random.rand(3, )
     mark0 = Circle((ix, iy), radius=5, edgecolor='white', facecolor=color)
     hdl.axes[0].add_patch(mark0)
@@ -31,9 +35,8 @@ def get_twotime_qindex(meta, ix, iy, hdl):
     mark1 = Circle((ix, iy), radius=5, edgecolor='white', facecolor=color)
     hdl.axes[1].add_patch(mark1)
     hdl.draw()
-    meta['twotime_pos'] = (v, h)
 
-    return meta['twotime_dqmap'][v, h]
+    return plot_id
 
 
 def plot_twotime_map(xfile,
@@ -103,12 +106,15 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
     if xfile.type != 'Twotime':
         return ret
 
+    plot_index_record = []
     if 'twotime_plot_index' not in meta:
         meta['twotime_plot_index'] = plot_index
+        plot_index_record = [plot_index, plot_index] 
     else:
         if meta['twotime_plot_index'] == plot_index:
-            return
+            return ret
         else:
+            plot_index_record = [meta['twotime_plot_index'], plot_index]
             meta['twotime_plot_index'] = plot_index
 
     c2 = xfile.get_twotime_c2(plot_index=plot_index,
@@ -122,6 +128,8 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
         meta['twotime_ims'] = []
 
     hdl.clear()
+    ax = None
+    c2_list = None
     if len(meta['twotime_ims']) == 0:
         c2_list = [c2]
         meta['twotime_ims'].append(np.copy(c2))
@@ -133,6 +141,8 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
         meta['twotime_ims'].append(np.copy(c2))
         ax = hdl.subplots(1, 3)
 
+    title = ['A: %d' % plot_index_record[0], 'B: %d' % plot_index_record[1]]
+
     for n in range(len(c2_list)):
         im = ax[n].imshow(c2_list[n],
                           interpolation='none',
@@ -142,6 +152,7 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
         plt.colorbar(im, ax=ax[n])
         ax[n].set_ylabel('t1 (s)')
         ax[n].set_xlabel('t2 (s)')
+        ax[n].set_title(title[n])
 
     # the first element in the list seems to deviate from the rest a lot
     g2f = xfile.g2_full[:, plot_index - 1][1:]
@@ -156,6 +167,7 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
     ax[-1].set_xscale('log')
     ax[-1].set_ylabel('g2')
     ax[-1].set_xlabel('t (s)')
+    ax[-1].set_title('Full/Partical g2')
     hdl.fig.tight_layout()
 
     hdl.draw()
