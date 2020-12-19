@@ -282,6 +282,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         :return: None
         """
         ix, iy = event.xdata, event.ydata
+        # filter events that's outside the boundaries
+        if ix is None or iy is None:
+            logger.warn('the click event is outside the canvas')
+            return
         qindex = self.vk.get_twotime_qindex(ix, iy, self.mp_2t_map.hdl)
 
         # qindex is linked to plot_twotime(); avoid double shot
