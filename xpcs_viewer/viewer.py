@@ -96,7 +96,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int)
 
         self.vk = None
-        self.cache = None
+        self.selected_item = None
         if path is not None:
             self.start_wd = path
             self.load_path(path)
@@ -604,12 +604,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.load_data()
 
     def trie_search(self):
+        min_length = 2
         val = self.filter_str.text()
         if len(val) == 0:
             self.update_box(self.vk.source_list, mode='source')
             return
-        num, self.cache = self.vk.search(val)
-        self.update_box(self.cache, mode='source')
+        # avoid searching when the filter lister is too short
+        if len(val) < min_length:
+            return
+        num, self.selected_item = self.vk.search(val)
+        self.update_box(self.selected_item, mode='source')
         self.list_view_source.selectAll()
 
     def check_g2_number(self, default_val=(0, 0.0092, 1E-8, 1, 0.95, 1.35)):
