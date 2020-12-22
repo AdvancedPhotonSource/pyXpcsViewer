@@ -80,7 +80,7 @@ class ViewerKernel(FileLocator):
 
         plot_level = 0
         if self.meta['g2_plot_condition'] == new_condition:
-            logger.info('skip')
+            logger.info('g2 plot parameters unchanged; skip')
         else:
             cmp = tuple(i != j for i, j in
                         zip(new_condition, self.meta['g2_plot_condition']))
@@ -128,7 +128,6 @@ class ViewerKernel(FileLocator):
     def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
         xf_list = self.get_xf_list(max_points)
         saxs1d.plot(xf_list, mp_hdl, legend=self.id_list, **kwargs)
-        logger.info('finish saxs1d')
 
     def setup_twotime(self, file_index=0, group='xpcs'):
         fname = self.target[file_index]
