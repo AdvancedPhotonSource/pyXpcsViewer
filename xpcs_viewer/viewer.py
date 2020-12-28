@@ -6,17 +6,13 @@ import pyqtgraph as pg
 # from pyqtgraph.Qt import QtWidgets
 # from pyqtgraph import QtCore, QtGui
 
-
 import sys
 import os
 import numpy as np
 import sys
 
-
 # log file
 import logging
-
-
 
 from numpy.lib.function_base import select
 from .helper.logwriter import LoggerWriter
@@ -29,31 +25,29 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-24s: %(message)s',
                     handlers=[
                         logging.FileHandler(log_filename, mode='a'),
-                        logging.StreamHandler()])
+                        logging.StreamHandler()
+                    ])
 
 logger = logging.getLogger(__name__)
 
 
 def exception_hook(exc_type, exc_value, exc_traceback):
-    logger.error(
-        "Uncaught exception",
-        exc_info=(exc_type, exc_value, exc_traceback)
-    )
+    logger.error("Uncaught exception",
+                 exc_info=(exc_type, exc_value, exc_traceback))
+
 
 sys.excepthook = exception_hook
-
 
 # sys.stdout = LoggerWriter(logger.debug)
 # sys.stderr = LoggerWriter(logger.warning)
 
-
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
-
 
 from PyQt5 import uic
 qt_creator_file = "/Users/mqichu/local_dev/xpcs_gui/xpcs_viewer/ui/label_edittor.ui"
 # LabelEdittorUI, _ = uic.loadUiType(qt_creator_file)
+
 
 class LabelEdittor(QDialog):
     def __init__(self, parent=None):
@@ -70,7 +64,6 @@ class ViewerKernel2(ViewerKernel, QObject):
 
 class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None):
-        logger.info('Viewer starts: {}'.format(path))
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
         self.show()
@@ -96,20 +89,23 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int)
 
         self.vk = None
-        self.cache = None
+        self.selected_item = None
         if path is not None:
             self.start_wd = path
             self.load_path(path)
         else:
             # use home directory
             self.start_wd = os.path.expanduser('~')
+        self.start_wd = os.path.abspath(self.start_wd)
+        logger.info('Start up directory is [{}]'.format(self.start_wd))
 
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
         self.list_view_target.indexesMoved.connect(self.reorder_target)
-        self.list_view_target.itemSelectionChanged.connect(self.update_selection)
+        self.list_view_target.itemSelectionChanged.connect(
+            self.update_selection)
 
         # width = self.console_panel.width()
         # height = self.console_panel.height()
@@ -134,7 +130,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def update_selection(self):
         if self.data_state < 3:
             self.init_tab()
-        
+
         rows = self.get_selected_rows()
         idx = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[idx]
@@ -153,7 +149,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.plot_state[idx] > 0:
             return
         tab_name = self.tab_dict[idx]
-        
+
         selected_index = self.list_view_target.selectedIndexes()
         selected_row = [x.row() for x in selected_index]
 
@@ -282,9 +278,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         :return: None
         """
         ix, iy = event.xdata, event.ydata
+        # filter events that's outside the boundaries
+        if ix is None or iy is None:
+            logger.warn('the click event is outside the canvas')
+            return
         qindex = self.vk.get_twotime_qindex(ix, iy, self.mp_2t_map.hdl)
-        self.twotime_q_index.setValue(qindex)
-        self.plot_twotime()
+
+        # qindex is linked to plot_twotime(); avoid double shot
+        if qindex != self.twotime_q_index.value():
+            self.twotime_q_index.setValue(qindex)
+            self.plot_twotime()
 
     def plot_twotime(self):
         """
@@ -308,8 +311,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("No twotime data for plot_indx = 0.")
             return
         ret = self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
-        if ret is not None:
-            self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
+        # if ret is not None:
+        #     self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
 
     def edit_label(self):
         # self.le = LabelEdittor()
@@ -386,7 +389,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         if len(self.vk.target) < 5:
-            self.statusbar.showMessage('At least 5 files needed', 1000)        
+            self.statusbar.showMessage('At least 5 files needed', 1000)
             return
 
         kwargs = {
@@ -399,14 +402,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         if len(self.vk.target) < 5:
-            self.statusbar.showMessage('At least 5 files needed', 1000)        
+            self.statusbar.showMessage('At least 5 files needed', 1000)
             return
 
         kwargs = {
             'avg_blmin': self.avg_blmin.value(),
             'avg_blmax': self.avg_blmax.value(),
             'avg_qindex': self.avg_qindex.value(),
-            'avg_window': self.avg_window.value() }
+            'avg_window': self.avg_window.value()
+        }
         if kwargs['avg_blmax'] <= kwargs['avg_blmin']:
             self.statusbar.showMessage('check avg min/max values.')
             return
@@ -427,7 +431,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         self.vk.average(**kwargs)
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
-    
+
     def set_g2_range(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
@@ -464,9 +468,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         bounds = self.check_number()
         # err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
-        err_msg = self.vk.plot_g2(handler=self.mp_g2,
-                                  bounds=bounds,
-                                  **kwargs)
+        err_msg = self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
         self.g2_err_msg.clear()
         if err_msg is None:
             self.g2_err_msg.insertPlainText('None')
@@ -597,12 +599,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.load_data()
 
     def trie_search(self):
+        min_length = 2
         val = self.filter_str.text()
         if len(val) == 0:
             self.update_box(self.vk.source_list, mode='source')
             return
-        num, self.cache = self.vk.search(val)
-        self.update_box(self.cache, mode='source')
+        # avoid searching when the filter lister is too short
+        if len(val) < min_length:
+            return
+        num, self.selected_item = self.vk.search(val)
+        self.update_box(self.selected_item, mode='source')
         self.list_view_source.selectAll()
 
     def check_g2_number(self, default_val=(0, 0.0092, 1E-8, 1, 0.95, 1.35)):

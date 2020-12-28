@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
-    <height>803</height>
+    <width>1920</width>
+    <height>979</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1275,8 +1275,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1047</width>
-                 <height>520</height>
+                 <width>1527</width>
+                 <height>696</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2091,7 +2091,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1440</width>
+     <width>1920</width>
      <height>22</height>
     </rect>
    </property>
@@ -2792,7 +2792,7 @@
   </connection>
   <connection>
    <sender>sb_intt_max</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>editingFinished()</signal>
    <receiver>btn_intt</receiver>
    <slot>click()</slot>
    <hints>
@@ -2808,7 +2808,7 @@
   </connection>
   <connection>
    <sender>sb_intt_sampling</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>editingFinished()</signal>
    <receiver>btn_intt</receiver>
    <slot>click()</slot>
    <hints>
@@ -2904,7 +2904,7 @@
   </connection>
   <connection>
    <sender>sb_window</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>editingFinished()</signal>
    <receiver>btn_intt</receiver>
    <slot>click()</slot>
    <hints>

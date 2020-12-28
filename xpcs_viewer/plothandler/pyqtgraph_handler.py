@@ -27,14 +27,27 @@ class ImageViewDev(ImageView):
             margin_h = int((h1 / h0 * w0 - w1) / 2)
 
         vb = self.getView()
-        vb.setLimits(xMin=-margin_h,
-                     yMin=-margin_v,
-                     xMax=target_shape[1] + margin_h,
-                     yMax=target_shape[0] + margin_v,
-                     minXRange=target_shape[1] / 20,
-                     minYRange=target_shape[1] / 20 * h0 / w0)
+        # xMin, xMax = vb.viewRange()[0]
+        # yMin, yMax = vb.viewRange()[1]
+        xMin = -margin_h
+        xMax = target_shape[1] + margin_h
+        yMin = -margin_v
+        yMax = target_shape[0] + margin_v
+
+        vb.setLimits(xMin=xMin,
+                     xMax=xMax,
+                     yMin=yMin,
+                     yMax=yMax,
+                     minXRange=(xMax - xMin) / 50,
+                     minYRange=(yMax - yMin) / 50)
         vb.setMouseMode(vb.RectMode)
-        vb.setAspectLocked(1.0)
+        # vb.setAspectLocked(1.0)
+
+        # print('weight', -margin_h, target_shape[1] + margin_h)
+        # print('height', -margin_v, target_shape[0] + margin_v)
+
+        # print('vb.range', vb.viewRange())
+        # print('vb.rect', vb.viewRect())
     
     def set_colormap(self, cmap):
         pg_cmap = pg_get_cmap(plt.get_cmap(cmap))

@@ -1,7 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
-from .helper.fitting import fit_tau
 from .file_locator import FileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
 
@@ -11,12 +8,10 @@ import h5py
 
 import os
 import logging
-from .helper.logwriter import LoggerWriter
 
 
 logger = logging.getLogger(__name__)
-# sys.stdout = LoggerWriter(logger.debug)
-# sys.stderr = LoggerWriter(logger.warning)
+
 
 class ViewerKernel(FileLocator):
     def __init__(self, path, statusbar=None):
@@ -28,6 +23,8 @@ class ViewerKernel(FileLocator):
             'twotime_fname': None,
             'twotime_dqmap': None,
             'twotime_ready': False,
+            'twotime_ims': [],
+            'twotime_text': None,
             # avg
             'avg_file_list': None,
             'avg_intt_minmax': None,
@@ -83,7 +80,7 @@ class ViewerKernel(FileLocator):
 
         plot_level = 0
         if self.meta['g2_plot_condition'] == new_condition:
-            logger.info('skip')
+            logger.info('g2 plot parameters unchanged; skip')
         else:
             cmp = tuple(i != j for i, j in
                         zip(new_condition, self.meta['g2_plot_condition']))
@@ -131,7 +128,6 @@ class ViewerKernel(FileLocator):
     def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
         xf_list = self.get_xf_list(max_points)
         saxs1d.plot(xf_list, mp_hdl, legend=self.id_list, **kwargs)
-        logger.info('finish saxs1d')
 
     def setup_twotime(self, file_index=0, group='xpcs'):
         fname = self.target[file_index]
@@ -143,28 +139,10 @@ class ViewerKernel(FileLocator):
         return res
 
     def get_twotime_qindex(self, ix, iy, hdl):
-        shape = self.meta['twotime_dqmap'].shape
-        if len(hdl.axes[0].patches) >= 1:
-            hdl.axes[0].patches.pop()
-        if len(hdl.axes[1].patches) >= 1:
-            hdl.axes[1].patches.pop()
+        res = twotime.get_twotime_qindex(self.meta, ix, iy, hdl)
+        return res
 
-        h = np.argmin(np.abs(np.arange(shape[1]) - ix))
-        v = np.argmin(np.abs(np.arange(shape[0]) - iy))
-        mark0 = Circle((ix, iy), radius=5, color='white')
-        hdl.axes[0].add_patch(mark0)
-        mark1 = Circle((ix, iy), radius=5, color='white')
-        hdl.axes[1].add_patch(mark1)
-        hdl.draw()
-        self.meta['twotime_pos'] = (v, h)
-
-        return self.meta['twotime_dqmap'][v, h]
-
-    def plot_twotime_map(self,
-                         hdl,
-                         fname=None,
-                         **kwargs,
-                         ):
+    def plot_twotime_map(self, hdl, fname=None, **kwargs,):
         if fname is None:
             fname = self.target[0]
 

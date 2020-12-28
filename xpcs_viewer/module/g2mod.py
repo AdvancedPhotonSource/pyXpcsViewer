@@ -12,23 +12,26 @@ logger = logging.getLogger(__name__)
 fn_tuple = None
 # colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
 colors = [
-    (192,0,0),
-    (255,0,0),
-    (255,164,0),
-    (146,208,80),
-    (0,176,80),
-    (0,176,240),
-    (0,112,192),
-    (0,32,96),
-    (112,48,160),
-    (54,96,146),
-    (150,54,52),
-    (118,147,60),
-    (96,73,122),
-    (49,134,155),
-    (226,107,10),
+    (220, 0, 0),
+    (0, 220, 0),
+    (0, 0, 220),
+    (0, 176, 80),
+    (0, 32, 96),
+    (255, 0, 0),
+    (0, 176, 240),
+    (0, 32, 96),
+    (255, 164, 0),
+    (146, 208, 80),
+    (0, 112, 192),
+    (112, 48, 160),
+    (54, 96, 146),
+    (150, 54, 52),
+    (118, 147, 60),
+    (96, 73, 122),
+    (49, 134, 155),
+    (226, 107, 10),
 ]
-random.shuffle(colors)
+
 symbols = ['o', 's', 't', 'd', '+']
 
 
@@ -127,7 +130,6 @@ def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
 
 def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             labels=None, show_fit=False, bounds=None, plot_type='multiple'):
-    random.shuffle(colors)
 
     if offset is None:
         offset = 0
@@ -176,23 +178,26 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
 
         for n in range(g2[0].shape[1]):
             color = colors[m % len(colors)]
-            title = None
             label = None
             if plot_type == 'multiple':
                 ax = axes[n]
                 title = 'q=%.5f Å⁻¹' % qd[0][n]
                 label = labels[m]
+                if m == 0:
+                    ax.setTitle(title)
             elif plot_type == 'single':
                 ax = axes[m]
                 # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
                 title = labels[m]
                 label = 'q=%.5f Å⁻¹' % qd[0][n]
+                ax.setTitle(title)
             elif plot_type == 'single-combined':
                 ax = axes[0]
+                label = labels[m] + ' q=%.5f Å⁻¹' % qd[0][n]
 
-            if m == 0:
-                ax.setTitle(title)
+            ax.setLabel('bottom', 'tau (s)')
+            ax.setLabel('left', 'g2')
 
             symbol = symbols[m % len(symbols)]
 
