@@ -99,6 +99,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.start_wd = os.path.abspath(self.start_wd)
         logger.info('Start up directory is [{}]'.format(self.start_wd))
 
+        # additional signal-slot settings
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
 
@@ -106,6 +107,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.list_view_target.indexesMoved.connect(self.reorder_target)
         self.list_view_target.itemSelectionChanged.connect(
             self.update_selection)
+
+        self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
+        self.cb_twotime_saxs_cmap.currentIndexChanged.connect(self.init_twotime)
+        self.cb_twotime_qmap_cmap.currentIndexChanged.connect(self.init_twotime)
+        self.twotime_autorotate.stateChanged.connect(self.init_twotime)
+        self.twotime_autocrop.stateChanged.connect(self.init_twotime)
 
         # width = self.console_panel.width()
         # height = self.console_panel.height()
@@ -266,7 +273,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.cb_twotime_group.clear()
         self.cb_twotime_group.addItems(res)
 
-        self.vk.plot_twotime_map(self.mp_2t_map.hdl)
+        kwargs = {
+            # if nothing is selected, currentRow = -1; then plot 0th row;
+            'scale': self.cb_twotime_type.currentText(),
+            'saxs_cmap': self.cb_twotime_saxs_cmap.currentText(),
+            'qmap_cmap': self.cb_twotime_qmap_cmap.currentText(),
+            'auto_rotate': self.twotime_autorotate.isChecked(),
+            'auto_crop': self.twotime_autocrop.isChecked(),
+        }
+
+        self.vk.plot_twotime_map(self.mp_2t_map.hdl, **kwargs)
         self.plot_twotime()
 
     def update_twotime_qindex(self, event):
@@ -277,6 +293,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         :param event: mouse click event
         :return: None
         """
+        if event.button == Qt.LeftButton:
+            self.statusbar.showMessage('Use right click to select points', 
+                                       1000)
+            return
+
         ix, iy = event.xdata, event.ydata
         # filter events that's outside the boundaries
         if ix is None or iy is None:
