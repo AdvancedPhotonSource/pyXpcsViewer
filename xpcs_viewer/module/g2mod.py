@@ -166,6 +166,7 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
         axes.append(t)
         if labels[0] is not None:
             t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
+        t.setMouseEnabled(x=False, y=False)
 
     err_msg = []
     fit_val_dict = {}
