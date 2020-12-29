@@ -50,12 +50,16 @@ def matplot_plot(xf_list, pg_hdl, legend, rows=None, **kwargs):
     pg_hdl.draw()
 
 
-def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
+def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
+         rows=None, **kwargs):
+
+    t0 = xf_list[0].t0
     data = []
     for fc in xf_list:
         x, y = smooth_data(fc, **kwargs)
+        if xlabel != 'Frame Index':
+            x = x * t0
         data.append([x, y])
-    t0 = xf_list[0].t0
 
     pg_hdl.clear()
     t = pg_hdl.addPlot(colspan=2)
@@ -63,7 +67,8 @@ def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
     for n in range(len(data)):
         t.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
                name=legend[n])
-    t.setTitle('Intensity vs Frame Index')
+    t.setTitle('Intensity vs %s' % xlabel)
+
     if enable_zoom:
         vmin = np.min(data[0][0])
         vmax = np.max(data[0][0])
@@ -72,7 +77,7 @@ def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
         lr = pg.LinearRegionItem([cen - width, cen + width])
         # lr.setZValue(-10)
         t.addItem(lr)
-    t.setLabel('bottom', 'Frame Index')
+    t.setLabel('bottom', '%s' % xlabel)
     t.setLabel('left', 'Intensity (cts / pixel)')
 
     tf = pg_hdl.addPlot(row=1, col=0, title='Fourier Spectrum')
@@ -104,7 +109,7 @@ def plot(xf_list, pg_hdl, legend, rows=None, enable_zoom=True, **kwargs):
     tz.sigXRangeChanged.connect(updateRegion)
     updatePlot()
 
-    tz.setLabel('bottom', 'Frame Index')
+    tz.setLabel('bottom', '%s' % xlabel)
     tz.setLabel('left', 'Intensity (cts / pixel)')
 
     return
