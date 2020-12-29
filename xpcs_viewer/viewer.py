@@ -342,7 +342,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'max_points': self.sb_intt_max.value(),
             'sampling': self.sb_intt_sampling.value(),
             'window': self.sb_window.value(),
-            'rows': self.get_selected_rows()
+            'rows': self.get_selected_rows(),
+            'xlabel': self.intt_xlabel.currentText()
         }
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
