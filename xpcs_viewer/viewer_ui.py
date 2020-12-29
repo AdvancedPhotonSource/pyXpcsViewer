@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'xpcs.ui'
+# Form implementation generated from reading ui file 'ui/xpcs.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -371,7 +371,7 @@ class Ui_mainWindow(object):
         self.gridLayout_17.addLayout(self.verticalLayout_3, 0, 1, 2, 1)
         spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_17.addItem(spacerItem4, 0, 2, 1, 1)
-        spacerItem5 = QtWidgets.QSpacerItem(357, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_17.addItem(spacerItem5, 0, 0, 1, 1)
         self.gridLayout_6.addWidget(self.groupBox_4, 1, 0, 1, 1)
         self.tabWidget.addTab(self.tab_3, "")
@@ -735,12 +735,12 @@ class Ui_mainWindow(object):
         self.gridLayout_14 = QtWidgets.QGridLayout(self.groupBox_2)
         self.gridLayout_14.setObjectName("gridLayout_14")
         self.g2_err_msg = QtWidgets.QPlainTextEdit(self.groupBox_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(20)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.g2_err_msg.sizePolicy().hasHeightForWidth())
         self.g2_err_msg.setSizePolicy(sizePolicy)
-        self.g2_err_msg.setMinimumSize(QtCore.QSize(200, 0))
+        self.g2_err_msg.setMinimumSize(QtCore.QSize(0, 0))
         font = QtGui.QFont()
         font.setFamily("Courier")
         self.g2_err_msg.setFont(font)
@@ -1024,7 +1024,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(7)
+        self.tabWidget.setCurrentIndex(5)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
         self.cb_stab_type.setCurrentIndex(3)
@@ -1255,4 +1255,4 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_10), _translate("mainWindow", "Log"))
 
 from .plothandler import ImageViewDev, MplCanvas, MplCanvasBarH, MplCanvasBarV, PlotWidgetDev
-from . import icons_rc
+import icons_rc

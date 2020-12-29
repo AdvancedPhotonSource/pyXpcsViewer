@@ -352,7 +352,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -826,7 +826,7 @@
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>357</width>
+                   <width>40</width>
                    <height>20</height>
                   </size>
                  </property>
@@ -1600,14 +1600,14 @@
                  <item row="0" column="1">
                   <widget class="QPlainTextEdit" name="g2_err_msg">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                      <horstretch>20</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>200</width>
+                     <width>0</width>
                      <height>0</height>
                     </size>
                    </property>
