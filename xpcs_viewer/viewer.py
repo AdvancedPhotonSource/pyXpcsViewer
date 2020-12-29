@@ -491,11 +491,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         bounds = self.check_number()
         # err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
         err_msg = self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
-        self.g2_err_msg.clear()
-        if err_msg is None:
-            self.g2_err_msg.insertPlainText('None')
-        else:
-            self.g2_err_msg.insertPlainText('\n'.join(err_msg))
+        # self.g2_err_msg.clear()
+        # if err_msg is None:
+        #     self.g2_err_msg.insertPlainText('None')
+        # else:
+        #     self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
     def reload_source(self):
         self.vk.build()
