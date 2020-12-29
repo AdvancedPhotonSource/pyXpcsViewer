@@ -43,13 +43,15 @@ def plot_twotime_map(xfile,
                      hdl,
                      meta=None,
                      group='xpcs',
-                     cmap='jet',
+                     saxs_cmap='jet',
+                     qmap_cmap='hot',
                      scale='log',
-                     auto_crop=True):
+                     auto_crop=True,
+                     auto_rotate=True):
 
-    if xfile.full_path == meta['twotime_fname'] and \
-            group == meta['twotime_group']:
-        return
+    # if xfile.full_path == meta['twotime_fname'] and \
+    #         group == meta['twotime_group']:
+    #     return
 
     dqmap, saxs, rpath, idlist = xfile.get_twotime_maps(group)
     time_scale = xfile.get_time_scale(group)
@@ -66,9 +68,10 @@ def plot_twotime_map(xfile,
         dqmap = dqmap[sl_v, sl_h]
         saxs = saxs[sl_v, sl_h]
 
-    if dqmap.shape[0] > dqmap.shape[1]:
-        dqmap = np.swapaxes(dqmap, 0, 1)
-        saxs = np.swapaxes(saxs, 0, 1)
+    if auto_rotate:
+        if dqmap.shape[0] > dqmap.shape[1]:
+            dqmap = np.swapaxes(dqmap, 0, 1)
+            saxs = np.swapaxes(saxs, 0, 1)
 
     meta['twotime_dqmap'] = dqmap
     meta['twotime_fname'] = xfile.full_path
@@ -76,12 +79,14 @@ def plot_twotime_map(xfile,
     meta['twotime_ready'] = True
 
     if scale == 'log':
-        saxs = np.log10(saxs + 1)
+        min_val = np.min(saxs[saxs > 0])
+        saxs[saxs <= 0] = min_val
+        saxs = np.log10(saxs).astype(np.float32)
 
     hdl.clear()
     ax = hdl.subplots(1, 2, sharex=True, sharey=True)
-    im0 = ax[0].imshow(saxs, cmap=plt.get_cmap(cmap))
-    im1 = ax[1].imshow(dqmap, cmap=plt.get_cmap('hot'))
+    im0 = ax[0].imshow(saxs, cmap=plt.get_cmap(saxs_cmap))
+    im1 = ax[1].imshow(dqmap, cmap=plt.get_cmap(qmap_cmap))
     ax[0].set_title('SAXS-2D')
     ax[1].set_title('dqmap')
     plt.colorbar(im0, ax=ax[0])
