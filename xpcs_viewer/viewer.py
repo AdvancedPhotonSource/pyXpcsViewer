@@ -1,12 +1,12 @@
+from .viewer_ui import Ui_mainWindow as Ui
+from .viewer_kernel import ViewerKernel
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QDialog
+from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QThread, QObject, Qt
-import pyqtgraph as pg
 
 # from pyqtgraph.Qt import QtWidgets
 # from pyqtgraph import QtCore, QtGui
 
-import sys
 import os
 import numpy as np
 import sys
@@ -14,8 +14,6 @@ import sys
 # log file
 import logging
 
-from numpy.lib.function_base import select
-from .helper.logwriter import LoggerWriter
 format = logging.Formatter('%(asctime)s %(message)s')
 home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
 if not os.path.isdir(home_dir):
@@ -40,20 +38,6 @@ sys.excepthook = exception_hook
 
 # sys.stdout = LoggerWriter(logger.debug)
 # sys.stderr = LoggerWriter(logger.warning)
-
-from .viewer_kernel import ViewerKernel
-from .viewer_ui import Ui_mainWindow as Ui
-
-from PyQt5 import uic
-qt_creator_file = "/Users/mqichu/local_dev/xpcs_gui/xpcs_viewer/ui/label_edittor.ui"
-# LabelEdittorUI, _ = uic.loadUiType(qt_creator_file)
-
-
-class LabelEdittor(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        uic.loadUi(qt_creator_file, self)
-        self.show()
 
 
 class ViewerKernel2(ViewerKernel, QObject):
@@ -109,8 +93,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.update_selection)
 
         self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
-        self.cb_twotime_saxs_cmap.currentIndexChanged.connect(self.init_twotime)
-        self.cb_twotime_qmap_cmap.currentIndexChanged.connect(self.init_twotime)
+        self.cb_twotime_saxs_cmap.currentIndexChanged.connect(
+            self.init_twotime)
+        self.cb_twotime_qmap_cmap.currentIndexChanged.connect(
+            self.init_twotime)
         self.twotime_autorotate.stateChanged.connect(self.init_twotime)
         self.twotime_autocrop.stateChanged.connect(self.init_twotime)
 
@@ -159,8 +145,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         tab_name = self.tab_dict[idx]
 
-        selected_index = self.list_view_target.selectedIndexes()
-        selected_row = [x.row() for x in selected_index]
+        # selected_index = self.list_view_target.selectedIndexes()
+        # selected_row = [x.row() for x in selected_index]
 
         logger.info('switch to tab %d: %s', idx, tab_name)
         self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
@@ -246,7 +232,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {
             'plot_type': self.cb_saxs2D_type.currentText(),
             'cmap': self.cb_saxs2D_cmap.currentText(),
-            'autorotate': self.saxs2d_autorotate.isChecked()
+            'autorotate': self.saxs2d_autorotate.isChecked(),
+            'display': self.saxs2d_display,
         }
         self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
@@ -300,7 +287,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         if event.button == Qt.LeftButton:
-            self.statusbar.showMessage('Use right click to select points', 
+            self.statusbar.showMessage('Use right click to select points',
                                        1000)
             return
 
@@ -342,7 +329,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         #     self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
 
     def edit_label(self):
-        # self.le = LabelEdittor()
         if not self.check_status():
             return
         rows = self.get_selected_rows()
@@ -398,8 +384,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             save_path = self.avg_save_path.text()
             while not os.path.isdir(save_path):
                 save_path = QFileDialog.getExistingDirectory(
-                    self, 'Open directory', '../cluster_results',
-                    QFileDialog.ShowDirsOnly)
+                    self, 'Open directory', '../cluster_results')
             self.avg_save_path.setText(save_path)
 
         if len(self.vk.id_list) > 0:
@@ -509,9 +494,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
-            f = QFileDialog.getExistingDirectory(self, 'Open directory',
-                                                 self.start_wd,
-                                                 QFileDialog.ShowDirsOnly)
+            # DontUseNativeDialog is used so files are shown along with dirs;
+            f = QFileDialog.getExistingDirectory(
+                self, 'Open directory', self.start_wd,
+                QFileDialog.DontUseNativeDialog)
         else:
             f = path
 

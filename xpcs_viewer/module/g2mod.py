@@ -1,10 +1,8 @@
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
-from pyqtgraph import ErrorBarItem
 import pyqtgraph as pg
 import logging
 from ..helper.fitting import fit_xpcs
-import random
 
 
 logger = logging.getLogger(__name__)
