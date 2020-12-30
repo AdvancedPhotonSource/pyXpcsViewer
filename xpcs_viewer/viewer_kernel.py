@@ -131,7 +131,9 @@ class ViewerKernel(FileLocator):
 
     def plot_saxs_2d(self, *args, **kwargs):
         ans = [self.cache[fn].saxs_2d for fn in self.target]
-        saxs2d.plot(ans, *args, **kwargs)
+        # extents = extent = (qy_min, qy_max, qx_min, qx_max)
+        extent = self.cache[self.target[0]].get_detector_extent()
+        saxs2d.plot(ans, extent=extent, *args, **kwargs)
 
     def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
         xf_list = self.get_xf_list(max_points)

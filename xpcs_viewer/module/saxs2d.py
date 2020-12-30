@@ -34,7 +34,7 @@ def list_to_numpy(ans, autorotate=True):
 
 
 def plot(ans, pg_hdl=None, plot_type='log', cmap=None, autorotate=False,
-         epsilon=None):
+         epsilon=None, display=None, extent=None):
 
     ans, rotate = list_to_numpy(ans, autorotate)
     # if pg_hdl is None:
@@ -48,20 +48,20 @@ def plot(ans, pg_hdl=None, plot_type='log', cmap=None, autorotate=False,
         ans = np.log10(ans + epsilon)
     ans = ans.astype(np.float32)
 
-    if autorotate and ans.shape[1] > ans.shape[2]:
-        ans = ans.swapaxes(1, 2)
-        rotate = True
+    if rotate and extent is not None:
+        extent = (*extent[2:4], *extent[0:2])
 
     if cmap is not None:
         pg_hdl.set_colormap(cmap)
 
+    pg_hdl.reset_limits()
     if ans.shape[0] > 1:
         xvals = np.arange(ans.shape[0])
         pg_hdl.setImage(ans, xvals=xvals)
     else:
         pg_hdl.setImage(ans[0])
 
-    sp = ans.shape[-2:]
-    pg_hdl.adjust_viewbox(sp)
+    pg_hdl.adjust_viewbox()
+    pg_hdl.add_readback(display=display, extent=extent)
 
     return rotate

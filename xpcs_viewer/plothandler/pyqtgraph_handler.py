@@ -12,27 +12,10 @@ class ImageViewDev(ImageView):
     def __init__(self, *args, **kwargs) -> None:
         super(ImageViewDev, self).__init__(*args, **kwargs)
 
-    def adjust_viewbox(self, target_shape):
-        fs = self.frameSize()
-        w0, h0 = fs.width(), fs.height()
-        h1, w1 = target_shape
-
-        if w1 / w0 > h1 / h0:
-            # the fig is wider than the canvas
-            margin_v = int((w1 / w0 * h0 - h1) / 2)
-            margin_h = 0
-        else:
-            # the canvas is wider than the figure
-            margin_v = 0
-            margin_h = int((h1 / h0 * w0 - w1) / 2)
-
+    def adjust_viewbox(self):
         vb = self.getView()
         xMin, xMax = vb.viewRange()[0]
         yMin, yMax = vb.viewRange()[1]
-        # xMin = -margin_h
-        # xMax = target_shape[1] + margin_h
-        # yMin = -margin_v
-        # yMax = target_shape[0] + margin_v
 
         vb.setLimits(xMin=xMin,
                      xMax=xMax,
@@ -41,17 +24,83 @@ class ImageViewDev(ImageView):
                      minXRange=(xMax - xMin) / 50,
                      minYRange=(yMax - yMin) / 50)
         vb.setMouseMode(vb.RectMode)
-        # vb.setAspectLocked(1.0)
+        vb.setAspectLocked(1.0)
 
-        # print('weight', -margin_h, target_shape[1] + margin_h)
-        # print('height', -margin_v, target_shape[0] + margin_v)
+    def reset_limits(self):
+        """
+        reset the viewbox's limits so updating image won't break the layout;
+        """
+        self.view.state['limits'] = {'xLimits': [None, None],
+                                     'yLimits': [None, None],
+                                     'xRange': [None, None],
+                                     'yRange': [None, None]
+                                     }
 
-        # print('vb.range', vb.viewRange())
-        # print('vb.rect', vb.viewRect())
-    
     def set_colormap(self, cmap):
         pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
         self.setColorMap(pg_cmap)
+
+    def add_readback(self, display=None, extent=None, type='log'):
+        # vLine = pg.InfiniteLine(angle=90, movable=False)
+        # hLine = pg.InfiniteLine(angle=0, movable=False)
+        # self.view.addItem(vLine, ignoreBounds=True)
+        # self.view.addItem(hLine, ignoreBounds=True)
+
+        # def print_roi_shape(evt):
+        #     print(self.roi.boundingRect())
+
+        # self.roi.sigRegionChanged.connect(print_roi_shape)
+
+        def compute_qxy(col, row):
+            s = self.image.shape[-2:]
+            # qx
+            a1, a2 = col, s[1] - col
+            qx = (extent[0] * a2 + extent[1] * a1) / s[1]
+
+            # qy
+            b1, b2 = row, s[0] - row
+            qy = (extent[2] * b2 + extent[3] * b1) / s[0]
+
+            return qx, qy
+
+        def mouse_moved(pos):
+            shape = self.image.shape
+            if self.scene.itemsBoundingRect().contains(pos):
+                mouse_point = self.getView().mapSceneToView(pos)
+                # vLine.setPos(mouse_point.x())
+                # hLine.setPos(mouse_point.y())
+                col = int(mouse_point.x())
+                row = int(mouse_point.y())
+
+                if col < 0 or col >= shape[-1]:
+                    return
+                if row < 0 or row >= shape[-2]:
+                    return
+
+                if len(shape) == 3:
+                    pixel_val = self.image[self.currentIndex, row, col]
+                elif len(shape) == 2:
+                    pixel_val = self.image[row, col]
+                else:
+                    raise ValueError('Check array dimension')
+
+                if type == 'log':
+                    pixel_val = 10 ** pixel_val
+                qx, qy = compute_qxy(col, row)
+
+                if display is None:
+                    print(pixel_val)
+                else:
+                    display.clear()
+                    display.setText(
+                        '%d: [x=%4d, y=%4d, qx=%fÅ⁻¹, qy=%fÅ⁻¹, c:%.3f]' % (
+                            self.currentIndex, col, row, qx, qy, pixel_val))
+        self.scene.sigMouseMoved.connect(mouse_moved)
+
+    def clear(self):
+        super(ImageViewDev, self).clear()
+        self.reset_limits()
+        self.scene.sigMouseMoved.disconnect()
 
 
 class PlotWidgetDev(GraphicsLayoutWidget):
@@ -70,4 +119,3 @@ class PlotWidgetDev(GraphicsLayoutWidget):
         width = self.width()
         canvas_size = max(min_size, int(width / num_col * aspect * num_row))
         self.setMinimumSize(QtCore.QSize(0, canvas_size))
-
