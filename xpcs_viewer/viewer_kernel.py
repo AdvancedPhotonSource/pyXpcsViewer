@@ -17,7 +17,10 @@ class ViewerKernel(FileLocator):
     def __init__(self, path, statusbar=None):
         super().__init__(path)
         self.statusbar = statusbar
+        self.meta = None
+        self.reset_meta()
 
+    def reset_meta(self):
         self.meta = {
             # twotime
             'twotime_fname': None,
@@ -35,6 +38,11 @@ class ViewerKernel(FileLocator):
             'g2_plot_condition': tuple([None, None, None]),
             'g2_fit_val': {}
         }
+        return
+
+    def reset_kernel(self):
+        self.clear_target()
+        self.reset_meta()
 
     def show_message(self, msg):
         if msg in [None, [None]]:
@@ -137,7 +145,7 @@ class ViewerKernel(FileLocator):
                 if 'xpcs' in key:
                     res.append(key)
         return res
-
+    
     def get_twotime_qindex(self, ix, iy, hdl):
         res = twotime.get_twotime_qindex(self.meta, ix, iy, hdl)
         return res
