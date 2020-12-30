@@ -143,6 +143,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         tab_name = self.tab_dict[idx]
 
         if tab_name == 'saxs_2d':
+            if rows == [] or len(self.vk.target) <= 1:
+                return
             self.pg_saxs.setCurrentIndex(rows[0])
         elif tab_name == 'saxs_1d':
             self.plot_saxs_1D()
@@ -197,7 +199,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                                        1000)
             return
 
-        self.statusbar.showMessage('Loading hdf files into RAM ... ')
+        self.statusbar.showMessage('Loading hdf files into RAM ...')
         logger.info('loading hdf files into RAM')
 
         # the state must be 2
@@ -205,7 +207,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.data_state = 3
         self.plot_state[:] = 0
-        self.statusbar.showMessage('Files loaded.')
+        self.statusbar.showMessage('Files loaded.', 1000)
 
         # self.update_hdf_list()
         # self.update_stab_list()
@@ -293,6 +295,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         :param event: mouse click event
         :return: None
         """
+        if self.data_state < 3:
+            self.statusbar.showMessage('Twotime data not ready', 1000)
+            return
+
         if event.button == Qt.LeftButton:
             self.statusbar.showMessage('Use right click to select points', 
                                        1000)
@@ -611,7 +617,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         # if all files are removed; then go to state 1
         if self.vk.target in [[], None] or len(self.vk.target) == 0:
-            self.data_state = 1
+            self.reset_gui()
         else:
             self.data_state = 2
         self.plot_state[:] = 0
@@ -619,6 +625,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.vk.target, mode='target')
         if self.box_auto_update.isChecked():
             self.load_data()
+
+    def reset_gui(self):
+        self.data_state = 1
+        self.plot_state[:] = 0
+        self.vk.reset_kernel()
+        for x in [self.pg_saxs, self.pg_intt, self.mp_tauq, self.mp_2t,
+                  self.mp_2t_map, self.mp_g2, self.mp_saxs, self.mp_stab]:
+            x.clear()
 
     def trie_search(self):
         min_length = 2
