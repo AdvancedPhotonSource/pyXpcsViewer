@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
-    <height>951</height>
+    <width>2266</width>
+    <height>1280</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -352,7 +352,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -387,49 +387,36 @@
                <string>SAXS 2D Plot Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_18">
-               <item row="0" column="0">
-                <spacer name="horizontalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="0" column="2">
-                <spacer name="horizontalSpacer_3">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="0" column="1">
                 <layout class="QGridLayout" name="gridLayout_3">
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="cb_saxs2D_type">
-                   <item>
-                    <property name="text">
-                     <string>log</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>linear</string>
-                    </property>
-                   </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_12">
+                   <property name="text">
+                    <string>type:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0" colspan="10">
+                  <widget class="QPushButton" name="pushButton_5">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Plot 2D SAXS</string>
+                   </property>
                   </widget>
                  </item>
                  <item row="0" column="3">
+                  <widget class="QLabel" name="label_13">
+                   <property name="text">
+                    <string>colormap:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
                   <widget class="QComboBox" name="cb_saxs2D_cmap">
                    <item>
                     <property name="text">
@@ -463,44 +450,74 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_13">
-                   <property name="text">
-                    <string>colormap:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0" colspan="6">
-                  <widget class="QPushButton" name="pushButton_5">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Plot 2D SAXS</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_12">
-                   <property name="text">
-                    <string>type:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4" colspan="2">
+                 <item row="0" column="8">
                   <widget class="QCheckBox" name="saxs2d_autorotate">
                    <property name="text">
-                    <string>auto-rotate?</string>
+                    <string>auto-rotate</string>
                    </property>
                    <property name="checked">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
+                 <item row="0" column="6">
+                  <widget class="QLineEdit" name="saxs2d_display">
+                   <property name="minimumSize">
+                    <size>
+                     <width>800</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QLabel" name="label_38">
+                   <property name="text">
+                    <string>coordinates:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1" colspan="2">
+                  <widget class="QComboBox" name="cb_saxs2D_type">
+                   <item>
+                    <property name="text">
+                     <string>log</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>linear</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
                 </layout>
+               </item>
+               <item row="0" column="4">
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="0" column="0">
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </widget>
@@ -1296,8 +1313,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1047</width>
-                 <height>648</height>
+                 <width>63</width>
+                 <height>22</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2247,8 +2264,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1440</width>
-     <height>22</height>
+     <width>2266</width>
+     <height>49</height>
     </rect>
    </property>
   </widget>
