@@ -210,7 +210,8 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             ax.setRange(xRange=xrange, yRange=yrange)
             if show_fit:
                 y_fit = fit_res[n]['fit_y'] + m * offset
-                ax.plot(fit_res[n]['fit_x'], y_fit, pen=pg.mkPen(color, width=2))
+                ax.plot(fit_res[n]['fit_x'], y_fit,
+                        pen=pg.mkPen(color, width=1.2))
 
             # msg = fit_res[m]['err_msg']
             # if msg is not None:
@@ -222,12 +223,13 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
 
 
 def pg_plot_one_g2(ax, x, y, dy, color, label, symbol):
-    pen = pg.mkPen(color=color, width=3)
+    pen = pg.mkPen(color=color, width=2)
 
     line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
                            pen=pen)
-    ax.plot(x, y, pen=None, symbol=symbol, name=label, symbolSize=3,
-            symbolBrush=pg.mkBrush(color=color))
+    pen = pg.mkPen(color=color, width=1)
+    ax.plot(x, y, pen=None, symbol=symbol, name=label, symbolSize=5,
+            symbolPen=pen, symbolBrush=pg.mkBrush(color=(*color, 0)))
 
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
