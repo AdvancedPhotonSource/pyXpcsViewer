@@ -73,6 +73,10 @@ def plot_twotime_map(xfile,
             dqmap = np.swapaxes(dqmap, 0, 1)
             saxs = np.swapaxes(saxs, 0, 1)
 
+    # emphasize the beamstop region which has qindex = 0;
+    qindex_max = np.max(dqmap)
+    dqmap[dqmap == 0] = qindex_max + 1
+
     meta['twotime_dqmap'] = dqmap
     meta['twotime_fname'] = xfile.full_path
     meta['twotime_saxs'] = saxs
