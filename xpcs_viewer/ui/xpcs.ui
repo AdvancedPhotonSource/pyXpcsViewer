@@ -6,22 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>1149</height>
+    <width>1440</width>
+    <height>951</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1000</width>
-    <height>800</height>
+    <width>1024</width>
+    <height>0</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>XPCS_Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/icons.qrc">
-    <normaloff>:/icons/icons8-giraffe-full-body-100.png</normaloff>:/icons/icons8-giraffe-full-body-100.png</iconset>
+   <iconset>
+    <normaloff>:/newPrefix/icons8-giraffe-full-body-100.png</normaloff>:/newPrefix/icons8-giraffe-full-body-100.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -127,7 +127,7 @@
               </property>
               <property name="maximumSize">
                <size>
-                <width>16777215</width>
+                <width>1024</width>
                 <height>16777215</height>
                </size>
               </property>
@@ -177,8 +177,8 @@
              <widget class="QLineEdit" name="filter_str">
               <property name="maximumSize">
                <size>
-                <width>16777215</width>
-                <height>16777215</height>
+                <width>480</width>
+                <height>100</height>
                </size>
               </property>
               <property name="placeholderText">
@@ -235,7 +235,7 @@
               </property>
               <property name="maximumSize">
                <size>
-                <width>16777215</width>
+                <width>1024</width>
                 <height>16777215</height>
                </size>
               </property>
@@ -839,7 +839,7 @@
           </widget>
           <widget class="QWidget" name="tab_4">
            <attribute name="title">
-            <string>Intensity-T</string>
+            <string>Intensity-Time</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_27">
             <item row="0" column="0" colspan="3">
@@ -901,9 +901,6 @@
                </item>
                <item row="0" column="1">
                 <widget class="QSpinBox" name="sb_intt_max">
-                 <property name="maximum">
-                  <number>20</number>
-                 </property>
                  <property name="value">
                   <number>10</number>
                  </property>
@@ -921,12 +918,6 @@
                </item>
                <item row="0" column="5">
                 <widget class="QSpinBox" name="sb_intt_sampling">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>999</number>
-                 </property>
                  <property name="value">
                   <number>20</number>
                  </property>
@@ -1305,8 +1296,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1516</width>
-                 <height>724</height>
+                 <width>1047</width>
+                 <height>648</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2256,8 +2247,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1920</width>
-     <height>49</height>
+     <width>1440</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
