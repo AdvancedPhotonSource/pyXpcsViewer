@@ -352,7 +352,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -901,6 +901,9 @@
                </item>
                <item row="0" column="1">
                 <widget class="QSpinBox" name="sb_intt_max">
+                 <property name="maximum">
+                  <number>20</number>
+                 </property>
                  <property name="value">
                   <number>10</number>
                  </property>
@@ -918,6 +921,12 @@
                </item>
                <item row="0" column="5">
                 <widget class="QSpinBox" name="sb_intt_sampling">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
                  <property name="value">
                   <number>20</number>
                  </property>

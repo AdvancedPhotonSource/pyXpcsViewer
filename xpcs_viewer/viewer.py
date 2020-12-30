@@ -361,7 +361,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         kwargs = {
             'max_points': self.sb_intt_max.value(),
-            'sampling': self.sb_intt_sampling.value(),
+            'sampling': max(1, self.sb_intt_sampling.value()),
             'window': self.sb_window.value(),
             'rows': self.get_selected_rows(),
             'xlabel': self.intt_xlabel.currentText()

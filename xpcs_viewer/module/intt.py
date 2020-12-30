@@ -62,8 +62,14 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
         data.append([x, y])
 
     pg_hdl.clear()
+
     t = pg_hdl.addPlot(colspan=2)
     t.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
+    tf = pg_hdl.addPlot(row=1, col=0, title='Fourier Spectrum')
+    tf.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
+    tf.setLabel('bottom', 'Frequency (Hz)')
+    tf.setLabel('left', 'FFT Intensity')
+
     for n in range(len(data)):
         t.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
                name=legend[n])
@@ -80,18 +86,17 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
     t.setLabel('bottom', '%s' % xlabel)
     t.setLabel('left', 'Intensity (cts / pixel)')
 
-    tf = pg_hdl.addPlot(row=1, col=0, title='Fourier Spectrum')
-    tf.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
+
     for n in range(len(data)):
         y = np.abs(np.fft.fft(data[n][1]))
+
+        x = np.arange(y.size // 2) / (y.size * t0 * kwargs['sampling'])
+        y = y[slice(0, y.size // 2)]
+        # get ride of zero frequency;
         y[0] = 0
-        sl = slice(0, y.size // 2)
-        x = data[n][0][sl] / (y.size * t0 * kwargs['sampling'])
-        y = y[sl]
-        tf.plot(data[n][0][sl], y, pen=pg.mkPen(colors[n], width=1),
-                name=legend[n])
-    tf.setLabel('bottom', 'Frequency (Hz)')
-    tf.setLabel('left', 'FFT Intensity')
+
+        tf.plot(x, y, pen=pg.mkPen(colors[n], width=1), name=legend[n])
+
 
     tz = pg_hdl.addPlot(row=1, col=1, title='Zoom In')
     tz.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
@@ -99,17 +104,17 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
         tz.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
                 name=legend[n])
 
-    def updatePlot():
+    def update_plot():
         tz.setXRange(*lr.getRegion(), padding=0)
 
-    def updateRegion():
+    def update_region():
         lr.setRegion(tz.getViewBox().viewRange()[0])
 
-    lr.sigRegionChanged.connect(updatePlot)
-    tz.sigXRangeChanged.connect(updateRegion)
-    updatePlot()
+    lr.sigRegionChanged.connect(update_plot)
+    tz.sigXRangeChanged.connect(update_region)
 
     tz.setLabel('bottom', '%s' % xlabel)
     tz.setLabel('left', 'Intensity (cts / pixel)')
+    update_plot()
 
     return
