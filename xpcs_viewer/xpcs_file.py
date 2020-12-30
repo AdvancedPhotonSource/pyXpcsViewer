@@ -44,13 +44,16 @@ class XpcsFile(object):
                     'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                     'ql_dyn', 'g2_full', 'g2_partials', 'type'
                 ]
+            # multitau
             else:
                 labels = [
                     'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                    't_el', 'ql_dyn', 'g2', 'g2_err', 'type'
+                    'tau', 'ql_dyn', 'g2', 'g2_err', 'type'
                 ]
-
         ret = get(self.full_path, labels, 'alias')
+        if self.type == 'Multitau':
+            ret['t_el'] = ret['t0'] * ret['tau']
+
         return ret
 
     def at(self, key):

@@ -23,10 +23,10 @@ with open(key_fname) as f:
     try:
         hdf_key = json.load(f)
     except json.JSONDecodeError as e:
-        logger.info('default.json in .xpcs_viewer is damaged.')
-        from .aps_8idi import key
-        hdf_key = key
-    
+        logger.info('default.json in .xpcs_viewer is damaged. %s', e)
+        from .aps_8idi import key as aps_8idi_key
+        hdf_key = aps_8idi_key
+
 
 # colors and symbols for plots
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
@@ -46,7 +46,7 @@ def put(save_path, fields, result, mode='raw'):
         return
 
 
-def get(fname, fields_raw, mode='raw', ret_type='dict'):
+def get(fname, fields, mode='raw', ret_type='dict'):
     """
     get the values for the various keys listed in fields for a single
     file;
@@ -58,16 +58,6 @@ def get(fname, fields_raw, mode='raw', ret_type='dict'):
     :return: dictionary or dictionary;
     """
     ret = {}
-
-    # python will modify mutable lists;
-    fields = fields_raw.copy()
-    fields_org = fields.copy()
-    flag = False
-    # t_el is not defined in the HDF keys; t_el = t0 * tau
-    if 't_el' in fields:
-        flag = True
-        fields.remove('t_el')
-        fields += ['t0', 'tau']
 
     with h5py.File(fname, 'r') as HDF_Result:
         for key in fields:
@@ -94,13 +84,10 @@ def get(fname, fields_raw, mode='raw', ret_type='dict'):
                 val = val.decode()
             ret[key] = val
 
-    if flag:
-        ret['t_el'] = ret['t0'] * ret['tau']
-
     if ret_type == 'dict':
         return ret
     elif ret_type == 'list':
-        return [ret[key] for key in fields_org]
+        return [ret[key] for key in fields]
     else:
         raise TypeError('ret_type not support')
 
@@ -124,93 +111,5 @@ def create_id(fname):
     return ret
 
 
-class XpcsFile(object):
-    def __init__(self, fname, cwd='../../data', labels=None):
-
-        self.full_path = os.path.join(cwd, fname)
-        self.cwd = cwd
-
-        self.type = get_type(self.full_path)
-        attr = self.load()
-        self.__dict__.update(attr)
-        self.label = create_id(fname)
-
-    def __str__(self):
-        ans = ['File:' + str(self.full_path)]
-        for key, val in self.__dict__.items():
-            if key == 'hdf_key':
-                continue
-            elif isinstance(val, np.ndarray) and val.size > 1:
-                val = str(val.shape)
-            else:
-                val = str(val)
-            ans.append(f"   {key.ljust(12)}: {val.ljust(30)}")
-
-        return '\n'.join(ans)
-
-    def __add__(self, other):
-        pass
-
-    def load(self, labels=None):
-        if labels is None:
-            if self.type == 'Twotime':
-                labels = [
-                    'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                    'ql_dyn', 'g2_full', 'g2_partials', 'type'
-                ]
-            else:
-                labels = [
-                    'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                    't_el', 'ql_dyn', 'g2', 'g2_err', 'type'
-                ]
-
-        ret = get(self.full_path, labels, 'alias')
-        return ret
-
-    def at(self, key):
-        return self.__dict__[key]
-
-    def get_detector_extent(self):
-        labels = [
-            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
-            'ydim'
-        ]
-        res = get(self.full_path, labels, mode='alias', ret_type='dict')
-
-        wlength = 12.398 / res['X_energy']
-        pix2q = res['pix_dim'] / res['det_dist'] * (2 * np.pi / wlength)
-
-        qy_min = (0 - res['ccd_x0']) * pix2q
-        qy_max = (res['xdim'] - res['ccd_x0']) * pix2q
-
-        qx_min = (0 - res['ccd_y0']) * pix2q
-        qx_max = (res['ydim'] - res['ccd_y0']) * pix2q
-        extent = (qy_min, qy_max, qx_min, qx_max)
-
-        return extent
-
-    def pg_plot_g2(self, qrange, ax, idx):
-        color = colors[idx // len(colors)]
-        symbol = symbols[idx // len(symbols)]
-
-        pen = pg.mkPen(color=color, width=3)
-        line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
-                               pen=pen)
-        ax.plot(x, y, pen=None, symbol=symbol, name=self.label, symbolSize=3,
-                symbolBrush=pg.mkBrush(color=color))
-
-        ax.setLogMode(x=True, y=None)
-        ax.addItem(line)
-        return
-
-
-def test1():
-    # XpcsFile._cwd = '../../data'
-    af = XpcsFile(fname='N077_D100_att02_0128_0001-100000.hdf')
-    # af = XpcsFile(path='A178_SMB_C_BR_Hetero_SI35_att0_Lq0_001_0001-0768_Twotime.hdf')
-    print(af)
-    print(af.getattr('saxs_2d'))
-
-
 if __name__ == '__main__':
-    test1()
+    pass
