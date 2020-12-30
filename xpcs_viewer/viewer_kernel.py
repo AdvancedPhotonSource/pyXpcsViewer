@@ -1,7 +1,7 @@
 import numpy as np
 from .file_locator import FileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
-
+from .module.average_toolbox import AverageToolbox
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
 import h5py
@@ -19,6 +19,7 @@ class ViewerKernel(FileLocator):
         self.statusbar = statusbar
         self.meta = None
         self.reset_meta()
+        self.avg_tb = AverageToolbox()
 
     def reset_meta(self):
         self.meta = {

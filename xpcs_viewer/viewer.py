@@ -100,6 +100,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.twotime_autorotate.stateChanged.connect(self.init_twotime)
         self.twotime_autocrop.stateChanged.connect(self.init_twotime)
 
+
         # width = self.console_panel.width()
         # height = self.console_panel.height()
         # self.console = PythonConsole(self.console_panel)
@@ -346,7 +347,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         plot_id = self.cb_stab.currentIndex()
         if plot_id < 0:
             return
-        self.vk.plot_stability(self.mp_stab, plot_id, **kwargs)
+        self.vk.plot_stability(self.mp_stab.hdl, plot_id, **kwargs)
 
     def plot_intt(self):
         if not self.check_status():
@@ -397,18 +398,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # if os.path.isfile(full_path):
             #     self.show_error('file exist. change save name')
 
-    def plot_outlier_intt(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
+    # def plot_outlier_intt(self):
+    #     if not self.check_status() or self.vk.type != 'Multitau':
+    #         return
 
-        if len(self.vk.target) < 5:
-            self.statusbar.showMessage('At least 5 files needed', 1000)
-            return
+    #     if len(self.vk.target) < 5:
+    #         self.statusbar.showMessage('At least 5 files needed', 1000)
+    #         return
 
-        kwargs = {
-            'num_clusters': self.avg_intt_num_clusters.value(),
-        }
-        self.vk.average_plot_cluster(self.mp_avg_intt, **kwargs)
+    #     kwargs = {
+    #         'num_clusters': self.avg_intt_num_clusters.value(),
+    #     }
+    #     self.vk.average_plot_cluster(self.mp_avg_intt, **kwargs)
 
     def plot_outlier_g2(self):
         if not self.check_status() or self.vk.type != 'Multitau':
@@ -480,8 +481,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
 
         bounds = self.check_number()
-        # err_msg = self.vk.plot_g2(handler=self.mp_g2.hdl,
-        err_msg = self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
+        self.pushButton_4.setDisabled(True)
+        self.pushButton_4.setText('plotting')
+        try:
+            self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
+        except e:
+            print(e)
+            pass
+        self.pushButton_4.setEnabled(True)
+        self.pushButton_4.setText('plot')
         # self.g2_err_msg.clear()
         # if err_msg is None:
         #     self.g2_err_msg.insertPlainText('None')
@@ -515,6 +523,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.work_dir.setText(f)
         self.vk = ViewerKernel(f, self.statusbar)
+        self.average_list.setModel(self.vk.avg_tb.model)
         # self.thread = QThread()
         # self.vk.moveToThread(self.thread)
         self.update_box(self.vk.source_list, mode='source')
@@ -547,6 +556,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             target.append(x.data())
 
         if target == []:
+            return
+        
+        logger.info('adding files to averaging toolbox')
+        idx = self.tabWidget.currentIndex()
+        if self.tab_dict[idx] == 'average':
+            self.vk.avg_tb.update_data(target)
+            self.progress_bar.setValue(100)
             return
 
         self.progress_bar.setValue(0)
