@@ -628,8 +628,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
+            self.statusbar.showMessage(
+                'Please enter at least %d characters' % min_length
+                )
             return
-        num, self.selected_item = self.vk.search(val)
+
+        filter_type = ['prefix', 'substr'][self.filter_type.currentIndex()]
+        num, self.selected_item = self.vk.search(val, filter_type)
         self.update_box(self.selected_item, mode='source')
         self.list_view_source.selectAll()
 

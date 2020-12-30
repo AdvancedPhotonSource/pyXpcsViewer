@@ -1,4 +1,4 @@
-import marisa_trie
+# import marisa_trie
 import os
 from os.path import commonprefix
 from .fileIO.hdf_to_str import get_hdf_info
@@ -259,9 +259,13 @@ class FileLocator(object):
         else:
             self.id_list = create_id(self.target)
 
-    def search(self, val):
-        ans = self.trie.keys(val)
-        ans.sort()
+    def search(self, val, filter_type='prefix'):
+        ans = None
+        if filter_type == 'prefix':
+            ans = [x for x in self.source_list if x.startswith(val)]
+        elif filter_type == 'substr':
+            ans = [x for x in self.source_list if val in x]
+
         return len(ans), ans
 
     def build(self, path=None, filter_list=['.hdf', '.h5']):
@@ -282,7 +286,6 @@ class FileLocator(object):
         flist = [x for x in flist if not x.startswith('.')]
         flist.sort()
 
-        self.trie = marisa_trie.Trie(flist)
         self.source_list = flist
 
         return True
