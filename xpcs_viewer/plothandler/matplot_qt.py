@@ -33,6 +33,10 @@ class MplCanvasBarH(QtWidgets.QWidget):
         self.hbl.addWidget(self.navi_toolbar)
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
         self.setLayout(self.hbl)
+    
+    def clear(self):
+        self.hdl.clear()
+        self.hdl.draw()
 
 
 #  class MplCanvasBarV(QtGui.QWidget):
@@ -49,6 +53,9 @@ class MplCanvasBarV(QtWidgets.QWidget):
         self.vbl.addWidget(self.hdl)
         self.setLayout(self.vbl)
 
+    def clear(self):
+        self.hdl.clear()
+        self.hdl.draw()
 
 
 # class MplCanvasBar(QtGui.QWidget):
