@@ -194,8 +194,9 @@ class FileLocator(object):
                 # read from file and output as a dictionary
                 try:
                     self.cache[fn] = xf(fn, self.cwd)
-                except Exception:
+                except Exception as e:
                     logger.info("failed to load file: %s", fn)
+                    logger.info("%s", str(e))
 
         if flag_del:
             for key in existing_keys:

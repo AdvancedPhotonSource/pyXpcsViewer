@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
-    <height>799</height>
+    <width>2615</width>
+    <height>1576</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1039,32 +1039,13 @@
            <attribute name="title">
             <string>Average</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_30">
-            <item row="0" column="0" rowspan="2">
-             <widget class="QGroupBox" name="groupBox_9">
-              <property name="title">
-               <string>average input</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_29">
-               <item row="0" column="0">
-                <widget class="QListView" name="average_list">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="0" column="1">
+           <layout class="QGridLayout" name="gridLayout_35">
+            <item row="0" column="0" colspan="2">
              <widget class="QGroupBox" name="groupBox_10">
               <property name="title">
                <string>g2 outlier</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_36">
+              <layout class="QGridLayout" name="gridLayout_31">
                <item row="0" column="0">
                 <widget class="MplCanvas" name="mp_avg_g2" native="true">
                  <property name="sizePolicy">
@@ -1081,95 +1062,211 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0">
-                <layout class="QGridLayout" name="gridLayout_35">
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QGroupBox" name="groupBox_8">
+              <property name="title">
+               <string>Averaging setting:</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_30">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_28">
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="label_19">
+                   <property name="text">
+                    <string>save name:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QSpinBox" name="avg_window">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>10</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="5">
+                  <widget class="QCheckBox" name="avg_no_overwrite">
+                   <property name="text">
+                    <string>no overwrite</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="1" colspan="4">
+                  <widget class="QLineEdit" name="avg_save_name">
+                   <property name="clearButtonEnabled">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="5">
+                  <widget class="QPushButton" name="btn_start_avg">
+                   <property name="text">
+                    <string>start average</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0" colspan="5">
+                  <widget class="QProgressBar" name="avg_progressbar">
+                   <property name="value">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QLabel" name="label_33">
+                   <property name="text">
+                    <string>avg_window:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="5">
+                  <widget class="QDoubleSpinBox" name="avg_blmax">
+                   <property name="decimals">
+                    <number>3</number>
+                   </property>
+                   <property name="minimum">
+                    <double>0.900000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>10.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.010000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.050000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="4">
+                  <widget class="QLabel" name="label_39">
+                   <property name="text">
+                    <string>max:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="3">
+                  <widget class="QDoubleSpinBox" name="avg_blmin">
+                   <property name="specialValueText">
+                    <string/>
+                   </property>
+                   <property name="decimals">
+                    <number>3</number>
+                   </property>
+                   <property name="maximum">
+                    <double>10.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.010000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.950000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QSpinBox" name="avg_qindex">
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                   <property name="value">
+                    <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_32">
+                   <property name="text">
+                    <string>q_index:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QLabel" name="label_25">
+                   <property name="text">
+                    <string>min:</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="0">
-                  <layout class="QGridLayout" name="gridLayout_31">
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_32">
-                     <property name="text">
-                      <string>q_index:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QSpinBox" name="avg_qindex">
-                     <property name="maximum">
-                      <number>999</number>
-                     </property>
-                     <property name="value">
-                      <number>5</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="2">
-                    <widget class="QLabel" name="label_33">
-                     <property name="text">
-                      <string>avg_window:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="3">
-                    <widget class="QSpinBox" name="avg_window">
-                     <property name="minimum">
-                      <number>1</number>
-                     </property>
-                     <property name="value">
-                      <number>10</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0" colspan="2">
-                    <widget class="QLabel" name="label_26">
-                     <property name="text">
-                      <string>baseline cutoff: [min - max]</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QDoubleSpinBox" name="avg_blmin">
-                     <property name="specialValueText">
-                      <string/>
-                     </property>
-                     <property name="decimals">
-                      <number>3</number>
-                     </property>
-                     <property name="maximum">
-                      <double>10.000000000000000</double>
-                     </property>
-                     <property name="singleStep">
-                      <double>0.010000000000000</double>
-                     </property>
-                     <property name="value">
-                      <double>0.950000000000000</double>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="3">
-                    <widget class="QDoubleSpinBox" name="avg_blmax">
-                     <property name="decimals">
-                      <number>3</number>
-                     </property>
-                     <property name="minimum">
-                      <double>0.900000000000000</double>
-                     </property>
-                     <property name="maximum">
-                      <double>10.000000000000000</double>
-                     </property>
-                     <property name="singleStep">
-                      <double>0.010000000000000</double>
-                     </property>
-                     <property name="value">
-                      <double>1.050000000000000</double>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QLabel" name="label_17">
+                   <property name="text">
+                    <string>batch size:</string>
+                   </property>
+                  </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QPushButton" name="pushButton_9">
+                  <widget class="QComboBox" name="cb_avg_chunk_size">
+                   <property name="maximumSize">
+                    <size>
+                     <width>80</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="currentIndex">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>32</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>64</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>128</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>256</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>512</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="7" column="5">
+                  <widget class="QCheckBox" name="avg_use_source_path">
                    <property name="text">
-                    <string>replot</string>
+                    <string>using source path</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_20">
+                   <property name="text">
+                    <string>save path:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1" colspan="4">
+                  <widget class="QLineEdit" name="avg_save_path">
+                   <property name="clearButtonEnabled">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QLabel" name="label_26">
+                   <property name="text">
+                    <string>baseline cutoff: </string>
                    </property>
                   </widget>
                  </item>
@@ -1179,112 +1276,18 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QGroupBox" name="groupBox_8">
+             <widget class="QGroupBox" name="groupBox_9">
               <property name="title">
-               <string>Averaging setting:</string>
+               <string>average input</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_28">
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_19">
-                 <property name="text">
-                  <string>save name:</string>
-                 </property>
-                </widget>
-               </item>
+              <layout class="QGridLayout" name="gridLayout_29">
                <item row="0" column="0">
-                <widget class="QLabel" name="label_17">
-                 <property name="text">
-                  <string>batch size:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="4">
-                <widget class="QCheckBox" name="avg_use_source_path">
-                 <property name="text">
-                  <string>using source path</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_20">
-                 <property name="text">
-                  <string>save path:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1" colspan="2">
-                <widget class="QComboBox" name="cb_avg_chunk_size">
-                 <property name="maximumSize">
-                  <size>
-                   <width>80</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="currentIndex">
-                  <number>2</number>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>32</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>64</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>128</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>256</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>512</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="2" column="4">
-                <widget class="QCheckBox" name="avg_no_overwrite">
-                 <property name="text">
-                  <string>no overwrite</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="5">
-                <widget class="QProgressBar" name="avg_progressbar">
-                 <property name="value">
-                  <number>0</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1" colspan="3">
-                <widget class="QLineEdit" name="avg_save_path">
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1" colspan="3">
-                <widget class="QLineEdit" name="avg_save_name">
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="4">
-                <widget class="QPushButton" name="btn_start_avg">
-                 <property name="text">
-                  <string>start average</string>
+                <widget class="QListView" name="average_list">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
                </item>
@@ -1326,8 +1329,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1089</width>
-                 <height>496</height>
+                 <width>2150</width>
+                 <height>1151</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2277,8 +2280,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1440</width>
-     <height>22</height>
+     <width>2615</width>
+     <height>49</height>
     </rect>
    </property>
   </widget>
@@ -2397,22 +2400,6 @@
     <hint type="destinationlabel">
      <x>585</x>
      <y>948</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>avg_blmax</sender>
-   <signal>valueChanged(double)</signal>
-   <receiver>pushButton_9</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1604</x>
-     <y>1137</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>2159</x>
-     <y>1109</y>
     </hint>
    </hints>
   </connection>
@@ -2817,22 +2804,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_9</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_outlier_g2()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>2159</x>
-     <y>1109</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1633</x>
-     <y>28</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>intt_xlabel</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>btn_intt</receiver>
@@ -3037,22 +3008,6 @@
     <hint type="destinationlabel">
      <x>1026</x>
      <y>953</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>avg_blmin</sender>
-   <signal>valueChanged(double)</signal>
-   <receiver>pushButton_9</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1473</x>
-     <y>1137</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>2159</x>
-     <y>1109</y>
     </hint>
    </hints>
   </connection>
