@@ -87,7 +87,6 @@ def create_id2(in_list, repeat=1, keep_slice=None):
 class FileLocator(object):
     def __init__(self,
                  path,
-                 key_fname='./configure/aps_8idi.json',
                  max_cache_size=None):
         self.path = path
         self.cwd = None

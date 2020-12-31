@@ -16,48 +16,6 @@ import time
 logger = logging.getLogger(__name__)
 
 
-def average_plot_outlier(self, hdl, avg_blmin=0.95, avg_blmax=1.05,
-                         avg_qindex=5, avg_window=10):
-
-    if self.meta['avg_file_list'] != tuple(self.target) or \
-            'avg_g2' not in self.meta:
-        logger.info('avg cache not exist')
-        xf_list = self.get_xf_list()
-        flag, _, _, g2, _ = self.get_g2_data(max_points=-1)
-        if not flag:
-            return
-        g2 = np.array(g2)
-
-        self.meta['avg_file_list'] = tuple(self.target)
-        self.meta['avg_g2'] = g2
-        self.meta['avg_g2_mask'] = np.ones(len(self.target))
-
-    else:
-        logger.info('using avg cache')
-        g2 = self.meta['avg_g2']
-
-    g2_avg = np.mean(g2[:, -avg_window:, avg_qindex], axis=1)
-    cut_min = np.ones_like(g2_avg) * avg_blmin
-    cut_max = np.ones_like(g2_avg) * avg_blmax
-    g2_avg = np.vstack([g2_avg, cut_min, cut_max])
-
-    mask_min = g2_avg[0] >= avg_blmin
-    mask_max = g2_avg[0] <= avg_blmax
-    mask = np.logical_and(mask_min, mask_max)
-    self.meta['avg_g2_mask'] = mask
-    valid_num = np.sum(mask)
-
-    legend = ['data', 'cutoff_min', 'cutoff_max']
-
-    title = '%d / %d' % (valid_num, g2_avg.shape[1])
-
-    hdl.show_lines(g2_avg,
-                   xlabel='index',
-                   ylabel='g2 average',
-                   legend=legend,
-                   title=title)
-
-
 def average_plot_cluster(self, hdl1, num_clusters=2):
     if self.meta['avg_file_list'] != tuple(self.target) or \
             'avg_intt_minmax' not in self.meta:
@@ -120,6 +78,7 @@ class DataModel(QtCore.QAbstractListModel):
 
 class WorkerSignal(QObject):
     progress = QtCore.pyqtSignal(int)
+    values = QtCore.pyqtSignal(tuple)
 
 
 class AverageToolbox(QtCore.QRunnable):
@@ -154,7 +113,6 @@ class AverageToolbox(QtCore.QRunnable):
     def setup(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        print(self.args, self.kwargs)
 
     def do_average(self, chunk_size=256, save_path=None, origin_path=None,
                    avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05):
@@ -169,9 +127,9 @@ class AverageToolbox(QtCore.QRunnable):
         def validate_g2_baseline(g2_data):
             g2_baseline = np.mean(g2_data[-avg_window:, avg_qindex])
             if avg_blmax >= g2_baseline >= avg_blmin:
-                return True
+                return True, g2_baseline
             else:
-                return False
+                return False, g2_baseline
 
         result = {}
         for key in fields:
@@ -187,21 +145,20 @@ class AverageToolbox(QtCore.QRunnable):
                     self.signals.progress.emit(((m + 1) * 100) // tot_num)
                 fname = self.file_list[m]
                 xf = XF(fname, cwd=self.work_dir, fields=fields)
-                if validate_g2_baseline(xf.g2):
+                flag, val = validate_g2_baseline(xf.g2)
+                if flag:
                     valid_list.append(fname)
                     for key in fields:
                         result[key] += xf.at(key)
                 else:
                     discard_list.append(fname)
-                    mask[n] = 0
+                    mask[m] = 0
+                self.signals.values.emit((m, val))
 
         for key in fields:
             result[key] /= np.sum(mask)
-            print(key, result[key].shape, np.average(result[key]))
 
-        print(save_path)
         save_path = os.path.join(self.work_dir, self.generate_avg_fname())
-        # print(save_path)
         if save_path is None:
             save_path = os.path.join(self.work_dir, self.generate_avg_fname())
         if origin_path is None:
@@ -212,4 +169,30 @@ class AverageToolbox(QtCore.QRunnable):
         put(save_path, result, mode='alias')
 
         return result
+
+    def initialize_plot(self, hdl):
+        hdl.clear()
+        t = hdl.addPlot()
+        t.setLabel('bottom', 'Dataset Index')
+        t.setLabel('left', 'g2 baseline')
+        self.g2_data = np.zeros(shape=(100, 2))
+        self.ptr = 0
+        self.ax = t.plot(symbol='o')
+        return
+
+    def update_plot(self, new_data):
+        size = len(self.g2_data)
+        if self.ptr == size:
+            g2_data = np.zeros(shape=(2 * size, 2))
+            g2_data[:size] = self.g2_data
+            self.g2_data = g2_data
+
+        self.g2_data[self.ptr] = new_data
+        self.ax.setData(x=self.g2_data[:self.ptr, 0],
+                        y=self.g2_data[:self.ptr, 1])
+        self.ptr += 1
+        return
+    
+    def print(self):
+        print('still alive')
 

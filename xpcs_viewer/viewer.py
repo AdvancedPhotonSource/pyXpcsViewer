@@ -418,14 +418,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('check avg min/max values.')
             return
         
+        self.vk.avg_tb.initialize_plot(self.mp_avg_g2)
+        
         def update_progress(n):
             self.avg_progressbar.setValue(n)
 
         self.vk.avg_tb.signals.progress.connect(update_progress)
+        self.vk.avg_tb.signals.values.connect(self.vk.avg_tb.update_plot)
         self.vk.average(**kwargs)
         self.thread_pool.start(self.vk.avg_tb)
-        # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
-
+        self.vk.avg_tb.print()
+        
     def set_g2_range(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
