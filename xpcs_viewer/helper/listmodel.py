@@ -1,33 +1,122 @@
+from os import confstr
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, Qt, pyqtSlot
+from numpy.compat.py3k import contextlib_nullcontext
 
 
 class ListDataModel(QtCore.QAbstractListModel):
-    def __init__(self, input_list=None) -> None:
+    def __init__(self, input_list=None, max_display=30) -> None:
         super().__init__()
         if input_list is None:
             self.input_list = []
         else:
             self.input_list = input_list
+        self.max_display = max_display
 
+    # overwrite parent method
     def data(self, index, role):
         if role == Qt.DisplayRole:
-            text = self.input_list[index.row()]
-            return text
+            content = self.input_list[index.row()]
+            return str(content)
 
+    # overwrite parent method
     def rowCount(self, index):
-        return len(self.input_list)
+        return min(self.max_display, len(self.input_list))
 
-    def update_data(self, new_input_list):
+    def extend(self, new_input_list):
         self.input_list.extend(new_input_list)
         self.layoutChanged.emit()
+    
+    def append(self, new_item):
+        self.input_list.append(new_item)
+        self.layoutChanged.emit()
+    
+    def replace(self, new_input_list):
+        self.input_list.clear()
+        self.extend(new_input_list)
 
     def __len__(self):
         return len(self.input_list)
-    
+
     def __getitem__(self, i):
         return self.input_list[i]
+
+    def copy(self):
+        return self.input_list.copy()
+    
+    def remove(self, x):
+        self.input_list.remove(x)
+
+    def clear(self):
+        self.input_list.clear()
+
+
+class TableDataModel(QtCore.QAbstractTableModel):
+    def __init__(self, input_list=None, max_display=2048) -> None:
+        super().__init__()
+        if input_list is None:
+            self.input_list = []
+        else:
+            self.input_list = input_list
+        self.max_display = max_display
+
+    # overwrite parent method
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            x = self.input_list[index.row()]
+            ret = [x.jid, x.stime]
+            return ret[index.column()]
+
+    # overwrite parent method
+    def rowCount(self, index):
+        return min(self.max_display, len(self.input_list))
+    
+    # overwrite parent method
+    def columnCount(self, index):
+        # 0 
+        # jid  fname  args   start_time  end_time 
+        return 2
+    
+    def headerData(self, section, orientation, role):
+        xlabes = ['jid', 'time']
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return xlabes[section]
+
+    def extend(self, new_input_list):
+        self.input_list.extend(new_input_list)
+        self.layoutChanged.emit()
+    
+    def append(self, new_item):
+        self.input_list.append(new_item)
+        self.layoutChanged.emit()
+    
+    def replace(self, new_input_list):
+        self.input_list.clear()
+        self.extend(new_input_list)
+    
+    def pop(self, index):
+        if 0 <= index < self.__len__():
+            self.input_list.pop(index)
+            self.layoutChanged.emit()
+
+    def __len__(self):
+        return len(self.input_list)
+
+    def __getitem__(self, i):
+        return self.input_list[i]
+
+    def copy(self):
+        return self.input_list.copy()
+    
+    def remove(self, x):
+        self.input_list.remove(x)
+
+    def clear(self):
+        self.input_list.clear()
+
+
 
 
 def test():
