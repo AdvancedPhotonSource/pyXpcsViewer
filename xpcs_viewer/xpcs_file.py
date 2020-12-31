@@ -11,13 +11,13 @@ symbols = ['o', 's', 't', 'd', '+']
 
 
 class XpcsFile(object):
-    def __init__(self, fname, cwd='../../data', labels=None):
+    def __init__(self, fname, cwd='../../data', fields=None):
         self.fname = fname
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
 
         self.type = get_type(self.full_path)
-        attr = self.load()
+        attr = self.load(fields)
         self.__dict__.update(attr)
         self.label = create_id(fname)
 
@@ -37,21 +37,23 @@ class XpcsFile(object):
     def __add__(self, other):
         pass
 
-    def load(self, labels=None):
-        if labels is None:
+    def load(self, fields=None):
+        if fields is None:
             if self.type == 'Twotime':
-                labels = [
+                fields = [
                     'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                     'ql_dyn', 'g2_full', 'g2_partials', 'type'
                 ]
             # multitau
             else:
-                labels = [
+                fields = [
                     'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                     'tau', 'ql_dyn', 'g2', 'g2_err', 'type'
                 ]
-        ret = get(self.full_path, labels, 'alias')
-        if self.type == 'Multitau':
+
+        ret = get(self.full_path, fields, 'alias')
+
+        if 't0' in ret and 'tau' in ret:
             ret['t_el'] = ret['t0'] * ret['tau']
 
         return ret
@@ -111,11 +113,11 @@ class XpcsFile(object):
         return c2
 
     def get_detector_extent(self):
-        labels = [
+        fields = [
             'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
             'ydim'
         ]
-        res = get(self.full_path, labels, mode='alias', ret_type='dict')
+        res = get(self.full_path, fields, mode='alias', ret_type='dict')
 
         wlength = 12.398 / res['X_energy']
         pix2q = res['pix_dim'] / res['det_dist'] * (2 * np.pi / wlength)
