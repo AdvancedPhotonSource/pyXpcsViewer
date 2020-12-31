@@ -11,6 +11,7 @@ from ..xpcs_file import XpcsFile as XF
 from collections import deque
 from shutil import copyfile
 import time
+from ..helper.listmodel import ListDataModel
 
 
 logger = logging.getLogger(__name__)
@@ -49,33 +50,6 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
                       title=title)
 
 
-class DataModel(QtCore.QAbstractListModel):
-    def __init__(self, input_list=None) -> None:
-        super().__init__()
-        if input_list is None:
-            self.input_list = []
-        else:
-            self.input_list = input_list
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            text = self.input_list[index.row()]
-            return text
-
-    def rowCount(self, index):
-        return len(self.input_list)
-
-    def update_data(self, new_input_list):
-        self.input_list.extend(new_input_list)
-        self.layoutChanged.emit()
-
-    def at(self, index):
-        return self.input_list[index]
-
-    def __len__(self):
-        return len(self.input_list)
-
-
 class WorkerSignal(QObject):
     progress = QtCore.pyqtSignal(int)
     values = QtCore.pyqtSignal(tuple)
@@ -86,7 +60,7 @@ class AverageToolbox(QtCore.QRunnable):
     def __init__(self, work_dir) -> None:
         super().__init__()
         self.file_list = []
-        self.model = DataModel(self.file_list)
+        self.model = ListDataModel(self.file_list)
         self.work_dir = work_dir
         self.signals = WorkerSignal()
         self.kwargs = {}
@@ -95,9 +69,9 @@ class AverageToolbox(QtCore.QRunnable):
         self.model.update_data(new_list)
 
     def generate_avg_fname(self):
-        if len(self.file_list) == 0:
+        if len(self.model) == 0:
             return
-        fname = self.file_list[0]
+        fname = self.model[0]
         end = fname.rfind('_')
         if end == -1:
             end = len(fname)
@@ -116,7 +90,7 @@ class AverageToolbox(QtCore.QRunnable):
 
     def do_average(self, chunk_size=256, save_path=None, origin_path=None,
                    avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05):
-        tot_num = len(self.file_list)
+        tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
         mask = np.ones(tot_num, dtype=np.int)
         valid_list = deque()
@@ -143,7 +117,7 @@ class AverageToolbox(QtCore.QRunnable):
             for m in range(beg, end):
                 if ((m + 1) * 100) % tot_num == 0:
                     self.signals.progress.emit(((m + 1) * 100) // tot_num)
-                fname = self.file_list[m]
+                fname = self.model[m]
                 xf = XF(fname, cwd=self.work_dir, fields=fields)
                 flag, val = validate_g2_baseline(xf.g2)
                 if flag:
@@ -162,7 +136,7 @@ class AverageToolbox(QtCore.QRunnable):
         if save_path is None:
             save_path = os.path.join(self.work_dir, self.generate_avg_fname())
         if origin_path is None:
-            origin_path = os.path.join(self.work_dir, self.file_list[0])
+            origin_path = os.path.join(self.work_dir, self.model[0])
 
         logger.info('create file: {}'.format(save_path))
         copyfile(origin_path, save_path)
