@@ -19,7 +19,7 @@ class ViewerKernel(FileLocator):
         self.statusbar = statusbar
         self.meta = None
         self.reset_meta()
-        self.avg_tb = AverageToolbox()
+        self.avg_tb = AverageToolbox(path)
 
     def reset_meta(self):
         self.meta = {
@@ -181,127 +181,8 @@ class ViewerKernel(FileLocator):
         fc = self.cache[self.target[plot_id]]
         stability.plot(fc, mp_hdl, **kwargs)
 
-    def average_plot_outlier(self, hdl, avg_blmin=0.95, avg_blmax=1.05,
-                             avg_qindex=5, avg_window=10):
-
-        if self.meta['avg_file_list'] != tuple(self.target) or \
-                'avg_g2' not in self.meta:
-            logger.info('avg cache not exist')
-            xf_list = self.get_xf_list()
-            flag, _, _, g2, _ = self.get_g2_data(max_points=-1)
-            if not flag:
-                return
-            g2 = np.array(g2)
-
-            self.meta['avg_file_list'] = tuple(self.target)
-            self.meta['avg_g2'] = g2
-            self.meta['avg_g2_mask'] = np.ones(len(self.target))
-
-        else:
-            logger.info('using avg cache')
-            g2 = self.meta['avg_g2']
-
-        g2_avg = np.mean(g2[:, -avg_window:, avg_qindex], axis=1)
-        cut_min = np.ones_like(g2_avg) * avg_blmin
-        cut_max = np.ones_like(g2_avg) * avg_blmax
-        g2_avg = np.vstack([g2_avg, cut_min, cut_max])
-
-        mask_min = g2_avg[0] >= avg_blmin
-        mask_max = g2_avg[0] <= avg_blmax
-        mask = np.logical_and(mask_min, mask_max)
-        self.meta['avg_g2_mask'] = mask
-        valid_num = np.sum(mask)
-
-        legend = ['data', 'cutoff_min', 'cutoff_max']
-
-        title = '%d / %d' % (valid_num, g2_avg.shape[1])
-
-        hdl.show_lines(g2_avg,
-                       xlabel='index',
-                       ylabel='g2 average',
-                       legend=legend,
-                       title=title)
-
-    def average_plot_cluster(self, hdl1, num_clusters=2):
-        if self.meta['avg_file_list'] != tuple(self.target) or \
-                'avg_intt_minmax' not in self.meta:
-            logger.info('avg cache not exist')
-            labels = ['Int_t']
-            res = self.fetch(labels, file_list=self.target)
-            Int_t = res['Int_t'][:, 1, :].astype(np.float32)
-            Int_t = Int_t / np.max(Int_t)
-            intt_minmax = []
-            for n in range(len(self.target)):
-                intt_minmax.append([np.min(Int_t[n]), np.max(Int_t[n])])
-            intt_minmax = np.array(intt_minmax).T.astype(np.float32)
-
-            self.meta['avg_file_list'] = tuple(self.target)
-            self.meta['avg_intt_minmax'] = intt_minmax
-            self.meta['avg_intt_mask'] = np.ones(len(self.target))
-
-        else:
-            logger.info('using avg cache')
-            intt_minmax = self.meta['avg_intt_minmax']
-
-        y_pred = sk_kmeans(n_clusters=num_clusters).fit_predict(intt_minmax.T)
-        freq = np.bincount(y_pred)
-        self.meta['avg_intt_mask'] = y_pred == y_pred[freq.argmax()]
-        valid_num = np.sum(y_pred == y_pred[freq.argmax()])
-        title = '%d / %d' % (valid_num, y_pred.size)
-        hdl1.show_scatter(intt_minmax,
-                          color=y_pred,
-                          xlabel='Int-t min',
-                          ylabel='Int-t max',
-                          title=title)
-
-    def average(self,
-                chunk_size=256,
-                save_path=None,
-                origin_path=None,
-                p_bar=None):
-        # TODO: need to comfirm the format to use.
-        return
-
-        labels = ["saxs_1d", 'g2', 'g2_err', 'saxs_2d']
-
-        # mask = np.logical_and(self.meta['avg_g2_mask'],
-        #                       self.meta['avg_intt_mask'])
-        mask = self.meta['avg_g2_mask']
-
-        steps = (len(mask) + chunk_size - 1) // chunk_size
-        result = {}
-        for n in range(steps):
-            logger.info('n = {}'.format(n))
-            if p_bar is not None:
-                p_bar.setValue((n + 1) / steps * 100)
-            beg = chunk_size * (n + 0)
-            end = chunk_size * (n + 1)
-            end = min(len(mask), end)
-            sl = slice(beg, end)
-            values = self.fetch(labels,
-                                file_list=self.target[sl],
-                                mask=mask[sl])
-            if n == 0:
-                for label in labels:
-                    result[label] = np.sum(values[label], axis=0)
-            else:
-                for label in labels:
-                    result[label] += np.sum(values[label], axis=0)
-
-        num_points = np.sum(mask)
-        for label in labels:
-            result[label] = result[label] / num_points
-
-        if save_path is None:
-            return result
-        if origin_path is None:
-            origin_path = os.path.join(self.cwd, self.target[0])
-
-        logger.info('create file: {}'.format(save_path))
-        copyfile(origin_path, save_path)
-        self.put(save_path, labels, result, mode='raw')
-
-        return result
+    def average(self, *args, **kwargs):
+        self.avg_tb.setup(*args, **kwargs)
 
 
 if __name__ == "__main__":

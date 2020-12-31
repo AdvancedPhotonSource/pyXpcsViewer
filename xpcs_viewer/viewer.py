@@ -1,3 +1,4 @@
+from PyQt5 import QtCore
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
 from PyQt5 import QtWidgets
@@ -50,10 +51,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None):
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
-        self.show()
 
-        self.tabWidget.setCurrentIndex(0)
-
+        self.tabWidget.setCurrentIndex(4)
         self.tab_dict = {
             0: "saxs_2d",
             1: "saxs_1d",
@@ -71,6 +70,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # finite states
         self.data_state = 0
         self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int)
+        self.thread_pool = QtCore.QThreadPool()
+        logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
 
         self.vk = None
         self.selected_item = None
@@ -99,21 +100,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.init_twotime)
         self.twotime_autorotate.stateChanged.connect(self.init_twotime)
         self.twotime_autocrop.stateChanged.connect(self.init_twotime)
+        self.show()
 
-
-        # width = self.console_panel.width()
-        # height = self.console_panel.height()
-        # self.console = PythonConsole(self.console_panel)
-        # self.console.eval_in_thread()
-        # self.console.setFixedWidth(width)
-        # self.console.setFixedHeight(height)
-
-        # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-        #                                    QtWidgets.QSizePolicy.Expanding)
-
-        # sizePolicy.setHorizontalStretch(100)
-        # sizePolicy.setVerticalStretch(100)
-        # self.console.setSizePolicy(sizePolicy)
     def get_selected_rows(self):
         selected_index = self.list_view_target.selectedIndexes()
         selected_row = [x.row() for x in selected_index]
@@ -411,15 +399,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     #     }
     #     self.vk.average_plot_cluster(self.mp_avg_intt, **kwargs)
 
-    def plot_outlier_g2(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
+    def do_average(self):
+        # if not self.check_status() or self.vk.type != 'Multitau':
+        #     return
 
-        if len(self.vk.target) < 5:
-            self.statusbar.showMessage('At least 5 files needed', 1000)
-            return
+        save_path = self.avg_save_path.text()
+        save_name = self.avg_save_name.text()
 
         kwargs = {
+            'save_path': os.path.join(save_path, save_name),
+            'chunk_size': int(self.cb_avg_chunk_size.currentText()),
             'avg_blmin': self.avg_blmin.value(),
             'avg_blmax': self.avg_blmax.value(),
             'avg_qindex': self.avg_qindex.value(),
@@ -428,22 +417,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if kwargs['avg_blmax'] <= kwargs['avg_blmin']:
             self.statusbar.showMessage('check avg min/max values.')
             return
+        
+        def update_progress(n):
+            self.avg_progressbar.setValue(n)
 
-        self.vk.average_plot_outlier(self.mp_avg_g2, **kwargs)
-
-    def do_average(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
-
-        save_path = self.avg_save_path.text()
-        save_name = self.avg_save_name.text()
-
-        kwargs = {
-            'save_path': os.path.join(save_path, save_name),
-            'chunk_size': int(self.cb_avg_chunk_size.currentText()),
-            'p_bar': self.avg_progressbar,
-        }
+        self.vk.avg_tb.signals.progress.connect(update_progress)
         self.vk.average(**kwargs)
+        self.thread_pool.start(self.vk.avg_tb)
         # self.vk.average(self.mp_avg_intt, self.mp_avg_g2, **kwargs)
 
     def set_g2_range(self, max_points=3):

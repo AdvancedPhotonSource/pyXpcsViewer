@@ -14,9 +14,9 @@ key_fname = os.path.join(home_dir, 'default.json')
 
 # if no such file; then use 8idi configure
 if not os.path.isfile(key_fname):
-    from .aps_8idi import key
+    from .aps_8idi import key as aps_8idi_key
     with open(key_fname, 'w') as f:
-        json.dump(key, f, indent=4)
+        json.dump(aps_8idi_key, f, indent=4)
     logger.info('no key configuration files found; using APS-8IDI')
 
 with open(key_fname) as f:
@@ -33,16 +33,16 @@ colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
 symbols = ['o', 's', 't', 'd', '+']
 
 
-def put(save_path, fields, result, mode='raw'):
+def put(save_path, result, mode='raw'):
     with h5py.File(save_path, 'a') as f:
-        for key in fields:
+        for key, val in result.items():
             if mode == 'alias':
-                key2 = hdf_key[key]
-            else:
-                key2 = key
-            if key2 in f:
-                del f[key2]
-            f[key2] = result[key]
+                key = hdf_key[key]
+            if key in f:
+                del f[key]
+            if isinstance(val, np.ndarray) and val.ndim == 1:
+                val = np.reshape(val, (1, -1))
+            f[key] = val
         return
 
 
