@@ -70,6 +70,13 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
     tf.setLabel('bottom', 'Frequency (Hz)')
     tf.setLabel('left', 'FFT Intensity')
 
+    tz = pg_hdl.addPlot(row=1, col=1, title='Zoom In')
+    tz.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
+
+    t.setDownsampling(mode='peak')
+    tf.setDownsampling(mode='peak')
+    tz.setDownsampling(mode='peak')
+
     for n in range(len(data)):
         t.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
                name=legend[n])
@@ -86,7 +93,6 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
     t.setLabel('bottom', '%s' % xlabel)
     t.setLabel('left', 'Intensity (cts / pixel)')
 
-
     for n in range(len(data)):
         y = np.abs(np.fft.fft(data[n][1]))
 
@@ -97,9 +103,6 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
 
         tf.plot(x, y, pen=pg.mkPen(colors[n], width=1), name=legend[n])
 
-
-    tz = pg_hdl.addPlot(row=1, col=1, title='Zoom In')
-    tz.addLegend(offset=(-1, 1), labelTextSize='8pt', verSpacing=-10)
     for n in range(len(data)):
         tz.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
                 name=legend[n])
