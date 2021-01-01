@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(2615, 1576)
+        mainWindow.resize(1920, 1080)
         mainWindow.setMinimumSize(QtCore.QSize(1024, 0))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons8-giraffe-full-body-100.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -665,7 +665,7 @@ class Ui_mainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.g2_scroll_area = QtWidgets.QWidget()
-        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 75, 26))
+        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 2150, 1151))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1082,7 +1082,7 @@ class Ui_mainWindow(object):
         self.gridLayout.addWidget(self.file_panel, 0, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 2615, 49))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1920, 49))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)

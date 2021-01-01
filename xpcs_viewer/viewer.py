@@ -78,6 +78,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # list widget models
         self.source_model = None
         self.target_model = None
+        self.timer = QtCore.QTimer()
 
         if path is not None:
             self.start_wd = path
@@ -380,7 +381,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if index < 0:
             return
         self.vk.remove_job(index)
-    
+
     def set_average_save_path(self):
         save_path = QFileDialog.getExistingDirectory(self, 'Open directory')
         self.avg_save_path.clear()
@@ -422,7 +423,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             except:
                 logger.info('cannot create the folder: %s', save_path)
                 return
-        
+
         avg_fields = []
         if self.bx_avg_G2IPIF.isChecked():
             avg_fields.extend(['G2', 'IP', 'IF'])
@@ -430,7 +431,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             avg_fields.extend(['g2', 'g2_err'])
         if self.bx_avg_saxs.isChecked():
             avg_fields.extend(['saxs_1d', 'saxs_2d'])
-        
+
         if len(avg_fields) == 0:
             self.statusbar.showMessage('No average field is selected. quit')
             return
@@ -453,33 +454,25 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # the target_average has been reset
         self.update_box(self.vk.target, mode='target')
         return
-    
-    def initialize_avg_plot(self):
-        hdl = self.mp_avg_g2
-        hdl.clear()
-        t = hdl.addPlot()
-        t.setLabel('bottom', 'Dataset Index')
-        t.setLabel('left', 'g2 baseline')
-        self.ax = t.plot(symbol='o')
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(50)
-    
-    def update_avg_plot(self):
-        self.initialize_avg_plot()
 
+    def update_avg_plot(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
             logger.info('select a job to start')
             return
 
+        self.timer.stop()
+        self.timer.setInterval(50)
+
         try:
             self.timer.timeout.disconnect()
+            logger.info('disconnect previous slot')
         except:
             pass
 
         worker = self.vk.avg_worker[index]
-        self.timer.timeout.connect(lambda ax=self.ax: worker.update_plot(ax))
-        # self.timer.timeout.connect(dummy)
+        worker.initialize_plot(self.mp_avg_g2)
+        self.timer.timeout.connect(worker.update_plot)
         self.timer.start()
 
     def start_avg_job(self):
@@ -497,9 +490,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         # worker.signals.progress.connect(worker.update_plot)
         worker.signals.progress.connect(self.vk.update_avg_worker)
+        worker.signals.values.connect(self.vk.update_avg_values)
         self.thread_pool.start(worker)
+        self.vk.avg_worker_active[worker.jid] = None
 
-    def avg_kill_job(self): 
+    def avg_kill_job(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
             logger.info('select a job to show it\'s settting')
