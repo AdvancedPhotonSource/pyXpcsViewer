@@ -41,12 +41,15 @@ class ListDataModel(QtCore.QAbstractListModel):
 
     def copy(self):
         return self.input_list.copy()
+        self.layoutChanged.emit()
 
     def remove(self, x):
         self.input_list.remove(x)
+        self.layoutChanged.emit()
 
     def clear(self):
         self.input_list.clear()
+        self.layoutChanged.emit()
 
 
 class TableDataModel(QtCore.QAbstractTableModel):
