@@ -582,8 +582,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             f = path
 
         if not os.path.isdir(f):
-            self.statusbar.showMessage('{} is not a folder. Abort.'.format(f))
-            return
+            self.statusbar.showMessage('{} is not a folder.'.format(f))
+            f = self.start_wd
 
         curr_work_dir = self.work_dir.text()
 

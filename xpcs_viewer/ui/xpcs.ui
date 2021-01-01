@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2615</width>
-    <height>1576</height>
+    <width>1920</width>
+    <height>979</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1381,17 +1381,17 @@
                  <property name="selectionBehavior">
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
-                 <attribute name="horizontalHeaderMinimumSectionSize">
-                  <number>80</number>
-                 </attribute>
                  <attribute name="horizontalHeaderDefaultSectionSize">
-                  <number>200</number>
+                  <number>100</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>19</number>
                  </attribute>
                  <attribute name="horizontalHeaderStretchLastSection">
                   <bool>true</bool>
                  </attribute>
                  <attribute name="verticalHeaderDefaultSectionSize">
-                  <number>60</number>
+                  <number>30</number>
                  </attribute>
                 </widget>
                </item>
@@ -1433,8 +1433,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>75</width>
-                 <height>26</height>
+                 <width>1568</width>
+                 <height>676</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2384,8 +2384,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>2615</width>
-     <height>49</height>
+     <width>1920</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
