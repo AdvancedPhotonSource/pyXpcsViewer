@@ -1,8 +1,5 @@
-from os import confstr
-import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QObject, Qt, pyqtSlot
-from numpy.compat.py3k import contextlib_nullcontext
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
 
 
 class ListDataModel(QtCore.QAbstractListModel):
@@ -27,11 +24,11 @@ class ListDataModel(QtCore.QAbstractListModel):
     def extend(self, new_input_list):
         self.input_list.extend(new_input_list)
         self.layoutChanged.emit()
-    
+
     def append(self, new_item):
         self.input_list.append(new_item)
         self.layoutChanged.emit()
-    
+
     def replace(self, new_input_list):
         self.input_list.clear()
         self.extend(new_input_list)
@@ -44,7 +41,7 @@ class ListDataModel(QtCore.QAbstractListModel):
 
     def copy(self):
         return self.input_list.copy()
-    
+
     def remove(self, x):
         self.input_list.remove(x)
 
@@ -60,42 +57,42 @@ class TableDataModel(QtCore.QAbstractTableModel):
         else:
             self.input_list = input_list
         self.max_display = max_display
+        self.xlabels = ['jid', 'size', 'submit', 'progress', 'eta', 'finish',
+                       'fname']
 
     # overwrite parent method
     def data(self, index, role):
         if role == Qt.DisplayRole:
             x = self.input_list[index.row()]
-            ret = [x.jid, x.stime]
+            ret = [x.jid, x.size, x.stime, x._progress, x.eta, x.etime,
+                   x.short_name]
             return ret[index.column()]
 
     # overwrite parent method
     def rowCount(self, index):
         return min(self.max_display, len(self.input_list))
-    
+
     # overwrite parent method
     def columnCount(self, index):
-        # 0 
-        # jid  fname  args   start_time  end_time 
-        return 2
-    
+        return len(self.xlabels)
+
     def headerData(self, section, orientation, role):
-        xlabes = ['jid', 'time']
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return xlabes[section]
+                return self.xlabels[section]
 
     def extend(self, new_input_list):
         self.input_list.extend(new_input_list)
         self.layoutChanged.emit()
-    
+
     def append(self, new_item):
         self.input_list.append(new_item)
         self.layoutChanged.emit()
-    
+
     def replace(self, new_input_list):
         self.input_list.clear()
         self.extend(new_input_list)
-    
+
     def pop(self, index):
         if 0 <= index < self.__len__():
             self.input_list.pop(index)
@@ -109,14 +106,12 @@ class TableDataModel(QtCore.QAbstractTableModel):
 
     def copy(self):
         return self.input_list.copy()
-    
+
     def remove(self, x):
         self.input_list.remove(x)
 
     def clear(self):
         self.input_list.clear()
-
-
 
 
 def test():
