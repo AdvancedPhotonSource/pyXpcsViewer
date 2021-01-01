@@ -806,6 +806,10 @@ def run():
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
         window = XpcsViewer(sys.argv[1])
+    elif len(sys.argv) > 2:
+        # deal with white space cases
+        path = '_'.join(sys.argv[1:])
+        window = XpcsViewer(path)
     else:
         window = XpcsViewer()
     app.exec_()
