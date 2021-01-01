@@ -74,7 +74,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
 
         self.vk = None
-        self.selected_item = None
+        # list widget models
+        self.source_model = None
+        self.target_model = None
+
         if path is not None:
             self.start_wd = path
             self.load_path(path)
@@ -100,6 +103,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.init_twotime)
         self.twotime_autorotate.stateChanged.connect(self.init_twotime)
         self.twotime_autocrop.stateChanged.connect(self.init_twotime)
+        self.avg_job_pop.clicked.connect(self.remove_avg_job)
+        self.btn_submit_job.clicked.connect(self.submit_job)
+        self.btn_start_avg_job.clicked.connect(self.start_avg_job)
+        self.btn_set_average_save_path.clicked.connect(
+            self.set_average_save_path)
+        self.btn_set_average_save_name.clicked.connect(
+            self.set_average_save_name)
+        self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
         self.show()
 
     def get_selected_rows(self):
@@ -155,8 +166,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.update_hdf_list()
         elif tab_name == 'stability':
             self.update_stab_list()
-        elif tab_name == 'average':
-            self.update_average_box()
+        # elif tab_name == 'average':
+        #     self.update_average_box()
         elif tab_name == 'g2':
             self.set_g2_range()
             # self.plot_g2(10)
@@ -361,50 +372,65 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tauq_msg.clear()
         self.tauq_msg.setText('\n'.join(msg))
 
-    def update_average_box(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
+    def remove_avg_job(self):
+        index = self.avg_job_table.currentIndex().row()
+        if index < 0:
             return
+        self.vk.remove_job(index)
+    
+    def set_average_save_path(self):
+        save_path = QFileDialog.getExistingDirectory(self, 'Open directory')
+        self.avg_save_path.clear()
+        self.avg_save_path.setText(save_path)
+        return
 
-        if self.avg_use_source_path.isChecked():
-            self.avg_save_path.clear()
-            save_path = self.work_dir.text()
-            self.avg_save_path.setText(self.work_dir.text())
-        else:
+    def set_average_save_name(self):
+        save_name = QFileDialog.getSaveFileName(self, 'Save as')
+        self.avg_save_name.clear()
+        self.avg_save_name.setText(os.path.basename(save_name[0]))
+        return
+
+    def update_average_box(self):
+
+        if len(self.vk.target_average) > 0:
             save_path = self.avg_save_path.text()
-            while not os.path.isdir(save_path):
-                save_path = QFileDialog.getExistingDirectory(
-                    self, 'Open directory', '../cluster_results')
-            self.avg_save_path.setText(save_path)
+            if save_path == '':
+                self.avg_save_path.setText(self.work_dir.text())
+            else:
+                logger.info('use the previous save path')
 
-        if len(self.vk.id_list) > 0:
             save_name = self.avg_save_name.text()
-            if save_name == '':
-                save_name = 'AVG_' + self.vk.target[0]
-                # save_name = self.dl.target[0]
+            save_name = 'Avg' + self.vk.target_average[0]
             self.avg_save_name.setText(save_name)
-            full_path = os.path.join(save_path, save_name)
-            # if os.path.isfile(full_path):
-            #     self.show_error('file exist. change save name')
 
-    # def plot_outlier_intt(self):
-    #     if not self.check_status() or self.vk.type != 'Multitau':
-    #         return
-
-    #     if len(self.vk.target) < 5:
-    #         self.statusbar.showMessage('At least 5 files needed', 1000)
-    #         return
-
-    #     kwargs = {
-    #         'num_clusters': self.avg_intt_num_clusters.value(),
-    #     }
-    #     self.vk.average_plot_cluster(self.mp_avg_intt, **kwargs)
-
-    def do_average(self):
+    def submit_job(self):
         # if not self.check_status() or self.vk.type != 'Multitau':
         #     return
 
+        self.thread_pool.setMaxThreadCount(self.max_thread_count.value())
+
         save_path = self.avg_save_path.text()
         save_name = self.avg_save_name.text()
+
+        if not os.path.isdir(save_path):
+            logger.info('the average save_path doesn\'t exist; creating one')
+            try:
+                os.mkdir(save_path)
+            except:
+                logger.info('cannot create the folder: %s', save_path)
+                return
+        
+        avg_fields = []
+        if self.bx_avg_G2IPIF.isChecked():
+            avg_fields.extend(['G2', 'IP', 'IF'])
+        if self.bx_avg_g2g2err.isChecked():
+            avg_fields.extend(['g2', 'g2_err'])
+        if self.bx_avg_saxs.isChecked():
+            avg_fields.extend(['saxs_1d', 'saxs_2d'])
+        
+        if len(avg_fields) == 0:
+            self.statusbar.showMessage('No average field is selected. quit')
+            return
 
         kwargs = {
             'save_path': os.path.join(save_path, save_name),
@@ -412,23 +438,43 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'avg_blmin': self.avg_blmin.value(),
             'avg_blmax': self.avg_blmax.value(),
             'avg_qindex': self.avg_qindex.value(),
-            'avg_window': self.avg_window.value()
+            'avg_window': self.avg_window.value(),
+            'fields': avg_fields
         }
+
         if kwargs['avg_blmax'] <= kwargs['avg_blmin']:
             self.statusbar.showMessage('check avg min/max values.')
             return
-        
-        self.vk.avg_tb.initialize_plot(self.mp_avg_g2)
-        
-        def update_progress(n):
-            self.avg_progressbar.setValue(n)
 
-        self.vk.avg_tb.signals.progress.connect(update_progress)
-        self.vk.avg_tb.signals.values.connect(self.vk.avg_tb.update_plot)
-        self.vk.average(**kwargs)
-        self.thread_pool.start(self.vk.avg_tb)
-        self.vk.avg_tb.print()
-        
+        self.vk.submit_job(**kwargs)
+
+    def start_avg_job(self):
+        index = self.avg_job_table.currentIndex().row()
+        if index < 0 or index >= len(self.vk.avg_worker):
+            logger.info('select a job to start')
+            return
+        worker = self.vk.avg_worker[index]
+        if worker.status == 'finished':
+            self.statusbar.showMessage('this job has finished', 1000)
+            return
+        elif worker.status == 'running':
+            self.statusbar.showMessage('this job is running.', 1000)
+            return
+
+        worker.initialize_plot(self.mp_avg_g2)
+        worker.signals.progress.connect(worker.update_plot)
+        worker.signals.progress.connect(self.vk.update_avg_worker)
+        self.thread_pool.start(worker)
+
+    def show_avg_jobinfo(self):
+        index = self.avg_job_table.currentIndex().row()
+        if index < 0 or index >= len(self.vk.avg_worker):
+            logger.info('select a job to show it\'s settting')
+            return
+        worker = self.vk.avg_worker[index]
+        self.tree = worker.get_pg_tree()
+        self.tree.show()
+
     def set_g2_range(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
@@ -481,7 +527,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def reload_source(self):
         self.vk.build()
-        self.update_box(self.vk.source_list, mode='source')
+        self.update_box(self.vk.source, mode='source')
 
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
@@ -506,18 +552,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.work_dir.setText(f)
         self.vk = ViewerKernel(f, self.statusbar)
-        self.average_list.setModel(self.vk.avg_tb.model)
+        self.avg_job_table.setModel(self.vk.avg_worker)
         # self.thread = QThread()
         # self.vk.moveToThread(self.thread)
-        self.update_box(self.vk.source_list, mode='source')
+        self.source_model = self.vk.source
+        self.update_box(self.vk.source, mode='source')
 
     def update_box(self, file_list, mode='source'):
         if file_list is None:
             return
 
         if mode == 'source':
-            self.list_view_source.clear()
-            self.list_view_source.addItems(file_list)
+            # self.list_view_source.clear()
+            # self.list_view_source.addItems(file_list)
+            self.list_view_source.setModel(file_list)
             self.box_source.setTitle('Source: %5d' % len(file_list))
         elif mode == 'target':
             self.list_view_target.clear()
@@ -538,14 +586,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for x in self.list_view_source.selectedIndexes():
             target.append(x.data())
 
+        # only max_display items are displayed; if all are selected; then the
+        # ones not displayed are also used
+        if len(target) == self.source_model.max_display:
+            logger.info('all items are selected in target')
+            target = self.source_model
+
         if target == []:
             return
-        
+
         logger.info('adding files to averaging toolbox')
         idx = self.tabWidget.currentIndex()
         if self.tab_dict[idx] == 'average':
-            self.vk.avg_tb.update_data(target)
-            self.progress_bar.setValue(100)
+            self.vk.target_average.replace(target)
+            self.update_box(self.vk.target_average, mode='target')
+            self.update_average_box()
+            # self.data_state = 1
             return
 
         self.progress_bar.setValue(0)
@@ -570,7 +626,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             msg = 'more than one xpcs analysis type detected'
             self.statusbar.showMessage(msg)
 
-        # self.update_average_box()
         if self.box_auto_update.isChecked():
             self.load_data()
 
@@ -623,18 +678,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         min_length = 2
         val = self.filter_str.text()
         if len(val) == 0:
-            self.update_box(self.vk.source_list, mode='source')
+            self.source_model = self.vk.source
+            self.update_box(self.vk.source, mode='source')
             return
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
             self.statusbar.showMessage(
                 'Please enter at least %d characters' % min_length
-                )
+            )
             return
 
         filter_type = ['prefix', 'substr'][self.filter_type.currentIndex()]
-        num, self.selected_item = self.vk.search(val, filter_type)
-        self.update_box(self.selected_item, mode='source')
+        self.vk.search(val, filter_type)
+        self.source_model = self.vk.source_search
+        self.update_box(self.source_model, mode='source')
         self.list_view_source.selectAll()
 
     def check_g2_number(self, default_val=(0, 0.0092, 1E-8, 1, 0.95, 1.35)):
@@ -687,7 +744,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         vals = np.array(vals).reshape(len(keys) // 2, 2)
         return (tuple(vals[:, 0]), tuple(vals[:, 1]))
 
-    def check_status(self, show_msg=True):
+    def check_status(self, show_msg=True, min_state=2):
         flag = False
         if self.data_state == 0:
             msg = "The working directory hasn't be specified."

@@ -1,10 +1,8 @@
-import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QObject, Qt, pyqtSlot
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSlot
 import logging
 import os
 import numpy as np
-from numpy.lib.npyio import save
 from sklearn.cluster import k_means as sk_kmeans
 from ..fileIO.hdf_reader import get, put
 from ..xpcs_file import XpcsFile as XF
@@ -12,6 +10,9 @@ from collections import deque
 from shutil import copyfile
 import time
 from ..helper.listmodel import ListDataModel
+import uuid
+import time
+import pyqtgraph as pg
 
 
 logger = logging.getLogger(__name__)
@@ -57,16 +58,30 @@ class WorkerSignal(QObject):
 
 class AverageToolbox(QtCore.QRunnable):
 
-    def __init__(self, work_dir) -> None:
+    def __init__(self, work_dir=None, flist=['hello'], jid=None) -> None:
         super().__init__()
-        self.file_list = []
+        self.file_list = flist.copy()
         self.model = ListDataModel(self.file_list)
+
         self.work_dir = work_dir
         self.signals = WorkerSignal()
         self.kwargs = {}
-
-    def update_data(self, new_list):
-        self.model.update_data(new_list)
+        if jid is None:
+            self.jid = uuid.uuid4()
+        else:
+            self.jid = jid
+        self.stime = time.strftime('%H:%M:%S')
+        self.etime = '--:--:--'
+        self.status = 'wait'
+        self.baseline = np.zeros(max(len(self.model), 10), dtype=np.float32)
+        self.ptr = 0
+        self.short_name = self.generate_avg_fname()
+        self.eta = 9999 
+        self.size = len(self.model)
+        self._progress = '0%%'
+    
+    def __str__(self) -> str:
+        return str(self.jid)
 
     def generate_avg_fname(self):
         if len(self.model) == 0:
@@ -76,8 +91,8 @@ class AverageToolbox(QtCore.QRunnable):
         if end == -1:
             end = len(fname)
         new_fname = 'Avg' + fname[slice(0, end)]
-        if new_fname[-3:] not in ['.h5', 'hdf']:
-            new_fname += '.hdf'
+        # if new_fname[-3:] not in ['.h5', 'hdf']:
+        #     new_fname += '.hdf'
         return new_fname
 
     @pyqtSlot()
@@ -89,14 +104,14 @@ class AverageToolbox(QtCore.QRunnable):
         self.kwargs = kwargs
 
     def do_average(self, chunk_size=256, save_path=None, origin_path=None,
-                   avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05):
+                   avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05,
+                   fields=['saxs_2d']):
+        self.status = 'running'
         tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
         mask = np.ones(tot_num, dtype=np.int)
         valid_list = deque()
         discard_list = deque()
-
-        fields = ["saxs_1d", 'g2', 'g2_err', 'saxs_2d']
 
         def validate_g2_baseline(g2_data):
             g2_baseline = np.mean(g2_data[-avg_window:, avg_qindex])
@@ -109,6 +124,7 @@ class AverageToolbox(QtCore.QRunnable):
         for key in fields:
             result[key] = 0
 
+        t0 = time.perf_counter()
         for n in range(steps):
 
             beg = chunk_size * (n + 0)
@@ -116,10 +132,18 @@ class AverageToolbox(QtCore.QRunnable):
             end = min(tot_num, end)
             for m in range(beg, end):
                 if ((m + 1) * 100) % tot_num == 0:
+                    dt = (time.perf_counter() - t0) / (m + 1)
+                    eta = dt * (tot_num - m - 1)
+                    self.eta = eta
                     self.signals.progress.emit(((m + 1) * 100) // tot_num)
+                    self._progress = "%d%%" % (((m + 1) * 100) // tot_num)
+
                 fname = self.model[m]
                 xf = XF(fname, cwd=self.work_dir, fields=fields)
                 flag, val = validate_g2_baseline(xf.g2)
+                self.baseline[self.ptr] = val
+                self.ptr += 1
+
                 if flag:
                     valid_list.append(fname)
                     for key in fields:
@@ -127,14 +151,15 @@ class AverageToolbox(QtCore.QRunnable):
                 else:
                     discard_list.append(fname)
                     mask[m] = 0
+
                 self.signals.values.emit((m, val))
 
         for key in fields:
             result[key] /= np.sum(mask)
 
-        save_path = os.path.join(self.work_dir, self.generate_avg_fname())
-        if save_path is None:
-            save_path = os.path.join(self.work_dir, self.generate_avg_fname())
+        # save_path = os.path.join(self.work_dir, self.generate_avg_fname())
+        # if save_path is None:
+        #     save_path = os.path.join(self.work_dir, self.generate_avg_fname())
         if origin_path is None:
             origin_path = os.path.join(self.work_dir, self.model[0])
 
@@ -142,6 +167,10 @@ class AverageToolbox(QtCore.QRunnable):
         copyfile(origin_path, save_path)
         put(save_path, result, mode='alias')
 
+        self.status = 'finished'
+        self.etime = time.strftime('%H:%M:%S')
+        self.model.layoutChanged.emit()
+        self.signals.progress.emit(100)
         return result
 
     def initialize_plot(self, hdl):
@@ -149,24 +178,44 @@ class AverageToolbox(QtCore.QRunnable):
         t = hdl.addPlot()
         t.setLabel('bottom', 'Dataset Index')
         t.setLabel('left', 'g2 baseline')
-        self.g2_data = np.zeros(shape=(100, 2))
-        self.ptr = 0
         self.ax = t.plot(symbol='o')
-        return
+        if 'avg_blmin' in self.kwargs:
+            dn = pg.InfiniteLine(pos=self.kwargs['avg_blmin'], angle=0)
+            t.addItem(dn)
+        if 'avg_blmax' in self.kwargs:
+            up = pg.InfiniteLine(pos=self.kwargs['avg_blmax'], angle=0)
+            # t.addItem(pg.FillBetweenItem(dn, up))
+            t.addItem(up)
 
-    def update_plot(self, new_data):
-        size = len(self.g2_data)
-        if self.ptr == size:
-            g2_data = np.zeros(shape=(2 * size, 2))
-            g2_data[:size] = self.g2_data
-            self.g2_data = g2_data
-
-        self.g2_data[self.ptr] = new_data
-        self.ax.setData(x=self.g2_data[:self.ptr, 0],
-                        y=self.g2_data[:self.ptr, 1])
-        self.ptr += 1
         return
     
-    def print(self):
-        print('still alive')
+    def get_pg_tree(self):
+        data = {}
+        for key, val in self.kwargs.items():
+            if isinstance(val, np.ndarray):
+                if val.size > 4096:
+                    data[key] = 'data size is too large'
+                # suqeeze one-element array
+                if val.size == 1:
+                    data[key] = float(val)
+            else:
+                data[key] = val
+        
+        add_keys = ['stime', 'etime', 'status', 'baseline', 'ptr',
+                    'eta', 'size']
 
+        for key in add_keys:
+            data[key] = self.__dict__[key]
+
+        if self.size > 20:
+            data['first_10_datasets'] = self.model[0:10]   
+            data['last_10_datasets'] = self.model[-10:]
+
+        tree = pg.DataTreeWidget(data=data)
+        tree.setWindowTitle('Job_%d_%s' % (self.jid, self.model[0]))
+        tree.resize(600, 800)
+        return tree
+
+    def update_plot(self):
+        self.ax.setData(self.baseline[:self.ptr])
+        return

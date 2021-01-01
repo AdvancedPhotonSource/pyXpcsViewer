@@ -7,6 +7,7 @@ from .xpcs_file import XpcsFile as xf
 import logging
 import numpy as np
 from collections import deque
+from .helper.listmodel import ListDataModel
 
 logger = logging.getLogger(__name__)
 pjoin = os.path.join
@@ -91,8 +92,10 @@ class FileLocator(object):
         self.path = path
         self.cwd = None
         self.trie = None
-        self.source_list = None
-        self.target = deque([])
+        self.source = ListDataModel()
+        self.source_search = ListDataModel()
+        self.target = ListDataModel()
+        self.target_average = ListDataModel()
         self.id_list = None
         self.build(path)
         self.type = None
@@ -235,14 +238,14 @@ class FileLocator(object):
         else:
             # if many files are added; then ignore the type check;
             logger.info('type check is disabled. too many files added')
-            self.target = deque(alist)
+            self.target.extend(alist)
             self.id_list = alist.copy()
 
         logger.info('length of target = %d' % len(self.target))
         return single_flag
 
     def clear_target(self):
-        self.target = deque([])
+        self.target.clear()
         self.id_list = None
         self.type = None
 
@@ -250,6 +253,7 @@ class FileLocator(object):
         if rlist is None or len(self.target) == 0:
             return
 
+        print(type(self.target))
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
@@ -262,11 +266,12 @@ class FileLocator(object):
     def search(self, val, filter_type='prefix'):
         ans = None
         if filter_type == 'prefix':
-            ans = [x for x in self.source_list if x.startswith(val)]
+            ans = [x for x in self.source if x.startswith(val)]
         elif filter_type == 'substr':
-            ans = [x for x in self.source_list if val in x]
+            ans = [x for x in self.source if val in x]
+        self.source_search.replace(ans)
 
-        return len(ans), ans
+        return
 
     def build(self, path=None, filter_list=['.hdf', '.h5']):
         if path is None:
@@ -286,7 +291,7 @@ class FileLocator(object):
         flist = [x for x in flist if not x.startswith('.')]
         flist.sort()
 
-        self.source_list = flist
+        self.source.replace(flist)
 
         return True
 

@@ -5,6 +5,7 @@ from .module.average_toolbox import AverageToolbox
 from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
 import h5py
+from .helper.listmodel import ListDataModel, TableDataModel
 
 import os
 import logging
@@ -20,6 +21,8 @@ class ViewerKernel(FileLocator):
         self.meta = None
         self.reset_meta()
         self.avg_tb = AverageToolbox(path)
+        self.avg_worker = TableDataModel()
+        self.avg_jid = 0
 
     def reset_meta(self):
         self.meta = {
@@ -181,9 +184,24 @@ class ViewerKernel(FileLocator):
         fc = self.cache[self.target[plot_id]]
         stability.plot(fc, mp_hdl, **kwargs)
 
-    def average(self, *args, **kwargs):
-        self.avg_tb.setup(*args, **kwargs)
-
+    def submit_job(self, *args, **kwargs):
+        if len(self.target_average) <= 0:
+            logger.debug('no average target is selected')
+            return
+        worker = AverageToolbox(work_dir=self.cwd, flist=self.target_average,
+                                jid=self.avg_jid)
+        worker.setup(*args, **kwargs)
+        self.avg_worker.append(worker)
+        logger.info('create average job, ID = %s', worker.jid)
+        self.avg_jid += 1
+        return
+    
+    def remove_job(self, index):
+        self.avg_worker.pop(index)
+        return
+    
+    def update_avg_worker(self):
+        self.avg_worker.layoutChanged.emit()
 
 if __name__ == "__main__":
     flist = os.listdir('./data')
