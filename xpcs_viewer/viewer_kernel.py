@@ -185,15 +185,17 @@ class ViewerKernel(FileLocator):
         stability.plot(fc, mp_hdl, **kwargs)
 
     def submit_job(self, *args, **kwargs):
-        if len(self.target_average) <= 0:
-            logger.debug('no average target is selected')
+        if len(self.target) <= 0:
+            logger.error('no average target is selected')
             return
-        worker = AverageToolbox(work_dir=self.cwd, flist=self.target_average,
+        worker = AverageToolbox(work_dir=self.cwd, flist=self.target,
                                 jid=self.avg_jid)
         worker.setup(*args, **kwargs)
         self.avg_worker.append(worker)
         logger.info('create average job, ID = %s', worker.jid)
         self.avg_jid += 1
+
+        self.target.clear()
         return
     
     def remove_job(self, index):

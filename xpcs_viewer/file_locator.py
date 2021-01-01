@@ -95,7 +95,6 @@ class FileLocator(object):
         self.source = ListDataModel()
         self.source_search = ListDataModel()
         self.target = ListDataModel()
-        self.target_average = ListDataModel()
         self.id_list = None
         self.build(path)
         self.type = None
@@ -253,7 +252,6 @@ class FileLocator(object):
         if rlist is None or len(self.target) == 0:
             return
 
-        print(type(self.target))
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)

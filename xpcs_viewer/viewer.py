@@ -51,8 +51,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None):
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
+        self.tab_id = 4
 
-        self.tabWidget.setCurrentIndex(4)
+        self.tabWidget.setCurrentIndex(self.tab_id)
         self.tab_dict = {
             0: "saxs_2d",
             1: "saxs_1d",
@@ -93,8 +94,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.tabWidget.currentChanged.connect(self.init_tab)
         self.list_view_target.indexesMoved.connect(self.reorder_target)
-        self.list_view_target.itemSelectionChanged.connect(
-            self.update_selection)
+        # self.list_view_target.itemSelectionChanged.connect(
+        #     self.update_selection)
 
         self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
         self.cb_twotime_saxs_cmap.currentIndexChanged.connect(
@@ -136,19 +137,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_saxs_1D()
 
     def init_tab(self):
-        if self.data_state != 3:
-            return
+        new_tab_id = self.tabWidget.currentIndex()
+        tab_name = self.tab_dict[new_tab_id]
         self.statusbar.clearMessage()
 
-        idx = self.tabWidget.currentIndex()
-        if self.plot_state[idx] > 0:
+        # the plots on this tab is already done;
+        if self.plot_state[new_tab_id] > 0:
             return
-        tab_name = self.tab_dict[idx]
 
-        # selected_index = self.list_view_target.selectedIndexes()
-        # selected_row = [x.row() for x in selected_index]
-
-        logger.info('switch to tab %d: %s', idx, tab_name)
+        logger.info('switch to tab %d: %s', new_tab_id, tab_name)
         self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
 
         if tab_name == 'saxs_2d':
@@ -172,10 +169,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.set_g2_range()
             # self.plot_g2(10)
 
-        self.plot_state[idx] = 1
+        self.plot_state[new_tab_id] = 1
 
     def load_data(self):
-
+        tab_id = self.tabWidget.currentIndex()
+        tab_name = self.tab_dict[tab_id]
+        if tab_name == 'average':
+            self.statusbar.showMessage(
+                'The average tool reads data from disk directly. skip')
+            return
         if self.data_state <= 1:
             self.statusbar.showMessage('Work directory or target not ready.',
                                        1000)
@@ -195,8 +197,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.plot_state[:] = 0
         self.statusbar.showMessage('Files loaded.', 1000)
 
-        # self.update_hdf_list()
-        # self.update_stab_list()
         self.init_tab()
 
     def update_hdf_list(self):
@@ -392,7 +392,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def update_average_box(self):
 
-        if len(self.vk.target_average) > 0:
+        if len(self.vk.target) > 0:
             save_path = self.avg_save_path.text()
             if save_path == '':
                 self.avg_save_path.setText(self.work_dir.text())
@@ -400,7 +400,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 logger.info('use the previous save path')
 
             save_name = self.avg_save_name.text()
-            save_name = 'Avg' + self.vk.target_average[0]
+            save_name = 'Avg' + self.vk.target[0]
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
@@ -447,6 +447,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         self.vk.submit_job(**kwargs)
+        # the target_average has been reset
+        self.update_box(self.vk.target, mode='target')
+        return
 
     def start_avg_job(self):
         index = self.avg_job_table.currentIndex().row()
@@ -515,7 +518,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         try:
             self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
         except e:
-            print(e)
             pass
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')
@@ -563,13 +565,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         if mode == 'source':
-            # self.list_view_source.clear()
-            # self.list_view_source.addItems(file_list)
             self.list_view_source.setModel(file_list)
             self.box_source.setTitle('Source: %5d' % len(file_list))
         elif mode == 'target':
-            self.list_view_target.clear()
-            self.list_view_target.addItems(file_list)
+            self.list_view_target.setModel(file_list)
             self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
                                      (len(file_list), self.vk.type))
 
@@ -595,15 +594,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if target == []:
             return
 
-        logger.info('adding files to averaging toolbox')
-        idx = self.tabWidget.currentIndex()
-        if self.tab_dict[idx] == 'average':
-            self.vk.target_average.replace(target)
-            self.update_box(self.vk.target_average, mode='target')
-            self.update_average_box()
-            # self.data_state = 1
-            return
-
         self.progress_bar.setValue(0)
 
         curr_target = tuple(self.vk.target)
@@ -626,7 +616,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             msg = 'more than one xpcs analysis type detected'
             self.statusbar.showMessage(msg)
 
-        if self.box_auto_update.isChecked():
+        tab_id = self.tabWidget.currentIndex()
+        if self.tab_dict[tab_id] == 'average':
+            self.update_average_box()
+        elif self.box_auto_update.isChecked():
             self.load_data()
 
     def reorder_target(self):
