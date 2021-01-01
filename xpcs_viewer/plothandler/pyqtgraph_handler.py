@@ -100,7 +100,11 @@ class ImageViewDev(ImageView):
     def clear(self):
         super(ImageViewDev, self).clear()
         self.reset_limits()
-        self.scene.sigMouseMoved.disconnect()
+        # incase the signal isn't connected to anything.
+        try:
+            self.scene.sigMouseMoved.disconnect()
+        except:
+            pass
 
 
 class PlotWidgetDev(GraphicsLayoutWidget):
