@@ -76,10 +76,12 @@ class AverageToolbox(QtCore.QRunnable):
         self.baseline = np.zeros(max(len(self.model), 10), dtype=np.float32)
         self.ptr = 0
         self.short_name = self.generate_avg_fname()
-        self.eta = 9999 
+        self.eta = 9999
         self.size = len(self.model)
-        self._progress = '0%%'
-    
+        self._progress = '0%'
+        # use one file as templelate
+        self.origin_path = os.path.join(self.work_dir, self.model[0])
+
     def __str__(self) -> str:
         return str(self.jid)
 
@@ -157,14 +159,8 @@ class AverageToolbox(QtCore.QRunnable):
         for key in fields:
             result[key] /= np.sum(mask)
 
-        # save_path = os.path.join(self.work_dir, self.generate_avg_fname())
-        # if save_path is None:
-        #     save_path = os.path.join(self.work_dir, self.generate_avg_fname())
-        if origin_path is None:
-            origin_path = os.path.join(self.work_dir, self.model[0])
-
         logger.info('create file: {}'.format(save_path))
-        copyfile(origin_path, save_path)
+        copyfile(self.origin_path, save_path)
         put(save_path, result, mode='alias')
 
         self.status = 'finished'
@@ -188,7 +184,11 @@ class AverageToolbox(QtCore.QRunnable):
             t.addItem(up)
 
         return
-    
+
+    def update_plot(self):
+        self.ax.setData(self.baseline[:self.ptr])
+        return
+
     def get_pg_tree(self):
         data = {}
         for key, val in self.kwargs.items():
@@ -200,7 +200,8 @@ class AverageToolbox(QtCore.QRunnable):
                     data[key] = float(val)
             else:
                 data[key] = val
-        
+
+        # additional keys to describe the worker
         add_keys = ['stime', 'etime', 'status', 'baseline', 'ptr',
                     'eta', 'size']
 
@@ -208,14 +209,10 @@ class AverageToolbox(QtCore.QRunnable):
             data[key] = self.__dict__[key]
 
         if self.size > 20:
-            data['first_10_datasets'] = self.model[0:10]   
+            data['first_10_datasets'] = self.model[0:10]
             data['last_10_datasets'] = self.model[-10:]
 
         tree = pg.DataTreeWidget(data=data)
         tree.setWindowTitle('Job_%d_%s' % (self.jid, self.model[0]))
         tree.resize(600, 800)
         return tree
-
-    def update_plot(self):
-        self.ax.setData(self.baseline[:self.ptr])
-        return
