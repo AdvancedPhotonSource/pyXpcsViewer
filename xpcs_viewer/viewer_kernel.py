@@ -23,6 +23,7 @@ class ViewerKernel(FileLocator):
         self.avg_tb = AverageToolbox(path)
         self.avg_worker = TableDataModel()
         self.avg_jid = 0
+        self.avg_worker_active = {}
 
     def reset_meta(self):
         self.meta = {
@@ -204,6 +205,24 @@ class ViewerKernel(FileLocator):
     
     def update_avg_worker(self):
         self.avg_worker.layoutChanged.emit()
+    
+    def update_avg_values(self, data):
+        key, val = data[0], data[1]
+        # print(len(data))
+        # print(type(key), type(val))
+        if self.avg_worker_active[key] is None:
+            self.avg_worker_active[key] = [0, np.zeros(128, dtype=np.float32)]
+        record = self.avg_worker_active[key]
+        if record[0] == record[1].size:
+            new_g2 = np.zeros(record[1].size * 2, dtype=np.float32)
+            new_g2[0:record[0]] = record[1]
+            record[1] = new_g2
+        record[1][record[0]] = val
+        record[0] += 1
+
+        return
+
+
 
 if __name__ == "__main__":
     flist = os.listdir('./data')
