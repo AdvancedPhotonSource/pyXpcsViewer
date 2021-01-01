@@ -70,7 +70,8 @@ class AverageToolbox(QtCore.QRunnable):
             self.jid = uuid.uuid4()
         else:
             self.jid = jid
-        self.stime = time.strftime('%H:%M:%S')
+        self.submit_time = time.strftime('%H:%M:%S')
+        self.stime = self.submit_time
         self.etime = '--:--:--'
         self.status = 'wait'
         self.baseline = np.zeros(max(len(self.model), 10), dtype=np.float32)
@@ -81,6 +82,11 @@ class AverageToolbox(QtCore.QRunnable):
         self._progress = '0%'
         # use one file as templelate
         self.origin_path = os.path.join(self.work_dir, self.model[0])
+
+        self.is_killed = False
+    
+    def kill(self):
+        self.is_killed = True
 
     def __str__(self) -> str:
         return str(self.jid)
@@ -108,6 +114,7 @@ class AverageToolbox(QtCore.QRunnable):
     def do_average(self, chunk_size=256, save_path=None, origin_path=None,
                    avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05,
                    fields=['saxs_2d']):
+        self.stime = time.strftime('%H:%M:%S')
         self.status = 'running'
         tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
@@ -133,6 +140,13 @@ class AverageToolbox(QtCore.QRunnable):
             end = chunk_size * (n + 1)
             end = min(tot_num, end)
             for m in range(beg, end):
+                # time.sleep(0.1)
+                if self.is_killed:
+                    logger.info('the average instance has been killed.')
+                    self._progress = 'killed'
+                    self.status = 'killed'
+                    return
+
                 if ((m + 1) * 100) % tot_num == 0:
                     dt = (time.perf_counter() - t0) / (m + 1)
                     eta = dt * (tot_num - m - 1)
@@ -185,8 +199,8 @@ class AverageToolbox(QtCore.QRunnable):
 
         return
 
-    def update_plot(self):
-        self.ax.setData(self.baseline[:self.ptr])
+    def update_plot(self, ax):
+        ax.setData(self.baseline[:self.ptr])
         return
 
     def get_pg_tree(self):
@@ -202,7 +216,7 @@ class AverageToolbox(QtCore.QRunnable):
                 data[key] = val
 
         # additional keys to describe the worker
-        add_keys = ['stime', 'etime', 'status', 'baseline', 'ptr',
+        add_keys = ['submit_time', 'etime', 'status', 'baseline', 'ptr',
                     'eta', 'size']
 
         for key in add_keys:

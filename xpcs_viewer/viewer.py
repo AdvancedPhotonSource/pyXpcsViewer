@@ -111,7 +111,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.set_average_save_path)
         self.btn_set_average_save_name.clicked.connect(
             self.set_average_save_name)
+        self.btn_avg_kill.clicked.connect(self.avg_kill_job)
         self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
+        self.avg_job_table.selectionModel().selectionChanged.connect(
+            self.update_avg_plot)
         self.show()
 
     def get_selected_rows(self):
@@ -450,6 +453,34 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # the target_average has been reset
         self.update_box(self.vk.target, mode='target')
         return
+    
+    def initialize_avg_plot(self):
+        hdl = self.mp_avg_g2
+        hdl.clear()
+        t = hdl.addPlot()
+        t.setLabel('bottom', 'Dataset Index')
+        t.setLabel('left', 'g2 baseline')
+        self.ax = t.plot(symbol='o')
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(50)
+    
+    def update_avg_plot(self):
+        self.initialize_avg_plot()
+
+        index = self.avg_job_table.currentIndex().row()
+        if index < 0 or index >= len(self.vk.avg_worker):
+            logger.info('select a job to start')
+            return
+
+        try:
+            self.timer.timeout.disconnect()
+        except:
+            pass
+
+        worker = self.vk.avg_worker[index]
+        self.timer.timeout.connect(lambda ax=self.ax: worker.update_plot(ax))
+        # self.timer.timeout.connect(dummy)
+        self.timer.start()
 
     def start_avg_job(self):
         index = self.avg_job_table.currentIndex().row()
@@ -464,10 +495,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('this job is running.', 1000)
             return
 
-        worker.initialize_plot(self.mp_avg_g2)
-        worker.signals.progress.connect(worker.update_plot)
+        # worker.signals.progress.connect(worker.update_plot)
         worker.signals.progress.connect(self.vk.update_avg_worker)
         self.thread_pool.start(worker)
+
+    def avg_kill_job(self): 
+        index = self.avg_job_table.currentIndex().row()
+        if index < 0 or index >= len(self.vk.avg_worker):
+            logger.info('select a job to show it\'s settting')
+            return
+        worker = self.vk.avg_worker[index]
+        if worker.status != 'running':
+            logger.info('the selected job isn\'s running')
+            return
+        worker.kill()
 
     def show_avg_jobinfo(self):
         index = self.avg_job_table.currentIndex().row()
