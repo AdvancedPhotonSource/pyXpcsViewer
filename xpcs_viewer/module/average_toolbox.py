@@ -52,8 +52,9 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
 
 
 class WorkerSignal(QObject):
-    progress = QtCore.pyqtSignal(int)
+    progress = QtCore.pyqtSignal(tuple)
     values = QtCore.pyqtSignal(tuple)
+    status = QtCore.pyqtSignal(tuple)
 
 
 class AverageToolbox(QtCore.QRunnable):
@@ -151,8 +152,9 @@ class AverageToolbox(QtCore.QRunnable):
                     dt = (time.perf_counter() - t0) / (m + 1)
                     eta = dt * (tot_num - m - 1)
                     self.eta = eta
-                    self.signals.progress.emit(((m + 1) * 100) // tot_num)
-                    self._progress = "%d%%" % (((m + 1) * 100) // tot_num)
+                    percentage = ((m + 1) * 100) // tot_num
+                    self._progress = "%d%%" % (percentage)
+                    # self.signals.values.emit((self.jid, ))
 
                 fname = self.model[m]
                 xf = XF(fname, cwd=self.work_dir, fields=fields)
@@ -168,7 +170,7 @@ class AverageToolbox(QtCore.QRunnable):
                     discard_list.append(fname)
                     mask[m] = 0
 
-                self.signals.values.emit((m, val))
+                self.signals.values.emit((self.jid, val))
 
         for key in fields:
             result[key] /= np.sum(mask)
@@ -178,9 +180,10 @@ class AverageToolbox(QtCore.QRunnable):
         put(save_path, result, mode='alias')
 
         self.status = 'finished'
+        self.signals.status.emit((self.jid, self.status))
         self.etime = time.strftime('%H:%M:%S')
         self.model.layoutChanged.emit()
-        self.signals.progress.emit(100)
+        self.signals.progress.emit((self.jid, 100))
         return result
 
     def initialize_plot(self, hdl):
@@ -199,8 +202,8 @@ class AverageToolbox(QtCore.QRunnable):
 
         return
 
-    def update_plot(self, ax):
-        ax.setData(self.baseline[:self.ptr])
+    def update_plot(self):
+        self.ax.setData(self.baseline[:self.ptr])
         return
 
     def get_pg_tree(self):
