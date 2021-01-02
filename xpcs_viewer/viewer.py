@@ -464,6 +464,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode='target')
+        self.data_state = 1
         return
 
     def update_avg_info(self):
@@ -565,7 +566,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_4.setText('plotting')
         try:
             self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
-        except e:
+        except Exception:
             pass
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')
