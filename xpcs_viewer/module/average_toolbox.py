@@ -78,7 +78,7 @@ class AverageToolbox(QtCore.QRunnable):
         self.baseline = np.zeros(max(len(self.model), 10), dtype=np.float32)
         self.ptr = 0
         self.short_name = self.generate_avg_fname()
-        self.eta = 9999
+        self.eta ='...' 
         self.size = len(self.model)
         self._progress = '0%'
         # use one file as templelate
@@ -120,6 +120,7 @@ class AverageToolbox(QtCore.QRunnable):
         tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
         mask = np.ones(tot_num, dtype=np.int)
+        prev_percentage = 0
         valid_list = deque()
         discard_list = deque()
 
@@ -141,20 +142,21 @@ class AverageToolbox(QtCore.QRunnable):
             end = chunk_size * (n + 1)
             end = min(tot_num, end)
             for m in range(beg, end):
-                # time.sleep(0.1)
+                # time.sleep(0.5)
                 if self.is_killed:
-                    logger.info('the average instance has been killed.')
+                    logger.info('the averaging instance has been killed.')
                     self._progress = 'killed'
                     self.status = 'killed'
                     return
-
-                if ((m + 1) * 100) % tot_num == 0:
+                    
+                curr_percentage = int((m + 1) * 100 / tot_num)
+                if curr_percentage >= prev_percentage:
+                    prev_percentage = curr_percentage
                     dt = (time.perf_counter() - t0) / (m + 1)
                     eta = dt * (tot_num - m - 1)
                     self.eta = eta
-                    percentage = ((m + 1) * 100) // tot_num
-                    self._progress = "%d%%" % (percentage)
-                    # self.signals.values.emit((self.jid, ))
+                    self._progress = "%d%%" % (curr_percentage)
+                    # self.signals.progress.emit((self.jid, curr_percentage))
 
                 fname = self.model[m]
                 xf = XF(fname, cwd=self.work_dir, fields=fields)
@@ -162,18 +164,19 @@ class AverageToolbox(QtCore.QRunnable):
                 self.baseline[self.ptr] = val
                 self.ptr += 1
 
-                if flag:
-                    valid_list.append(fname)
-                    for key in fields:
-                        result[key] += xf.at(key)
-                else:
-                    discard_list.append(fname)
+                if not flag:
                     mask[m] = 0
 
                 self.signals.values.emit((self.jid, val))
 
         for key in fields:
             result[key] /= np.sum(mask)
+            if key == 'g2_err':
+                result[key] /= np.sqrt(np.sum(mask))
+        
+        for m in range(tot_num):
+            if not mask[m]:
+                discard_list.append(self.model[m])
 
         logger.info('create file: {}'.format(save_path))
         copyfile(self.origin_path, save_path)
@@ -199,6 +202,7 @@ class AverageToolbox(QtCore.QRunnable):
             up = pg.InfiniteLine(pos=self.kwargs['avg_blmax'], angle=0)
             # t.addItem(pg.FillBetweenItem(dn, up))
             t.addItem(up)
+        t.setMouseEnabled(x=False, y=False)
 
         return
 
