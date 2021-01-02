@@ -20,5 +20,8 @@ key = {
   "ydim": "/measurement/instrument/detector/y_dimension",
   "c2_half": "/exchange/C2T_all",
   "g2_full": "/exchange/g2full",
-  "g2_partials": "/exchange/g2partials"
+  "g2_partials": "/exchange/g2partials",
+  "G2": "/exchange/G2",
+  "IP": "/exchange/IF",
+  "IF": "/exchange/IP"
 }
