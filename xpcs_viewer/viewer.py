@@ -114,7 +114,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_avg_kill.clicked.connect(self.avg_kill_job)
         self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
         self.avg_job_table.selectionModel().selectionChanged.connect(
-            self.update_avg_plot)
+            self.update_avg_info)
         # self.avg_job_table.doubleClicked.connect(self.update_avg_plot)
         self.show()
 
@@ -464,16 +464,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode='target')
+        self.data_state = 1
         return
 
-    def update_avg_plot(self):
+    def update_avg_info(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
             self.statusbar.showMessage('select a job to start')
             return
 
         self.timer.stop()
-        self.timer.setInterval(50)
+        self.timer.setInterval(200)
 
         try:
             self.timer.timeout.disconnect()
@@ -484,9 +485,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         worker = self.vk.avg_worker[index]
         worker.initialize_plot(self.mp_avg_g2)
 
-        # TODO: the update function stopped working after the work is done;
-        self.timer.timeout.connect(worker.update_plot)
-        # self.timer.timeout.connect(lambda x=worker.jid: print(x))
+        self.timer.timeout.connect(lambda x=index: self.vk.update_avg_info(x))
         self.timer.start()
 
     def start_avg_job(self):
@@ -503,7 +502,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         # worker.signals.progress.connect(worker.update_plot)
-        worker.signals.progress.connect(self.vk.update_avg_worker)
+        # worker.signals.progress.connect(self.vk.update_avg_worker)
         worker.signals.values.connect(self.vk.update_avg_values)
         self.thread_pool.start(worker)
         self.vk.avg_worker_active[worker.jid] = None
@@ -511,11 +510,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def avg_kill_job(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            logger.info('select a job to kill')
+            self.statusbar.showMessage('select a job to kill')
             return
         worker = self.vk.avg_worker[index]
         if worker.status != 'running':
-            logger.info('the selected job isn\'s running')
+            self.statusbar.showMessage('the selected job isn\'s running')
             return
         worker.kill()
 
@@ -567,7 +566,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_4.setText('plotting')
         try:
             self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
-        except e:
+        except Exception:
             pass
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')

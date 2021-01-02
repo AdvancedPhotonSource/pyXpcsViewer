@@ -55,6 +55,12 @@ class XpcsFile(object):
 
         if 't0' in ret and 'tau' in ret:
             ret['t_el'] = ret['t0'] * ret['tau']
+        if self.type == 'Twotime':
+            ret['g2'] = ret['g2_full']
+            ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
+            # print(np.max(ret['t_el']))
+            # print(np.max(ret['ql_dyn']))
+            # print(ret['ql_sta'])
 
         return ret
 

@@ -232,6 +232,8 @@ class AverageToolbox(QtCore.QRunnable):
         if self.size > 20:
             data['first_10_datasets'] = self.model[0:10]
             data['last_10_datasets'] = self.model[-10:]
+        else:
+            data['input_datasets'] = self.model[:]
 
         tree = pg.DataTreeWidget(data=data)
         tree.setWindowTitle('Job_%d_%s' % (self.jid, self.model[0]))

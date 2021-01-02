@@ -3,7 +3,6 @@ import os
 import numpy as np
 import json
 import logging
-import pyqtgraph as pg
 
 
 logger = logging.getLogger(__name__)

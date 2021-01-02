@@ -203,8 +203,14 @@ class ViewerKernel(FileLocator):
         self.avg_worker.pop(index)
         return
     
-    def update_avg_worker(self):
+    
+    # def register_avg_worker(self, worker):
+    #     g2_hist = np.zeros(worker.size, dtype=np.float32)
+    #     self.avg_wo
+
+    def update_avg_info(self, jid):
         self.avg_worker.layoutChanged.emit()
+        self.avg_worker[jid].update_plot()
     
     def update_avg_values(self, data):
         key, val = data[0], data[1]
