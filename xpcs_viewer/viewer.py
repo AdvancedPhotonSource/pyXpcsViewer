@@ -51,7 +51,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None):
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
-        self.tab_id = 4
+        self.tab_id = 0
 
         self.tabWidget.setCurrentIndex(self.tab_id)
         self.tab_dict = {
@@ -94,9 +94,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                                        self.update_twotime_qindex)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
-        self.list_view_target.indexesMoved.connect(self.reorder_target)
-        # self.list_view_target.itemSelectionChanged.connect(
-        #     self.update_selection)
+        # self.list_view_target.indexesMoved.connect(self.reorder_target)
+        self.list_view_target.clicked.connect(self.update_selection)
 
         self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
         self.cb_twotime_saxs_cmap.currentIndexChanged.connect(
@@ -167,8 +166,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.update_hdf_list()
         elif tab_name == 'stability':
             self.update_stab_list()
-        # elif tab_name == 'average':
-        #     self.update_average_box()
+        elif tab_name == 'average':
+            self.update_average_box()
         elif tab_name == 'g2':
             self.set_g2_range()
             # self.plot_g2(10)
@@ -256,8 +255,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def init_twotime(self):
         if not self.check_status():
             return
+        rows = self.get_selected_rows()
+        file_index = 0
+        if len(rows) > 0:
+            file_index = rows[0]
 
-        file_index = max(0, self.list_view_target.currentRow())
         # Multitau tau analysis also has dqmap
         if self.vk.type != "Twotime":
             self.statusbar.showMessage("The target files must be twotime " +
@@ -319,9 +321,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("The target files must be twotime " +
                                        "analysis.")
             return
+
+        rows = self.get_selected_rows()
+        file_index = 0
+        if len(rows) > 0:
+            file_index = rows[0]
+
         kwargs = {
             # if nothing is selected, currentRow = -1; then plot 0th row;
-            'current_file_index': max(0, self.list_view_target.currentRow()),
+            # the model base listwidget doesn't have currentRow method
+            # 'current_file_index': max(0, self.list_view_target.currentRow()),
+            'current_file_index': file_index,
             'plot_index': self.twotime_q_index.value(),
             'cmap': self.cb_twotime_cmap.currentText()
         }
