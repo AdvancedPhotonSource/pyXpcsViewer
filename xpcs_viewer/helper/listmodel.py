@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 
 
 class ListDataModel(QtCore.QAbstractListModel):
-    def __init__(self, input_list=None, max_display=30) -> None:
+    def __init__(self, input_list=None, max_display=16384) -> None:
         super().__init__()
         if input_list is None:
             self.input_list = []
@@ -53,7 +53,7 @@ class ListDataModel(QtCore.QAbstractListModel):
 
 
 class TableDataModel(QtCore.QAbstractTableModel):
-    def __init__(self, input_list=None, max_display=2048) -> None:
+    def __init__(self, input_list=None, max_display=16384) -> None:
         super().__init__()
         if input_list is None:
             self.input_list = []

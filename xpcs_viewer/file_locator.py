@@ -282,6 +282,8 @@ class FileLocator(object):
         elif os.path.isdir(path):
             flist = os.listdir(path)
             self.cwd = path
+        else:
+            return
 
         flist = [x for x in flist if get_suffix(x) in filter_list]
 

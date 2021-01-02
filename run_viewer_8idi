@@ -9,7 +9,7 @@ else
 fi
 
 # if [ -d $target_folder ]; then
-#     cd $WD
+    cd $WD
     /APSshare/anaconda3/x86_64/bin/python -c "from xpcs_viewer import run; run()" $target_folder
 # else
 #     echo "no such directory: " $1 or $target_folder
