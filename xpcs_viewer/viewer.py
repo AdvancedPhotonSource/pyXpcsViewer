@@ -115,6 +115,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
         self.avg_job_table.selectionModel().selectionChanged.connect(
             self.update_avg_plot)
+        # self.avg_job_table.doubleClicked.connect(self.update_avg_plot)
         self.show()
 
     def get_selected_rows(self):
@@ -468,7 +469,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def update_avg_plot(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            logger.info('select a job to start')
+            self.statusbar.showMessage('select a job to start')
             return
 
         self.timer.stop()
@@ -482,13 +483,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         worker = self.vk.avg_worker[index]
         worker.initialize_plot(self.mp_avg_g2)
+
+        # TODO: the update function stopped working after the work is done;
         self.timer.timeout.connect(worker.update_plot)
+        # self.timer.timeout.connect(lambda x=worker.jid: print(x))
         self.timer.start()
 
     def start_avg_job(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            logger.info('select a job to start')
+            self.statusbar.showMessage('select a job to start')
             return
         worker = self.vk.avg_worker[index]
         if worker.status == 'finished':
@@ -507,7 +511,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def avg_kill_job(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            logger.info('select a job to show it\'s settting')
+            logger.info('select a job to kill')
             return
         worker = self.vk.avg_worker[index]
         if worker.status != 'running':
@@ -666,7 +670,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.tab_dict[tab_id] == 'average':
             self.update_average_box()
         elif self.box_auto_update.isChecked():
-            self.load_data()
+            # avoid pressing enter when auto-load is enabled and lots of
+            # files are added; it'll take long time to process;
+            if len(self.vk.target) > 128:
+                self.statusbar.showMessage(
+                    'More than 128 files selected. Abort auto loading.', 1000)
+            else:
+                self.load_data()
 
     def reorder_target(self):
         target = []
