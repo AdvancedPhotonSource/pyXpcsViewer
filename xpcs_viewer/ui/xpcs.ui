@@ -7,11 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1920</width>
-<<<<<<< HEAD
     <height>1080</height>
-=======
-    <height>979</height>
->>>>>>> origin/master
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1314,7 +1310,7 @@
                  <item>
                   <widget class="QPushButton" name="btn_submit_job">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -1327,7 +1323,7 @@
                  <item>
                   <widget class="QPushButton" name="avg_job_pop">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -1340,7 +1336,7 @@
                  <item>
                   <widget class="QPushButton" name="btn_avg_jobinfo">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -1360,7 +1356,7 @@
                  <item>
                   <widget class="QPushButton" name="btn_start_avg_job">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -1401,17 +1397,17 @@
                  <property name="selectionBehavior">
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
-                 <attribute name="horizontalHeaderDefaultSectionSize">
-                  <number>100</number>
-                 </attribute>
                  <attribute name="horizontalHeaderMinimumSectionSize">
-                  <number>19</number>
+                  <number>80</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>200</number>
                  </attribute>
                  <attribute name="horizontalHeaderStretchLastSection">
                   <bool>true</bool>
                  </attribute>
                  <attribute name="verticalHeaderDefaultSectionSize">
-                  <number>30</number>
+                  <number>60</number>
                  </attribute>
                 </widget>
                </item>
@@ -1453,13 +1449,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-<<<<<<< HEAD
                  <width>1538</width>
                  <height>704</height>
-=======
-                 <width>1568</width>
-                 <height>676</height>
->>>>>>> origin/master
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1695,7 +1686,7 @@
                    <item row="0" column="0" colspan="2">
                     <widget class="QPushButton" name="pushButton_4">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -2404,19 +2395,6 @@
     </item>
    </layout>
   </widget>
-<<<<<<< HEAD
-=======
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1920</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
->>>>>>> origin/master
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
