@@ -4,9 +4,9 @@ with open("requirements.txt", "r") as f:
     requirements = f.read().splitlines()
 
 setup(name='xpcs_viewer',
-      version='0.1',
+      version='0.2',
       description='Python based XPCS viwer',
-      scripts=['run_viewer'],
+      scripts=['run_viewer.bat', 'run_viewer'],
       url='https://github.com/AZjk/xpcs_gui',
       packages=find_packages(),
       include_package_data=True,

@@ -113,9 +113,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.set_average_save_name)
         self.btn_avg_kill.clicked.connect(self.avg_kill_job)
         self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
-        self.avg_job_table.selectionModel().selectionChanged.connect(
-            self.update_avg_info)
-        # self.avg_job_table.doubleClicked.connect(self.update_avg_plot)
+        # self.avg_job_table.selectionModel().selectionChanged.connect(
+        #     self.update_avg_info)
+        self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show()
 
     def get_selected_rows(self):
@@ -141,6 +141,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_saxs_1D()
 
     def init_tab(self):
+        if self.data_state < 2:
+            return
         new_tab_id = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[new_tab_id]
         self.statusbar.clearMessage()
@@ -809,12 +811,29 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             error_dialog.showMessage(msg)
             logger.error(msg)
 
-        self.statusbar.showMessage(msg)
+        self.statusbar.showMessage(msg, 1000)
 
         return flag
 
 
+def setup_windows_icon():
+    # reference: https://stackoverflow.com/questions/1551605
+    import ctypes
+    from ctypes import wintypes
+
+    lpBuffer = wintypes.LPWSTR()
+    AppUserModelID = ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID
+    AppUserModelID(ctypes.cast(ctypes.byref(lpBuffer), wintypes.LPWSTR))
+    appid = lpBuffer.value
+    ctypes.windll.kernel32.LocalFree(lpBuffer)
+    if appid is None:
+        appid = 'aps.xpcs_viewer.viewer.0.20'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
+
+
 def run():
+    if os.name == 'nt':
+        setup_windows_icon()
     QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):

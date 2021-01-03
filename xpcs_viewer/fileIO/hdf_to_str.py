@@ -35,7 +35,7 @@ def describe_numpy(arr):
 
 def read_h5py(hdl, path, level, guide_str0):
     if path not in hdl:
-        return
+        return None
     if 'C2T_all' in path:
         return ['C2T_all']
     result = []
@@ -61,17 +61,20 @@ def read_h5py(hdl, path, level, guide_str0):
             guide = guide_mid
             guide_nxt = guide_nxt_mid
 
-        new_path = os.path.join(path, key)
-        # print(new_path)
+        # os.path.join won't work on windows systems
+        # new_path = os.path.join(path, key)
+        new_path = '/'.join([path, key])
         if isinstance(key, str):
             result.append(guide + key)
             info = read_h5py(hdl, new_path, level + 1, guide_nxt)
-            result = result + info
+            if info is not None:
+                result = result + info
         elif isinstance(key, np.ndarray):
             info = describe_numpy(hdl[new_path])
             result.append(guide + info)
         else:
-            return
+            # return None
+            pass
 
     return result
 

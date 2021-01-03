@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 # read the default.json in the home_directory
 home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+if not os.path.isdir(home_dir):
+    os.mkdir(home_dir)
 key_fname = os.path.join(home_dir, 'default.json')
 
 # if no such file; then use 8idi configure
@@ -68,7 +70,8 @@ def get(fname, fields, mode='raw', ret_type='dict'):
                 raise ValueError("mode not supported.")
 
             if key2 not in HDF_Result:
-                val = None
+                logger.error('key not found: %s', key2)
+                raise ValueError('key not found: %s', key2)
             elif 'C2T_all' in key2:
                 # C2T_allxxx has to be converted by numpy.array
                 val = np.array(HDF_Result.get(key2))
