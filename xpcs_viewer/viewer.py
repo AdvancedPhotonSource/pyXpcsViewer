@@ -113,9 +113,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.set_average_save_name)
         self.btn_avg_kill.clicked.connect(self.avg_kill_job)
         self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
-        self.avg_job_table.selectionModel().selectionChanged.connect(
-            self.update_avg_info)
-        # self.avg_job_table.doubleClicked.connect(self.update_avg_plot)
+        # self.avg_job_table.selectionModel().selectionChanged.connect(
+        #     self.update_avg_info)
+        self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show()
 
     def get_selected_rows(self):
@@ -141,6 +141,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_saxs_1D()
 
     def init_tab(self):
+        if self.data_state < 2:
+            return
         new_tab_id = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[new_tab_id]
         self.statusbar.clearMessage()
