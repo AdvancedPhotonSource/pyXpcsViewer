@@ -811,7 +811,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             error_dialog.showMessage(msg)
             logger.error(msg)
 
-        self.statusbar.showMessage(msg)
+        self.statusbar.showMessage(msg, 1000)
 
         return flag
 
