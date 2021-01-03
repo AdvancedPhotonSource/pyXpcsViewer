@@ -816,7 +816,24 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return flag
 
 
+def setup_windows_icon():
+    # reference: https://stackoverflow.com/questions/1551605
+    import ctypes
+    from ctypes import wintypes
+
+    lpBuffer = wintypes.LPWSTR()
+    AppUserModelID = ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID
+    AppUserModelID(ctypes.cast(ctypes.byref(lpBuffer), wintypes.LPWSTR))
+    appid = lpBuffer.value
+    ctypes.windll.kernel32.LocalFree(lpBuffer)
+    if appid is None:
+        appid = 'aps.xpcs_viewer.viewer.0.20'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
+
+
 def run():
+    if os.name == 'nt':
+        setup_windows_icon()
     QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
