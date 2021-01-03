@@ -74,8 +74,8 @@ class XpcsFile(object):
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
         key_frames = [
-            os.path.join(group, 'stride_frames'),
-            os.path.join(group, 'avg_frames')
+            '/'.join([group, 'stride_frames']),
+            '/'.join([group, 'avg_frames'])
         ]
         stride, avg = get(self.full_path,
                           key_frames,
@@ -85,18 +85,18 @@ class XpcsFile(object):
         return time_scale
 
     def get_twotime_maps(self, group='xpcs'):
-        rpath = os.path.join(group, 'output_data')
+        rpath = '/'.join([group, 'output_data'])
         rpath = get(self.full_path, [rpath], mode='raw')[rpath]
 
-        key_dqmap = os.path.join(group, 'dqmap')
-        key_saxs = os.path.join(rpath, 'pixelSum')
+        key_dqmap = '/'.join([group, 'dqmap'])
+        key_saxs = '/'.join([rpath, 'pixelSum'])
 
         dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
                           mode='raw',
                           ret_type='list')
 
         if self.type == 'Twotime':
-            key_c2t = os.path.join(rpath, 'C2T_all')
+            key_c2t = '/'.join([rpath, 'C2T_all'])
             idlist = get(self.full_path, [key_c2t], mode='raw')[key_c2t]
             idlist = [int(x[3:]) for x in idlist]
         else:
@@ -104,7 +104,7 @@ class XpcsFile(object):
         return dqmap, saxs, rpath, idlist
 
     def get_twotime_c2(self, twotime_key, plot_index):
-        c2_key = os.path.join(twotime_key, 'C2T_all/g2_%05d' % plot_index)
+        c2_key = '/'.join([twotime_key, 'C2T_all/g2_%05d' % plot_index])
 
         c2_half = get(self.full_path, [c2_key], mode='raw')[c2_key]
 
