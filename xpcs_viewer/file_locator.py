@@ -255,6 +255,7 @@ class FileLocator(object):
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
+                self.cache.pop(x, 'None')
 
         if self.target is None or len(self.target) == 0:
             self.clear_target()
