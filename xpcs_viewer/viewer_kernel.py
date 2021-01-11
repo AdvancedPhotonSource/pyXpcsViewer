@@ -177,8 +177,8 @@ class ViewerKernel(FileLocator):
                                    meta=self.meta, **kwargs)
         return ret
 
-    def plot_intt(self, pg_hdl, max_points=128, **kwargs):
-        xf_list = self.get_xf_list(max_points)
+    def plot_intt(self, pg_hdl, max_points=128, rows=None, **kwargs):
+        xf_list = self.get_xf_list(max_points, rows=rows)
         intt.plot(xf_list, pg_hdl, self.id_list, **kwargs)
 
     def plot_stability(self, mp_hdl, plot_id, **kwargs):
