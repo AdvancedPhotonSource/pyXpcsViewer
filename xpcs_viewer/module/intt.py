@@ -22,7 +22,11 @@ colors = [
 
 
 def smooth_data(fc, window, sampling):
-    x, y = fc.Int_t[0], fc.Int_t[1]
+    # some bad frames have both x and y = 0;
+    # x, y = fc.Int_t[0], fc.Int_t[1]
+    y = fc.Int_t[1]
+    x = np.arange(y.shape[0])
+
     if window > 1:
         y = np.cumsum(y, dtype=float, axis=0)
         y = (y[window:] - y[:-window]) / window
@@ -79,7 +83,7 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
 
     for n in range(len(data)):
         t.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
-               name=legend[n])
+               name=xf_list[n].label)
     t.setTitle('Intensity vs %s' % xlabel)
 
     if enable_zoom:
@@ -101,11 +105,11 @@ def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
         # get ride of zero frequency;
         y[0] = 0
 
-        tf.plot(x, y, pen=pg.mkPen(colors[n], width=1), name=legend[n])
+        tf.plot(x, y, pen=pg.mkPen(colors[n], width=1), name=xf_list[n].label)
 
     for n in range(len(data)):
         tz.plot(data[n][0], data[n][1], pen=pg.mkPen(colors[n], width=1),
-                name=legend[n])
+                name=xf_list[n].label)
 
     def update_plot():
         tz.setXRange(*lr.getRegion(), padding=0)
