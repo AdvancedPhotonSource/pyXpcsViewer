@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>979</height>
+    <width>1440</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -346,7 +346,7 @@
                <item row="0" column="0">
                 <widget class="QListView" name="list_view_target">
                  <property name="selectionMode">
-                  <enum>QAbstractItemView::ContiguousSelection</enum>
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
                  </property>
                 </widget>
                </item>
@@ -1449,8 +1449,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1568</width>
-                 <height>698</height>
+                 <width>1089</width>
+                 <height>519</height>
                 </rect>
                </property>
                <property name="sizePolicy">

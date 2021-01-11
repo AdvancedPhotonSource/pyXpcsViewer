@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1920, 979)
+        mainWindow.resize(1440, 800)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -198,7 +198,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_7.addWidget(self.pushButton_13)
         self.gridLayout_4.addLayout(self.horizontalLayout_7, 1, 0, 1, 1)
         self.list_view_target = QtWidgets.QListView(self.box_target)
-        self.list_view_target.setSelectionMode(QtWidgets.QAbstractItemView.ContiguousSelection)
+        self.list_view_target.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.list_view_target.setObjectName("list_view_target")
         self.gridLayout_4.addWidget(self.list_view_target, 0, 0, 1, 1)
         self.verticalLayout_2.addWidget(self.box_target)
@@ -675,7 +675,7 @@ class Ui_mainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.g2_scroll_area = QtWidgets.QWidget()
-        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 1568, 698))
+        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 1089, 519))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
