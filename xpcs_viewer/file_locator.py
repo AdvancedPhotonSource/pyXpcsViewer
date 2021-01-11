@@ -45,7 +45,7 @@ def create_id(in_list):
         idx_1 = x.find('_')
         idx_2 = x.rfind('_', 0, len(x))
         idx_3 = x.rfind('_', 0, idx_2)
-        ret.append(x[0:idx_1] + '_' + x[idx_3:idx_2])
+        ret.append(x[0:idx_1] + x[idx_3:idx_2])
 
     return ret
 
@@ -130,16 +130,21 @@ class FileLocator(object):
             ret.append(self.target[n])
         return tuple(ret)
 
-    def get_xf_list(self, max_points=8):
+    def get_xf_list(self, max_points=8, rows=None):
         ret = []
 
         if max_points <= 0:
             max_points = len(self.target)
 
-        # for fn in self.target[slice(0, max_points)]:
-        for n in range(min(max_points, len(self.target))):
+        if rows is None or len(rows) == 0:
+            selected = list(range(min(max_points, len(self.target))))
+        else:
+            selected = rows
+
+        for n in selected:
             fn = self.target[n]
             ret.append(self.cache[fn])
+
         return ret
 
     def fetch(self, labels, file_list, mask=None):
