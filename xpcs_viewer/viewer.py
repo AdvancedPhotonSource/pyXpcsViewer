@@ -139,6 +139,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.pg_saxs.setCurrentIndex(rows[0])
         elif tab_name == 'saxs_1d':
             self.plot_saxs_1D()
+        elif tab_name == 'intensity_t':
+            self.plot_intt()
 
     def init_tab(self):
         if self.data_state < 2:
