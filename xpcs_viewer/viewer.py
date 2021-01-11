@@ -423,8 +423,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
-        # if not self.check_status() or self.vk.type != 'Multitau':
+        # if not self.check_status(): #  or self.vk.type != 'Multitau':
+        #     self.statusbar.showMessage('average files not ready')
         #     return
+        if len(self.vk.target) < 2:
+            self.statusbar.showMessage(
+                'select at least 2 files for averaging')
+            return
 
         self.thread_pool.setMaxThreadCount(self.max_thread_count.value())
 
@@ -478,7 +483,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         self.timer.stop()
-        self.timer.setInterval(200)
+        self.timer.setInterval(1000)
 
         try:
             self.timer.timeout.disconnect()
@@ -625,7 +630,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
                                      (len(file_list), self.vk.type))
 
-        self.statusbar.showMessage('Target file list updated.')
+        self.statusbar.showMessage('Target file list updated.', 1000)
         return
 
     def add_target(self):

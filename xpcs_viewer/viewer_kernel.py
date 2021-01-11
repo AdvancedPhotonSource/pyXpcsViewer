@@ -210,7 +210,8 @@ class ViewerKernel(FileLocator):
 
     def update_avg_info(self, jid):
         self.avg_worker.layoutChanged.emit()
-        self.avg_worker[jid].update_plot()
+        if 0 <= jid < len(self.avg_worker):
+            self.avg_worker[jid].update_plot()
     
     def update_avg_values(self, data):
         key, val = data[0], data[1]

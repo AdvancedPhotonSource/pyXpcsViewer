@@ -117,6 +117,7 @@ class AverageToolbox(QtCore.QRunnable):
                    fields=['saxs_2d']):
         self.stime = time.strftime('%H:%M:%S')
         self.status = 'running'
+        logger.info('average job %d starts', self.jid)
         tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
         mask = np.ones(tot_num, dtype=np.int)
@@ -164,7 +165,10 @@ class AverageToolbox(QtCore.QRunnable):
                 self.baseline[self.ptr] = val
                 self.ptr += 1
 
-                if not flag:
+                if flag:
+                    for key in fields:
+                        result[key] += xf.at(key)
+                else:
                     mask[m] = 0
 
                 self.signals.values.emit((self.jid, val))
@@ -187,6 +191,7 @@ class AverageToolbox(QtCore.QRunnable):
         self.etime = time.strftime('%H:%M:%S')
         self.model.layoutChanged.emit()
         self.signals.progress.emit((self.jid, 100))
+        logger.info('average job %d finished', self.jid)
         return result
 
     def initialize_plot(self, hdl):
