@@ -109,7 +109,7 @@ def create_id(fname):
     idx_1 = x.find('_')
     idx_2 = x.rfind('_', 0, len(x))
     idx_3 = x.rfind('_', 0, idx_2)
-    ret = x[0: idx_1] + '_' + x[idx_3: idx_2]
+    ret = x[0: idx_1] + x[idx_3: idx_2]
     return ret
 
 
