@@ -5,6 +5,8 @@ import logging
 from ..helper.fitting import fit_xpcs
 
 
+pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
+# pg.setConfigOption("background", 'w')
 logger = logging.getLogger(__name__)
 
 fn_tuple = None

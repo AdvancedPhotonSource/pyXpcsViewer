@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1440, 800)
+        mainWindow.resize(1920, 979)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -106,7 +106,7 @@ class Ui_mainWindow(object):
         self.list_view_source = QtWidgets.QListView(self.box_source)
         self.list_view_source.setDragEnabled(True)
         self.list_view_source.setAlternatingRowColors(True)
-        self.list_view_source.setSelectionMode(QtWidgets.QAbstractItemView.ContiguousSelection)
+        self.list_view_source.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.list_view_source.setObjectName("list_view_source")
         self.gridLayout_5.addWidget(self.list_view_source, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.box_source)

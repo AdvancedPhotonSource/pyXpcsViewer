@@ -10,7 +10,6 @@ from .helper.listmodel import ListDataModel, TableDataModel
 import os
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -76,16 +75,25 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(max_points)
         flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
         return flag, tel, qd, g2, g2_err
-    
+
     def get_pg_tree(self, rows):
         if rows in [None, []]:
             rows = [0]
         xfile = self.cache[self.target[rows[0]]]
         return xfile.get_pg_tree()
 
-    def plot_g2(self, handler, q_range=None, t_range=None, y_range=None,
-                offset=None, show_fit=False, max_points=50, bounds=None,
-                show_label=False, num_col=4, plot_type='multiple'):
+    def plot_g2(self,
+                handler,
+                q_range=None,
+                t_range=None,
+                y_range=None,
+                offset=None,
+                show_fit=False,
+                max_points=50,
+                bounds=None,
+                show_label=False,
+                num_col=4,
+                plot_type='multiple'):
 
         num_points = min(len(self.target), max_points)
         fn_tuple = self.get_fn_tuple(max_points)
@@ -95,8 +103,9 @@ class ViewerKernel(FileLocator):
         if self.meta['g2_plot_condition'] == new_condition:
             logger.info('g2 plot parameters unchanged; skip')
         else:
-            cmp = tuple(i != j for i, j in
-                        zip(new_condition, self.meta['g2_plot_condition']))
+            cmp = tuple(
+                i != j
+                for i, j in zip(new_condition, self.meta['g2_plot_condition']))
             self.meta['g2_plot_condition'] = new_condition
             plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
 
@@ -112,7 +121,7 @@ class ViewerKernel(FileLocator):
 
         if not flag:
             return
-        
+
         if show_label:
             labels = self.id_list
         else:
@@ -120,16 +129,28 @@ class ViewerKernel(FileLocator):
 
         # labels = self.id_list
 
-        res = g2mod.pg_plot(handler, tel, qd, g2, g2_err, num_col, t_range,
-                            y_range, offset=offset, labels=labels,
-                            show_fit=show_fit, bounds=bounds,
+        res = g2mod.pg_plot(handler,
+                            tel,
+                            qd,
+                            g2,
+                            g2_err,
+                            num_col,
+                            t_range,
+                            y_range,
+                            offset=offset,
+                            labels=labels,
+                            show_fit=show_fit,
+                            bounds=bounds,
                             plot_type=plot_type)
         self.meta['g2_fit_val'] = res
         return
 
     def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
-        msg = tauq.plot(self.meta['g2_fit_val'], labels=self.id_list, hdl=hdl,
-                        max_q=max_q, offset=offset)
+        msg = tauq.plot(self.meta['g2_fit_val'],
+                        labels=self.id_list,
+                        hdl=hdl,
+                        max_q=max_q,
+                        offset=offset)
         hdl.draw()
         self.show_message(msg)
         return msg
@@ -152,12 +173,17 @@ class ViewerKernel(FileLocator):
                 if 'xpcs' in key:
                     res.append(key)
         return res
-    
+
     def get_twotime_qindex(self, ix, iy, hdl):
         res = twotime.get_twotime_qindex(self.meta, ix, iy, hdl)
         return res
 
-    def plot_twotime_map(self, hdl, fname=None, **kwargs,):
+    def plot_twotime_map(
+        self,
+        hdl,
+        fname=None,
+        **kwargs,
+    ):
         if fname is None:
             fname = self.target[0]
 
@@ -173,8 +199,11 @@ class ViewerKernel(FileLocator):
 
         fname = self.target[current_file_index]
         xfile = self.cache[fname]
-        ret = twotime.plot_twotime(xfile, hdl, plot_index=plot_index,
-                                   meta=self.meta, **kwargs)
+        ret = twotime.plot_twotime(xfile,
+                                   hdl,
+                                   plot_index=plot_index,
+                                   meta=self.meta,
+                                   **kwargs)
         return ret
 
     def plot_intt(self, pg_hdl, max_points=128, rows=None, **kwargs):
@@ -189,7 +218,8 @@ class ViewerKernel(FileLocator):
         if len(self.target) <= 0:
             logger.error('no average target is selected')
             return
-        worker = AverageToolbox(work_dir=self.cwd, flist=self.target,
+        worker = AverageToolbox(work_dir=self.cwd,
+                                flist=self.target,
                                 jid=self.avg_jid)
         worker.setup(*args, **kwargs)
         self.avg_worker.append(worker)
@@ -198,12 +228,11 @@ class ViewerKernel(FileLocator):
 
         self.target.clear()
         return
-    
+
     def remove_job(self, index):
         self.avg_worker.pop(index)
         return
-    
-    
+
     # def register_avg_worker(self, worker):
     #     g2_hist = np.zeros(worker.size, dtype=np.float32)
     #     self.avg_wo
@@ -212,7 +241,7 @@ class ViewerKernel(FileLocator):
         self.avg_worker.layoutChanged.emit()
         if 0 <= jid < len(self.avg_worker):
             self.avg_worker[jid].update_plot()
-    
+
     def update_avg_values(self, data):
         key, val = data[0], data[1]
         # print(len(data))
@@ -228,7 +257,6 @@ class ViewerKernel(FileLocator):
         record[0] += 1
 
         return
-
 
 
 if __name__ == "__main__":

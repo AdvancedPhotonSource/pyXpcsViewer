@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
-    <height>800</height>
+    <width>1920</width>
+    <height>979</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -163,7 +163,7 @@
                   <bool>true</bool>
                  </property>
                  <property name="selectionMode">
-                  <enum>QAbstractItemView::ContiguousSelection</enum>
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
                  </property>
                 </widget>
                </item>
