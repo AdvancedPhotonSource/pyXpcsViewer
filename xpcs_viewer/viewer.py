@@ -621,7 +621,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def update_box(self, file_list, mode='source'):
         if file_list is None:
             return
-
         if mode == 'source':
             self.list_view_source.setModel(file_list)
             self.box_source.setTitle('Source: %5d' % len(file_list))
@@ -629,7 +628,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.list_view_target.setModel(file_list)
             self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
                                      (len(file_list), self.vk.type))
-
+            # on macos, the target box doesn't seem to update; force it
+            file_list.layoutChanged.emit()
+            self.box_target.repaint()
+            self.list_view_target.repaint()
         self.statusbar.showMessage('Target file list updated.', 1000)
         return
 
