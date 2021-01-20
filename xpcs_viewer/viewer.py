@@ -11,6 +11,7 @@ from PyQt5.QtCore import QThread, QObject, Qt
 import os
 import numpy as np
 import sys
+import json
 
 # log file
 import logging
@@ -116,7 +117,29 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.avg_job_table.selectionModel().selectionChanged.connect(
         #     self.update_avg_info)
         self.avg_job_table.clicked.connect(self.update_avg_info)
+        self.load_default_setting()
         self.show()
+    
+    def load_default_setting(self):
+        home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+        if not os.path.isdir(home_dir):
+            os.mkdir(home_dir)
+
+        key_fname = os.path.join(home_dir, 'default_setting.json')
+        # copy the default values
+        if not os.path.isfile(key_fname):
+            from .default_setting import setting
+            with open(key_fname, 'w') as f:
+                json.dump(setting, f, indent=4)
+
+        # the display size might too big for some laptops
+        with open(key_fname, 'r') as f:
+            config = json.load(f)
+            if "window_size_h" in config:
+                new_size = (config["window_size_w"], config["window_size_h"])
+                logger.info('set mainwindow to size %s', new_size)
+                self.resize(*new_size)
+        return
 
     def get_selected_rows(self):
         selected_index = self.list_view_target.selectedIndexes()
