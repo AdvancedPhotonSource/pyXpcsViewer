@@ -47,8 +47,13 @@ def read_h5py(hdl, path, level, guide_str0):
 
     if isinstance(hdl[path], h5py._hl.dataset.Dataset):
 
+        if isinstance(hdl[path][()], np.bytes_):
+            info = hdl[path][()].decode() 
+            return [guide_lst + info]
+
         if hdl[path].shape == ():
             return [guide_lst + 'empty']
+
         info = describe_numpy(np.array(hdl[path]))
         result.append(guide_lst + info)
         return result
@@ -73,7 +78,6 @@ def read_h5py(hdl, path, level, guide_str0):
             info = describe_numpy(hdl[new_path])
             result.append(guide + info)
         else:
-            # return None
             pass
 
     return result

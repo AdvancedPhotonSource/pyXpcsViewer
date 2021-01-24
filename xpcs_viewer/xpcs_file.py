@@ -4,6 +4,7 @@ from .fileIO.hdf_reader import get, put, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .module import saxs2d
 import pyqtgraph as pg
+from .fileIO.hdf_to_str import get_hdf_info
 
 # colors and symbols for plots
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
@@ -20,6 +21,7 @@ class XpcsFile(object):
         attr = self.load(fields)
         self.__dict__.update(attr)
         self.label = create_id(fname)
+        self.hdf_info = None
 
     def __str__(self):
         ans = ['File:' + str(self.full_path)]
@@ -36,6 +38,11 @@ class XpcsFile(object):
 
     def __add__(self, other):
         pass
+
+    def get_hdf_info(self):
+        if self.hdf_info is None:
+            self.hdf_info = get_hdf_info(self.cwd, self.fname)
+        return self.hdf_info
 
     def load(self, fields=None):
         if fields is None:

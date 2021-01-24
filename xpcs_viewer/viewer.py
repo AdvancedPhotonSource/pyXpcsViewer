@@ -117,6 +117,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.avg_job_table.selectionModel().selectionChanged.connect(
         #     self.update_avg_info)
         self.avg_job_table.clicked.connect(self.update_avg_info)
+        self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
         self.load_default_setting()
         self.show()
     
@@ -247,11 +248,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if len(fstr) > 0:
             msg2 = []
             for x in fstr:
-                for n, y in enumerate(msg):
-                    if n == len(msg) - 1:
-                        break
-                    if x in y:
+                n = 0
+                while True:
+                    if x in msg[n]:
                         msg2 += [msg[n], msg[n + 1]]
+                        n += 2
+                    else:
+                        n += 1
+                    # subtract 1 so don't need to worry access n + 1
+                    if n >= len(msg) - 1:
+                        break
+
             msg = msg2
         self.hdf_info.clear()
         self.hdf_info.setText('\n'.join(msg))
