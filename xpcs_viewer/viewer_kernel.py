@@ -71,8 +71,8 @@ class ViewerKernel(FileLocator):
             val = hash(tuple(self.target[0:max_points]))
         return val
 
-    def get_g2_data(self, max_points, **kwargs):
-        xf_list = self.get_xf_list(max_points)
+    def get_g2_data(self, max_points, rows, **kwargs):
+        xf_list = self.get_xf_list(max_points, rows=rows)
         flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
         return flag, tel, qd, g2, g2_err
 
@@ -93,10 +93,11 @@ class ViewerKernel(FileLocator):
                 bounds=None,
                 show_label=False,
                 num_col=4,
+                rows=None,
                 plot_type='multiple'):
 
         num_points = min(len(self.target), max_points)
-        fn_tuple = self.get_fn_tuple(max_points)
+        fn_tuple = self.get_fn_tuple(max_points, rows=rows)
         new_condition = (fn_tuple, (q_range, t_range, y_range, offset), bounds)
 
         plot_level = 0
@@ -113,7 +114,8 @@ class ViewerKernel(FileLocator):
             # either filename or range changed; re-generate the data
             flag, tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
                                                          t_range=t_range,
-                                                         max_points=max_points)
+                                                         max_points=max_points,
+                                                         rows=rows)
             self.meta['g2_data'] = (flag, tel, qd, g2, g2_err)
         else:
             # if only the fitting parameters changed; load data from cache
@@ -123,7 +125,10 @@ class ViewerKernel(FileLocator):
             return
 
         if show_label:
-            labels = self.id_list
+            if rows is None or len(rows) == 0:
+                labels = self.id_list 
+            else:
+                labels = [self.cache[self.target[n]].label for n in rows]
         else:
             labels = None
 
