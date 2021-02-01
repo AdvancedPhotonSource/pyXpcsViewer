@@ -119,6 +119,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.avg_job_table.clicked.connect(self.update_avg_info)
         self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
         self.load_default_setting()
+
+        # disable browse function; it freezes on linux workstation;
+        self.pushButton.setEnabled(False)
+
         self.show()
     
     def load_default_setting(self):
@@ -165,6 +169,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_saxs_1D()
         elif tab_name == 'intensity_t':
             self.plot_intt()
+        elif tab_name == 'g2':
+            self.plot_g2()
 
     def init_tab(self):
         if self.data_state < 2:
@@ -570,7 +576,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
 
-        flag, tel, _, _, _ = self.vk.get_g2_data(max_points)
+        flag, tel, _, _, _ = self.vk.get_g2_data(max_points, rows=None)
         if not flag:
             self.statusbar.showMessage('g2 data is not consistent. abort')
         t_min = np.min(tel)
@@ -598,6 +604,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'q_range': (p[0], p[1]),
             't_range': (p[2], p[3]),
             'y_range': (p[4], p[5]),
+            'rows': self.get_selected_rows(),
         }
 
         bounds = self.check_number()
