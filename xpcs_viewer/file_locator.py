@@ -120,14 +120,18 @@ class FileLocator(object):
     def get(self, fname, fields_raw, **kwargs):
         return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
 
-    def get_fn_tuple(self, max_points=128):
+    def get_fn_tuple(self, max_points=128, rows=None):
         # compile the filenames upto max_points to a tuple
         if max_points <= 0:
             max_points = len(self.target)
 
         ret = []
-        for n in range(min(max_points, len(self.target))):
-            ret.append(self.target[n])
+        if rows is None or len(rows) == 0:
+            for n in range(min(max_points, len(self.target))):
+                ret.append(self.target[n])
+        else:
+            for n in rows[0:max_points]:
+                ret.append(self.target[n])
         return tuple(ret)
 
     def get_xf_list(self, max_points=8, rows=None):
@@ -139,7 +143,8 @@ class FileLocator(object):
         if rows is None or len(rows) == 0:
             selected = list(range(min(max_points, len(self.target))))
         else:
-            selected = rows
+            # make sure no more than max_points are loaded.
+            selected = rows[0:max_points]
 
         for n in selected:
             fn = self.target[n]
