@@ -33,7 +33,7 @@ def list_to_numpy(ans, autorotate=True):
     return ret, rotate
 
 
-def plot(ans, pg_hdl=None, plot_type='log', cmap=None, autorotate=False,
+def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', autorotate=False,
          epsilon=None, display=None, extent=None):
 
     ans, rotate = list_to_numpy(ans, autorotate)
@@ -62,6 +62,7 @@ def plot(ans, pg_hdl=None, plot_type='log', cmap=None, autorotate=False,
         pg_hdl.setImage(ans[0])
 
     pg_hdl.adjust_viewbox()
-    pg_hdl.add_readback(display=display, extent=extent)
+    if extent is not None:
+        pg_hdl.add_readback(display=display, extent=extent)
 
     return rotate
