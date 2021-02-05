@@ -98,7 +98,8 @@ class ViewerKernel(FileLocator):
 
         num_points = min(len(self.target), max_points)
         fn_tuple = self.get_fn_tuple(max_points, rows=rows)
-        new_condition = (fn_tuple, (q_range, t_range, y_range, offset), bounds)
+        new_condition = (fn_tuple, num_col, show_fit, show_label,
+                         (q_range, t_range, y_range, offset), bounds)
 
         plot_level = 0
         if self.meta['g2_plot_condition'] == new_condition:
