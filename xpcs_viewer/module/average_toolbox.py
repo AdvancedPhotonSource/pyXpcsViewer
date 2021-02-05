@@ -81,6 +81,8 @@ class AverageToolbox(QtCore.QRunnable):
         self.eta ='...' 
         self.size = len(self.model)
         self._progress = '0%'
+        # axis to show the baseline;
+        self.ax = None
         # use one file as templelate
         self.origin_path = os.path.join(self.work_dir, self.model[0])
 
@@ -138,7 +140,6 @@ class AverageToolbox(QtCore.QRunnable):
 
         t0 = time.perf_counter()
         for n in range(steps):
-
             beg = chunk_size * (n + 0)
             end = chunk_size * (n + 1)
             end = min(tot_num, end)
@@ -160,10 +161,15 @@ class AverageToolbox(QtCore.QRunnable):
                     # self.signals.progress.emit((self.jid, curr_percentage))
 
                 fname = self.model[m]
-                xf = XF(fname, cwd=self.work_dir, fields=fields)
-                flag, val = validate_g2_baseline(xf.g2)
-                self.baseline[self.ptr] = val
-                self.ptr += 1
+                try:
+                    xf = XF(fname, cwd=self.work_dir, fields=fields)
+                    flag, val = validate_g2_baseline(xf.g2)
+                    self.baseline[self.ptr] = val
+                    self.ptr += 1
+                # except Exceptionn as ec:
+                except:
+                    flag, val = False, 0
+                    logger.error('file %s is damaged, skip', fname)
 
                 if flag:
                     for key in fields:
@@ -212,8 +218,9 @@ class AverageToolbox(QtCore.QRunnable):
         return
 
     def update_plot(self):
-        self.ax.setData(self.baseline[:self.ptr])
-        return
+        if self.ax is not None:
+            self.ax.setData(self.baseline[:self.ptr])
+            return
 
     def get_pg_tree(self):
         data = {}
