@@ -2,7 +2,20 @@ import numpy as np
 from matplotlib.ticker import FormatStrFormatter
 import pyqtgraph as pg
 import logging
-from ..helper.fitting import fit_xpcs
+from ..helper.fitting import fit_xpcs as fit_xpcs_raw
+import joblib
+import os
+import time
+
+
+cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+from joblib import Memory
+memory = Memory(cache_dir, verbose=0)
+
+@memory.cache
+def fit_xpcs(*args, **kwargs):
+    # wrap the fitting function in memory so avoid re-run
+    return fit_xpcs_raw(*args, **kwargs)
 
 
 pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))

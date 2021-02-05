@@ -53,6 +53,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
         self.tab_id = 0
+        self.home_dir = home_dir
 
         self.tabWidget.setCurrentIndex(self.tab_id)
         self.tab_dict = {
@@ -126,11 +127,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show()
     
     def load_default_setting(self):
-        home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
-        if not os.path.isdir(home_dir):
-            os.mkdir(home_dir)
+        # home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+        if not os.path.isdir(self.home_dir):
+            os.mkdir(self.home_dir)
 
-        key_fname = os.path.join(home_dir, 'default_setting.json')
+        key_fname = os.path.join(self.home_dir, 'default_setting.json')
         # copy the default values
         if not os.path.isfile(key_fname):
             from .default_setting import setting
