@@ -44,19 +44,20 @@ class XpcsFile(object):
             self.hdf_info = get_hdf_info(self.cwd, self.fname)
         return self.hdf_info
 
-    def load(self, fields=None):
-        if fields is None:
-            if self.type == 'Twotime':
-                fields = [
-                    'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                    'ql_dyn', 'g2_full', 'g2_partials', 'type'
-                ]
-            # multitau
-            else:
-                fields = [
-                    'saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                    'tau', 'ql_dyn', 'g2', 'g2_err', 'type'
-                ]
+    def load(self, extra_fields=None):
+        # default fields;
+        fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 
+                          't0', 't1', 'ql_dyn', 'type']
+
+        if self.type == 'Twotime':
+            fields = fields + ['g2_full', 'g2_partials']
+        # multitau
+        else:
+            fields = fields + ['tau', 'g2', 'g2_err']
+
+        # append extra fields, eg 'G2', 'IP', 'IF'        
+        if isinstance(extra_fields, list):
+            fields += extra_fields
 
         ret = get(self.full_path, fields, 'alias')
 
@@ -65,9 +66,6 @@ class XpcsFile(object):
         if self.type == 'Twotime':
             ret['g2'] = ret['g2_full']
             ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
-            # print(np.max(ret['t_el']))
-            # print(np.max(ret['ql_dyn']))
-            # print(ret['ql_sta'])
 
         return ret
 
@@ -151,24 +149,6 @@ class XpcsFile(object):
         saxs2d.plot([self.saxs_2d], hdl, *args, **kwargs)
         app.exec_()
 
-    def pg_plot_g2(self, qrange, ax, idx):
-        color = colors[idx // len(colors)]
-        symbol = symbols[idx // len(symbols)]
-
-        pen = pg.mkPen(color=color, width=3)
-        line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
-        ax.plot(x,
-                y,
-                pen=None,
-                symbol=symbol,
-                name=self.label,
-                symbolSize=3,
-                symbolBrush=pg.mkBrush(color=color))
-
-        ax.setLogMode(x=True, y=None)
-        ax.addItem(line)
-        return
-    
     def get_pg_tree(self):
         data = self.load()
         n = 0
@@ -188,13 +168,11 @@ class XpcsFile(object):
         tree.resize(600, 800)
         return tree
 
+
 def test1():
     cwd = '../../../xpcs_data'
     af = XpcsFile(fname='N077_D100_att02_0128_0001-100000.hdf', cwd=cwd)
     af.plot_saxs2d()
-    # af = XpcsFile(path='A178_SMB_C_BR_Hetero_SI35_att0_Lq0_001_0001-0768_Twotime.hdf')
-    # print(af)
-    # print(af.getattr('saxs_2d'))
 
 
 if __name__ == '__main__':
