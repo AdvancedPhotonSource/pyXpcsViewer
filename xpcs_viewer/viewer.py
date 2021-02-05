@@ -121,7 +121,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.load_default_setting()
 
         # disable browse function; it freezes on linux workstation;
-        self.pushButton.setEnabled(False)
+        # self.pushButton.setEnabled(False)
 
         self.show()
     
@@ -205,7 +205,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.update_average_box()
         elif tab_name == 'g2':
             self.set_g2_range()
-            # self.plot_g2(10)
+            self.plot_g2(10)
 
         self.plot_state[new_tab_id] = 1
 
