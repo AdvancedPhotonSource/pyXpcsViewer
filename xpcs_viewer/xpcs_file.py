@@ -74,9 +74,9 @@ class XpcsFile(object):
     def at(self, key):
         return self.__dict__[key]
 
-    def __getattr__(self, item):
-        if item in self.__dict__:
-            return self[item]
+    def __getattr__(self, key):
+        if key in self.__dict__:
+            return self.__dict__[key]
 
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
