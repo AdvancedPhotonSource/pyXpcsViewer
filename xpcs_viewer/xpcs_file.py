@@ -2,9 +2,11 @@ import os
 import numpy as np
 from .fileIO.hdf_reader import get, put, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
-from .module import saxs2d
+from .plothandler.matplot_qt import MplCanvasBarV
+from .module import saxs2d, g2mod, saxs1d, intt
 import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
+import matplotlib.pyplot as plt
 
 # colors and symbols for plots
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
@@ -12,13 +14,13 @@ symbols = ['o', 's', 't', 'd', '+']
 
 
 class XpcsFile(object):
-    def __init__(self, fname, cwd='../../data', fields=None):
+    def __init__(self, fname, cwd='.', fields=None):
         self.fname = fname
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
 
         self.type = get_type(self.full_path)
-        attr = self.load(fields)
+        self.keys, attr = self.load(fields)
         self.__dict__.update(attr)
         self.label = create_id(fname)
         self.hdf_info = None
@@ -67,7 +69,7 @@ class XpcsFile(object):
             ret['g2'] = ret['g2_full']
             ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
 
-        return ret
+        return fields, ret
 
     def at(self, key):
         return self.__dict__[key]
@@ -145,8 +147,25 @@ class XpcsFile(object):
     def plot_saxs2d(self, *args, **kwargs):
         from pyqtgraph.Qt import QtGui
         app = QtGui.QApplication([])
+        win = QtGui.QMainWindow()
+        win.resize(800,800)
         hdl = ImageViewDev()
+        win.setCentralWidget(hdl)
+        win.show()
+        win.setWindowTitle(self.label + ': ' + self.fname)
         saxs2d.plot([self.saxs_2d], hdl, *args, **kwargs)
+        app.exec_()
+    
+    def plot_saxs_1d(self, *args, **kwargs):
+        from pyqtgraph.Qt import QtGui
+        app = QtGui.QApplication([])
+        win = QtGui.QMainWindow()
+        win.resize(800,800)
+        canvas = MplCanvasBarV() 
+        win.setCentralWidget(canvas)
+        win.show()
+        win.setWindowTitle(self.label + ': ' + self.fname)
+        saxs1d.plot([self], canvas.hdl, *args, **kwargs)
         app.exec_()
 
     def get_pg_tree(self):
