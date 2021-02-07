@@ -2,7 +2,7 @@ import numpy as np
 from .saxs1d import offset_intensity, norm_saxs_data
 
 
-def plot(fc, mp_hdl, plot_type='log', plot_norm=0, plot_offset=0, legend=None, 
+def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None, 
          title=None, **kwargs):
 
     xscale = ['linear', 'log'][plot_type % 2]

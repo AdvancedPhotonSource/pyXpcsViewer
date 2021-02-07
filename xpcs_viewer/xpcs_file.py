@@ -3,10 +3,11 @@ import numpy as np
 from .fileIO.hdf_reader import get, put, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .plothandler.matplot_qt import MplCanvasBarV
-from .module import saxs2d, g2mod, saxs1d, intt
+from .module import saxs2d, g2mod, saxs1d, intt, stability
 import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
 import matplotlib.pyplot as plt
+from pyqtgraph.Qt import QtGui, QtCore
 
 # colors and symbols for plots
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
@@ -48,8 +49,8 @@ class XpcsFile(object):
 
     def load(self, extra_fields=None):
         # default fields;
-        fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 
-                          't0', 't1', 'ql_dyn', 'type']
+        fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t',
+                  't0', 't1', 'ql_dyn', 'type']
 
         if self.type == 'Twotime':
             fields = fields + ['g2_full', 'g2_partials']
@@ -57,7 +58,7 @@ class XpcsFile(object):
         else:
             fields = fields + ['tau', 'g2', 'g2_err']
 
-        # append extra fields, eg 'G2', 'IP', 'IF'        
+        # append extra fields, eg 'G2', 'IP', 'IF'
         if isinstance(extra_fields, list):
             fields += extra_fields
 
@@ -145,27 +146,45 @@ class XpcsFile(object):
         return extent
 
     def plot_saxs2d(self, *args, **kwargs):
-        from pyqtgraph.Qt import QtGui
         app = QtGui.QApplication([])
         win = QtGui.QMainWindow()
-        win.resize(800,800)
+        win.resize(1024, 600)
         hdl = ImageViewDev()
         win.setCentralWidget(hdl)
         win.show()
         win.setWindowTitle(self.label + ': ' + self.fname)
         saxs2d.plot([self.saxs_2d], hdl, *args, **kwargs)
         app.exec_()
-    
-    def plot_saxs_1d(self, *args, **kwargs):
-        from pyqtgraph.Qt import QtGui
+
+    def plot_saxs1d(self, *args, **kwargs):
         app = QtGui.QApplication([])
         win = QtGui.QMainWindow()
-        win.resize(800,800)
-        canvas = MplCanvasBarV() 
+        win.resize(1024, 600)
+        canvas = MplCanvasBarV()
         win.setCentralWidget(canvas)
         win.show()
         win.setWindowTitle(self.label + ': ' + self.fname)
         saxs1d.plot([self], canvas.hdl, *args, **kwargs)
+        app.exec_()
+
+    def plot_intt(self, window=1, sampling=1, **kwargs):
+        app = QtGui.QApplication([])
+        win = pg.GraphicsLayoutWidget(show=True, title=self.label + '_intt')
+        win.resize(1024, 600)
+        intt.plot([self], win, [self.label], enable_zoom=True,
+                  xlabel='Frame Index', rows=None, window=window,
+                  sampling=sampling, **kwargs)
+        app.exec_()
+
+    def plot_stability(self, **kwargs):
+        app = QtGui.QApplication([])
+        win = QtGui.QMainWindow()
+        win.resize(1024, 600)
+        canvas = MplCanvasBarV()
+        win.setCentralWidget(canvas)
+        win.show()
+        stability.plot(self, canvas.hdl,
+                       title='stability plot for %s' % self.label, **kwargs)
         app.exec_()
 
     def get_pg_tree(self):
@@ -178,7 +197,7 @@ class XpcsFile(object):
                 # suqeeze one-element array
                 if val.size == 1:
                     data[key] = float(val)
-        
+
         data['type'] = self.type
         data['label'] = self.label
 
