@@ -98,18 +98,22 @@ class ViewerKernel(FileLocator):
 
         num_points = min(len(self.target), max_points)
         fn_tuple = self.get_fn_tuple(max_points, rows=rows)
-        new_condition = (fn_tuple, num_col, show_fit, show_label,
-                         (q_range, t_range, y_range, offset), bounds)
+        new_condition = (
+            (fn_tuple, num_col, show_fit, show_label),
+            (q_range, t_range, y_range, offset),
+            bounds)
 
         plot_level = 0
         if self.meta['g2_plot_condition'] == new_condition:
             logger.info('g2 plot parameters unchanged; skip')
+            return
         else:
             cmp = tuple(
                 i != j
                 for i, j in zip(new_condition, self.meta['g2_plot_condition']))
             self.meta['g2_plot_condition'] = new_condition
             plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
+            logger.info('plot level = %d', plot_level)
 
         if plot_level >= 2:
             # either filename or range changed; re-generate the data
