@@ -4,6 +4,7 @@ key = {
   "ql_sta": "/xpcs/sqlist",
   "ql_dyn": "/xpcs/dqlist",
   "dqmap": "/xpcs/dqmap",
+  "sqmap": "/xpcs/sqmap",
   "type": "/xpcs/analysis_type",
   "t0": "/measurement/instrument/detector/exposure_period",
   "t1": "/measurement/instrument/detector/exposure_time",
