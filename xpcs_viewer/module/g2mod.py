@@ -67,7 +67,6 @@ def create_slice(arr, x_range):
 
 
 def get_data(xf_list, q_range=None, t_range=None):
-    logger.info('qrange is %s', str(q_range))
     tslice = create_slice(xf_list[0].t_el, t_range)
     qslice = create_slice(xf_list[0].ql_dyn, q_range)
 
@@ -82,7 +81,7 @@ def get_data(xf_list, q_range=None, t_range=None):
     t_shape = set([t.shape for t in tel])
     q_shape = set([q.shape for q in qd])
     if len(t_shape) != 1 or len(q_shape) != 1:
-        logger.info('the data files are not consistent in tau or q')
+        logger.error('the data files are not consistent in tau or q')
         flag = False
 
     return flag, tel, qd, g2, g2_err
