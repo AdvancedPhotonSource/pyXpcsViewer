@@ -9,10 +9,6 @@ from .fileIO.hdf_to_str import get_hdf_info
 import matplotlib.pyplot as plt
 from pyqtgraph.Qt import QtGui, QtCore
 
-# colors and symbols for plots
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
-symbols = ['o', 's', 't', 'd', '+']
-
 
 class XpcsFile(object):
     def __init__(self, fname, cwd='.', fields=None):
@@ -61,6 +57,9 @@ class XpcsFile(object):
         # append extra fields, eg 'G2', 'IP', 'IF'
         if isinstance(extra_fields, list):
             fields += extra_fields
+
+        # avoid multiple keys
+        fields = list(set(fields))
 
         ret = get(self.full_path, fields, 'alias')
         ret['dqmap'] = ret['dqmap'].astype(np.uint16)
