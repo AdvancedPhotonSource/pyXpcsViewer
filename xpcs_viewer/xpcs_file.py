@@ -50,7 +50,7 @@ class XpcsFile(object):
     def load(self, extra_fields=None):
         # default fields;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t',
-                  't0', 't1', 'ql_dyn', 'type']
+                  't0', 't1', 'ql_dyn', 'type', 'dqmap']
 
         if self.type == 'Twotime':
             fields = fields + ['g2_full', 'g2_partials']
@@ -63,6 +63,7 @@ class XpcsFile(object):
             fields += extra_fields
 
         ret = get(self.full_path, fields, 'alias')
+        ret['dqmap'] = ret['dqmap'].astype(np.uint16)
 
         if 't0' in ret and 'tau' in ret:
             ret['t_el'] = ret['t0'] * ret['tau']
