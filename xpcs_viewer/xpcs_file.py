@@ -25,7 +25,7 @@ class XpcsFile(object):
     def __str__(self):
         ans = ['File:' + str(self.full_path)]
         for key, val in self.__dict__.items():
-            if key == 'hdf_key':
+            if key in ['hdf_key', "hdf_info"]:
                 continue
             elif isinstance(val, np.ndarray) and val.size > 1:
                 val = str(val.shape)
@@ -34,6 +34,11 @@ class XpcsFile(object):
             ans.append(f"   {key.ljust(12)}: {val.ljust(30)}")
 
         return '\n'.join(ans)
+    
+    def __repr__(self):
+        ans = str(type(self))
+        ans = '\n'.join([ans, self.__str__()])
+        return ans
 
     def __add__(self, other):
         pass
@@ -70,7 +75,7 @@ class XpcsFile(object):
             ret['g2'] = ret['g2_full']
             ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
 
-        return fields, ret
+        return ret.keys(), ret
 
     def at(self, key):
         return self.__dict__[key]
