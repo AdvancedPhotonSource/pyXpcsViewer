@@ -6,6 +6,7 @@ from shutil import copyfile
 from sklearn.cluster import KMeans as sk_kmeans
 import h5py
 from .helper.listmodel import ListDataModel, TableDataModel
+import pyqtgraph as pg
 
 import os
 import logging
@@ -81,6 +82,17 @@ class ViewerKernel(FileLocator):
             rows = [0]
         xfile = self.cache[self.target[rows[0]]]
         return xfile.get_pg_tree()
+    
+    def get_fitting_tree(self):
+        xf_list = self.get_xf_list(8) 
+        result = {}
+        for x in xf_list:
+            result[x.label] = x.fit_val
+        
+        tree = pg.DataTreeWidget(data=result)
+        tree.setWindowTitle('fitting summary')
+        tree.resize(1024, 800)
+        return tree
 
     def plot_g2(self,
                 handler,
@@ -102,7 +114,7 @@ class ViewerKernel(FileLocator):
         new_condition = (
             (fn_tuple, num_col, show_fit, show_label),
             (q_range, t_range, y_range, offset),
-            bounds)
+            (bounds, fit_flag))
 
         plot_level = 0
         if self.meta['g2_plot_condition'] == new_condition:
@@ -126,7 +138,16 @@ class ViewerKernel(FileLocator):
         # self.meta['g2_fit_val'] = res
         return
 
-    def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
+    def plot_tauq(self, max_q=0.016, hdl=None, bounds=None, rows=[],
+                  fit_flag=None, offset=None, max_points=8, q_range=None):
+        
+        xf_list = self.get_xf_list(max_points, rows=rows) 
+        for x in xf_list:
+            if x.fit_val is None:
+                logger.info('g2 fitting is not available for %s', x.fname)
+            else:
+                x.fit_tauq(q_range, bounds, fit_flag)
+        
         msg = tauq.plot(self.meta['g2_fit_val'],
                         labels=self.id_list,
                         hdl=hdl,
