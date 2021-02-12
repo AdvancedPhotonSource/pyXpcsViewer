@@ -5,8 +5,10 @@ from scipy.stats import linregress as sp_stats
 import traceback
 from sklearn import linear_model
 
+
 def single_exp(x, tau, bkg, cts):
     return cts * np.exp( -2 * x / tau) + bkg
+
 
 def fit_tau(qd, tau, tau_err):
     x = np.log(qd).reshape(-1, 1)

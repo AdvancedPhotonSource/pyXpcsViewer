@@ -140,11 +140,12 @@ def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
     }
 
 
-def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
-            labels=None, show_fit=False, bounds=None, plot_type='multiple'):
-
-    if offset is None:
-        offset = 0
+def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
+            offset=0, show_fit=False, show_label=False, bounds=None,
+            fit_flag=None,
+            plot_type='multiple'):
+    flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
+                                         t_range=t_range)
 
     num_fig = 1
     num_lines = 1
@@ -155,7 +156,6 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
     elif plot_type == 'single':
         num_fig = len(g2)
         num_lines = g2[0].shape[1]
-
     elif plot_type == 'single-combined':
         num_fig = 1
         num_lines = g2[0].shape[1] * len(g2)
@@ -166,9 +166,7 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
     hdl.adjust_canvas_size(num_col=col, num_row=row)
     hdl.clear()
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
-    xrange = np.log10(xrange)
-    if labels is None:
-        labels = [None] * num_lines
+    t0_range = np.log10(t_range)
 
     axes = []
     for n in range(num_fig):
@@ -176,7 +174,7 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
         i_row = n // col
         t = hdl.addPlot(row=i_row, col=i_col)
         axes.append(t)
-        if labels[0] is not None:
+        if show_label:
             t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
         t.setMouseEnabled(x=False, y=False)
 
@@ -184,10 +182,9 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
     fit_val_dict = {}
     for m in range(len(g2)):
         if show_fit:
-            fit_res, fit_val = fit_xpcs(tel[m], qd[m], g2[m], g2_err[m],
-                                        b=bounds)
+            fit_res, fit_val = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag)
             fit_val_dict[m] = fit_val
-            err_msg.append(labels[m])
+            err_msg.append(xf_list[m].label)
 
         for n in range(g2[0].shape[1]):
             color = colors[m % len(colors)]
@@ -195,19 +192,19 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             if plot_type == 'multiple':
                 ax = axes[n]
                 title = 'q=%.5f Å⁻¹' % qd[0][n]
-                label = labels[m]
+                label = xf_list[m].label 
                 if m == 0:
                     ax.setTitle(title)
             elif plot_type == 'single':
                 ax = axes[m]
                 # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
-                title = labels[m]
+                title = xf_list[m].label 
                 label = 'q=%.5f Å⁻¹' % qd[0][n]
                 ax.setTitle(title)
             elif plot_type == 'single-combined':
                 ax = axes[0]
-                label = labels[m] + ' q=%.5f Å⁻¹' % qd[0][n]
+                label = xf_list[m].label + ' q=%.5f Å⁻¹' % qd[0][n]
 
             ax.setLabel('bottom', 'tau (s)')
             ax.setLabel('left', 'g2')
@@ -219,11 +216,12 @@ def pg_plot(hdl, tel, qd, g2, g2_err, num_col, xrange, yrange, offset=None,
             y_err = g2_err[m][:, n]
 
             pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
-            ax.setRange(xRange=xrange, yRange=yrange)
+            ax.setRange(xRange=t0_range, yRange=y_range)
+
             if show_fit:
                 y_fit = fit_res[n]['fit_y'] + m * offset
                 ax.plot(fit_res[n]['fit_x'], y_fit,
-                        pen=pg.mkPen(color, width=1.2))
+                        pen=pg.mkPen(color, width=2.5))
 
             # msg = fit_res[m]['err_msg']
             # if msg is not None:
