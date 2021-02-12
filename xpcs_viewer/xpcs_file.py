@@ -4,10 +4,16 @@ from .fileIO.hdf_reader import get, put, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .plothandler.matplot_qt import MplCanvasBarV
 from .module import saxs2d, g2mod, saxs1d, intt, stability
+from .module.g2mod import get_data as get_data_slice, create_slice
 import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
 import matplotlib.pyplot as plt
 from pyqtgraph.Qt import QtGui, QtCore
+from scipy.optimize import curve_fit
+
+
+def single_exp_all(x, a, b, c, d):
+    return a * np.exp( -2 * (x / b) ** c) + d
 
 
 class XpcsFile(object):
@@ -71,9 +77,12 @@ class XpcsFile(object):
 
         if 't0' in ret and 'tau' in ret:
             ret['t_el'] = ret['t0'] * ret['tau']
+
         if self.type == 'Twotime':
             ret['g2'] = ret['g2_full']
             ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
+        else:
+            ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
 
         return ret.keys(), ret
 
@@ -210,6 +219,95 @@ class XpcsFile(object):
         tree.setWindowTitle(self.fname)
         tree.resize(600, 800)
         return tree
+    
+    def fit_g2(self,
+               q_range=None,
+               t_range=None, 
+               bounds=None,
+               fit_flag=[True, True, True, True]):
+
+        if q_range is None:
+            q_range = [np.min(self.ql_dyn) * 0.95, np.max(self.ql_dyn) * 1.05]
+        
+        if t_range is None:
+            q_range = [np.min(self.t_el) * 0.95, np.max(self.t_el) * 1.05]
+        
+        if not isinstance(fit_flag, np.ndarray):
+            fit_flag = np.array(fit_flag)
+        fix_flag = np.logical_not(fit_flag)
+
+        if not isinstance(bounds, np.ndarray):
+            bounds = np.array(bounds)
+
+        # degree of fitting 
+        dof = np.sum(fit_flag)
+
+        # number of arguments, regardless of fixed or to be fitted
+        num_args = len(fit_flag)
+
+        # create a function that takes care of the fit flag;
+        def func(x, *args):
+            input = np.zeros(num_args)
+            input[fix_flag] = bounds[1, fix_flag]
+            input[fit_flag] = np.array(args)
+            return single_exp_all(x, *input)
+
+        # process boundaries and initial values         
+        bounds_fit = bounds[:, fit_flag]
+        # doing a simple average to get the initial guess;
+        p0 = np.mean(bounds_fit, axis=0)
+
+        # create a data slice for given range;    
+        t_slice = create_slice(self.t_el, t_range)
+        q_slice = create_slice(self.ql_dyn, q_range)
+
+        t_el = self.t_el[t_slice]
+        q = self.ql_dyn[q_slice]
+        g2 = self.g2[t_slice, q_slice]
+        sigma = self.g2_err_mod[t_slice, q_slice]
+
+        fit_val = np.zeros((len(q), 1 + 2 * num_args))
+        fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
+                            np.log10(np.max(t_el)) + 0.5, 128)
+
+        fit_summary = [] 
+        for n in range(len(q)):
+            popt, pcov = curve_fit(func, t_el, g2[:, n],
+                                   p0=p0, sigma=sigma[:, n],
+                                   bounds=bounds_fit)
+
+            fit_val[n, 0] = q[n]
+            # fit result
+            fit_val[n, 1: 1 + num_args][fit_flag] = popt
+            fit_val[n, 1: 1 + num_args][fix_flag] = bounds[1, fix_flag]
+            # fit error
+            sl = slice(1 + num_args, 1 + 2 * num_args)
+            fit_val[n, sl][fit_flag] = np.sqrt(np.diag(pcov))
+
+            fit_y = func(fit_x, *popt)
+            
+            result = {'err_msg': None,
+                      'opt': popt,
+                      'err': np.sqrt(np.diag(pcov)),
+                      'fit_x': fit_x,
+                      'fit_y': fit_y}
+
+            fit_summary.append(result)
+
+        return fit_summary, fit_val
+
+    def correct_g2_err(self, g2_err=None, threshold=1E-6):
+        # correct the err for some data points with really small error, which
+        # may cause the fitting to blowup
+
+        g2_err_mod = np.copy(g2_err)
+        for n in range(g2_err.shape[1]):
+            data = g2_err[:, n]
+            idx = data > threshold
+            avg = np.mean(data[idx])
+            g2_err_mod[np.logical_not(idx), n] = avg 
+
+        return g2_err_mod
 
 
 def test1():
