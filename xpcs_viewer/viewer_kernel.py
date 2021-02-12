@@ -94,6 +94,7 @@ class ViewerKernel(FileLocator):
                 show_label=False,
                 num_col=4,
                 rows=None,
+                fit_flag=None,
                 plot_type='multiple'):
 
         num_points = min(len(self.target), max_points)
@@ -115,44 +116,14 @@ class ViewerKernel(FileLocator):
             plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
             logger.info('plot level = %d', plot_level)
 
-        if plot_level >= 2:
-            # either filename or range changed; re-generate the data
-            flag, tel, qd, g2, g2_err = self.get_g2_data(q_range=q_range,
-                                                         t_range=t_range,
-                                                         max_points=max_points,
-                                                         rows=rows)
-            self.meta['g2_data'] = (flag, tel, qd, g2, g2_err)
-        else:
-            # if only the fitting parameters changed; load data from cache
-            flag, tel, qd, g2, g2_err = self.meta['g2_data']
+        xf_list = self.get_xf_list(max_points, rows=rows) 
 
-        if not flag:
-            return
+        res = g2mod.pg_plot(handler, xf_list, num_col, q_range, t_range,
+                            y_range, offset=offset, show_label=show_label,
+                            show_fit=show_fit, bounds=bounds, 
+                            plot_type=plot_type, fit_flag=fit_flag)
 
-        if show_label:
-            if rows is None or len(rows) == 0:
-                labels = self.id_list 
-            else:
-                labels = [self.cache[self.target[n]].label for n in rows]
-        else:
-            labels = None
-
-        # labels = self.id_list
-
-        res = g2mod.pg_plot(handler,
-                            tel,
-                            qd,
-                            g2,
-                            g2_err,
-                            num_col,
-                            t_range,
-                            y_range,
-                            offset=offset,
-                            labels=labels,
-                            show_fit=show_fit,
-                            bounds=bounds,
-                            plot_type=plot_type)
-        self.meta['g2_fit_val'] = res
+        # self.meta['g2_fit_val'] = res
         return
 
     def plot_tauq(self, max_q=0.016, hdl=None, offset=None):
@@ -254,8 +225,6 @@ class ViewerKernel(FileLocator):
 
     def update_avg_values(self, data):
         key, val = data[0], data[1]
-        # print(len(data))
-        # print(type(key), type(val))
         if self.avg_worker_active[key] is None:
             self.avg_worker_active[key] = [0, np.zeros(128, dtype=np.float32)]
         record = self.avg_worker_active[key]

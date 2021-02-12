@@ -586,16 +586,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         def to_e(x):
             return '%.2e' % x
 
-        self.tau_min.setText(to_e(t_min / 5))
-        self.tau_max.setText(to_e(t_max * 5))
+        self.g2_bmin.setText(to_e(t_min * 10))
+        self.g2_bmax.setText(to_e(t_max / 10))
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
 
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
-
+        
         p = self.check_g2_number()
+        bounds, fit_flag = self.check_number()
+
         kwargs = {
             'num_col': self.sb_g2_column.value(),
             'offset': self.sb_g2_offset.value(),
@@ -606,15 +608,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             't_range': (p[2], p[3]),
             'y_range': (p[4], p[5]),
             'rows': self.get_selected_rows(),
+            'bounds': bounds,
+            'fit_flag': fit_flag
         }
 
-        bounds = self.check_number()
         self.pushButton_4.setDisabled(True)
         self.pushButton_4.setText('plotting')
+
         try:
-            self.vk.plot_g2(handler=self.mp_g2, bounds=bounds, **kwargs)
+            self.vk.plot_g2(handler=self.mp_g2, **kwargs)
         except Exception:
             pass
+
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')
         # self.g2_err_msg.clear()
@@ -817,8 +822,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return vals
 
     def check_number(self, default_val=(1e-6, 1e-2, 0.01, 0.20, 0.95, 1.05)):
-        keys = (self.tau_min, self.tau_max, self.bkg_min, self.bkg_max,
-                self.cts_min, self.cts_max)
+        keys = (self.g2_amin, self.g2_amax, self.g2_bmin, self.g2_bmax,
+                self.g2_cmin, self.g2_cmax, self.g2_dmin, self.g2_dmax)
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
             try:
@@ -838,8 +843,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         swap_min_max(0, 1, lambda x: '%.2e' % x)
         swap_min_max(2, 3)
         swap_min_max(4, 5)
+        swap_min_max(6, 7)
+
         vals = np.array(vals).reshape(len(keys) // 2, 2)
-        return (tuple(vals[:, 0]), tuple(vals[:, 1]))
+        bounds = (tuple(vals[:, 0]), tuple(vals[:, 1]))
+
+        fit_keys = (self.g2_afit, self.g2_bfit, self.g2_cfit, self.g2_dfit)
+        fit_flag = [x.isChecked() for x in fit_keys]
+
+        return bounds, fit_flag
 
     def check_status(self, show_msg=True, min_state=2):
         flag = False
