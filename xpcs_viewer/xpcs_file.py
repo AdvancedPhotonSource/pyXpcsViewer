@@ -27,6 +27,8 @@ class XpcsFile(object):
         self.__dict__.update(attr)
         self.label = create_id(fname)
         self.hdf_info = None
+        self.fit_val = None
+        self.fit_summary = None
 
     def __str__(self):
         ans = ['File:' + str(self.full_path)]
@@ -293,6 +295,16 @@ class XpcsFile(object):
                       'fit_y': fit_y}
 
             fit_summary.append(result)
+        
+        self.fit_val = {
+            'fit_result': fit_val,
+            'column': '1: q, 2: a, 3: b, 4: c, 5: d, 6: a_err, 7: b_err, 8: c_err, 9: d_err',
+            'q_range': str(q_range),
+            't_range': str(t_range),
+            'bounds': str(bounds),
+            'fit_flag': str(fit_flag),
+        }
+        self.fit_summary = fit_summary
 
         return fit_summary, fit_val
 
@@ -308,6 +320,24 @@ class XpcsFile(object):
             g2_err_mod[np.logical_not(idx), n] = avg 
 
         return g2_err_mod
+    
+    def fit_tauq(self, q_range, bounds, fit_flag):
+        if self.fit_val is None:
+            return
+        
+        data = self.fit_val['fit_result']
+        if not isinstance(fit_flag, list):
+            fit_flag = list(fit_flag)
+        if not isinstance(bounds, np.ndarray):
+            bounds = np.array(bounds)
+        
+        def func(x, *args):
+            if fit_flag == [True, True]:
+                return args[0] * x ** args[1]
+            elif fit_flag == [True, False]:
+                return args[0] * x ** bounds[1, 1]
+            elif fit_flag == [False, True]:
+                return bounds[1, 0] * x ** args[0]
 
 
 def test1():
