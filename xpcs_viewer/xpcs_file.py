@@ -4,7 +4,8 @@ from .fileIO.hdf_reader import get, put, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .plothandler.matplot_qt import MplCanvasBarV
 from .module import saxs2d, g2mod, saxs1d, intt, stability
-from .module.g2mod import get_data as get_data_slice, create_slice
+from .module.g2mod import  create_slice
+from .helper.fitting import fit_with_fixed
 import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
 import matplotlib.pyplot as plt
@@ -27,7 +28,6 @@ class XpcsFile(object):
         self.__dict__.update(attr)
         self.label = create_id(fname)
         self.hdf_info = None
-        self.fit_val = None
         self.fit_summary = None
 
     def __str__(self):
@@ -234,31 +234,6 @@ class XpcsFile(object):
         if t_range is None:
             q_range = [np.min(self.t_el) * 0.95, np.max(self.t_el) * 1.05]
         
-        if not isinstance(fit_flag, np.ndarray):
-            fit_flag = np.array(fit_flag)
-        fix_flag = np.logical_not(fit_flag)
-
-        if not isinstance(bounds, np.ndarray):
-            bounds = np.array(bounds)
-
-        # degree of fitting 
-        dof = np.sum(fit_flag)
-
-        # number of arguments, regardless of fixed or to be fitted
-        num_args = len(fit_flag)
-
-        # create a function that takes care of the fit flag;
-        def func(x, *args):
-            input = np.zeros(num_args)
-            input[fix_flag] = bounds[1, fix_flag]
-            input[fit_flag] = np.array(args)
-            return single_exp_all(x, *input)
-
-        # process boundaries and initial values         
-        bounds_fit = bounds[:, fit_flag]
-        # doing a simple average to get the initial guess;
-        p0 = np.mean(bounds_fit, axis=0)
-
         # create a data slice for given range;    
         t_slice = create_slice(self.t_el, t_range)
         q_slice = create_slice(self.ql_dyn, q_range)
@@ -268,45 +243,29 @@ class XpcsFile(object):
         g2 = self.g2[t_slice, q_slice]
         sigma = self.g2_err_mod[t_slice, q_slice]
 
-        fit_val = np.zeros((len(q), 1 + 2 * num_args))
+        p0 = np.array(bounds).mean(axis=0)
+        p0[1] = np.sqrt(bounds[0][1] * bounds[1][1])
+
         fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
                             np.log10(np.max(t_el)) + 0.5, 128)
+        fit_line, fit_val = fit_with_fixed(single_exp_all, t_el, g2, sigma,
+                                           bounds, fit_flag, fit_x, p0=p0)
 
-        fit_summary = [] 
-        for n in range(len(q)):
-            popt, pcov = curve_fit(func, t_el, g2[:, n],
-                                   p0=p0, sigma=sigma[:, n],
-                                   bounds=bounds_fit)
-
-            fit_val[n, 0] = q[n]
-            # fit result
-            fit_val[n, 1: 1 + num_args][fit_flag] = popt
-            fit_val[n, 1: 1 + num_args][fix_flag] = bounds[1, fix_flag]
-            # fit error
-            sl = slice(1 + num_args, 1 + 2 * num_args)
-            fit_val[n, sl][fit_flag] = np.sqrt(np.diag(pcov))
-
-            fit_y = func(fit_x, *popt)
-            
-            result = {'err_msg': None,
-                      'opt': popt,
-                      'err': np.sqrt(np.diag(pcov)),
-                      'fit_x': fit_x,
-                      'fit_y': fit_y}
-
-            fit_summary.append(result)
-        
-        self.fit_val = {
-            'fit_result': fit_val,
-            'column': '1: q, 2: a, 3: b, 4: c, 5: d, 6: a_err, 7: b_err, 8: c_err, 9: d_err',
+        self.fit_summary = {
+            'fit_val': fit_val,
+            't_el': t_el,
+            'q_val': q,
+            # 'g2': g2,
+            # 'sigma': sigma,
+            'column': '1: [a, b, c, d], 2: [a_err, b_err, c_err, d_err]',
             'q_range': str(q_range),
             't_range': str(t_range),
-            'bounds': str(bounds),
+            'bounds': bounds,
             'fit_flag': str(fit_flag),
+            'fit_line': fit_line
         }
-        self.fit_summary = fit_summary
 
-        return fit_summary, fit_val
+        return self.fit_summary
 
     def correct_g2_err(self, g2_err=None, threshold=1E-6):
         # correct the err for some data points with really small error, which
@@ -322,22 +281,35 @@ class XpcsFile(object):
         return g2_err_mod
     
     def fit_tauq(self, q_range, bounds, fit_flag):
-        if self.fit_val is None:
+        if self.fit_summary is None:
             return
         
-        data = self.fit_val['fit_result']
-        if not isinstance(fit_flag, list):
-            fit_flag = list(fit_flag)
-        if not isinstance(bounds, np.ndarray):
-            bounds = np.array(bounds)
+        data = self.fit_summary['fit_val']
+
+        def power_law(x, a, b):
+            return a * x ** b
         
-        def func(x, *args):
-            if fit_flag == [True, True]:
-                return args[0] * x ** args[1]
-            elif fit_flag == [True, False]:
-                return args[0] * x ** bounds[1, 1]
-            elif fit_flag == [False, True]:
-                return bounds[1, 0] * x ** args[0]
+        x = self.fit_summary['q_val']
+        q_slice = create_slice(x, q_range)
+        x = x[q_slice]
+
+        y = self.fit_summary['fit_val'][q_slice, 0, 1]
+        sigma = self.fit_summary['fit_val'][q_slice, 1, 1]
+
+        y = y.reshape(-1, 1)
+        sigma = sigma.reshape(-1, 1)
+
+        p0 = [1.0e-7, -2.0]
+
+        fit_x = np.logspace(np.log10(np.min(x) / 1.1),
+                            np.log10(np.max(x) * 1.1), 128)
+
+        fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds, 
+                                           fit_flag, fit_x, p0=p0) 
+
+        # fit_line and fit_val are lists with just one element;
+        self.fit_summary['tauq_fit_line'] = fit_line[0]
+        self.fit_summary['tauq_fit_val'] = fit_val[0]
 
 
 def test1():
