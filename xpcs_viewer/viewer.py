@@ -118,6 +118,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.avg_job_table.selectionModel().selectionChanged.connect(
         #     self.update_avg_info)
         self.avg_job_table.clicked.connect(self.update_avg_info)
+        self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
         self.load_default_setting()
 
@@ -207,6 +208,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'g2':
             self.set_g2_range()
             self.plot_g2(10)
+        elif tab_name == 'diffusion':
+            self.plot_tauq_pre()
 
         self.plot_state[new_tab_id] = 1
 
@@ -415,18 +418,44 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'xlabel': self.intt_xlabel.currentText()
         }
         self.vk.plot_intt(self.pg_intt, **kwargs)
+    
+    def plot_tauq_pre(self):
+        if not self.check_status() or self.vk.type != 'Multitau':
+            return
+
+        self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
     def plot_tauq(self):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
 
+        tab_id = self.tabWidget.currentIndex()
+        if self.plot_state[tab_id] == 0:
+            self.plot_tauq_pre()
+
+        keys = [self.tauq_amin, self.tauq_bmin,
+                self.tauq_amax, self.tauq_bmax]
+        bounds = np.array([float(x.text()) for x in keys]).reshape(2, 2)
+
+        fit_flag = [self.tauq_afit.isChecked(), self.tauq_bfit.isChecked()]
+
+        tauq = [self.tauq_qmin, self.tauq_qmax]
+        q_range = [float(x.text()) for x in tauq]
+
         kwargs = {
-            'max_q': self.sb_tauq_qmax.value(),
-            'offset': self.sb_tauq_offset.value()
+            'bounds': bounds,
+            'fit_flag': fit_flag, 
+            'offset': self.sb_tauq_offset.value(),
+            'rows': self.get_selected_rows(),
+            'q_range': q_range,
         }
-        msg = self.vk.plot_tauq(hdl=self.mp_tauq, **kwargs)
+
+        msg = self.vk.plot_tauq(hdl=self.mp_tauq.hdl, **kwargs)
+        self.mp_tauq.parent().repaint()
+
         self.tauq_msg.clear()
-        self.tauq_msg.setText('\n'.join(msg))
+        self.tauq_msg.setData(msg)
+        self.tauq_msg.parent().repaint()
 
     def remove_avg_job(self):
         index = self.avg_job_table.currentIndex().row()
@@ -563,6 +592,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('the selected job isn\'s running')
             return
         worker.kill()
+    
+    def show_g2_fit_summary_func(self):
+        if not self.check_status() or self.vk.type != 'Multitau':
+            return
+        self.tree = self.vk.get_fitting_tree()
+        self.tree.show()
 
     def show_avg_jobinfo(self):
         index = self.avg_job_table.currentIndex().row()
@@ -586,8 +621,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         def to_e(x):
             return '%.2e' % x
 
-        self.g2_bmin.setText(to_e(t_min * 10))
-        self.g2_bmax.setText(to_e(t_max / 10))
+        self.g2_bmin.setText(to_e(t_min / 20))
+        # self.g2_bmax.setText(to_e(t_max * 10))
+        self.g2_bmax.setText(to_e(0.1))
+
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
 
@@ -615,10 +652,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_4.setDisabled(True)
         self.pushButton_4.setText('plotting')
 
-        try:
-            self.vk.plot_g2(handler=self.mp_g2, **kwargs)
-        except Exception:
-            pass
+        self.vk.plot_g2(handler=self.mp_g2, **kwargs)
 
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')
@@ -627,6 +661,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         #     self.g2_err_msg.insertPlainText('None')
         # else:
         #     self.g2_err_msg.insertPlainText('\n'.join(err_msg))
+
+        # reset plot state for the diffusion tab so it will be updated when 
+        # switch tabs;
+        self.plot_state[6] = 0
+
 
     def reload_source(self):
         self.vk.build()
