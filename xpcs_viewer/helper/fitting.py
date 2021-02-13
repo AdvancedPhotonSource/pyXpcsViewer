@@ -70,3 +70,46 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
     return fit_result, fit_val
 
 
+def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
+        if not isinstance(fit_flag, np.ndarray):
+            fit_flag = np.array(fit_flag)
+        fix_flag = np.logical_not(fit_flag)
+
+        if not isinstance(bounds, np.ndarray):
+            bounds = np.array(bounds)
+
+        # degree of fitting 
+        dof = np.sum(fit_flag)
+
+        # number of arguments, regardless of fixed or to be fitted
+        num_args = len(fit_flag)
+
+        # create a function that takes care of the fit flag;
+        def func(x, *args):
+            input = np.zeros(num_args)
+            input[fix_flag] = bounds[1, fix_flag]
+            input[fit_flag] = np.array(args)
+            return base_func(x, *input)
+
+        # process boundaries and initial values         
+        bounds_fit = bounds[:, fit_flag]
+        # doing a simple average to get the initial guess;
+        if p0 is None:
+            p0 = np.mean(bounds_fit, axis=0)
+        else:
+            p0 = np.array(p0)[fit_flag]
+        
+        fit_val = np.zeros((y.shape[1], 2, num_args))
+
+        fit_line = [] 
+        for n in range(y.shape[1]):
+            popt, pcov = curve_fit(func, x, y[:, n],
+                                   p0=p0, sigma=sigma[:, n],
+                                   bounds=bounds_fit)
+            fit_val[n, 0, fit_flag] = popt
+            fit_val[n, 1, fit_flag] = np.sqrt(np.diag(pcov))
+            fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
+            fit_y = func(fit_x, *popt)
+            fit_line.append({'fit_x': fit_x, 'fit_y': fit_y})
+
+        return fit_line, fit_val 
