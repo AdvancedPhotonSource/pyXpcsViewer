@@ -87,7 +87,9 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(8) 
         result = {}
         for x in xf_list:
-            result[x.label] = x.fit_val
+            result[x.label] = x.fit_summary
+            if x.fit_summary is not None:
+                result[x.label].pop('fit_line', None)
         
         tree = pg.DataTreeWidget(data=result)
         tree.setWindowTitle('fitting summary')
@@ -138,24 +140,31 @@ class ViewerKernel(FileLocator):
         # self.meta['g2_fit_val'] = res
         return
 
-    def plot_tauq(self, max_q=0.016, hdl=None, bounds=None, rows=[],
+    def plot_tauq_pre(self, hdl=None, max_points=8, rows=None):
+        xf_list = self.get_xf_list(max_points, rows=rows)
+        short_list = [xf for xf in xf_list if xf.fit_summary is not None]
+        tauq.plot_pre(xf_list, hdl)
+
+
+    def plot_tauq(self, hdl=None, bounds=None, rows=[],
                   fit_flag=None, offset=None, max_points=8, q_range=None):
         
         xf_list = self.get_xf_list(max_points, rows=rows) 
+
+        result = {}
         for x in xf_list:
-            if x.fit_val is None:
+            if x.fit_summary is None:
                 logger.info('g2 fitting is not available for %s', x.fname)
             else:
                 x.fit_tauq(q_range, bounds, fit_flag)
+                v = x.fit_summary['tauq_fit_val']
+                msg = "a = %e ± %e; b = %f ± %f" % (v[0, 0], v[1, 0],
+                                                    v[0, 1], v[1, 1])
+                result[x.label] = msg
         
-        msg = tauq.plot(self.meta['g2_fit_val'],
-                        labels=self.id_list,
-                        hdl=hdl,
-                        max_q=max_q,
-                        offset=offset)
-        hdl.draw()
-        self.show_message(msg)
-        return msg
+        tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset)
+
+        return result
 
     def plot_saxs_2d(self, *args, **kwargs):
         ans = [self.cache[fn].saxs_2d for fn in self.target]
