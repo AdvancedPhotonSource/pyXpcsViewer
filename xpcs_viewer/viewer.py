@@ -439,6 +439,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         fit_flag = [self.tauq_afit.isChecked(), self.tauq_bfit.isChecked()]
 
+        if sum(fit_flag) == 0:
+            self.statusbar.showMessage('nothing to fit, really?', 1000)
+            return
+
         tauq = [self.tauq_qmin, self.tauq_qmax]
         q_range = [float(x.text()) for x in tauq]
 
@@ -648,6 +652,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'bounds': bounds,
             'fit_flag': fit_flag
         }
+        if kwargs['show_fit'] and sum(kwargs['fit_flag']) == 0:
+            self.statusbar.showMessage('nothing to fit, really?', 1000)
+            return
 
         self.pushButton_4.setDisabled(True)
         self.pushButton_4.setText('plotting')
