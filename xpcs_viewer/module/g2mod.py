@@ -182,8 +182,7 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
     fit_val_dict = {}
     for m in range(len(g2)):
         if show_fit:
-            fit_res, fit_val = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag)
-            fit_val_dict[m] = fit_val
+            fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag)
             err_msg.append(xf_list[m].label)
 
         for n in range(g2[0].shape[1]):
@@ -219,8 +218,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             ax.setRange(xRange=t0_range, yRange=y_range)
 
             if show_fit:
-                y_fit = fit_res[n]['fit_y'] + m * offset
-                ax.plot(fit_res[n]['fit_x'], y_fit,
+                y_fit = fit_summary['fit_line'][n]['fit_y'] + m * offset
+                ax.plot(fit_summary['fit_line'][n]['fit_x'], y_fit,
                         pen=pg.mkPen(color, width=2.5))
 
             # msg = fit_res[m]['err_msg']
@@ -229,7 +228,7 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
 
         # if len(err_msg) == prev_len:
         #     err_msg.append('---- fit finished without errors')
-    return fit_val_dict
+    return
 
 
 def pg_plot_one_g2(ax, x, y, dy, color, label, symbol):
