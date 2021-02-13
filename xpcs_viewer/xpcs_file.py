@@ -16,6 +16,8 @@ from scipy.optimize import curve_fit
 def single_exp_all(x, a, b, c, d):
     return a * np.exp( -2 * (x / b) ** c) + d
 
+def power_law(x, a, b):
+    return a * x ** b
 
 class XpcsFile(object):
     def __init__(self, fname, cwd='.', fields=None):
@@ -285,9 +287,6 @@ class XpcsFile(object):
         
         data = self.fit_summary['fit_val']
 
-        def power_law(x, a, b):
-            return a * x ** b
-        
         x = self.fit_summary['q_val']
         q_slice = create_slice(x, q_range)
         x = x[q_slice]

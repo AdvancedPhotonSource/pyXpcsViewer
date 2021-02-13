@@ -2670,6 +2670,109 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>work_dir</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>pushButton_11</tabstop>
+  <tabstop>list_view_source</tabstop>
+  <tabstop>filter_type</tabstop>
+  <tabstop>filter_str</tabstop>
+  <tabstop>pushButton_2</tabstop>
+  <tabstop>pushButton_3</tabstop>
+  <tabstop>box_auto_update</tabstop>
+  <tabstop>btn_load_data</tabstop>
+  <tabstop>pushButton_13</tabstop>
+  <tabstop>list_view_target</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>saxs2d_display</tabstop>
+  <tabstop>cb_saxs2D_cmap</tabstop>
+  <tabstop>saxs2d_autorotate</tabstop>
+  <tabstop>cb_saxs2D_type</tabstop>
+  <tabstop>pushButton_5</tabstop>
+  <tabstop>cb_saxs_type</tabstop>
+  <tabstop>sb_saxs_offset</tabstop>
+  <tabstop>cb_saxs_norm</tabstop>
+  <tabstop>pushButton_10</tabstop>
+  <tabstop>cb_stab_type</tabstop>
+  <tabstop>sb_stab_offset</tabstop>
+  <tabstop>pushButton_7</tabstop>
+  <tabstop>cb_stab</tabstop>
+  <tabstop>cb_stab_norm</tabstop>
+  <tabstop>sb_intt_max</tabstop>
+  <tabstop>sb_window</tabstop>
+  <tabstop>sb_intt_sampling</tabstop>
+  <tabstop>intt_xlabel</tabstop>
+  <tabstop>btn_intt</tabstop>
+  <tabstop>max_thread_count</tabstop>
+  <tabstop>avg_blmax</tabstop>
+  <tabstop>avg_blmin</tabstop>
+  <tabstop>avg_save_path</tabstop>
+  <tabstop>cb_avg_chunk_size</tabstop>
+  <tabstop>btn_set_average_save_name</tabstop>
+  <tabstop>bx_avg_G2IPIF</tabstop>
+  <tabstop>avg_window</tabstop>
+  <tabstop>bx_avg_g2g2err</tabstop>
+  <tabstop>avg_save_name</tabstop>
+  <tabstop>btn_set_average_save_path</tabstop>
+  <tabstop>bx_avg_saxs</tabstop>
+  <tabstop>avg_qindex</tabstop>
+  <tabstop>btn_submit_job</tabstop>
+  <tabstop>avg_job_pop</tabstop>
+  <tabstop>btn_avg_jobinfo</tabstop>
+  <tabstop>btn_avg_kill</tabstop>
+  <tabstop>btn_start_avg_job</tabstop>
+  <tabstop>avg_job_table</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>g2_show_label</tabstop>
+  <tabstop>pushButton_4</tabstop>
+  <tabstop>sb_g2_column</tabstop>
+  <tabstop>g2_ymin</tabstop>
+  <tabstop>g2_ymax</tabstop>
+  <tabstop>sb_g2_offset</tabstop>
+  <tabstop>g2_qmax</tabstop>
+  <tabstop>g2_show_fit</tabstop>
+  <tabstop>g2_qmin</tabstop>
+  <tabstop>g2_tmin</tabstop>
+  <tabstop>g2_tmax</tabstop>
+  <tabstop>g2_plot_type</tabstop>
+  <tabstop>g2_amin</tabstop>
+  <tabstop>g2_amax</tabstop>
+  <tabstop>g2_afit</tabstop>
+  <tabstop>g2_bmin</tabstop>
+  <tabstop>g2_bmax</tabstop>
+  <tabstop>g2_bfit</tabstop>
+  <tabstop>g2_cmin</tabstop>
+  <tabstop>g2_cmax</tabstop>
+  <tabstop>g2_cfit</tabstop>
+  <tabstop>g2_dmin</tabstop>
+  <tabstop>g2_dmax</tabstop>
+  <tabstop>g2_dfit</tabstop>
+  <tabstop>show_g2_fit_summary</tabstop>
+  <tabstop>pushButton_6</tabstop>
+  <tabstop>twotime_autorotate</tabstop>
+  <tabstop>cb_twotime_type</tabstop>
+  <tabstop>cb_twotime_qmap_cmap</tabstop>
+  <tabstop>twotime_autocrop</tabstop>
+  <tabstop>cb_twotime_saxs_cmap</tabstop>
+  <tabstop>cb_twotime_cmap</tabstop>
+  <tabstop>tauq_amin</tabstop>
+  <tabstop>tauq_amax</tabstop>
+  <tabstop>tauq_afit</tabstop>
+  <tabstop>tauq_bmin</tabstop>
+  <tabstop>tauq_bmax</tabstop>
+  <tabstop>tauq_bfit</tabstop>
+  <tabstop>tauq_qmin</tabstop>
+  <tabstop>tauq_qmax</tabstop>
+  <tabstop>pushButton_8</tabstop>
+  <tabstop>cb_tauq_type</tabstop>
+  <tabstop>sb_tauq_offset</tabstop>
+  <tabstop>pushButton_12</tabstop>
+  <tabstop>twotime_q_index</tabstop>
+  <tabstop>cb_twotime_group</tabstop>
+  <tabstop>hdf_info</tabstop>
+  <tabstop>hdf_list</tabstop>
+  <tabstop>hdf_key_filter</tabstop>
+ </tabstops>
  <resources>
   <include location="resources/icons.qrc"/>
  </resources>
@@ -3849,12 +3952,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>661</x>
-     <y>769</y>
+     <x>1059</x>
+     <y>805</y>
     </hint>
     <hint type="destinationlabel">
-     <x>457</x>
-     <y>776</y>
+     <x>682</x>
+     <y>805</y>
     </hint>
    </hints>
   </connection>
@@ -3865,12 +3968,172 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>666</x>
-     <y>818</y>
+     <x>1059</x>
+     <y>836</y>
     </hint>
     <hint type="destinationlabel">
      <x>477</x>
      <y>817</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_amin</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>382</x>
+     <y>804</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>377</x>
+     <y>901</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_amax</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>787</x>
+     <y>798</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>441</x>
+     <y>908</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_afit</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1036</x>
+     <y>790</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>518</x>
+     <y>905</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_bmin</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>539</x>
+     <y>826</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>547</x>
+     <y>898</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_bmax</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>704</x>
+     <y>824</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>630</x>
+     <y>904</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_bfit</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1043</x>
+     <y>831</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>611</x>
+     <y>894</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_qmin</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>556</x>
+     <y>861</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>565</x>
+     <y>890</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tauq_qmax</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>770</x>
+     <y>858</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>628</x>
+     <y>908</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_tauq_type</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>909</x>
+     <y>907</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>648</x>
+     <y>940</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_tauq_offset</sender>
+   <signal>editingFinished()</signal>
+   <receiver>pushButton_8</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>933</x>
+     <y>930</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>666</x>
+     <y>949</y>
     </hint>
    </hints>
   </connection>
