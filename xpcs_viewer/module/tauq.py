@@ -2,7 +2,7 @@ import numpy as np
 from ..helper.fitting import fit_tau
 
 
-def plot(xf_list, hdl, q_range, offset):
+def plot(xf_list, hdl, q_range, offset, plot_type=3):
 
     hdl.clear()
     ax = hdl.subplots(1, 1)
@@ -24,10 +24,14 @@ def plot(xf_list, hdl, q_range, offset):
         #                (labels[n], slope, intercept))
 
     ax.set_xlabel('$q (\\AA^{-1})$')
-    ax.set_ylabel('$\\tau \\times 10^4$')
+    ax.set_ylabel('$\\tau (s)$')
     ax.legend()
-    ax.set_xscale('log')
-    ax.set_yscale('log')
+
+    xscale = ['linear', 'log'][plot_type % 2]
+    yscale = ['linear', 'log'][plot_type // 2]
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
+
     hdl.draw()
 
     return

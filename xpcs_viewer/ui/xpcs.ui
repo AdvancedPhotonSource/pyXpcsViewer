@@ -2030,18 +2030,13 @@
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="QComboBox" name="cb_stab_type_2">
+                    <widget class="QComboBox" name="cb_tauq_type">
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <item>
                       <property name="text">
-                       <string>log(τ)-log(q)</string>
-                      </property>
-                     </item>
-                     <item>
-                      <property name="text">
-                       <string>log(τ)-q</string>
+                       <string>t-q</string>
                       </property>
                      </item>
                      <item>
@@ -2051,7 +2046,12 @@
                      </item>
                      <item>
                       <property name="text">
-                       <string>t-q</string>
+                       <string>log(τ)-q</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>log(τ)-log(q)</string>
                       </property>
                      </item>
                     </widget>
@@ -2083,26 +2083,6 @@
                  </item>
                  <item row="0" column="0" colspan="2">
                   <layout class="QGridLayout" name="gridLayout_21">
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="tauq_amin">
-                     <property name="text">
-                      <string>1.00e-12</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="tauq_bmin">
-                     <property name="text">
-                      <string>-2.5</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="0" column="2">
                     <widget class="QLineEdit" name="tauq_amax">
                      <property name="text">
@@ -2110,20 +2090,6 @@
                      </property>
                      <property name="placeholderText">
                       <string>max</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_43">
-                     <property name="text">
-                      <string>q (Å⁻¹)</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_42">
-                     <property name="text">
-                      <string>b</string>
                      </property>
                     </widget>
                    </item>
@@ -2137,13 +2103,13 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="2">
-                    <widget class="QLineEdit" name="tauq_bmax">
+                   <item row="1" column="3">
+                    <widget class="QCheckBox" name="tauq_bfit">
                      <property name="text">
-                      <string>-0.5</string>
+                      <string>fit</string>
                      </property>
-                     <property name="placeholderText">
-                      <string>max</string>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -2151,6 +2117,53 @@
                     <widget class="QLabel" name="label_44">
                      <property name="text">
                       <string>a</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="tauq_bmin">
+                     <property name="text">
+                      <string>-2.5</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_42">
+                     <property name="text">
+                      <string>b</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="tauq_amin">
+                     <property name="text">
+                      <string>1.00e-12</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QCheckBox" name="tauq_afit">
+                     <property name="text">
+                      <string>fit</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLineEdit" name="tauq_bmax">
+                     <property name="text">
+                      <string>-0.5</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>max</string>
                      </property>
                     </widget>
                    </item>
@@ -2164,23 +2177,10 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="3">
-                    <widget class="QCheckBox" name="tauq_bfit">
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_43">
                      <property name="text">
-                      <string>fit</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="3">
-                    <widget class="QCheckBox" name="tauq_afit">
-                     <property name="text">
-                      <string>fit</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
+                      <string>q (Å⁻¹)</string>
                      </property>
                     </widget>
                    </item>

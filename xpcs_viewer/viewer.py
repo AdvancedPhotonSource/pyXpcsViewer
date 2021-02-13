@@ -218,7 +218,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         tab_name = self.tab_dict[tab_id]
         if tab_name == 'average':
             self.statusbar.showMessage(
-                'The average tool reads data from disk directly. skip')
+                'The average tool reads data from disk directly. skip', 1000)
             return
         if self.data_state <= 1:
             self.statusbar.showMessage('Work directory or target not ready.',
@@ -308,7 +308,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # Multitau tau analysis also has dqmap
         if self.vk.type != "Twotime":
             self.statusbar.showMessage("The target files must be twotime " +
-                                       "analysis.")
+                                       "analysis.", 1000)
         res = self.vk.setup_twotime(file_index=file_index)
         self.cb_twotime_group.clear()
         self.cb_twotime_group.addItems(res)
@@ -452,6 +452,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'offset': self.sb_tauq_offset.value(),
             'rows': self.get_selected_rows(),
             'q_range': q_range,
+            'plot_type': self.cb_tauq_type.currentIndex()
         }
 
         msg = self.vk.plot_tauq(hdl=self.mp_tauq.hdl, **kwargs)
@@ -498,7 +499,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         #     return
         if len(self.vk.target) < 2:
             self.statusbar.showMessage(
-                'select at least 2 files for averaging')
+                'select at least 2 files for averaging', 1000)
             return
 
         self.thread_pool.setMaxThreadCount(self.max_thread_count.value())
@@ -523,7 +524,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             avg_fields.extend(['saxs_1d', 'saxs_2d'])
 
         if len(avg_fields) == 0:
-            self.statusbar.showMessage('No average field is selected. quit')
+            self.statusbar.showMessage(
+                'No average field is selected. quit', 1000)
             return
 
         kwargs = {
@@ -537,7 +539,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
 
         if kwargs['avg_blmax'] <= kwargs['avg_blmin']:
-            self.statusbar.showMessage('check avg min/max values.')
+            self.statusbar.showMessage('check avg min/max values.', 1000)
             return
 
         self.vk.submit_job(**kwargs)
@@ -549,7 +551,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def update_avg_info(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage('select a job to start')
+            self.statusbar.showMessage('select a job to start', 1000)
             return
 
         self.timer.stop()
@@ -570,7 +572,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def start_avg_job(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage('select a job to start')
+            self.statusbar.showMessage('select a job to start', 1000)
             return
         worker = self.vk.avg_worker[index]
         if worker.status == 'finished':
@@ -589,11 +591,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def avg_kill_job(self):
         index = self.avg_job_table.currentIndex().row()
         if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage('select a job to kill')
+            self.statusbar.showMessage('select a job to kill', 1000)
             return
         worker = self.vk.avg_worker[index]
         if worker.status != 'running':
-            self.statusbar.showMessage('the selected job isn\'s running')
+            self.statusbar.showMessage('the selected job isn\'s running', 1000)
             return
         worker.kill()
     
@@ -618,7 +620,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         flag, tel, _, _, _ = self.vk.get_g2_data(max_points, rows=None)
         if not flag:
-            self.statusbar.showMessage('g2 data is not consistent. abort')
+            self.statusbar.showMessage('g2 data is not consistent. abort', 999)
         t_min = np.min(tel)
         t_max = np.max(tel)
 
@@ -688,7 +690,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             f = path
 
         if not os.path.isdir(f):
-            self.statusbar.showMessage('{} is not a folder.'.format(f))
+            self.statusbar.showMessage('{} is not a folder.'.format(f), 1000)
             f = self.start_wd
 
         curr_work_dir = self.work_dir.text()
@@ -727,7 +729,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def add_target(self):
         if self.data_state == 0:
             msg = 'path has not been specified.'
-            self.statusbar.showMessage(msg)
+            self.statusbar.showMessage(msg, 1000)
             return
 
         target = []
@@ -763,7 +765,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         if not flag_single:
             msg = 'more than one xpcs analysis type detected'
-            self.statusbar.showMessage(msg)
+            self.statusbar.showMessage(msg, 1000)
 
         tab_id = self.tabWidget.currentIndex()
         if self.tab_dict[tab_id] == 'average':
@@ -832,7 +834,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
             self.statusbar.showMessage(
-                'Please enter at least %d characters' % min_length
+                'Please enter at least %d characters' % min_length, 1000
             )
             return
 
@@ -913,7 +915,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         if show_msg and not flag:
             error_dialog = QtWidgets.QErrorMessage(self)
-            error_dialog.showMessage(msg)
+            error_dialog.showMessage(msg, 1000)
             logger.error(msg)
 
         self.statusbar.showMessage(msg, 1000)

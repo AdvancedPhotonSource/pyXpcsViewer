@@ -151,10 +151,10 @@ class ViewerKernel(FileLocator):
     def plot_tauq_pre(self, hdl=None, max_points=8, rows=None):
         xf_list = self.get_xf_list(max_points, rows=rows)
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
-        tauq.plot_pre(xf_list, hdl)
+        tauq.plot_pre(short_list, hdl)
 
 
-    def plot_tauq(self, hdl=None, bounds=None, rows=[],
+    def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
                   fit_flag=None, offset=None, max_points=8, q_range=None):
         
         xf_list = self.get_xf_list(max_points, rows=rows) 
@@ -170,7 +170,8 @@ class ViewerKernel(FileLocator):
                                                     v[0, 1], v[1, 1])
                 result[x.label] = msg
         
-        tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset)
+        tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset,
+                  plot_type=plot_type)
 
         return result
 
