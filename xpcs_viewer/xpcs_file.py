@@ -257,7 +257,6 @@ class XpcsFile(object):
             'q_val': q,
             # 'g2': g2,
             # 'sigma': sigma,
-            'column': '1: [a, b, c, d], 2: [a_err, b_err, c_err, d_err]',
             'q_range': str(q_range),
             't_range': str(t_range),
             'bounds': bounds,

@@ -90,6 +90,14 @@ class ViewerKernel(FileLocator):
             result[x.label] = x.fit_summary
             if x.fit_summary is not None:
                 result[x.label].pop('fit_line', None)
+                val = result[x.label].pop('fit_val', None)
+                msg = []
+                for n in range(val.shape[0]):
+                    temp = []
+                    for m in range(4):
+                        temp.append('%f ± %f' % (val[n, 0, m], val[n, 1, m]))
+                    msg.append(', '.join(temp))
+                result[x.label]['fit_val'] = np.array(msg)
         
         tree = pg.DataTreeWidget(data=result)
         tree.setWindowTitle('fitting summary')
