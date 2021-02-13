@@ -4,6 +4,19 @@ from scipy.optimize import curve_fit
 from scipy.stats import linregress as sp_stats
 import traceback
 from sklearn import linear_model
+import joblib
+import os
+import time
+
+
+cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+from joblib import Memory
+memory = Memory(cache_dir, verbose=0)
+
+@memory.cache
+def fit_with_fixed(*args, **kwargs):
+    # wrap the fitting function in memory so avoid re-run
+    return fit_with_fixed_raw(*args, **kwargs)
 
 
 def single_exp(x, tau, bkg, cts):
@@ -70,7 +83,7 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
     return fit_result, fit_val
 
 
-def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
+def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
         if not isinstance(fit_flag, np.ndarray):
             fit_flag = np.array(fit_flag)
         fix_flag = np.logical_not(fit_flag)
