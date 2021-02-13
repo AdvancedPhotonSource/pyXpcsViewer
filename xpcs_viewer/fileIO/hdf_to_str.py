@@ -47,9 +47,12 @@ def read_h5py(hdl, path, level, guide_str0):
 
     if isinstance(hdl[path], h5py._hl.dataset.Dataset):
 
-        if isinstance(hdl[path][()], np.bytes_):
-            info = hdl[path][()].decode() 
-            return [guide_lst + info]
+        value = hdl[path][()]
+        # there are 3 kinds of strings in the hdf file;
+        if isinstance(value, (np.bytes_, bytes, str)):
+            if not isinstance(value, str):
+                value = hdl[path][()].decode() 
+            return [guide_lst + value]
 
         if hdl[path].shape == ():
             return [guide_lst + 'empty']
