@@ -309,6 +309,8 @@ class XpcsFile(object):
         self.fit_summary['tauq_fit_line'] = fit_line[0]
         self.fit_summary['tauq_fit_val'] = fit_val[0]
 
+        return self.fit_summary
+
 
 def test1():
     cwd = '../../../xpcs_data'
