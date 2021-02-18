@@ -11,7 +11,7 @@ def c2r(x):
         x = np.array(x)
 
     val = np.max(np.abs(x))
-    if val > 1E4 or val < 1E-4:
+    if val > 1E4 or val < 1E-2:
         if x.size == 1:
             res = '%.3e' % x
         else:
@@ -29,7 +29,7 @@ def describe_numpy(arr):
         repr += 'minmax = %s, mean = %s' % (c2r(res.minmax),
                                             c2r(res.mean))
     else:
-        repr += 'val = %s' % str(arr[0])
+        repr += 'val = %s' % c2r(arr[0])
     return repr
 
 
