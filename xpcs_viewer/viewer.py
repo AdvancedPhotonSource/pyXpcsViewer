@@ -914,8 +914,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             flag = True
 
         if show_msg and not flag:
-            error_dialog = QtWidgets.QErrorMessage(self)
-            error_dialog.showMessage(msg, 1000)
+            # error_dialog = QtWidgets.QErrorMessage(self)
+            # error_dialog.showMessage(msg, 1000)
+            self.statusbar.showMessage(msg, 1000)
             logger.error(msg)
 
         self.statusbar.showMessage(msg, 1000)
