@@ -1,33 +1,55 @@
 import os
 import numpy as np
-from .fileIO.hdf_reader import get, put, get_type, create_id
+from .fileIO.hdf_reader import get, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .plothandler.matplot_qt import MplCanvasBarV
-from .module import saxs2d, g2mod, saxs1d, intt, stability
-from .module.g2mod import  create_slice
+from .module import saxs2d, saxs1d, intt, stability
+from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
-import matplotlib.pyplot as plt
-from pyqtgraph.Qt import QtGui, QtCore
-from scipy.optimize import curve_fit
+from pyqtgraph.Qt import QtGui
 
 
 def single_exp_all(x, a, b, c, d):
-    return a * np.exp( -2 * (x / b) ** c) + d
+    """
+    single exponential fitting for xpcs-multitau analysis
+    :param x: delay in seconds
+    :param a: contrast
+    :param b: tau
+    :param c: restriction factor
+    :param d: baseline
+    :return:
+    """
+    return a * np.exp(-2 * (x / b) ** c) + d
+
 
 def power_law(x, a, b):
+    """
+    power law for fitting the diffusion factor
+    :param x: tau
+    :param a:
+    :param b:
+    :return:
+    """
     return a * x ** b
 
+
 class XpcsFile(object):
+    """
+    XpcsFile is a class that wraps an Xpcs analysis hdf file;
+    """
     def __init__(self, fname, cwd='.', fields=None):
         self.fname = fname
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
 
         self.type = get_type(self.full_path)
+
         self.keys, attr = self.load(fields)
         self.__dict__.update(attr)
+
+        # label is a short string to describe the file/filename
         self.label = create_id(fname)
         self.hdf_info = None
         self.fit_summary = None
@@ -35,6 +57,7 @@ class XpcsFile(object):
     def __str__(self):
         ans = ['File:' + str(self.full_path)]
         for key, val in self.__dict__.items():
+            # omit those to avoid lengthy output
             if key in ['hdf_key', "hdf_info"]:
                 continue
             elif isinstance(val, np.ndarray) and val.size > 1:
@@ -54,14 +77,15 @@ class XpcsFile(object):
         pass
 
     def get_hdf_info(self):
+        # only call it once because it may take long time to generate the str
         if self.hdf_info is None:
             self.hdf_info = get_hdf_info(self.cwd, self.fname)
         return self.hdf_info
 
     def load(self, extra_fields=None):
         # default fields;
-        fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t',
-                  't0', 't1', 'ql_dyn', 'type', 'dqmap']
+        fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
+                  'ql_dyn', 'type', 'dqmap']
 
         if self.type == 'Twotime':
             fields = fields + ['g2_full', 'g2_partials']
@@ -103,9 +127,7 @@ class XpcsFile(object):
             '/'.join([group, 'stride_frames']),
             '/'.join([group, 'avg_frames'])
         ]
-        stride, avg = get(self.full_path,
-                          key_frames,
-                          mode='raw',
+        stride, avg = get(self.full_path, key_frames, mode='raw',
                           ret_type='list')
         time_scale = max(self.t0, self.t1) * stride * avg
         return time_scale
@@ -131,7 +153,6 @@ class XpcsFile(object):
 
     def get_twotime_c2(self, twotime_key, plot_index):
         c2_key = '/'.join([twotime_key, 'C2T_all/g2_%05d' % plot_index])
-
         c2_half = get(self.full_path, [c2_key], mode='raw')[c2_key]
 
         if c2_half is None:
@@ -206,8 +227,7 @@ class XpcsFile(object):
         app.exec_()
 
     def get_pg_tree(self):
-        data = self.load()
-        n = 0
+        _, data = self.load()
         for key, val in data.items():
             if isinstance(val, np.ndarray):
                 if val.size > 4096:
@@ -228,7 +248,7 @@ class XpcsFile(object):
                q_range=None,
                t_range=None, 
                bounds=None,
-               fit_flag=[True, True, True, True]):
+               fit_flag=(True, True, True, True)):
 
         if q_range is None:
             q_range = [np.min(self.ql_dyn) * 0.95, np.max(self.ql_dyn) * 1.05]
@@ -268,7 +288,8 @@ class XpcsFile(object):
 
         return self.fit_summary
 
-    def correct_g2_err(self, g2_err=None, threshold=1E-6):
+    @staticmethod
+    def correct_g2_err(g2_err=None, threshold=1E-6):
         # correct the err for some data points with really small error, which
         # may cause the fitting to blowup
 
@@ -285,8 +306,6 @@ class XpcsFile(object):
         if self.fit_summary is None:
             return
         
-        data = self.fit_summary['fit_val']
-
         x = self.fit_summary['q_val']
         q_slice = create_slice(x, q_range)
         x = x[q_slice]
@@ -297,8 +316,8 @@ class XpcsFile(object):
         y = y.reshape(-1, 1)
         sigma = sigma.reshape(-1, 1)
 
+        # the initial value for typical gel systems
         p0 = [1.0e-7, -2.0]
-
         fit_x = np.logspace(np.log10(np.min(x) / 1.1),
                             np.log10(np.max(x) * 1.1), 128)
 
