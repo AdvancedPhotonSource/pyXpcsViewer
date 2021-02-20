@@ -87,18 +87,7 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(8) 
         result = {}
         for x in xf_list:
-            result[x.label] = x.fit_summary
-            if x.fit_summary is not None:
-                result[x.label].pop('fit_line', None)
-                val = result[x.label].pop('fit_val', None)
-                msg = []
-                for n in range(val.shape[0]):
-                    temp = []
-                    for m in range(4):
-                        temp.append('%f ± %f' % (val[n, 0, m], val[n, 1, m]))
-                    msg.append(', '.join(temp))
-                result[x.label]['fit_val'] = np.array(msg)
-        
+            result[x.label] = x.get_fitting_info(mode='g2_fitting')
         tree = pg.DataTreeWidget(data=result)
         tree.setWindowTitle('fitting summary')
         tree.resize(1024, 800)
@@ -119,33 +108,29 @@ class ViewerKernel(FileLocator):
                 fit_flag=None,
                 plot_type='multiple'):
 
-        num_points = min(len(self.target), max_points)
         fn_tuple = self.get_fn_tuple(max_points, rows=rows)
         new_condition = (
             (fn_tuple, num_col, show_fit, show_label),
             (q_range, t_range, y_range, offset),
             (bounds, fit_flag))
 
-        plot_level = 0
         if self.meta['g2_plot_condition'] == new_condition:
+            # avoid meaningless rerun
             logger.info('g2 plot parameters unchanged; skip')
             return
         else:
-            cmp = tuple(
-                i != j
-                for i, j in zip(new_condition, self.meta['g2_plot_condition']))
+            # cmp = tuple(
+            # i != j
+            # for i, j in zip(new_condition, self.meta['g2_plot_condition']))
             self.meta['g2_plot_condition'] = new_condition
-            plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
-            logger.info('plot level = %d', plot_level)
+            # plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
+            # logger.info('plot level = %d', plot_level)
 
         xf_list = self.get_xf_list(max_points, rows=rows) 
+        g2mod.pg_plot(handler, xf_list, num_col, q_range, t_range, y_range,
+                      offset=offset, show_label=show_label, show_fit=show_fit,
+                      bounds=bounds, plot_type=plot_type, fit_flag=fit_flag)
 
-        res = g2mod.pg_plot(handler, xf_list, num_col, q_range, t_range,
-                            y_range, offset=offset, show_label=show_label,
-                            show_fit=show_fit, bounds=bounds, 
-                            plot_type=plot_type, fit_flag=fit_flag)
-
-        # self.meta['g2_fit_val'] = res
         return
 
     def plot_tauq_pre(self, hdl=None, max_points=8, rows=None):
@@ -153,22 +138,17 @@ class ViewerKernel(FileLocator):
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
 
-
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
                   fit_flag=None, offset=None, max_points=8, q_range=None):
         
         xf_list = self.get_xf_list(max_points, rows=rows) 
-
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
                 logger.info('g2 fitting is not available for %s', x.fname)
             else:
                 x.fit_tauq(q_range, bounds, fit_flag)
-                v = x.fit_summary['tauq_fit_val']
-                msg = "a = %e ± %e; b = %f ± %f" % (v[0, 0], v[1, 0],
-                                                    v[0, 1], v[1, 1])
-                result[x.label] = msg
+                result[x.label] = x.get_fitting_info(mode='tauq_fitting')
         
         tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset,
                   plot_type=plot_type)
@@ -198,12 +178,7 @@ class ViewerKernel(FileLocator):
         res = twotime.get_twotime_qindex(self.meta, ix, iy, hdl)
         return res
 
-    def plot_twotime_map(
-        self,
-        hdl,
-        fname=None,
-        **kwargs,
-    ):
+    def plot_twotime_map(self, hdl, fname=None, **kwargs):
         if fname is None:
             fname = self.target[0]
 
@@ -212,18 +187,14 @@ class ViewerKernel(FileLocator):
         return
 
     def plot_twotime(self, hdl, current_file_index=0, plot_index=1, **kwargs):
-
         if self.type != 'Twotime':
             self.show_message('Analysis type must be twotime.')
             return None
 
         fname = self.target[current_file_index]
         xfile = self.cache[fname]
-        ret = twotime.plot_twotime(xfile,
-                                   hdl,
-                                   plot_index=plot_index,
-                                   meta=self.meta,
-                                   **kwargs)
+        ret = twotime.plot_twotime(xfile, hdl, plot_index=plot_index,
+                                   meta=self.meta, **kwargs)
         return ret
 
     def plot_intt(self, pg_hdl, max_points=128, rows=None, **kwargs):

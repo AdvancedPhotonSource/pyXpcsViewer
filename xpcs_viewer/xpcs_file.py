@@ -243,7 +243,39 @@ class XpcsFile(object):
         tree.setWindowTitle(self.fname)
         tree.resize(600, 800)
         return tree
-    
+
+    def get_fitting_info(self, mode='g2_fitting'):
+        if self.fit_summary is None:
+            return "fitting is not ready for %s" % self.label
+
+        if mode == 'g2_fitting':
+            result = self.fit_summary.copy()
+            # fit_line is not useful to display
+            result.pop('fit_line', None)
+            val = result.pop('fit_val', None)
+
+            prefix = ['a', 'b', 'c', 'd']
+            msg = []
+            for n in range(val.shape[0]):
+                temp = []
+                for m in range(4):
+                    temp.append('%s = %f ± %f' % (
+                        prefix[m], val[n, 0, m], val[n, 1, m]))
+                msg.append(', '.join(temp))
+            result['fit_val'] = np.array(msg)
+
+        elif mode == 'tauq_fitting':
+            if 'tauq_fit_val' not in self.fit_summary:
+                result = 'tauq fitting is not available'
+            else:
+                v = self.fit_summary['tauq_fit_val']
+                result = "a = %e ± %e; b = %f ± %f" % (v[0, 0], v[1, 0],
+                                                       v[0, 1], v[1, 1])
+        else:
+            raise ValueError('mode not supported.')
+
+        return result
+
     def fit_g2(self,
                q_range=None,
                t_range=None, 
