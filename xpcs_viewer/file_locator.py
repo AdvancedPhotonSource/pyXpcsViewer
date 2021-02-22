@@ -101,24 +101,13 @@ class FileLocator(object):
         self.cache = {}
         if max_cache_size is None:
             # 2G
-            self.max_cache_size = 1024**3 * 2
-
-    def get_cached(self, fname, fields, ret_type='list'):
-        ret = {}
-        for key in fields:
-            ret[key] = self.cache[fname].at(key)
-        if ret_type == 'dict':
-            return ret
-        elif ret_type == 'list':
-            return [ret[key] for key in fields]
-        else:
-            raise TypeError('ret_type not support')
+            self.max_cache_size = 1024 ** 3 * 2
 
     def get_type(self, fname):
         return get_type(pjoin(self.cwd, fname))
 
-    def get(self, fname, fields_raw, **kwargs):
-        return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
+    # def get(self, fname, fields_raw, **kwargs):
+    #     return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
 
     def get_fn_tuple(self, max_points=128, rows=None):
         # compile the filenames upto max_points to a tuple
@@ -151,35 +140,6 @@ class FileLocator(object):
             ret.append(self.cache[fn])
 
         return ret
-
-    def fetch(self, labels, file_list, mask=None):
-        """
-        fetch the keys in labels for each file in filelist; either from cache
-        or from the files if not cached.
-        :param labels: [key1, key2, ...]
-        :param file_list:
-        :param mask:
-        :return:
-        """
-        if mask is None:
-            mask = np.ones(shape=len(file_list), dtype=np.bool)
-
-        cache_list = []
-        for n, fn in enumerate(file_list):
-            if not mask[n]:
-                continue
-            if fn in self.cache.keys():
-                cache_list.append(self.cache[fn])
-            else:
-                cache_list.append(xf(fn, self.cwd, labels))
-
-        np_data = {}
-        for key in labels:
-            temp = []
-            for n in range(len(cache_list)):
-                temp.append(cache_list[n].at(key))
-            np_data[key] = np.array(temp)
-        return np_data
 
     def load(self,
              file_list=None,
@@ -283,7 +243,7 @@ class FileLocator(object):
 
         return
 
-    def build(self, path=None, filter_list=['.hdf', '.h5']):
+    def build(self, path=None, filter_list=('.hdf', '.h5')):
         if path is None:
             path = self.path
 
