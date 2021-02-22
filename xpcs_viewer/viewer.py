@@ -42,12 +42,6 @@ sys.excepthook = exception_hook
 # sys.stderr = LoggerWriter(logger.warning)
 
 
-class ViewerKernel2(ViewerKernel, QObject):
-    def __init__(self, path, statusbar=None):
-        ViewerKernel.__init__(self, path, statusbar)
-        QThread.__init__(self)
-
-
 class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None):
         super(XpcsViewer, self).__init__()
