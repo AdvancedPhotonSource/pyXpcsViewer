@@ -76,11 +76,38 @@ class XpcsFile(object):
     def __add__(self, other):
         pass
 
-    def get_hdf_info(self):
+    def get_hdf_info(self, fstr=None):
+        """
+        get a text representation of the xpcs file; the entries are organized
+        in a tree structure;
+        :param fstr: list of filter strings, ['string_1', 'string_2', ...]
+        :return: a list strings
+        """
         # only call it once because it may take long time to generate the str
         if self.hdf_info is None:
             self.hdf_info = get_hdf_info(self.cwd, self.fname)
-        return self.hdf_info
+
+        if fstr is None or len(fstr) == 0:
+            return self.hdf_info
+
+        def filter_str(aline):
+            for x in fstr:
+                if x in aline:
+                    return True
+            return False
+
+        msg = []
+        n = 0
+        while n < len(self.hdf_info):
+            if filter_str(self.hdf_info[n]):
+                msg.append(self.hdf_info[n])
+                if n < len(self.hdf_info) - 1:
+                    msg.append(self.hdf_info[n + 1])
+                n += 2
+            else:
+                n += 1
+
+        return msg
 
     def load(self, extra_fields=None):
         # default fields;

@@ -175,11 +175,11 @@ class FileLocator(object):
 
         return
 
-    def get_hdf_info(self, fname):
+    def get_hdf_info(self, fname, fstr=None):
         if not os.path.isfile(os.path.join(self.cwd, fname)):
             return ['None']
         # return get_hdf_info(self.cwd, fname)
-        return self.cache[fname].get_hdf_info()
+        return self.cache[fname].get_hdf_info(fstr)
 
     def add_target(self, alist, threshold=64):
         if alist in [[], None]:

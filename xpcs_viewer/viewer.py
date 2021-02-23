@@ -3,7 +3,7 @@ from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import QThread, QObject, Qt
+from PyQt5.QtCore import Qt
 
 # from pyqtgraph.Qt import QtWidgets
 # from pyqtgraph import QtCore, QtGui
@@ -245,25 +245,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def show_hdf_info(self):
         fname = self.hdf_list.currentText()
-        msg = self.vk.get_hdf_info(fname)
+        filter_str = self.hdf_key_filter.text().split()
+        msg = self.vk.get_hdf_info(fname, filter_str)
 
-        filter_str = self.hdf_key_filter.text()
-        fstr = filter_str.split()
-        if len(fstr) > 0:
-            msg2 = []
-            for x in fstr:
-                n = 0
-                while True:
-                    if x in msg[n]:
-                        msg2 += [msg[n], msg[n + 1]]
-                        n += 2
-                    else:
-                        n += 1
-                    # subtract 1 so don't need to worry access n + 1
-                    if n >= len(msg) - 1:
-                        break
-
-            msg = msg2
         self.hdf_info.clear()
         self.hdf_info.setText('\n'.join(msg))
 
@@ -339,7 +323,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         ix, iy = event.xdata, event.ydata
         # filter events that's outside the boundaries
         if ix is None or iy is None:
-            logger.warn('the click event is outside the canvas')
+            logger.warning('the click event is outside the canvas')
             return
         qindex = self.vk.get_twotime_qindex(ix, iy, self.mp_2t_map.hdl)
 
