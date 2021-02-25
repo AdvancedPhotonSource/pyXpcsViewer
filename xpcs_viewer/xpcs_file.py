@@ -372,6 +372,7 @@ class XpcsFile(object):
         y = self.fit_summary['fit_val'][q_slice, 0, 1]
         sigma = self.fit_summary['fit_val'][q_slice, 1, 1]
 
+        # reshape to two-dimension so the fit_with_fixed function works
         y = y.reshape(-1, 1)
         sigma = sigma.reshape(-1, 1)
 
@@ -385,8 +386,8 @@ class XpcsFile(object):
 
         # fit_line and fit_val are lists with just one element;
         self.fit_summary['tauq_q'] = x
-        self.fit_summary['tauq_tau'] = y
-        self.fit_summary['tauq_tau_err'] = sigma
+        self.fit_summary['tauq_tau'] = np.squeeze(y)
+        self.fit_summary['tauq_tau_err'] = np.squeeze(sigma)
         self.fit_summary['tauq_fit_line'] = fit_line[0]
         self.fit_summary['tauq_fit_val'] = fit_val[0]
 
