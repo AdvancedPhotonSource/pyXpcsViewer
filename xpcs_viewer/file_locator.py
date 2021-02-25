@@ -124,8 +124,13 @@ class FileLocator(object):
         return tuple(ret)
 
     def get_xf_list(self, max_points=8, rows=None):
-        ret = []
-
+        """
+        get the cached xpcs_file list;
+        :param max_points: maxiaml number of xpcs_files to get
+        :param rows: a list of index to select; if None is given, then use
+            max_points;
+        :return: list of xpcs_file objects;
+        """
         if max_points <= 0:
             max_points = len(self.target)
 
@@ -135,16 +140,14 @@ class FileLocator(object):
             # make sure no more than max_points are loaded.
             selected = rows[0:max_points]
 
+        ret = []
         for n in selected:
             fn = self.target[n]
             ret.append(self.cache[fn])
 
         return ret
 
-    def load(self,
-             file_list=None,
-             max_number=1024,
-             progress_bar=None,
+    def load(self, file_list=None, max_number=1024, progress_bar=None,
              flag_del=True):
 
         if file_list in [None, []]:
@@ -176,10 +179,16 @@ class FileLocator(object):
         return
 
     def get_hdf_info(self, fname, fstr=None):
-        if not os.path.isfile(os.path.join(self.cwd, fname)):
+        """
+        get the hdf information / hdf structure for fname
+        :param fname: input filename
+        :param fstr: list of filter string;
+        :return: list of strings that contains the hdf information;
+        """
+        if fname in self.cache:
+            return self.cache[fname].get_hdf_info(fstr)
+        else:
             return ['None']
-        # return get_hdf_info(self.cwd, fname)
-        return self.cache[fname].get_hdf_info(fstr)
 
     def add_target(self, alist, threshold=64):
         if alist in [[], None]:

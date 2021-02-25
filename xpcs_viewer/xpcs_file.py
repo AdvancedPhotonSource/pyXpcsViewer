@@ -45,7 +45,6 @@ class XpcsFile(object):
         self.cwd = cwd
 
         self.type = get_type(self.full_path)
-
         self.keys, attr = self.load(fields)
         self.__dict__.update(attr)
 
@@ -110,17 +109,18 @@ class XpcsFile(object):
         return msg
 
     def load(self, extra_fields=None):
-        # default fields;
+        # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                   'ql_dyn', 'type', 'dqmap']
 
+        # extra fields for twotime analysis
         if self.type == 'Twotime':
             fields = fields + ['g2_full', 'g2_partials']
-        # multitau
+        # extra fields for multitau analysis
         else:
             fields = fields + ['tau', 'g2', 'g2_err']
 
-        # append extra fields, eg 'G2', 'IP', 'IF'
+        # append other extra fields, eg 'G2', 'IP', 'IF'
         if isinstance(extra_fields, list):
             fields += extra_fields
 
@@ -130,6 +130,7 @@ class XpcsFile(object):
         ret = get(self.full_path, fields, 'alias')
         ret['dqmap'] = ret['dqmap'].astype(np.uint16)
 
+        # get t_el which is in the unit of seconds;
         if 't0' in ret and 'tau' in ret:
             ret['t_el'] = ret['t0'] * ret['tau']
 
@@ -137,6 +138,7 @@ class XpcsFile(object):
             ret['g2'] = ret['g2_full']
             ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
         else:
+            # correct g2_err to avoid fitting divergence
             ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
 
         return ret.keys(), ret
@@ -179,6 +181,12 @@ class XpcsFile(object):
         return dqmap, saxs, rpath, idlist
 
     def get_twotime_c2(self, twotime_key, plot_index):
+        """
+        get the twotime data for a particular key and index
+        :param twotime_key: the twotime analysis key
+        :param plot_index: the targeted q index;
+        :return: a 2d numpy.ndarray representation of twotime correlation.
+        """
         c2_key = '/'.join([twotime_key, 'C2T_all/g2_%05d' % plot_index])
         c2_half = get(self.full_path, [c2_key], mode='raw')[c2_key]
 
@@ -193,6 +201,10 @@ class XpcsFile(object):
         return c2
 
     def get_detector_extent(self):
+        """
+        get the angular extent on the detector, for saxs2d, qmap/display;
+        :return:
+        """
         fields = [
             'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
             'ydim'
@@ -211,47 +223,42 @@ class XpcsFile(object):
 
         return extent
 
-    def plot_saxs2d(self, *args, **kwargs):
+    def show(self, mode, **kwargs):
         app = QtGui.QApplication([])
-        win = QtGui.QMainWindow()
-        win.resize(1024, 600)
-        hdl = ImageViewDev()
-        win.setCentralWidget(hdl)
+
+        if mode == 'saxs2d':
+            try:
+                win = ImageViewDev()
+                saxs2d.plot([self.saxs_2d], win, **kwargs)
+            except Exception:
+                pass
+        elif mode == 'saxs1d':
+            win = MplCanvasBarV()
+            saxs1d.plot([self], win.hdl, **kwargs)
+        elif mode == 'intt':
+            win = pg.GraphicsLayoutWidget()
+            intt.plot([self], win, **kwargs)
+        elif mode == 'stability':
+            win = MplCanvasBarV()
+            stability.plot(self, win.hdl, **kwargs)
+        else:
+            return
+
         win.show()
-        win.setWindowTitle(self.label + ': ' + self.fname)
-        saxs2d.plot([self.saxs_2d], hdl, *args, **kwargs)
+        win.setWindowTitle(': '.join([mode, self.label, self.fname]))
         app.exec_()
 
-    def plot_saxs1d(self, *args, **kwargs):
-        app = QtGui.QApplication([])
-        win = QtGui.QMainWindow()
-        win.resize(1024, 600)
-        canvas = MplCanvasBarV()
-        win.setCentralWidget(canvas)
-        win.show()
-        win.setWindowTitle(self.label + ': ' + self.fname)
-        saxs1d.plot([self], canvas.hdl, *args, **kwargs)
-        app.exec_()
+    def plot_saxs2d(self, **kwargs):
+        self.show('saxs2d', **kwargs)
+
+    def plot_saxs1d(self, **kwargs):
+        self.show('saxs1d', **kwargs)
 
     def plot_intt(self, window=1, sampling=1, **kwargs):
-        app = QtGui.QApplication([])
-        win = pg.GraphicsLayoutWidget(show=True, title=self.label + '_intt')
-        win.resize(1024, 600)
-        intt.plot([self], win, [self.label], enable_zoom=True,
-                  xlabel='Frame Index', rows=None, window=window,
-                  sampling=sampling, **kwargs)
-        app.exec_()
+        self.show('intt', window=window, sampling=sampling)
 
     def plot_stability(self, **kwargs):
-        app = QtGui.QApplication([])
-        win = QtGui.QMainWindow()
-        win.resize(1024, 600)
-        canvas = MplCanvasBarV()
-        win.setCentralWidget(canvas)
-        win.show()
-        stability.plot(self, canvas.hdl,
-                       title='stability plot for %s' % self.label, **kwargs)
-        app.exec_()
+        self.show('stability', **kwargs)
 
     def get_pg_tree(self):
         _, data = self.load()
@@ -303,12 +310,16 @@ class XpcsFile(object):
 
         return result
 
-    def fit_g2(self,
-               q_range=None,
-               t_range=None, 
-               bounds=None,
+    def fit_g2(self, q_range=None, t_range=None, bounds=None,
                fit_flag=(True, True, True, True)):
-
+        """
+        fit the g2 values using single exponential decay function
+        :param q_range: a tuple of q lower bound and upper bound
+        :param t_range: a tuple of t lower bound and upper bound
+        :param bounds: bounds for fitting;
+        :param fit_flag: tuple of bools; True to fit and False to float
+        :return: dictionary with the fitting result;
+        """
         if q_range is None:
             q_range = [np.min(self.ql_dyn) * 0.95, np.max(self.ql_dyn) * 1.05]
         
