@@ -21,7 +21,7 @@ colors = [
 ]
 
 
-def smooth_data(fc, window, sampling):
+def smooth_data(fc, window=1, sampling=1):
     # some bad frames have both x and y = 0;
     # x, y = fc.Int_t[0], fc.Int_t[1]
     y = fc.Int_t[1]
@@ -54,8 +54,15 @@ def matplot_plot(xf_list, pg_hdl, legend, rows=None, **kwargs):
     pg_hdl.draw()
 
 
-def plot(xf_list, pg_hdl, legend, enable_zoom=True, xlabel='Frame Index',
-         rows=None, **kwargs):
+def plot(xf_list, pg_hdl, enable_zoom=True, xlabel='Frame Index', **kwargs):
+    """
+    :param xf_list: list of xf objects
+    :param pg_hdl: pyqtgraph handler to plot
+    :param enable_zoom: bool, if to plot the zoom view or not
+    :param xlabel:
+    :param kwargs: used to define how to average/sample the data
+    :return:
+    """
 
     t0 = xf_list[0].t0
     data = []
