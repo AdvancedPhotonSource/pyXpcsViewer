@@ -6,16 +6,7 @@ from ..helper.fitting import fit_xpcs as fit_xpcs_raw
 import joblib
 import os
 import time
-
-
-cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
-from joblib import Memory
-memory = Memory(cache_dir, verbose=0)
-
-@memory.cache
-def fit_xpcs(*args, **kwargs):
-    # wrap the fitting function in memory so avoid re-run
-    return fit_xpcs_raw(*args, **kwargs)
+import matplotlib.pyplot as plt
 
 
 pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
@@ -87,81 +78,96 @@ def get_data(xf_list, q_range=None, t_range=None):
     return flag, tel, qd, g2, g2_err
 
 
-def plot_empty(mp_hdl, num_fig, num_points, num_col=4, show_label=False,
-               labels=None, show_fit=False):
-    # adjust canvas size according to the number of images
-    if num_fig < num_col:
-        num_col = num_fig
-    num_row = (num_fig + num_col - 1) // num_col
+def compute_geometry(g2, plot_type):
+    """
+    compute the number of figures and number of plot lines for a given type
+    and dataset;
+    :param g2: input g2 data; 2D array; dim0: t_el; dim1: q_vals
+    :param plot_type: string in ['multiple', 'single', 'single-combined']
+    :return: tuple of (number_of_figures, number_of_lines)
+    """
+    if plot_type == 'multiple':
+        num_figs = g2[0].shape[1]
+        num_lines = len(g2)
+    elif plot_type == 'single':
+        num_figs = len(g2)
+        num_lines = g2[0].shape[1]
+    elif plot_type == 'single-combined':
+        num_figs = 1
+        num_lines = g2[0].shape[1] * len(g2)
+    else:
+        raise ValueError('plot_type not support.')
+    return num_figs, num_lines
 
-    mp_hdl.adjust_canvas_size(num_col, num_row)
-    mp_hdl.fig.clear()
 
-    mp_hdl.subplots(num_row, num_col)
-    mp_hdl.obj = None
+def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4, 
+                 show_label=False, plot_type='multiple'):
 
-    # dummy x y fit line
-    x = np.logspace(-5, 0, 32)
-    y = np.exp(-x / 1E-3) * 0.25 + 1.0
-    err = y / 40
+    flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
+                                         t_range=t_range)
 
-    err_obj = []
-    lin_obj = []
+    num_figs, num_lines = compute_geometry(g2, plot_type)
 
-    for idx in range(num_points):
-        for i in range(num_fig):
-            offset = 0.03 * idx
-            ax = np.array(mp_hdl.axes).ravel()[i]
-            obj1 = ax.errorbar(x, y + offset, yerr=err, fmt='o', markersize=3,
-                               markerfacecolor='none',
-                               label='{}'.format(labels[idx]))
-            err_obj.append(obj1)
+    if num_figs < num_col:
+        num_col = num_figs
+    num_row = (num_figs + num_col - 1) // num_col
 
-            # plot fit line
-            obj2 = ax.plot(x, y + offset)
-            obj2[0].set_visible(False)
-            lin_obj.append(obj2)
+    if mp_hdl is not None:
+        mp_hdl.fig.clear()
+        axes = mp_hdl.subplots(num_row, num_col)
+    else:
+        fig, axes = plt.subplots(num_row, num_col, figsize=(8, 6))
+
+    axes = np.array(axes).ravel()
+
+    for n in range(num_figs):
+        ax = axes[n]
+        for m in range(num_lines):
+            x = tel[m]
+            y = g2[m][:, n]
+            yerr = g2_err[m][:, n]
+            ax.errorbar(x, y, yerr=yerr, fmt='o', markersize=3,
+                        markerfacecolor='none')
+
+            # plot the fitting line if g2 fitting is available
+            q = qd[0][n]
+            fit_x, fit_y = xf_list[m].get_g2_fitting_line(q)
+            if fit_x is not None:
+                ax.plot(fit_x, fit_y)
 
             # last image
-            if idx == num_points - 1:
-                # ax.set_title('Q = %5.4f $\AA^{-1}$' % ql_dyn[i])
+            if m == num_lines - 1:
+                ax.set_title('Q = %5.4f $\AA^{-1}$' % q)
                 ax.set_xscale('log')
                 ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
                 # if there's only one point, do not add title; the title
                 # will be too long.
-                if show_label and i == num_fig - 1:
+                if show_label and n == num_figs - 1:
                     # if idx >= 1 and num_points < 10:
                     ax.legend(fontsize=8)
 
-    # mp_hdl.fig.tight_layout()
-    mp_hdl.obj = {
-        'err': err_obj,
-        'lin': lin_obj,
-    }
+    if mp_hdl is not None:
+        mp_hdl.fig.tight_layout()
+        mp_hdl.draw()
+    else:
+        plt.tight_layout()
+        plt.show()
+
+    return
 
 
 def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             offset=0, show_fit=False, show_label=False, bounds=None,
-            fit_flag=None,
-            plot_type='multiple'):
+            fit_flag=None, plot_type='multiple'):
+
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
                                          t_range=t_range)
 
-    num_fig = 1
-    num_lines = 1
+    num_figs, num_lines = compute_geometry(g2, plot_type)
 
-    if plot_type == 'multiple':
-        num_fig = g2[0].shape[1]
-        num_lines = len(g2)
-    elif plot_type == 'single':
-        num_fig = len(g2)
-        num_lines = g2[0].shape[1]
-    elif plot_type == 'single-combined':
-        num_fig = 1
-        num_lines = g2[0].shape[1] * len(g2)
-        
-    col = min(num_fig, num_col)
-    row = (num_fig + col - 1) // col
+    # col and rows for the 2d layout
+    col = min(num_figs, num_col)
+    row = (num_figs + col - 1) // col
 
     hdl.adjust_canvas_size(num_col=col, num_row=row)
     hdl.clear()
@@ -169,7 +175,7 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
     t0_range = np.log10(t_range)
 
     axes = []
-    for n in range(num_fig):
+    for n in range(num_figs):
         i_col = n % col
         i_row = n // col
         t = hdl.addPlot(row=i_row, col=i_col)
@@ -222,12 +228,6 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
                 ax.plot(fit_summary['fit_line'][n]['fit_x'], y_fit,
                         pen=pg.mkPen(color, width=2.5))
 
-            # msg = fit_res[m]['err_msg']
-            # if msg is not None:
-            #     err_msg.append('----' + msg)
-
-        # if len(err_msg) == prev_len:
-        #     err_msg.append('---- fit finished without errors')
     return
 
 

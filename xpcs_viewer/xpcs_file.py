@@ -3,7 +3,7 @@ import numpy as np
 from .fileIO.hdf_reader import get, get_type, create_id
 from .plothandler.pyqtgraph_handler import ImageViewDev
 from .plothandler.matplot_qt import MplCanvasBarV
-from .module import saxs2d, saxs1d, intt, stability
+from .module import saxs2d, saxs1d, intt, stability, g2mod
 from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 import pyqtgraph as pg
@@ -241,8 +241,9 @@ class XpcsFile(object):
         elif mode == 'stability':
             win = MplCanvasBarV()
             stability.plot(self, win.hdl, **kwargs)
-        else:
-            return
+        elif mode == 'g2':
+            win = MplCanvasBarV()
+            g2mod.matplot_plot([self], win.hdl, **kwargs)
 
         win.show()
         win.setWindowTitle(': '.join([mode, self.label, self.fname]))
@@ -277,6 +278,18 @@ class XpcsFile(object):
         tree.setWindowTitle(self.fname)
         tree.resize(600, 800)
         return tree
+    
+    def get_g2_fitting_line(self, q, tor=1E-6):
+        """
+        get the fitting line for q, within tor
+        """
+        if self.fit_summary is None:
+            return None, None
+        flag = np.abs(self.fit_summary['q_val'] - q) < tor
+        idx = np.argmin(flag)
+        fit_x = self.fit_summary['fit_line'][idx]['fit_x']
+        fit_y = self.fit_summary['fit_line'][idx]['fit_y']
+        return fit_x, fit_y
 
     def get_fitting_info(self, mode='g2_fitting'):
         if self.fit_summary is None:
