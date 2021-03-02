@@ -376,7 +376,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>5</number>
+           <number>6</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -3686,134 +3686,6 @@
     <hint type="destinationlabel">
      <x>477</x>
      <y>817</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_amin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>382</x>
-     <y>804</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>377</x>
-     <y>901</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_amax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>787</x>
-     <y>798</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>441</x>
-     <y>908</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_afit</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1036</x>
-     <y>790</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>518</x>
-     <y>905</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_bmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>539</x>
-     <y>826</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>547</x>
-     <y>898</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_bmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>704</x>
-     <y>824</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>630</x>
-     <y>904</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_bfit</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1043</x>
-     <y>831</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>611</x>
-     <y>894</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_qmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>556</x>
-     <y>861</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>565</x>
-     <y>890</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tauq_qmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_8</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>770</x>
-     <y>858</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>628</x>
-     <y>908</y>
     </hint>
    </hints>
   </connection>
