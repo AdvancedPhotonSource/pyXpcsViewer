@@ -14,14 +14,19 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
         x = xf.fit_summary['q_val']
         y = xf.fit_summary['fit_val'][:, 0, 1]
         e = xf.fit_summary['fit_val'][:, 1, 1]
+        # remove failed fittings;
+        valid_idx = e > 0
+        x = x[valid_idx]
+        y = y[valid_idx]
+        e = e[valid_idx]
+
         line = ax.errorbar(x, y/s,  yerr=e/s, fmt='o-', markersize=3,
                            label=xf.label)
-        fit_x = xf.fit_summary['tauq_fit_line']['fit_x']
-        fit_y = xf.fit_summary['tauq_fit_line']['fit_y']
 
-        ax.plot(fit_x, fit_y / s)
-        # fit_msg.append('fn: %s, slope = %.4f, intercept = %.4f' %
-        #                (labels[n], slope, intercept))
+        if xf.fit_summary.get('tauq_success', False):
+            fit_x = xf.fit_summary['tauq_fit_line']['fit_x']
+            fit_y = xf.fit_summary['tauq_fit_line']['fit_y']
+            ax.plot(fit_x, fit_y / s)
 
     ax.set_xlabel('$q (\\AA^{-1})$')
     ax.set_ylabel('$\\tau (s)$')
