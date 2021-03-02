@@ -133,13 +133,32 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
 
     fit_line = []
     for n in range(y.shape[1]):
-        popt, pcov = curve_fit(func, x, y[:, n],
-                               p0=p0, sigma=sigma[:, n],
-                               bounds=bounds_fit)
-        fit_val[n, 0, fit_flag] = popt
-        fit_val[n, 1, fit_flag] = np.sqrt(np.diag(pcov))
-        fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
-        fit_y = func(fit_x, *popt)
-        fit_line.append({'fit_x': fit_x, 'fit_y': fit_y})
+        flag = True
+        try:
+            popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n],
+                                   bounds=bounds_fit)
+        except Exception as err:
+            flag = False
+            msg = 'FittingError: ' + str(err)
+            fit_val[n, 0, fit_flag] = popt
+            fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
+            # mark failed fitting to be negative so they can be filtered later
+            fit_val[n, 1, :] = -1
+            fit_y = None
+
+        else:
+            flag = True
+            msg = 'FittingSuccess'
+            # converge values
+            fit_val[n, 0, fit_flag] = popt
+            fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
+            # errors; the fixed variables have error of 0
+            fit_val[n, 1, fit_flag] = np.sqrt(np.diag(pcov))
+            # fit line
+            fit_y = func(fit_x, *popt)
+
+        finally:
+            fit_line.append({'fit_x': fit_x, 'fit_y': fit_y, 'success': flag,
+                             'msg': msg})
 
     return fit_line, fit_val
