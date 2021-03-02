@@ -376,7 +376,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>6</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1950,7 +1950,7 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QPushButton" name="pushButton_6">
+                  <widget class="QPushButton" name="btn_g2_refit">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -1958,7 +1958,7 @@
                     </sizepolicy>
                    </property>
                    <property name="text">
-                    <string>export fit</string>
+                    <string>refit</string>
                    </property>
                   </widget>
                  </item>
@@ -2748,7 +2748,7 @@
   <tabstop>g2_dmax</tabstop>
   <tabstop>g2_dfit</tabstop>
   <tabstop>show_g2_fit_summary</tabstop>
-  <tabstop>pushButton_6</tabstop>
+  <tabstop>btn_g2_refit</tabstop>
   <tabstop>twotime_autorotate</tabstop>
   <tabstop>cb_twotime_type</tabstop>
   <tabstop>cb_twotime_qmap_cmap</tabstop>
@@ -2822,22 +2822,6 @@
     <hint type="destinationlabel">
      <x>23</x>
      <y>949</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_cmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>922</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>832</x>
-     <y>947</y>
     </hint>
    </hints>
   </connection>
@@ -2922,22 +2906,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_amin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>860</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1106</x>
-     <y>958</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton_3</sender>
    <signal>clicked()</signal>
    <receiver>mainWindow</receiver>
@@ -2950,22 +2918,6 @@
     <hint type="destinationlabel">
      <x>518</x>
      <y>783</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_bmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>891</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1403</x>
-     <y>953</y>
     </hint>
    </hints>
   </connection>
@@ -3194,22 +3146,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_amax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>860</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1248</x>
-     <y>953</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>g2_ymax</sender>
    <signal>editingFinished()</signal>
    <receiver>mainWindow</receiver>
@@ -3386,22 +3322,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_bmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>891</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1051</x>
-     <y>958</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btn_load_data</sender>
    <signal>clicked()</signal>
    <receiver>mainWindow</receiver>
@@ -3494,22 +3414,6 @@
     <hint type="destinationlabel">
      <x>147</x>
      <y>496</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_cmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>922</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1583</x>
-     <y>956</y>
     </hint>
    </hints>
   </connection>
@@ -3750,198 +3654,6 @@
     <hint type="destinationlabel">
      <x>1406</x>
      <y>953</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_amin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>860</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_amax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>860</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_bmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>891</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_bmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>891</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_cmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>922</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_cmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>922</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_dmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1406</x>
-     <y>953</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_dmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1656</x>
-     <y>953</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_afit</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1704</x>
-     <y>860</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_bfit</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1704</x>
-     <y>891</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_cfit</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1704</x>
-     <y>922</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_dfit</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1704</x>
-     <y>953</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>507</x>
-     <y>874</y>
     </hint>
    </hints>
   </connection>

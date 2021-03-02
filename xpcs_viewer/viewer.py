@@ -114,6 +114,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
+        self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.load_default_setting()
 
         # disable browse function; it freezes on linux workstation;
@@ -618,6 +619,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         
         p = self.check_g2_number()
         bounds, fit_flag = self.check_number()
+        if bounds is None:
+            self.statusbar.showMessage('please check fitting bounds.')
+            return
 
         kwargs = {
             'num_col': self.sb_g2_column.value(),
@@ -856,7 +860,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 val = float(key.text())
             except Exception:
                 key.setText(str(default_val[n]))
-                return
+                return None, None
             else:
                 vals[n] = val
 
