@@ -226,7 +226,6 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
                     y_fit = fit_summary['fit_line'][n]['fit_y'] + m * offset
                     ax.plot(fit_summary['fit_line'][n]['fit_x'], y_fit,
                             pen=pg.mkPen(color, width=2.5))
-
     return
 
 
