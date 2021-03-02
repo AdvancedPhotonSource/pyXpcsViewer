@@ -184,12 +184,10 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
         t.setMouseEnabled(x=False, y=False)
 
-    err_msg = []
     fit_val_dict = {}
     for m in range(len(g2)):
         if show_fit:
             fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag)
-            err_msg.append(xf_list[m].label)
 
         for n in range(g2[0].shape[1]):
             color = colors[m % len(colors)]
@@ -223,7 +221,7 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
             ax.setRange(xRange=t0_range, yRange=y_range)
 
-            if show_fit:
+            if show_fit and fit_summary is not None:
                 y_fit = fit_summary['fit_line'][n]['fit_y'] + m * offset
                 ax.plot(fit_summary['fit_line'][n]['fit_x'], y_fit,
                         pen=pg.mkPen(color, width=2.5))

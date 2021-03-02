@@ -353,8 +353,12 @@ class XpcsFile(object):
 
         fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
                             np.log10(np.max(t_el)) + 0.5, 128)
-        fit_line, fit_val = fit_with_fixed(single_exp_all, t_el, g2, sigma,
-                                           bounds, fit_flag, fit_x, p0=p0)
+        try:
+            fit_line, fit_val = fit_with_fixed(single_exp_all, t_el, g2, sigma,
+                                               bounds, fit_flag, fit_x, p0=p0)
+        except Exception as err:
+            print('failed to fit g2 for %s' % self.fname)
+            return None 
 
         self.fit_summary = {
             'fit_val': fit_val,
