@@ -3,18 +3,14 @@ from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import Qt
-
-# from pyqtgraph.Qt import QtWidgets
-# from pyqtgraph import QtCore, QtGui
 
 import os
 import numpy as np
 import sys
 import json
-
-# log file
+import shutil
 import logging
+
 
 format = logging.Formatter('%(asctime)s %(message)s')
 home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
@@ -141,6 +137,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 new_size = (config["window_size_w"], config["window_size_h"])
                 logger.info('set mainwindow to size %s', new_size)
                 self.resize(*new_size)
+        
+        # remove joblib cache
+        cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer',
+                                 'joblib/xpcs_viewer')
+        if os.path.isdir(cache_dir):
+            shutil.rmtree(cache_dir)
+
         return
 
     def get_selected_rows(self):
@@ -316,7 +319,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('Twotime data not ready', 1000)
             return
 
-        if event.button == Qt.LeftButton:
+        if event.button == QtCore.Qt.LeftButton:
             self.statusbar.showMessage('Use right click to select points',
                                        1000)
             return
@@ -924,7 +927,7 @@ def setup_windows_icon():
 def run():
     if os.name == 'nt':
         setup_windows_icon()
-    QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
