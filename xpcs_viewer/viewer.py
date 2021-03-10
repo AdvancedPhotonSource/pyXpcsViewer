@@ -284,6 +284,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
+        self.mp_saxs.repaint() 
 
     def init_twotime(self):
         if not self.check_status():
