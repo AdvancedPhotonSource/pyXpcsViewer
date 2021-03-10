@@ -38,6 +38,7 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
     yscale = ['linear', 'log'][plot_type // 2]
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
+#     hdl.fig.tight_layout()
 
     hdl.draw()
 
@@ -83,6 +84,8 @@ def plot_pre(xf_list, hdl):
                 # only show legend in the last plot
                 if n == 3:
                     ax[n].legend()
+
+    # hdl.fig.tight_layout()
     hdl.draw()
 
     return

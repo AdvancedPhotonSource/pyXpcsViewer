@@ -113,6 +113,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.load_default_setting()
 
+        # self.btn_g2_export.clicked.connect(self.export_g2)
         # disable browse function; it freezes on linux workstation;
         # self.pushButton.setEnabled(False)
 
@@ -666,7 +667,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # reset plot state for the diffusion tab so it will be updated when 
         # switch tabs;
         self.plot_state[6] = 0
-
+    
+    def export_g2(self):
+        self.vk.export_g2()
 
     def reload_source(self):
         self.vk.build()

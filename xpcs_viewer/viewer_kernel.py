@@ -246,6 +246,9 @@ class ViewerKernel(FileLocator):
         record[0] += 1
 
         return
+    
+    def export_g2(self):
+       pass 
 
 
 if __name__ == "__main__":
