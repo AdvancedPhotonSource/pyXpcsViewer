@@ -275,8 +275,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
             'plot_norm': self.cb_saxs_norm.currentIndex(),
-            'rows': self.get_selected_rows()
+            'rows': self.get_selected_rows(),
+            'qmin': self.saxs1d_qmin.value(),
+            'qmax': self.saxs1d_qmax.value()
         }
+        if kwargs['qmin'] >= kwargs['qmax']:
+            self.statusbar.showMessage('check qmin and qmax')
+            return
+
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
 
     def init_twotime(self):

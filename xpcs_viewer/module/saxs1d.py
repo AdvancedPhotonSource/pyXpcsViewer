@@ -1,4 +1,5 @@
 import numpy as np
+from .g2mod import create_slice
 
 
 def offset_intensity(Iq, n, plot_offset=None, yscale=None):
@@ -6,7 +7,7 @@ def offset_intensity(Iq, n, plot_offset=None, yscale=None):
     offset the intensity accordingly in both linear and log scale
     """
     if yscale == 'linear':
-        offset = -plot_offset * n * np.max(Iq)
+        offset = -1 * plot_offset * n * np.max(Iq)
         Iq = offset + Iq
 
     elif yscale == 'log':
@@ -64,7 +65,7 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
-         max_points=8, legend=None, title=None, rows=None):
+         max_points=8, legend=None, title=None, rows=None, qmax=10.0, qmin=0):
 
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
@@ -72,7 +73,9 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
     data = []
     for n, fi in enumerate(xf_list[slice(0, max_points)]):
         Iq, q = fi.saxs_1d, fi.ql_sta
-
+        sl = create_slice(q, (qmin, qmax))
+        Iq = Iq[sl]
+        q = q[sl]
         Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
         Iq = offset_intensity(Iq, n, plot_offset, yscale)
         data.append([q, Iq])
