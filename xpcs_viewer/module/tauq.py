@@ -3,6 +3,7 @@ from ..helper.fitting import fit_tau
 
 
 colors = ('b', 'r', 'g', 'c', 'm', 'y', 'k')
+shapes = ('o', 'v', '^', '<', '>', '8', 's', 'p', 'P', '*')
 
 
 def plot(xf_list, hdl, q_range, offset, plot_type=3):
@@ -22,7 +23,8 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
         e = e[valid_idx]
 
         color = colors[n % len(colors)]
-        line = ax.errorbar(x, y/s,  yerr=e/s, fmt='o', markersize=3,
+        shape = shapes[n % len(shapes)]
+        line = ax.errorbar(x, y/s,  yerr=e/s, fmt=shape, markersize=3,
                            label=xf.label, color=color, mfc='white')
 
         if xf.fit_summary.get('tauq_success', False):
@@ -53,12 +55,13 @@ def plot_pre(xf_list, hdl):
 
     for idx, xf in enumerate(xf_list):
         color = colors[idx % len(colors)]
+        shape = shapes[idx % len(shapes)]
         for n in range(4):
             x = xf.fit_summary['q_val']
             y = xf.fit_summary['fit_val'][:, 0, n]
             e = xf.fit_summary['fit_val'][:, 1, n]
-            ax[n].errorbar(x, y,  yerr=e, fmt='o', markersize=3, 
-                           label=xf.label, color=color, mfc='white')
+            ax[n].errorbar(x, y,  yerr=e, fmt=shape, markersize=3,
+                           color=color, mfc='white')
 
         if idx == len(xf_list) - 1:
             bounds = xf.fit_summary['bounds']
