@@ -7,6 +7,7 @@ from sklearn import linear_model
 import joblib
 import os
 import time
+import traceback
 
 
 cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
@@ -137,10 +138,10 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
         try:
             popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n],
                                    bounds=bounds_fit)
-        except Exception as err:
+        except (Exception, RuntimeError, ValueError, Warning) as err:
+            msg = "Fitting failed: %s" % traceback.format_exc()
             flag = False
-            msg = 'FittingError: ' + str(err)
-            fit_val[n, 0, fit_flag] = popt
+            fit_val[n, 0, fit_flag] = p0 
             fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
             # mark failed fitting to be negative so they can be filtered later
             fit_val[n, 1, :] = -1

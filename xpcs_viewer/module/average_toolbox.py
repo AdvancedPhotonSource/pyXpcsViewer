@@ -184,11 +184,17 @@ class AverageToolbox(QtCore.QRunnable):
                     mask[m] = 0
 
                 self.signals.values.emit((self.jid, val))
+        
+        if np.sum(mask) == 0:
+            logger.info('no dataset is valid; check the baseline criteria.')
+        else:
+            for key in fields:
+                result[key] /= np.sum(mask)
+                if key == 'g2_err':
+                    result[key] /= np.sqrt(np.sum(mask))
 
-        for key in fields:
-            result[key] /= np.sum(mask)
-            if key == 'g2_err':
-                result[key] /= np.sqrt(np.sum(mask))
+            logger.info('the valid dataset number is %d / %d' % (
+                np.sum(mask), tot_num))
         
         for m in range(tot_num):
             if not mask[m]:
