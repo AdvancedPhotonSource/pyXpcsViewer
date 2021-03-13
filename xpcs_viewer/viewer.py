@@ -608,7 +608,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
 
-        flag, tel, _, _, _ = self.vk.get_g2_data(max_points, rows=None)
+        flag, tel, qd, _, _ = self.vk.get_g2_data(max_points, rows=None)
         if not flag:
             self.statusbar.showMessage('g2 data is not consistent. abort', 999)
         t_min = np.min(tel)
@@ -623,6 +623,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
+
+        if float(self.g2_qmin.text()) > np.max(qd):
+            self.g2_qmin.setText('%.04f' % (np.min(qd) * 0.9))
+
+        qmax = float(self.g2_qmax.text())
+        if qmax < np.min(qd) or qmax < float(self.g2_qmin.text()):
+            self.g2_qmin.setText('%.04f' % (np.max(qd) * 1.1))
 
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
