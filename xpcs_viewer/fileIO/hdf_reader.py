@@ -82,7 +82,12 @@ def get(fname, fields, mode='raw', ret_type='dict'):
 
             if type(val) == np.ndarray:
                 # get rid of length=1 axies;
-                val = np.squeeze(val)
+                if key not in ['g2', 'g2_err']:
+                    val = np.squeeze(val)
+
+                if key == 'ql_dyn' and val.ndim == 0:
+                    val = np.array([val])
+
             elif type(val) in [np.bytes_, bytes]:
                 # converts bytes to unicode;
                 val = val.decode()
