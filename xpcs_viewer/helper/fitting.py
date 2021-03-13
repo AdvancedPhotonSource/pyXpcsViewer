@@ -8,11 +8,15 @@ import joblib
 import os
 import time
 import traceback
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
 from joblib import Memory
 memory = Memory(cache_dir, verbose=0)
+
 
 @memory.cache
 def fit_with_fixed(*args, **kwargs):
@@ -140,6 +144,7 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
                                    bounds=bounds_fit)
         except (Exception, RuntimeError, ValueError, Warning) as err:
             msg = "Fitting failed: %s" % traceback.format_exc()
+            logger.info(msg)
             flag = False
             fit_val[n, 0, fit_flag] = p0 
             fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
