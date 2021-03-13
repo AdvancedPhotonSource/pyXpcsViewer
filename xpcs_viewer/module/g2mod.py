@@ -41,7 +41,14 @@ symbols = ['o', 's', 't', 'd', '+']
 
 def create_slice(arr, x_range):
     start, end = 0, arr.size - 1
-    if x_range is None:
+    
+    # switch order if lower > upper
+    if x_range is not None and x_range[0] > x_range[1]:
+        temp = list(x_range)
+        x_range = [temp[1], temp[0]]
+
+    # return all range for None and invalid inputs
+    if x_range is None or x_range[0] > np.max(arr) or x_range[1] < np.min(arr):
         return slice(start, end + 1)
 
     while arr[start] < x_range[0]:
@@ -51,9 +58,9 @@ def create_slice(arr, x_range):
 
     while arr[end] >= x_range[1]:
         end -= 1
-        if end == 0:
+        if end <= 0:
             break
-
+    
     return slice(start, end + 1)
 
 
