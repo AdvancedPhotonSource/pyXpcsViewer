@@ -652,7 +652,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'y_range': (p[4], p[5]),
             'rows': self.get_selected_rows(),
             'bounds': bounds,
-            'fit_flag': fit_flag
+            'fit_flag': fit_flag,
+            'subtract_baseline': self.g2_sub_baseline.isChecked()
         }
         if kwargs['show_fit'] and sum(kwargs['fit_flag']) == 0:
             self.statusbar.showMessage('nothing to fit, really?', 1000)

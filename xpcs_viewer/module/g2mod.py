@@ -165,13 +165,14 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
 
 def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             offset=0, show_fit=False, show_label=False, bounds=None,
-            fit_flag=None, plot_type='multiple'):
+            fit_flag=None, plot_type='multiple', subtract_baseline=True):
 
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
                                          t_range=t_range)
 
     num_figs, num_lines = compute_geometry(g2, plot_type)
 
+    num_data, num_qval = len(g2), g2[0].shape[1]
     # col and rows for the 2d layout
     col = min(num_figs, num_col)
     row = (num_figs + col - 1) // col
@@ -192,11 +193,17 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
         t.setMouseEnabled(x=False, y=False)
 
     fit_val_dict = {}
-    for m in range(len(g2)):
+    for m in range(num_data):
+        # default base line to be 1.0; used for non-fitting or fit error cases
+        baseline_offset = np.ones(num_qval)
         if show_fit:
             fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag)
+            if fit_summary is not None and subtract_baseline:
+                # make sure the fitting is successful
+                if fit_summary['fit_line'][n].get('success', False):
+                    baseline_offset = fit_summary['fit_val'][:, 0, 3]
 
-        for n in range(g2[0].shape[1]):
+        for n in range(num_qval):
             color = colors[m % len(colors)]
             label = None
             if plot_type == 'multiple':
@@ -222,7 +229,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             symbol = symbols[m % len(symbols)]
 
             x = tel[m]
-            y = g2[m][:, n] + m * offset
+            # normalize baseline
+            y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
             y_err = g2_err[m][:, n]
 
             pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
@@ -231,6 +239,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             if show_fit and fit_summary is not None:
                 if fit_summary['fit_line'][n].get('success', False):
                     y_fit = fit_summary['fit_line'][n]['fit_y'] + m * offset
+                    # normalize baseline
+                    y_fit = y_fit - baseline_offset[n] + 1.0
                     ax.plot(fit_summary['fit_line'][n]['fit_x'], y_fit,
                             pen=pg.mkPen(color, width=2.5))
     return
