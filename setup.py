@@ -4,7 +4,7 @@ with open("requirements.txt", "r") as f:
     requirements = f.read().splitlines()
 
 setup(name='xpcs_viewer',
-      version='0.226',
+      version='0.227',
       description='A python-based interactive visualization tool to view XPCS dataset',
       scripts=['run_viewer.bat', 'run_viewer'],
       url='https://github.com/AdvancedPhotonSource/pyXpcsViewer',

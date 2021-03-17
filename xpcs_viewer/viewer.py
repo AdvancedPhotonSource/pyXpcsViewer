@@ -828,7 +828,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             x.clear()
 
     def trie_search(self):
-        min_length = 2
+        min_length = 1
         val = self.filter_str.text()
         if len(val) == 0:
             self.source_model = self.vk.source
@@ -837,8 +837,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
             self.statusbar.showMessage(
-                'Please enter at least %d characters' % min_length, 1000
-            )
+                'Please enter at least %d characters' % min_length, 1000)
             return
 
         filter_type = ['prefix', 'substr'][self.filter_type.currentIndex()]

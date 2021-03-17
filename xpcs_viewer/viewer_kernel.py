@@ -63,15 +63,6 @@ class ViewerKernel(FileLocator):
         if self.statusbar is not None:
             self.statusbar.showMessage(msg, 1500)
 
-    def hash(self, max_points=10):
-        if self.target is None:
-            return hash(None)
-        elif max_points <= 0:  # use all items
-            val = hash(tuple(self.target))
-        else:
-            val = hash(tuple(self.target[0:max_points]))
-        return val
-
     def get_g2_data(self, max_points, rows, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows)
         flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
@@ -100,7 +91,7 @@ class ViewerKernel(FileLocator):
                 y_range=None,
                 offset=None,
                 show_fit=False,
-                max_points=50,
+                max_points=128,
                 bounds=None,
                 show_label=False,
                 num_col=4,
@@ -135,13 +126,13 @@ class ViewerKernel(FileLocator):
 
         return
 
-    def plot_tauq_pre(self, hdl=None, max_points=8, rows=None):
+    def plot_tauq_pre(self, hdl=None, max_points=128, rows=None):
         xf_list = self.get_xf_list(max_points, rows=rows)
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
 
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
-                  fit_flag=None, offset=None, max_points=8, q_range=None):
+                  fit_flag=None, offset=None, max_points=128, q_range=None):
         
         xf_list = self.get_xf_list(max_points, rows=rows) 
         result = {}
@@ -163,7 +154,7 @@ class ViewerKernel(FileLocator):
         extent = self.cache[self.target[0]].get_detector_extent()
         saxs2d.plot(ans, extent=extent, *args, **kwargs)
 
-    def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
+    def plot_saxs_1d(self, mp_hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
         saxs1d.plot(xf_list, mp_hdl, legend=self.id_list, **kwargs)
 
