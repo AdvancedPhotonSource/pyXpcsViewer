@@ -682,6 +682,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def reload_source(self):
         self.vk.build()
         self.update_box(self.vk.source, mode='source')
+        self.trie_search()
 
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
