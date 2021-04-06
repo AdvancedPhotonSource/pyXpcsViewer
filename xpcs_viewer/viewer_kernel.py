@@ -97,13 +97,14 @@ class ViewerKernel(FileLocator):
                 num_col=4,
                 rows=None,
                 fit_flag=None,
+                y_auto=False,
                 subtract_baseline=True,
                 plot_type='multiple'):
 
         fn_tuple = self.get_fn_tuple(max_points, rows=rows)
         new_condition = (
             (fn_tuple, num_col, show_fit, show_label, subtract_baseline),
-            (q_range, t_range, y_range, offset),
+            (q_range, t_range, y_range, offset, y_auto),
             (bounds, fit_flag))
 
         if self.meta['g2_plot_condition'] == new_condition:
@@ -122,7 +123,7 @@ class ViewerKernel(FileLocator):
         g2mod.pg_plot(handler, xf_list, num_col, q_range, t_range, y_range,
                       offset=offset, show_label=show_label, show_fit=show_fit,
                       bounds=bounds, plot_type=plot_type, fit_flag=fit_flag,
-                      subtract_baseline=subtract_baseline)
+                      subtract_baseline=subtract_baseline, y_auto=y_auto)
 
         return
 

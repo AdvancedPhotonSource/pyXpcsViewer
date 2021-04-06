@@ -163,7 +163,7 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
     return
 
 
-def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
+def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
             offset=0, show_fit=False, show_label=False, bounds=None,
             fit_flag=None, plot_type='multiple', subtract_baseline=True):
 
@@ -190,7 +190,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
         axes.append(t)
         if show_label:
             t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
-        t.setMouseEnabled(x=False, y=False)
+
+        t.setMouseEnabled(x=False, y=y_auto)
 
     fit_val_dict = {}
     for m in range(num_data):
@@ -234,7 +235,11 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range,
             y_err = g2_err[m][:, n]
 
             pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
-            ax.setRange(xRange=t0_range, yRange=y_range)
+
+            ax.setRange(xRange=t0_range)
+
+            if not y_auto:
+                ax.setRange(yRange=y_range)
 
             if show_fit and fit_summary is not None:
                 if fit_summary['fit_line'][n].get('success', False):

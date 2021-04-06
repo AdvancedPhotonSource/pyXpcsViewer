@@ -650,6 +650,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'q_range': (p[0], p[1]),
             't_range': (p[2], p[3]),
             'y_range': (p[4], p[5]),
+            'y_auto': self.g2_yauto.isChecked(),
             'rows': self.get_selected_rows(),
             'bounds': bounds,
             'fit_flag': fit_flag,
