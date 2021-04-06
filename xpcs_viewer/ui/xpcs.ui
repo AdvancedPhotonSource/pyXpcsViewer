@@ -1538,6 +1538,20 @@
                 <layout class="QGridLayout" name="gridLayout_13">
                  <item row="0" column="1">
                   <layout class="QGridLayout" name="gridLayout_11">
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_4">
+                     <property name="text">
+                      <string>t range:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_3">
+                     <property name="text">
+                      <string>q (1/Å):</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="2" column="1">
                     <widget class="QLineEdit" name="g2_ymin">
                      <property name="sizePolicy">
@@ -1567,20 +1581,6 @@
                      </property>
                      <property name="placeholderText">
                       <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_3">
-                     <property name="text">
-                      <string>q (1/Å):</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_4">
-                     <property name="text">
-                      <string>t range:</string>
                      </property>
                     </widget>
                    </item>
@@ -1655,6 +1655,13 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="3">
+                    <widget class="QCheckBox" name="g2_yauto">
+                     <property name="text">
+                      <string>auto</string>
+                     </property>
+                    </widget>
+                   </item>
                   </layout>
                  </item>
                  <item row="0" column="0">
@@ -1705,7 +1712,7 @@
                       <string>do fit?</string>
                      </property>
                      <property name="checked">
-                      <bool>true</bool>
+                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -1734,7 +1741,7 @@
                       <string>subtract baseline</string>
                      </property>
                      <property name="checked">
-                      <bool>true</bool>
+                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -1744,7 +1751,7 @@
                       <string>show labels?</string>
                      </property>
                      <property name="checked">
-                      <bool>true</bool>
+                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -2852,7 +2859,7 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
     <hint type="destinationlabel">
@@ -2980,8 +2987,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>867</y>
+     <x>981</x>
+     <y>866</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3044,8 +3051,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>907</x>
-     <y>947</y>
+     <x>846</x>
+     <y>944</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3092,8 +3099,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>907</y>
+     <x>981</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3124,8 +3131,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>907</x>
-     <y>867</y>
+     <x>846</x>
+     <y>866</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3204,8 +3211,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>947</y>
+     <x>981</x>
+     <y>944</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3316,8 +3323,8 @@
    <slot>check_g2_number()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>907</x>
-     <y>907</y>
+     <x>846</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3476,11 +3483,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>459</x>
+     <x>450</x>
      <y>906</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3492,11 +3499,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>459</x>
+     <x>450</x>
      <y>946</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3508,11 +3515,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>671</x>
+     <x>655</x>
      <y>904</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3524,11 +3531,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>540</x>
+     <x>524</x>
      <y>944</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3540,11 +3547,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>665</x>
+     <x>649</x>
      <y>870</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3556,11 +3563,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>907</x>
-     <y>867</y>
+     <x>846</x>
+     <y>866</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3572,11 +3579,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>867</y>
+     <x>981</x>
+     <y>866</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3588,11 +3595,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>907</x>
-     <y>907</y>
+     <x>846</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3604,11 +3611,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>907</y>
+     <x>981</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3620,11 +3627,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>907</x>
-     <y>947</y>
+     <x>846</x>
+     <y>944</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3636,11 +3643,11 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1042</x>
-     <y>947</y>
+     <x>981</x>
+     <y>944</y>
     </hint>
     <hint type="destinationlabel">
-     <x>465</x>
+     <x>456</x>
      <y>874</y>
     </hint>
    </hints>
@@ -3834,6 +3841,38 @@
     <hint type="destinationlabel">
      <x>336</x>
      <y>859</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>g2_yauto</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>g2_ymin</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1006</x>
+     <y>941</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>765</x>
+     <y>937</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>g2_yauto</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>g2_ymax</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1008</x>
+     <y>927</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>899</x>
+     <y>937</y>
     </hint>
    </hints>
   </connection>
