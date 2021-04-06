@@ -111,6 +111,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
+        self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
         self.load_default_setting()
 
         # self.btn_g2_export.clicked.connect(self.export_g2)
@@ -265,6 +266,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'cmap': self.cb_saxs2D_cmap.currentText(),
             'autorotate': self.saxs2d_autorotate.isChecked(),
             'display': self.saxs2d_display,
+            'autorange': self.saxs2d_autorange.isChecked(),
+            'vmin': self.saxs2d_min.value(),
+            'vmax': self.saxs2d_max.value(),
         }
         self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
@@ -926,6 +930,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.statusbar.showMessage(msg, 1000)
 
         return flag
+    
+    def update_saxs2d_range(self, flag=True):
+        if not flag:
+            vmin = self.pg_saxs.levelMin
+            vmax = self.pg_saxs.levelMax
+            if vmin is not None:
+                self.saxs2d_min.setValue(vmin)
+            if vmax is not None:
+                self.saxs2d_max.setValue(vmax)
+            self.saxs2d_min.setEnabled(True)
+            self.saxs2d_max.setEnabled(True)
+        else:
+            self.saxs2d_min.setDisabled(True)
+            self.saxs2d_max.setDisabled(True)
+        
+        self.saxs2d_min.parent().repaint()
 
 
 def setup_windows_icon():

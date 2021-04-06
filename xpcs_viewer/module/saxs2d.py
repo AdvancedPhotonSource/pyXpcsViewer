@@ -34,7 +34,8 @@ def list_to_numpy(ans, autorotate=True):
 
 
 def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', autorotate=False,
-         epsilon=None, display=None, extent=None):
+         epsilon=None, display=None, extent=None, autorange=True, vmin=None,
+         vmax=None):
 
     ans, rotate = list_to_numpy(ans, autorotate)
     # if pg_hdl is None:
@@ -60,9 +61,13 @@ def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', autorotate=False,
         pg_hdl.setImage(ans, xvals=xvals)
     else:
         pg_hdl.setImage(ans[0])
+    
+    if not autorange:
+        if vmin is not None and vmax is not None:
+            pg_hdl.setLevels(vmin, vmax)
 
     pg_hdl.adjust_viewbox()
     if extent is not None:
         pg_hdl.add_readback(display=display, extent=extent)
 
-    return rotate
+    return rotate # , pg_hdl.levelMin, pg_hdl.levelMax
