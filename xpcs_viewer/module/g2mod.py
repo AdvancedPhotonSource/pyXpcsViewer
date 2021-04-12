@@ -14,29 +14,28 @@ pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 logger = logging.getLogger(__name__)
 
 fn_tuple = None
-# colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
-colors = [
-    (220, 0, 0),
-    (0, 220, 0),
-    (0, 0, 220),
-    (0, 176, 80),
-    (0, 32, 96),
-    (255, 0, 0),
-    (0, 176, 240),
-    (0, 32, 96),
-    (255, 164, 0),
-    (146, 208, 80),
-    (0, 112, 192),
-    (112, 48, 160),
-    (54, 96, 146),
-    (150, 54, 52),
-    (118, 147, 60),
-    (96, 73, 122),
-    (49, 134, 155),
-    (226, 107, 10),
-]
 
-symbols = ['o', 's', 't', 'd', '+']
+# colors converted from 
+# https://matplotlib.org/stable/tutorials/colors/colors.html 
+# colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+#           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
+
+colors = (
+    (31, 119, 180),
+    (255, 127, 14),
+    (44, 160, 44),
+    (214, 39, 40),
+    (148, 103, 189),
+    (140, 86, 75),
+    (227, 119, 194),
+    (127, 127, 127),
+    (188, 189, 34),
+    (23, 190, 207),
+)
+
+
+# https://www.geeksforgeeks.org/pyqtgraph-symbols/
+symbols = ['o', 't', 't1', 't2', 't3', 's', 'p', 'h', 'star', '+', 'd', 'x']
 
 
 def create_slice(arr, x_range):
@@ -108,7 +107,7 @@ def compute_geometry(g2, plot_type):
 
 
 def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4, 
-                 show_label=False, plot_type='multiple'):
+                 show_label=False, plot_type='multiple', marker_size=3):
 
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
                                          t_range=t_range)
@@ -165,7 +164,8 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
 
 def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
             offset=0, show_fit=False, show_label=False, bounds=None,
-            fit_flag=None, plot_type='multiple', subtract_baseline=True):
+            fit_flag=None, plot_type='multiple', subtract_baseline=True,
+            marker_size=5):
 
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
                                          t_range=t_range)
@@ -234,7 +234,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
             y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
             y_err = g2_err[m][:, n]
 
-            pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
+            pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol,
+                           symbol_size=marker_size)
 
             ax.setRange(xRange=t0_range)
 
@@ -251,13 +252,13 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
     return
 
 
-def pg_plot_one_g2(ax, x, y, dy, color, label, symbol):
+def pg_plot_one_g2(ax, x, y, dy, color, label, symbol, symbol_size=5):
     pen = pg.mkPen(color=color, width=2)
 
     line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy,
                            pen=pen)
     pen = pg.mkPen(color=color, width=1)
-    ax.plot(x, y, pen=None, symbol=symbol, name=label, symbolSize=5,
+    ax.plot(x, y, pen=None, symbol=symbol, name=label, symbolSize=symbol_size,
             symbolPen=pen, symbolBrush=pg.mkBrush(color=(*color, 0)))
 
     ax.setLogMode(x=True, y=None)
