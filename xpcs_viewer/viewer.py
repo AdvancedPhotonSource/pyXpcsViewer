@@ -659,6 +659,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'rows': self.get_selected_rows(),
             'bounds': bounds,
             'fit_flag': fit_flag,
+            'marker_size': self.g2_marker_size.value(),
             'subtract_baseline': self.g2_sub_baseline.isChecked()
         }
         if kwargs['show_fit'] and sum(kwargs['fit_flag']) == 0:
