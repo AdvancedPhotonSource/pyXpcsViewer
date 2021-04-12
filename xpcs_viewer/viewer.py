@@ -282,7 +282,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'plot_norm': self.cb_saxs_norm.currentIndex(),
             'rows': self.get_selected_rows(),
             'qmin': self.saxs1d_qmin.value(),
-            'qmax': self.saxs1d_qmax.value()
+            'qmax': self.saxs1d_qmax.value(),
+            'loc': self.saxs1d_legend_loc.currentText(),
         }
         if kwargs['qmin'] >= kwargs['qmax']:
             self.statusbar.showMessage('check qmin and qmax')

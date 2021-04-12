@@ -65,7 +65,8 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
-         max_points=8, legend=None, title=None, rows=None, qmax=10.0, qmin=0):
+         max_points=8, legend=None, title=None, rows=None, qmax=10.0, qmin=0,
+         loc='best'):
 
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
@@ -82,7 +83,7 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
 
     mp_hdl.clear()
     mp_hdl.show_lines(data, xlabel=xlabel, ylabel=ylabel, legend=legend,
-                      rows=rows)
+                      rows=rows, loc=loc)
 
     mp_hdl.axes.set_title(title)
     mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
