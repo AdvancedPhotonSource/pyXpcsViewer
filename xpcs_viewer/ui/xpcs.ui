@@ -376,7 +376,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -636,7 +636,7 @@
               <property name="title">
                <string>SAXS 1D Plot Setting</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_16">
+              <layout class="QGridLayout" name="gridLayout_24">
                <item row="0" column="0">
                 <spacer name="horizontalSpacer_7">
                  <property name="orientation">
@@ -651,55 +651,15 @@
                 </spacer>
                </item>
                <item row="0" column="1">
-                <layout class="QGridLayout" name="gridLayout_24">
-                 <item row="0" column="8">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000500000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4">
-                  <widget class="QLabel" name="label_23">
+                <layout class="QGridLayout" name="gridLayout_16">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_21">
                    <property name="text">
-                    <string>normalization:</string>
+                    <string>type:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" colspan="9">
-                  <widget class="QPushButton" name="pushButton_10">
-                   <property name="text">
-                    <string>Plot 1D SAXS</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>offset:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
+                 <item row="0" column="1" colspan="2">
                   <widget class="QComboBox" name="cb_saxs_type">
                    <property name="currentIndex">
                     <number>3</number>
@@ -726,21 +686,34 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_21">
+                 <item row="0" column="3">
+                  <widget class="QLabel" name="label_22">
                    <property name="text">
-                    <string>type:</string>
+                    <string>offset:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="6">
-                  <widget class="QLabel" name="label_49">
-                   <property name="text">
-                    <string>q range (Å⁻¹)</string>
+                 <item row="0" column="4">
+                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.000000000000000</double>
                    </property>
                   </widget>
                  </item>
                  <item row="0" column="5">
+                  <widget class="QLabel" name="label_23">
+                   <property name="text">
+                    <string>normalization:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="6">
                   <widget class="QComboBox" name="cb_saxs_norm">
                    <item>
                     <property name="text">
@@ -764,7 +737,27 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="7">
+                 <item row="0" column="7" rowspan="2">
+                  <widget class="QPushButton" name="pushButton_10">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Plot 1D SAXS</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="2">
+                  <widget class="QLabel" name="label_49">
+                   <property name="text">
+                    <string>q range (Å⁻¹)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2" colspan="2">
                   <widget class="QDoubleSpinBox" name="saxs1d_qmin">
                    <property name="decimals">
                     <number>4</number>
@@ -772,6 +765,85 @@
                    <property name="singleStep">
                     <double>0.002000000000000</double>
                    </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.000500000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="5">
+                  <widget class="QLabel" name="label_52">
+                   <property name="text">
+                    <string>legend loc:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="6">
+                  <widget class="QComboBox" name="saxs1d_legend_loc">
+                   <item>
+                    <property name="text">
+                     <string>best</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>upper right</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>upper left</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>lower left</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>lower right</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>right</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>center left</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>center right</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>lower center</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>upper center</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>center</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                 </layout>
@@ -3149,8 +3221,8 @@
      <y>916</y>
     </hint>
     <hint type="destinationlabel">
-     <x>768</x>
-     <y>956</y>
+     <x>1400</x>
+     <y>958</y>
     </hint>
    </hints>
   </connection>
@@ -3209,7 +3281,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>968</x>
+     <x>963</x>
      <y>920</y>
     </hint>
     <hint type="destinationlabel">
@@ -3245,8 +3317,8 @@
      <y>918</y>
     </hint>
     <hint type="destinationlabel">
-     <x>768</x>
-     <y>956</y>
+     <x>1400</x>
+     <y>958</y>
     </hint>
    </hints>
   </connection>
@@ -3341,8 +3413,8 @@
      <y>918</y>
     </hint>
     <hint type="destinationlabel">
-     <x>768</x>
-     <y>956</y>
+     <x>1400</x>
+     <y>958</y>
     </hint>
    </hints>
   </connection>
@@ -3433,8 +3505,8 @@
    <slot>plot_saxs_1D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>768</x>
-     <y>956</y>
+     <x>1400</x>
+     <y>958</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
@@ -3849,12 +3921,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1358</x>
-     <y>916</y>
+     <x>945</x>
+     <y>950</y>
     </hint>
     <hint type="destinationlabel">
-     <x>768</x>
-     <y>956</y>
+     <x>1400</x>
+     <y>958</y>
     </hint>
    </hints>
   </connection>
@@ -3865,12 +3937,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1452</x>
-     <y>916</y>
+     <x>1039</x>
+     <y>950</y>
     </hint>
     <hint type="destinationlabel">
-     <x>768</x>
-     <y>956</y>
+     <x>1400</x>
+     <y>958</y>
     </hint>
    </hints>
   </connection>
@@ -3935,6 +4007,22 @@
     <hint type="destinationlabel">
      <x>899</x>
      <y>937</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saxs1d_legend_loc</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>pushButton_10</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1228</x>
+     <y>942</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1378</x>
+     <y>949</y>
     </hint>
    </hints>
   </connection>
