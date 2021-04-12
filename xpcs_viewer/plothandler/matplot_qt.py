@@ -6,7 +6,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 # matplotlib.pyplot.style.use(['science', 'no-latex'])
 
-markers = ["o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"]
+
+# https://matplotlib.org/stable/api/markers_api.html
+markers = ['o', 'v', '^', '>', '<', 's', 'p', 'h', '*', '+', 'd', 'x']
+
+colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
 
 
 class NavigationToolbarSimple(NavigationToolbar2QT):
@@ -231,8 +236,10 @@ class MplCanvas(FigureCanvasQTAgg):
             line_obj = []
             for n in range(len(data)):
                 mk = markers[n % len(markers)]
+                cl = colors[n % len(colors)]
                 line = ax.plot(data[n][0], data[n][1], mk + '--', ms=3,
-                               alpha=alpha[n], label=legend[n])
+                               alpha=alpha[n], label=legend[n], color=cl,
+                               mfc='none')
                 line_obj.append(line)
             self.obj = line_obj
 
