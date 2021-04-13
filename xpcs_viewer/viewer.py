@@ -113,6 +113,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
         self.load_default_setting()
+        self.btn_deselect.clicked.connect(self.clear_target_selection)
+        self.list_view_target.doubleClicked.connect(self.edit_label)
 
         # self.btn_g2_export.clicked.connect(self.export_g2)
         # disable browse function; it freezes on linux workstation;
@@ -240,6 +242,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.statusbar.showMessage('Files loaded.', 1000)
 
         self.init_tab()
+        self.btn_load_data.setDisabled(True)
+        self.btn_load_data.setText('updated')
+        self.btn_load_data.repaint()
+
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -768,6 +774,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         # the target list has changed;
+        self.btn_load_data.setText('update')
+        self.btn_load_data.setEnabled(True)
+        self.btn_load_data.repaint()
         self.update_box(self.vk.target, mode='target')
 
         if self.data_state in [1, 2, 3]:
@@ -782,6 +791,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.tab_dict[tab_id] == 'average':
             self.update_average_box()
         elif self.box_auto_update.isChecked():
+            if self.tab_dict[tab_id] in ['saxs_1d', 'g2']:
+                self.statusbar.showMessage(
+                    'Auto loading is disabled for saxs_1d and g2', 1000)
+                self.statusbar.repaint()
+                return
             # avoid pressing enter when auto-load is enabled and lots of
             # files are added; it'll take long time to process;
             if len(self.vk.target) > 128:
@@ -948,6 +962,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.saxs2d_max.setDisabled(True)
         
         self.saxs2d_min.parent().repaint()
+    
+    def clear_target_selection(self):
+        self.list_view_target.clearSelection()
+        self.list_view_source.repaint()
 
 
 def setup_windows_icon():
