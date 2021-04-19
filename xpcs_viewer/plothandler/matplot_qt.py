@@ -243,8 +243,11 @@ class MplCanvas(FigureCanvasQTAgg):
                 line_obj.append(line)
             self.obj = line_obj
 
-            if legend is not None:
+            if legend is not None and loc != 'outside':
                 ax.legend(loc=loc)
+            elif loc == 'outside':
+                ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
+            self.fig.tight_layout(rect=(0.05, 0.05, 0.95, 0.95))
 
         else:
             for n in range(len(data)):
