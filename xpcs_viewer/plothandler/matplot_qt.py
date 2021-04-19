@@ -210,7 +210,8 @@ class MplCanvas(FigureCanvasQTAgg):
                    title=None,
                    legend=None,
                    loc='best',
-                   rows=None
+                   rows=None,
+                   marker_size=3,
                    ):
 
         if legend in [None, False]:
@@ -237,9 +238,9 @@ class MplCanvas(FigureCanvasQTAgg):
             for n in range(len(data)):
                 mk = markers[n % len(markers)]
                 cl = colors[n % len(colors)]
-                line = ax.plot(data[n][0], data[n][1], mk + '--', ms=3,
-                               alpha=alpha[n], label=legend[n], color=cl,
-                               mfc='none')
+                line = ax.plot(data[n][0], data[n][1], mk + '--', 
+                               ms=marker_size, alpha=alpha[n], label=legend[n],
+                               color=cl, mfc='none')
                 line_obj.append(line)
             self.obj = line_obj
 

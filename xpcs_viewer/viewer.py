@@ -290,6 +290,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'qmin': self.saxs1d_qmin.value(),
             'qmax': self.saxs1d_qmax.value(),
             'loc': self.saxs1d_legend_loc.currentText(),
+            'marker_size': self.sb_saxs_marker_size.value(),
         }
         if kwargs['qmin'] >= kwargs['qmax']:
             self.statusbar.showMessage('check qmin and qmax')
