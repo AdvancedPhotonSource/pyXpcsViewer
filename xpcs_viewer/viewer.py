@@ -667,7 +667,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'bounds': bounds,
             'fit_flag': fit_flag,
             'marker_size': self.g2_marker_size.value(),
-            'subtract_baseline': self.g2_sub_baseline.isChecked()
+            'subtract_baseline': self.g2_sub_baseline.isChecked(),
+            # 'label_size': self.sb_g2_label_size.value(),
         }
         if kwargs['show_fit'] and sum(kwargs['fit_flag']) == 0:
             self.statusbar.showMessage('nothing to fit, really?', 1000)
@@ -676,7 +677,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_4.setDisabled(True)
         self.pushButton_4.setText('plotting')
 
-        self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+        try:
+            self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+        except ZeroDivisionError:
+            self.statusbar.showMessage('check range', 1000)
 
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')

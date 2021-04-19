@@ -84,8 +84,7 @@ class ViewerKernel(FileLocator):
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2(self,
-                handler,
+    def plot_g2(self, handler,
                 q_range=None,
                 t_range=None,
                 y_range=None,
@@ -100,16 +99,17 @@ class ViewerKernel(FileLocator):
                 y_auto=False,
                 subtract_baseline=True,
                 marker_size=5,
+                label_size=4,
                 plot_type='multiple'):
 
         fn_tuple = self.get_fn_tuple(max_points, rows=rows)
         new_condition = (
             (fn_tuple, num_col, show_fit, show_label, subtract_baseline),
-            (q_range, t_range, y_range, offset, y_auto, marker_size),
+            (q_range, t_range, y_range, offset, y_auto, marker_size, label_size),
             (bounds, fit_flag))
 
         if self.meta['g2_plot_condition'] == new_condition:
-            # avoid meaningless rerun
+            # avoid meaningless re-run
             logger.info('g2 plot parameters unchanged; skip')
             return
         else:
@@ -125,7 +125,7 @@ class ViewerKernel(FileLocator):
                       offset=offset, show_label=show_label, show_fit=show_fit,
                       bounds=bounds, plot_type=plot_type, fit_flag=fit_flag,
                       subtract_baseline=subtract_baseline, y_auto=y_auto,
-                      marker_size=marker_size)
+                      marker_size=marker_size, label_size=label_size)
 
         return
 

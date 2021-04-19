@@ -370,7 +370,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1889,25 +1889,6 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="2" colspan="2">
-                    <widget class="QComboBox" name="g2_plot_type">
-                     <item>
-                      <property name="text">
-                       <string>multiple</string>
-                      </property>
-                     </item>
-                     <item>
-                      <property name="text">
-                       <string>single</string>
-                      </property>
-                     </item>
-                     <item>
-                      <property name="text">
-                       <string>single-combined</string>
-                      </property>
-                     </item>
-                    </widget>
-                   </item>
                    <item row="3" column="2" colspan="2">
                     <widget class="QCheckBox" name="g2_sub_baseline">
                      <property name="text">
@@ -1955,6 +1936,25 @@
                      <property name="checked">
                       <bool>false</bool>
                      </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2" colspan="3">
+                    <widget class="QComboBox" name="g2_plot_type">
+                     <item>
+                      <property name="text">
+                       <string>multiple</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>single</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>single-combined</string>
+                      </property>
+                     </item>
                     </widget>
                    </item>
                   </layout>
@@ -3646,7 +3646,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>493</x>
+     <x>492</x>
      <y>885</y>
     </hint>
     <hint type="destinationlabel">
@@ -3662,7 +3662,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>493</x>
+     <x>492</x>
      <y>919</y>
     </hint>
     <hint type="destinationlabel">
@@ -3678,7 +3678,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>655</x>
+     <x>632</x>
      <y>883</y>
     </hint>
     <hint type="destinationlabel">
@@ -3694,7 +3694,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>634</x>
+     <x>632</x>
      <y>917</y>
     </hint>
     <hint type="destinationlabel">
@@ -3998,7 +3998,7 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>653</x>
+     <x>632</x>
      <y>937</y>
     </hint>
     <hint type="destinationlabel">

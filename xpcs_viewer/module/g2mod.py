@@ -165,8 +165,7 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
 def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
             offset=0, show_fit=False, show_label=False, bounds=None,
             fit_flag=None, plot_type='multiple', subtract_baseline=True,
-            marker_size=5):
-
+            marker_size=5, label_size=4):
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
                                          t_range=t_range)
 
@@ -189,7 +188,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
         t = hdl.addPlot(row=i_row, col=i_col)
         axes.append(t)
         if show_label:
-            t.addLegend(offset=(-1, 1), labelTextSize='4pt', verSpacing=-10)
+            t.addLegend(offset=(-1, 1), labelTextSize='9pt', 
+                        verSpacing=-10)
 
         t.setMouseEnabled(x=False, y=y_auto)
 
