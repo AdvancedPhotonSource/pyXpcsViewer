@@ -238,7 +238,7 @@ class MplCanvas(FigureCanvasQTAgg):
             for n in range(len(data)):
                 mk = markers[n % len(markers)]
                 cl = colors[n % len(colors)]
-                line = ax.plot(data[n][0], data[n][1], mk + '--', 
+                line = ax.plot(data[n][0], data[n][1], mk + '-', 
                                ms=marker_size, alpha=alpha[n], label=legend[n],
                                color=cl, mfc='none')
                 line_obj.append(line)
