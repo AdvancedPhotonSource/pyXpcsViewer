@@ -66,7 +66,7 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
          max_points=8, legend=None, title=None, rows=None, qmax=10.0, qmin=0,
-         loc='best', marker_size=3):
+         loc='best', marker_size=3, sampling=1):
 
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
@@ -75,8 +75,8 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
     for n, fi in enumerate(xf_list[slice(0, max_points)]):
         Iq, q = fi.saxs_1d, fi.ql_sta
         sl = create_slice(q, (qmin, qmax))
-        Iq = Iq[sl]
-        q = q[sl]
+        Iq = Iq[sl][::sampling]
+        q = q[sl][::sampling]
         Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
         Iq = offset_intensity(Iq, n, plot_offset, yscale)
         data.append([q, Iq])
