@@ -57,7 +57,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             7: "twotime",
             8: "exp_setup",
             9: "log",
-            10: "None"
+            # 10: "None"
         }
 
         # finite states

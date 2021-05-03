@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1875</width>
-    <height>855</height>
+    <width>1440</width>
+    <height>815</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -370,7 +370,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>8</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1647,8 +1647,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1504</width>
-                 <height>540</height>
+                 <width>1069</width>
+                 <height>500</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1726,7 +1726,7 @@
                    <item row="2" column="1">
                     <widget class="QLineEdit" name="g2_ymin">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1742,7 +1742,7 @@
                    <item row="0" column="1">
                     <widget class="QLineEdit" name="g2_qmin">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1765,7 +1765,7 @@
                    <item row="1" column="1">
                     <widget class="QLineEdit" name="g2_tmin">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1781,7 +1781,7 @@
                    <item row="0" column="2">
                     <widget class="QLineEdit" name="g2_qmax">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1797,7 +1797,7 @@
                    <item row="1" column="2">
                     <widget class="QLineEdit" name="g2_tmax">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1813,7 +1813,7 @@
                    <item row="2" column="2">
                     <widget class="QLineEdit" name="g2_ymax">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -2865,23 +2865,6 @@
                </spacer>
               </item>
              </layout>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_10">
-           <attribute name="title">
-            <string>Log</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_34">
-            <item row="0" column="0">
-             <widget class="QWidget" name="console_panel" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
             </item>
            </layout>
           </widget>
