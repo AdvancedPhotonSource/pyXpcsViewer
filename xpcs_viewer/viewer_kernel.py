@@ -106,7 +106,7 @@ class ViewerKernel(FileLocator):
         new_condition = (
             (fn_tuple, num_col, show_fit, show_label, subtract_baseline),
             (q_range, t_range, y_range, offset, y_auto, marker_size, label_size),
-            (bounds, fit_flag))
+            (bounds, fit_flag, plot_type))
 
         if self.meta['g2_plot_condition'] == new_condition:
             # avoid meaningless re-run
