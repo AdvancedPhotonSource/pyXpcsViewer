@@ -370,7 +370,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>8</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -887,6 +887,9 @@
                  </item>
                  <item row="0" column="4">
                   <widget class="QSpinBox" name="saxs1d_sampling">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
                    <property name="value">
                     <number>1</number>
                    </property>
@@ -1162,6 +1165,9 @@
                </item>
                <item row="0" column="5">
                 <widget class="QSpinBox" name="sb_intt_sampling">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
                  <property name="value">
                   <number>2</number>
                  </property>
