@@ -174,6 +174,10 @@ class XpcsFile(object):
                           mode='raw',
                           ret_type='list')
 
+        # some dataset may swap the axis
+        if saxs.shape != dqmap.shape:
+            saxs = saxs.T
+
         if self.type == 'Twotime':
             key_c2t = '/'.join([rpath, 'C2T_all'])
             idlist = get(self.full_path, [key_c2t], mode='raw')[key_c2t]
