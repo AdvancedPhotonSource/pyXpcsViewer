@@ -1,12 +1,9 @@
 # import marisa_trie
 import os
 from os.path import commonprefix
-from .fileIO.hdf_to_str import get_hdf_info
-from .fileIO.hdf_reader import get, put, get_type
+from .fileIO.hdf_reader import get_type
 from .xpcs_file import XpcsFile as xf
 import logging
-import numpy as np
-from collections import deque
 from .helper.listmodel import ListDataModel
 
 logger = logging.getLogger(__name__)
