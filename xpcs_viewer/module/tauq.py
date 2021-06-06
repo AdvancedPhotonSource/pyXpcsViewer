@@ -1,5 +1,4 @@
 import numpy as np
-from ..helper.fitting import fit_tau
 
 
 colors = ('b', 'r', 'g', 'c', 'm', 'y', 'k')

@@ -4,7 +4,7 @@ import logging
 import os
 import numpy as np
 from sklearn.cluster import k_means as sk_kmeans
-from ..fileIO.hdf_reader import get, put
+from ..fileIO.hdf_reader import put
 from ..xpcs_file import XpcsFile as XF
 from collections import deque
 from shutil import copyfile

@@ -2,12 +2,9 @@ import numpy as np
 from .file_locator import FileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
 from .module.average_toolbox import AverageToolbox
-from shutil import copyfile
-from sklearn.cluster import KMeans as sk_kmeans
 import h5py
-from .helper.listmodel import ListDataModel, TableDataModel
+from .helper.listmodel import TableDataModel
 import pyqtgraph as pg
-
 import os
 import logging
 

@@ -1,4 +1,3 @@
-import numpy as np
 from .saxs1d import offset_intensity, norm_saxs_data
 
 

@@ -2,10 +2,6 @@ import numpy as np
 from matplotlib.ticker import FormatStrFormatter
 import pyqtgraph as pg
 import logging
-from ..helper.fitting import fit_xpcs as fit_xpcs_raw
-import joblib
-import os
-import time
 import matplotlib.pyplot as plt
 
 
