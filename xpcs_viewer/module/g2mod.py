@@ -165,7 +165,7 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
 def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
             offset=0, show_fit=False, show_label=False, bounds=None,
             fit_flag=None, plot_type='multiple', subtract_baseline=True,
-            marker_size=5, label_size=4):
+            marker_size=5, label_size=4, fit_func='single'):
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
                                          t_range=t_range)
 
@@ -198,7 +198,8 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
         # default base line to be 1.0; used for non-fitting or fit error cases
         baseline_offset = np.ones(num_qval)
         if show_fit:
-            fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag)
+            fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag,
+                                            fit_func)
             if fit_summary is not None and subtract_baseline:
                 # make sure the fitting is successful
                 if fit_summary['fit_line'][n].get('success', False):
