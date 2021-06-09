@@ -81,49 +81,10 @@ class ViewerKernel(FileLocator):
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2(self, handler,
-                q_range=None,
-                t_range=None,
-                y_range=None,
-                offset=None,
-                show_fit=False,
-                max_points=128,
-                bounds=None,
-                show_label=False,
-                num_col=4,
-                rows=None,
-                fit_flag=None,
-                y_auto=False,
-                subtract_baseline=True,
-                marker_size=5,
-                label_size=4,
-                plot_type='multiple'):
-
-        fn_tuple = self.get_fn_tuple(max_points, rows=rows)
-        new_condition = (
-            (fn_tuple, num_col, show_fit, show_label, subtract_baseline),
-            (q_range, t_range, y_range, offset, y_auto, marker_size, label_size),
-            (bounds, fit_flag, plot_type))
-
-        if self.meta['g2_plot_condition'] == new_condition:
-            # avoid meaningless re-run
-            logger.info('g2 plot parameters unchanged; skip')
-            return
-        else:
-            # cmp = tuple(
-            # i != j
-            # for i, j in zip(new_condition, self.meta['g2_plot_condition']))
-            self.meta['g2_plot_condition'] = new_condition
-            # plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
-            # logger.info('plot level = %d', plot_level)
-
+    def plot_g2(self, handler, q_range, t_range, y_range, max_points=128,
+                rows=None, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows) 
-        g2mod.pg_plot(handler, xf_list, num_col, q_range, t_range, y_range,
-                      offset=offset, show_label=show_label, show_fit=show_fit,
-                      bounds=bounds, plot_type=plot_type, fit_flag=fit_flag,
-                      subtract_baseline=subtract_baseline, y_auto=y_auto,
-                      marker_size=marker_size, label_size=label_size)
-
+        g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, **kwargs)
         return
 
     def plot_tauq_pre(self, hdl=None, max_points=128, rows=None):

@@ -116,10 +116,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_deselect.clicked.connect(self.clear_target_selection)
         self.list_view_target.doubleClicked.connect(self.edit_label)
 
+        self.g2_fitting_function.currentIndexChanged.connect(
+            self.update_g2_fitting_function
+        )
         # self.btn_g2_export.clicked.connect(self.export_g2)
         # disable browse function; it freezes on linux workstation;
         # self.pushButton.setEnabled(False)
 
+        self.update_g2_fitting_function()
         self.show()
     
     def load_default_setting(self):
@@ -630,9 +634,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         def to_e(x):
             return '%.2e' % x
 
-        self.g2_bmin.setText(to_e(t_min / 20))
+        self.g2_bmin.setValue(t_min / 20)
         # self.g2_bmax.setText(to_e(t_max * 10))
-        self.g2_bmax.setText(to_e(0.1))
+        self.g2_bmax.setValue(0.1)
 
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
@@ -649,7 +653,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         
         p = self.check_g2_number()
-        bounds, fit_flag = self.check_number()
+        bounds, fit_flag, fit_func = self.check_number()
         if bounds is None:
             self.statusbar.showMessage('please check fitting bounds.')
             return
@@ -669,6 +673,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'fit_flag': fit_flag,
             'marker_size': self.g2_marker_size.value(),
             'subtract_baseline': self.g2_sub_baseline.isChecked(),
+            'fit_func': fit_func
             # 'label_size': self.sb_g2_label_size.value(),
         }
         if kwargs['show_fit'] and sum(kwargs['fit_flag']) == 0:
@@ -900,36 +905,38 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return vals
 
     def check_number(self, default_val=(1e-6, 1e-2, 0.01, 0.20, 0.95, 1.05)):
+        fit_func = ['single', 'double'][self.g2_fitting_function.currentIndex()]
+
         keys = (self.g2_amin, self.g2_amax, self.g2_bmin, self.g2_bmax,
-                self.g2_cmin, self.g2_cmax, self.g2_dmin, self.g2_dmax)
+                self.g2_cmin, self.g2_cmax, self.g2_dmin, self.g2_dmax,
+                self.g2_b2min, self.g2_b2max, self.g2_c2min, self.g2_c2max,
+                self.g2_fmin, self.g2_fmax)
+
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
-            try:
-                val = float(key.text())
-            except Exception:
-                key.setText(str(default_val[n]))
-                return None, None
-            else:
-                vals[n] = val
+            vals[n] = key.value()
 
-        def swap_min_max(id1, id2, fun=str):
+        def swap_min_max(id1, id2):
             if vals[id1] > vals[id2]:
-                keys[id1].setText(fun(vals[id2]))
-                keys[id2].setText(fun(vals[id1]))
+                keys[id1].setValue(vals[id2])
+                keys[id2].setValue(vals[id1])
                 vals[id1], vals[id2] = vals[id2], vals[id1]
 
-        swap_min_max(0, 1, lambda x: '%.2e' % x)
-        swap_min_max(2, 3)
-        swap_min_max(4, 5)
-        swap_min_max(6, 7)
+        for n in range(0, 7):
+            swap_min_max(2 * n, 2 * n + 1)
 
         vals = np.array(vals).reshape(len(keys) // 2, 2)
-        bounds = (tuple(vals[:, 0]), tuple(vals[:, 1]))
+        bounds = vals.T
 
-        fit_keys = (self.g2_afit, self.g2_bfit, self.g2_cfit, self.g2_dfit)
+        fit_keys = (self.g2_afit, self.g2_bfit, self.g2_cfit, self.g2_dfit,
+                    self.g2_b2fit, self.g2_c2fit, self.g2_ffit)
         fit_flag = [x.isChecked() for x in fit_keys]
 
-        return bounds, fit_flag
+        if fit_func == 'single':
+            fit_flag = fit_flag[0:4]
+            bounds = bounds[:, 0:4]
+
+        return bounds, fit_flag, fit_func
 
     def check_status(self, show_msg=True, min_state=2):
         flag = False
@@ -972,6 +979,33 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def clear_target_selection(self):
         self.list_view_target.clearSelection()
         self.list_view_source.repaint()
+    
+    def update_g2_fitting_function(self):
+        idx = self.g2_fitting_function.currentIndex()
+        title = [
+            "g2 fitting with Single Exp:  y = a·exp[-2(x/b)^c]+d",
+            "g2 fitting with Double Exp:  y = a·[f·exp[-(x/b)^c +" + \
+                "(1-f)·exp[-(x/b2)^c2]^2+d"
+        ]
+        self.groupBox_2.setTitle(title[idx])
+
+        pvs = [[self.g2_b2min, self.g2_b2max, self.g2_b2fit],
+               [self.g2_c2min, self.g2_c2max, self.g2_c2fit],
+               [self.g2_fmin, self.g2_fmax, self.g2_ffit]]
+
+        # change from double to single
+        if idx == 0:
+            for n in range(3):
+                pvs[n][0].setDisabled(True)
+                pvs[n][1].setDisabled(True)
+                pvs[n][2].setDisabled(True)
+        # change from single to double
+        else:
+            for n in range(3):
+                pvs[n][2].setEnabled(True)
+                pvs[n][1].setEnabled(True)
+                if pvs[n][2].isChecked():
+                    pvs[n][0].setEnabled(True)
 
 
 def setup_windows_icon():

@@ -24,6 +24,26 @@ def single_exp_all(x, a, b, c, d):
     return a * np.exp(-2 * (x / b) ** c) + d
 
 
+def double_exp_all(x, a, b1, c1, d, b2, c2, f):
+    """
+    double exponential fitting for xpcs-multitau analysis
+    Args:
+        x: delay in seconds, float or 1d-numpy.ndarray
+        a: contrast
+        f: fraction for the 1st exp function; the 2nd has (1-f) weight
+        b1: tau for 1st exp function
+        c1: restriction factor for the 1st exp function
+        b2: tau for 2nd exp function
+        c2: restriction factor for the 2nd exp function
+        d: baseline
+    Return:
+        function value
+    """
+    t1 = np.exp(-1 * (x / b1) ** c1) * f
+    t2 = np.exp(-1 * (x / b2) ** c2) * (1 - f)
+    return a * (t1 + t2) ** 2 + d
+
+
 def power_law(x, a, b):
     """
     power law for fitting the diffusion factor
@@ -306,12 +326,15 @@ class XpcsFile(object):
             # fit_line is not useful to display
             result.pop('fit_line', None)
             val = result.pop('fit_val', None)
+            if result['fit_func'] == 'single':
+                prefix = ['a', 'b', 'c', 'd']
+            else:
+                prefix = ['a', 'b', 'c', 'd', 'b2', 'c2', 'f']
 
-            prefix = ['a', 'b', 'c', 'd']
             msg = []
             for n in range(val.shape[0]):
                 temp = []
-                for m in range(4):
+                for m in range(len(prefix)):
                     temp.append('%s = %f ± %f' % (
                         prefix[m], val[n, 0, m], val[n, 1, m]))
                 msg.append(', '.join(temp))
@@ -330,13 +353,15 @@ class XpcsFile(object):
         return result
 
     def fit_g2(self, q_range=None, t_range=None, bounds=None,
-               fit_flag=(True, True, True, True)):
+               fit_flag=(True, True, True, True), fit_func='single'):
         """
         fit the g2 values using single exponential decay function
         :param q_range: a tuple of q lower bound and upper bound
         :param t_range: a tuple of t lower bound and upper bound
         :param bounds: bounds for fitting;
         :param fit_flag: tuple of bools; True to fit and False to float
+        :param fit_func: ['single' | 'double']: to fit with single exponential
+            or double exponential function
         :return: dictionary with the fitting result;
         """
         if q_range is None:
@@ -359,11 +384,17 @@ class XpcsFile(object):
 
         fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
                             np.log10(np.max(t_el)) + 0.5, 128)
-        
-        fit_line, fit_val = fit_with_fixed(single_exp_all, t_el, g2, sigma,
-                                               bounds, fit_flag, fit_x, p0=p0)
+
+        if fit_func == 'single':
+            func = single_exp_all 
+        else:
+            func = double_exp_all
+
+        fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma,
+                                           bounds, fit_flag, fit_x, p0=p0)
 
         self.fit_summary = {
+            'fit_func': fit_func,
             'fit_val': fit_val,
             't_el': t_el,
             'q_val': q,
