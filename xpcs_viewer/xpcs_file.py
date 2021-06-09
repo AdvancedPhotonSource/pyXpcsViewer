@@ -24,6 +24,26 @@ def single_exp_all(x, a, b, c, d):
     return a * np.exp(-2 * (x / b) ** c) + d
 
 
+def double_exp_all(x, a, b1, c1, d, b2, c2, f):
+    """
+    double exponential fitting for xpcs-multitau analysis
+    Args:
+        x: delay in seconds, float or 1d-numpy.ndarray
+        a: contrast
+        f: fraction for the 1st exp function; the 2nd has (1-f) weight
+        b1: tau for 1st exp function
+        c1: restriction factor for the 1st exp function
+        b2: tau for 2nd exp function
+        c2: restriction factor for the 2nd exp function
+        d: baseline
+    Return:
+        function value
+    """
+    t1 = np.exp(-1 * (x / b1) ** c1) * f
+    t2 = np.exp(-1 * (x / b2) ** c2) * (1 - f)
+    return a * (t1 + t2) ** 2 + d
+
+
 def power_law(x, a, b):
     """
     power law for fitting the diffusion factor

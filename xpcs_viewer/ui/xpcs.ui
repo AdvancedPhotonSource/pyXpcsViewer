@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
-    <height>815</height>
+    <width>1879</width>
+    <height>1035</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -370,7 +370,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1653,8 +1653,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1069</width>
-                 <height>500</height>
+                 <width>1508</width>
+                 <height>720</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1664,7 +1664,7 @@
                 </sizepolicy>
                </property>
                <layout class="QGridLayout" name="gridLayout_10">
-                <item row="0" column="0">
+                <item row="1" column="0">
                  <widget class="PlotWidgetDev" name="mp_g2" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -2003,35 +2003,9 @@
                  </size>
                 </property>
                 <property name="title">
-                 <string>Single Exponential Fitting: y = a·exp[-2(x/b)^c]+d</string>
+                 <string>g2 fitting</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_14">
-                 <item row="0" column="1">
-                  <widget class="QPushButton" name="show_g2_fit_summary">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>show_values</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QPushButton" name="btn_g2_refit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>refit</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="0" rowspan="3">
                   <layout class="QGridLayout" name="gridLayout_12">
                    <item row="0" column="0">
@@ -2050,6 +2024,12 @@
                    </item>
                    <item row="0" column="2">
                     <widget class="QLineEdit" name="g2_amin">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="text">
                       <string>0.08</string>
                      </property>
@@ -2094,6 +2074,12 @@
                    </item>
                    <item row="1" column="2">
                     <widget class="QLineEdit" name="g2_bmin">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="text">
                       <string>1e-6</string>
                      </property>
@@ -2122,6 +2108,50 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="1" column="5">
+                    <widget class="QLabel" name="label_65">
+                     <property name="text">
+                      <string>tau2 (s):</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="6">
+                    <widget class="QLabel" name="label_64">
+                     <property name="text">
+                      <string>b2</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="7">
+                    <widget class="QLineEdit" name="g2_b2min">
+                     <property name="text">
+                      <string>1e-6</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="8">
+                    <widget class="QLineEdit" name="g2_b2max">
+                     <property name="text">
+                      <string>1e1</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>max</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="9">
+                    <widget class="QCheckBox" name="g2_b2fit">
+                     <property name="text">
+                      <string>fit</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_47">
                      <property name="text">
@@ -2138,6 +2168,12 @@
                    </item>
                    <item row="2" column="2">
                     <widget class="QLineEdit" name="g2_cmin">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="text">
                       <string>0.50</string>
                      </property>
@@ -2166,6 +2202,50 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="5">
+                    <widget class="QLabel" name="label_62">
+                     <property name="text">
+                      <string>stretch2:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="6">
+                    <widget class="QLabel" name="label_66">
+                     <property name="text">
+                      <string>c2</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="7">
+                    <widget class="QLineEdit" name="g2_c2min">
+                     <property name="text">
+                      <string>0.50</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="8">
+                    <widget class="QLineEdit" name="g2_c2max">
+                     <property name="text">
+                      <string>2.00</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>max</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="9">
+                    <widget class="QCheckBox" name="g2_c2fit">
+                     <property name="text">
+                      <string>fit</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="3" column="0">
                     <widget class="QLabel" name="label_48">
                      <property name="text">
@@ -2182,6 +2262,12 @@
                    </item>
                    <item row="3" column="2">
                     <widget class="QLineEdit" name="g2_dmin">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="text">
                       <string>0.95</string>
                      </property>
@@ -2210,7 +2296,78 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="3" column="5">
+                    <widget class="QLabel" name="label_63">
+                     <property name="text">
+                      <string>ratio:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="6">
+                    <widget class="QLabel" name="label_67">
+                     <property name="text">
+                      <string>f</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="7">
+                    <widget class="QLineEdit" name="g2_fmin">
+                     <property name="text">
+                      <string>0.95</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>min</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="8">
+                    <widget class="QLineEdit" name="g2_fmax">
+                     <property name="text">
+                      <string>1.05</string>
+                     </property>
+                     <property name="placeholderText">
+                      <string>max</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="9">
+                    <widget class="QCheckBox" name="g2_ffit">
+                     <property name="text">
+                      <string>fit</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="5" colspan="5">
+                    <widget class="QComboBox" name="g2_fitting_function">
+                     <item>
+                      <property name="text">
+                       <string>Single Exp:  y = a·exp[-2(x/b)^c]+d</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Double Exp:  y = a·[f*exp[-(x/b)^c + (1-f)*exp[-(x/b2)^c2]^2+d</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
                   </layout>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QPushButton" name="show_g2_fit_summary">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>show_values</string>
+                   </property>
+                  </widget>
                  </item>
                  <item row="1" column="1">
                   <widget class="QPushButton" name="btn_g2_export">
@@ -2222,6 +2379,19 @@
                    </property>
                    <property name="text">
                     <string>export figure</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QPushButton" name="btn_g2_refit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>refit</string>
                    </property>
                   </widget>
                  </item>
