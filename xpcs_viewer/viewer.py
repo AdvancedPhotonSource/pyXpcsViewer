@@ -634,9 +634,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         def to_e(x):
             return '%.2e' % x
 
-        self.g2_bmin.setText(to_e(t_min / 20))
+        self.g2_bmin.setValue(t_min / 20)
         # self.g2_bmax.setText(to_e(t_max * 10))
-        self.g2_bmax.setText(to_e(0.1))
+        self.g2_bmax.setValue(0.1)
 
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
@@ -914,22 +914,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
-            try:
-                val = float(key.text())
-            except Exception:
-                key.setText(str(default_val[n]))
-                return None, None
-            else:
-                vals[n] = val
+            vals[n] = key.value()
 
-        def swap_min_max(id1, id2, fun=str):
+        def swap_min_max(id1, id2):
             if vals[id1] > vals[id2]:
-                keys[id1].setText(fun(vals[id2]))
-                keys[id2].setText(fun(vals[id1]))
+                keys[id1].setValue(vals[id2])
+                keys[id2].setValue(vals[id1])
                 vals[id1], vals[id2] = vals[id2], vals[id1]
 
-        swap_min_max(0, 1, lambda x: '%.2e' % x)
-        for n in range(1, 7):
+        for n in range(0, 7):
             swap_min_max(2 * n, 2 * n + 1)
 
         vals = np.array(vals).reshape(len(keys) // 2, 2)

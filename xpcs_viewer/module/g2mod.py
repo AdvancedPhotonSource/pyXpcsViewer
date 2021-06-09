@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 fn_tuple = None
 
-# colors converted from 
-# https://matplotlib.org/stable/tutorials/colors/colors.html 
+# colors converted from
+# https://matplotlib.org/stable/tutorials/colors/colors.html
 # colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 #           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
 
@@ -40,7 +40,7 @@ symbols = ['o', 't', 't1', 't2', 't3', 's', 'p', 'h', 'star', '+', 'd', 'x']
 
 def create_slice(arr, x_range):
     start, end = 0, arr.size - 1
-    
+
     # switch order if lower > upper
     if x_range is not None and x_range[0] > x_range[1]:
         temp = list(x_range)
@@ -59,7 +59,7 @@ def create_slice(arr, x_range):
         end -= 1
         if end <= 0:
             break
-    
+
     return slice(start, end + 1)
 
 
@@ -106,7 +106,7 @@ def compute_geometry(g2, plot_type):
     return num_figs, num_lines
 
 
-def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4, 
+def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
                  show_label=False, plot_type='multiple', marker_size=3):
 
     flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
@@ -162,7 +162,8 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
     return
 
 
-def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
+def pg_plot(hdl, xf_list, q_range, t_range, y_range,
+            y_auto=False, num_col=4,
             offset=0, show_fit=False, show_label=False, bounds=None,
             fit_flag=None, plot_type='multiple', subtract_baseline=True,
             marker_size=5, label_size=4, fit_func='single'):
@@ -188,7 +189,7 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
         t = hdl.addPlot(row=i_row, col=i_col)
         axes.append(t)
         if show_label:
-            t.addLegend(offset=(-1, 1), labelTextSize='9pt', 
+            t.addLegend(offset=(-1, 1), labelTextSize='9pt',
                         verSpacing=-10)
 
         t.setMouseEnabled(x=False, y=y_auto)
@@ -211,14 +212,14 @@ def pg_plot(hdl, xf_list, num_col, q_range, t_range, y_range, y_auto=False,
             if plot_type == 'multiple':
                 ax = axes[n]
                 title = 'q=%.5f Å⁻¹' % qd[0][n]
-                label = xf_list[m].label 
+                label = xf_list[m].label
                 if m == 0:
                     ax.setTitle(title)
             elif plot_type == 'single':
                 ax = axes[m]
                 # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
-                title = xf_list[m].label 
+                title = xf_list[m].label
                 label = 'q=%.5f Å⁻¹' % qd[0][n]
                 ax.setTitle(title)
             elif plot_type == 'single-combined':
