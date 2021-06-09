@@ -2244,6 +2244,9 @@
                      <property name="decimals">
                       <number>5</number>
                      </property>
+                     <property name="minimum">
+                      <double>0.000010000000000</double>
+                     </property>
                      <property name="maximum">
                       <double>100.000000000000000</double>
                      </property>
@@ -2353,6 +2356,9 @@
                     <widget class="QDoubleSpinBox" name="g2_bmin">
                      <property name="decimals">
                       <number>5</number>
+                     </property>
+                     <property name="minimum">
+                      <double>0.000010000000000</double>
                      </property>
                      <property name="value">
                       <double>0.000010000000000</double>
