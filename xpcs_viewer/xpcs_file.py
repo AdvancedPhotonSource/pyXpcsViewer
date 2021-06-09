@@ -326,12 +326,15 @@ class XpcsFile(object):
             # fit_line is not useful to display
             result.pop('fit_line', None)
             val = result.pop('fit_val', None)
+            if result['fit_func'] == 'single':
+                prefix = ['a', 'b', 'c', 'd']
+            else:
+                prefix = ['a', 'b', 'c', 'd', 'b2', 'c2', 'f']
 
-            prefix = ['a', 'b', 'c', 'd']
             msg = []
             for n in range(val.shape[0]):
                 temp = []
-                for m in range(4):
+                for m in range(len(prefix)):
                     temp.append('%s = %f ± %f' % (
                         prefix[m], val[n, 0, m], val[n, 1, m]))
                 msg.append(', '.join(temp))
@@ -350,13 +353,15 @@ class XpcsFile(object):
         return result
 
     def fit_g2(self, q_range=None, t_range=None, bounds=None,
-               fit_flag=(True, True, True, True)):
+               fit_flag=(True, True, True, True), fit_func='single'):
         """
         fit the g2 values using single exponential decay function
         :param q_range: a tuple of q lower bound and upper bound
         :param t_range: a tuple of t lower bound and upper bound
         :param bounds: bounds for fitting;
         :param fit_flag: tuple of bools; True to fit and False to float
+        :param fit_func: ['single' | 'double']: to fit with single exponential
+            or double exponential function
         :return: dictionary with the fitting result;
         """
         if q_range is None:
@@ -379,11 +384,17 @@ class XpcsFile(object):
 
         fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
                             np.log10(np.max(t_el)) + 0.5, 128)
-        
-        fit_line, fit_val = fit_with_fixed(single_exp_all, t_el, g2, sigma,
-                                               bounds, fit_flag, fit_x, p0=p0)
+
+        if fit_func == 'single':
+            func = single_exp_all 
+        else:
+            func = double_exp_all
+
+        fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma,
+                                           bounds, fit_flag, fit_x, p0=p0)
 
         self.fit_summary = {
+            'fit_func': fit_func,
             'fit_val': fit_val,
             't_el': t_el,
             'q_val': q,
