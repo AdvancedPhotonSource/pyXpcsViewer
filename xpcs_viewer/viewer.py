@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+from numpy.lib.arraysetops import isin
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
 from PyQt5 import QtWidgets
@@ -641,19 +642,19 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
 
-        if float(self.g2_qmin.text()) > np.max(qd):
-            self.g2_qmin.setText('%.04f' % (np.min(qd) * 0.9))
+        if self.g2_qmin.value() > np.max(qd):
+            self.g2_qmin.setValue(np.min(qd) * 0.9)
 
-        qmax = float(self.g2_qmax.text())
-        if qmax < np.min(qd) or qmax < float(self.g2_qmin.text()):
-            self.g2_qmin.setText('%.04f' % (np.max(qd) * 1.1))
+        qmax = self.g2_qmax.value()
+        if qmax < np.min(qd) or qmax < self.g2_qmin.value():
+            self.g2_qmin.setValue(np.max(qd) * 1.1)
 
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
         
         p = self.check_g2_number()
-        bounds, fit_flag, fit_func = self.check_number()
+        bounds, fit_flag, fit_func = self.check_g2_fitting_number()
         if bounds is None:
             self.statusbar.showMessage('please check fitting bounds.')
             return
@@ -884,27 +885,29 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 self.g2_ymin, self.g2_ymax)
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
-            try:
-                val = float(key.text())
-            except Exception:
-                key.setText(str(default_val[n]))
-                return
-            else:
-                vals[n] = val
+            if isinstance(key, QtWidgets.QDoubleSpinBox):
+                val = key.value()
+            elif isinstance(key, QtWidgets.QLineEdit):
+                try:
+                    val = float(key.text())
+                except Exception:
+                    key.setText(str(default_val[n]))
+                    self.statusbar.showMessage('g2 number is invalid', 1000)
+            vals[n] = val
 
-        def swap_min_max(id1, id2, fun=str):
+        def swap_min_max(id1, id2):
             if vals[id1] > vals[id2]:
-                keys[id1].setText(fun(vals[id2]))
-                keys[id2].setText(fun(vals[id1]))
+                keys[id1].setValue(vals[id2])
+                keys[id2].setValue(vals[id1])
                 vals[id1], vals[id2] = vals[id2], vals[id1]
 
         swap_min_max(0, 1)
-        swap_min_max(2, 3, lambda x: '%.2e' % x)
+        # swap_min_max(2, 3, lambda x: '%.2e' % x)
         swap_min_max(4, 5)
 
         return vals
 
-    def check_number(self, default_val=(1e-6, 1e-2, 0.01, 0.20, 0.95, 1.05)):
+    def check_g2_fitting_number(self):
         fit_func = ['single', 'double'][self.g2_fitting_function.currentIndex()]
 
         keys = (self.g2_amin, self.g2_amax, self.g2_bmin, self.g2_bmax,
