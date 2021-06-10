@@ -1,9 +1,7 @@
 from PyQt5 import QtCore
-from numpy.lib.arraysetops import isin
+from PyQt5 import QtWidgets
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog
 
 import os
 import numpy as np
@@ -126,7 +124,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.update_g2_fitting_function()
         self.show()
-    
+
     def load_default_setting(self):
         # home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
         if not os.path.isdir(self.home_dir):
@@ -146,7 +144,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 new_size = (config["window_size_w"], config["window_size_h"])
                 logger.info('set mainwindow to size %s', new_size)
                 self.resize(*new_size)
-        
+
         # remove joblib cache
         cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer',
                                  'joblib/xpcs_viewer')
@@ -251,7 +249,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_load_data.setText('updated')
         self.btn_load_data.repaint()
 
-
     def update_hdf_list(self):
         self.hdf_list.clear()
         self.hdf_list.addItems(self.vk.target)
@@ -303,7 +300,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
-        self.mp_saxs.repaint() 
+        self.mp_saxs.repaint()
 
     def init_twotime(self):
         if not self.check_status():
@@ -426,7 +423,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'xlabel': self.intt_xlabel.currentText()
         }
         self.vk.plot_intt(self.pg_intt, **kwargs)
-    
+
     def plot_tauq_pre(self):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
@@ -456,7 +453,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         kwargs = {
             'bounds': bounds,
-            'fit_flag': fit_flag, 
+            'fit_flag': fit_flag,
             'offset': self.sb_tauq_offset.value(),
             'rows': self.get_selected_rows(),
             'q_range': q_range,
@@ -477,13 +474,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.remove_job(index)
 
     def set_average_save_path(self):
-        save_path = QFileDialog.getExistingDirectory(self, 'Open directory')
+        save_path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, 'Open directory')
         self.avg_save_path.clear()
         self.avg_save_path.setText(save_path)
         return
 
     def set_average_save_name(self):
-        save_name = QFileDialog.getSaveFileName(self, 'Save as')
+        save_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save as')
         self.avg_save_name.clear()
         self.avg_save_name.setText(os.path.basename(save_name[0]))
         return
@@ -606,7 +604,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('the selected job isn\'s running', 1000)
             return
         worker.kill()
-    
+
     def show_g2_fit_summary_func(self):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
@@ -652,7 +650,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
-        
+
         p = self.check_g2_number()
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
         if bounds is None:
@@ -697,10 +695,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # else:
         #     self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
-        # reset plot state for the diffusion tab so it will be updated when 
+        # reset plot state for the diffusion tab so it will be updated when
         # switch tabs;
         self.plot_state[6] = 0
-    
+
     def export_g2(self):
         self.vk.export_g2()
 
@@ -712,9 +710,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
             # DontUseNativeDialog is used so files are shown along with dirs;
-            f = QFileDialog.getExistingDirectory(
+            f = QtWidgets.QFileDialog.getExistingDirectory(
                 self, 'Open directory', self.start_wd,
-                QFileDialog.DontUseNativeDialog)
+                QtWidgets.QFileDialog.DontUseNativeDialog)
         else:
             f = path
 
@@ -962,7 +960,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.statusbar.showMessage(msg, 1000)
 
         return flag
-    
+
     def update_saxs2d_range(self, flag=True):
         if not flag:
             vmin = self.pg_saxs.levelMin
@@ -976,19 +974,19 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.saxs2d_min.setDisabled(True)
             self.saxs2d_max.setDisabled(True)
-        
+
         self.saxs2d_min.parent().repaint()
-    
+
     def clear_target_selection(self):
         self.list_view_target.clearSelection()
         self.list_view_source.repaint()
-    
+
     def update_g2_fitting_function(self):
         idx = self.g2_fitting_function.currentIndex()
         title = [
             "g2 fitting with Single Exp:  y = a·exp[-2(x/b)^c]+d",
-            "g2 fitting with Double Exp:  y = a·[f·exp[-(x/b)^c +" + \
-                "(1-f)·exp[-(x/b2)^c2]^2+d"
+            "g2 fitting with Double Exp:  y = a·[f·exp[-(x/b)^c +" +
+            "(1-f)·exp[-(x/b2)^c2]^2+d"
         ]
         self.groupBox_2.setTitle(title[idx])
 
@@ -1029,7 +1027,8 @@ def setup_windows_icon():
 def run():
     if os.name == 'nt':
         setup_windows_icon()
-    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(
+        QtCore.Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory
