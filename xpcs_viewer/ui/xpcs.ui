@@ -1718,7 +1718,7 @@
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_4">
                      <property name="text">
-                      <string>t range:</string>
+                      <string>t range (s):</string>
                      </property>
                     </widget>
                    </item>
@@ -1729,38 +1729,6 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="g2_ymin">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>0.98</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="g2_qmin">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>0</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>min</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_7">
                      <property name="text">
@@ -1768,74 +1736,79 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="g2_tmin">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
+                   <item row="2" column="3">
+                    <widget class="QCheckBox" name="g2_yauto">
                      <property name="text">
-                      <string>2E-6</string>
+                      <string>auto</string>
                      </property>
-                     <property name="placeholderText">
-                      <string>min</string>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="g2_qmin">
+                     <property name="decimals">
+                      <number>4</number>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.001000000000000</double>
                      </property>
                     </widget>
                    </item>
                    <item row="0" column="2">
-                    <widget class="QLineEdit" name="g2_qmax">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
+                    <widget class="QDoubleSpinBox" name="g2_qmax">
+                     <property name="decimals">
+                      <number>4</number>
                      </property>
+                     <property name="singleStep">
+                      <double>0.001000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>0.010000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QDoubleSpinBox" name="g2_ymin">
+                     <property name="decimals">
+                      <number>3</number>
+                     </property>
+                     <property name="minimum">
+                      <double>-1.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.010000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>1.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QDoubleSpinBox" name="g2_ymax">
+                     <property name="decimals">
+                      <number>3</number>
+                     </property>
+                     <property name="minimum">
+                      <double>-1.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.010000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>1.200000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="g2_tmin">
                      <property name="text">
-                      <string>0.0092</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>max</string>
+                      <string>1e-6</string>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="2">
                     <widget class="QLineEdit" name="g2_tmax">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
                      <property name="text">
-                      <string>0.5</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>max</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QLineEdit" name="g2_ymax">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>1.20</string>
-                     </property>
-                     <property name="placeholderText">
-                      <string>max</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QCheckBox" name="g2_yauto">
-                     <property name="text">
-                      <string>auto</string>
+                      <string>1.0</string>
                      </property>
                     </widget>
                    </item>
@@ -3158,14 +3131,8 @@
   <tabstop>g2_show_label</tabstop>
   <tabstop>pushButton_4</tabstop>
   <tabstop>sb_g2_column</tabstop>
-  <tabstop>g2_ymin</tabstop>
-  <tabstop>g2_ymax</tabstop>
   <tabstop>sb_g2_offset</tabstop>
-  <tabstop>g2_qmax</tabstop>
   <tabstop>g2_show_fit</tabstop>
-  <tabstop>g2_qmin</tabstop>
-  <tabstop>g2_tmin</tabstop>
-  <tabstop>g2_tmax</tabstop>
   <tabstop>g2_plot_type</tabstop>
   <tabstop>g2_afit</tabstop>
   <tabstop>g2_bfit</tabstop>
@@ -3330,22 +3297,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_qmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_g2_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>900</x>
-     <y>859</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
-     <y>709</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>cb_stab</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>pushButton_7</receiver>
@@ -3394,22 +3345,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_ymin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_g2_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>806</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
-     <y>841</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>cb_stab_type</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>pushButton_7</receiver>
@@ -3442,22 +3377,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_tmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_g2_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>900</x>
-     <y>900</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
-     <y>596</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>mainWindow</receiver>
@@ -3470,22 +3389,6 @@
     <hint type="destinationlabel">
      <x>776</x>
      <y>24</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_qmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_g2_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>806</x>
-     <y>859</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
-     <y>779</y>
     </hint>
    </hints>
   </connection>
@@ -3549,22 +3452,6 @@
     </hint>
     <hint type="destinationlabel">
      <x>1081</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_ymax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_g2_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>900</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
      <y>854</y>
     </hint>
    </hints>
@@ -3662,22 +3549,6 @@
     <hint type="destinationlabel">
      <x>281</x>
      <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_tmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>check_g2_number()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>806</x>
-     <y>900</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
-     <y>640</y>
     </hint>
    </hints>
   </connection>
@@ -3906,102 +3777,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>g2_qmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>806</x>
-     <y>859</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>498</x>
-     <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_qmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>900</x>
-     <y>859</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>498</x>
-     <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_tmin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>806</x>
-     <y>900</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>498</x>
-     <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_tmax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>900</x>
-     <y>900</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>498</x>
-     <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_ymin</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>806</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>498</x>
-     <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_ymax</sender>
-   <signal>editingFinished()</signal>
-   <receiver>pushButton_4</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>900</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>498</x>
-     <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>tauq_afit</sender>
    <signal>toggled(bool)</signal>
    <receiver>tauq_amin</receiver>
@@ -4126,38 +3901,6 @@
     <hint type="destinationlabel">
      <x>498</x>
      <y>859</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_yauto</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>g2_ymin</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>962</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>806</x>
-     <y>941</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>g2_yauto</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>g2_ymax</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>962</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>900</x>
-     <y>941</y>
     </hint>
    </hints>
   </connection>
