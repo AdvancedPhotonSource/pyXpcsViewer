@@ -353,7 +353,7 @@ class XpcsFile(object):
         return result
 
     def fit_g2(self, q_range=None, t_range=None, bounds=None,
-               fit_flag=(True, True, True, True), fit_func='single'):
+               fit_flag=None, fit_func='single'):
         """
         fit the g2 values using single exponential decay function
         :param q_range: a tuple of q lower bound and upper bound
@@ -364,13 +364,28 @@ class XpcsFile(object):
             or double exponential function
         :return: dictionary with the fitting result;
         """
+        assert len(bounds) == 2
+        if fit_func == 'single':
+            assert len(bounds[0]) == 4, \
+                "for single exp, the shape of bounds must be (2, 4)"
+            if fit_flag is None:
+                fit_flag = [True for _ in range(4)]
+            func = single_exp_all 
+        else:
+            assert len(bounds[0]) == 7, \
+                "for single exp, the shape of bounds must be (2, 4)"
+            if fit_flag is None:
+                fit_flag = [True for _ in range(7)]
+            func = double_exp_all
+
         if q_range is None:
             q_range = [np.min(self.ql_dyn) * 0.95, np.max(self.ql_dyn) * 1.05]
         
         if t_range is None:
             q_range = [np.min(self.t_el) * 0.95, np.max(self.t_el) * 1.05]
         
-        # create a data slice for given range;    
+        
+        # create a data slice for the given range;    
         t_slice = create_slice(self.t_el, t_range)
         q_slice = create_slice(self.ql_dyn, q_range)
 
@@ -379,16 +394,15 @@ class XpcsFile(object):
         g2 = self.g2[t_slice, q_slice]
         sigma = self.g2_err_mod[t_slice, q_slice]
 
+        # set the initial guess
         p0 = np.array(bounds).mean(axis=0)
+        # tau's bounds are in log scale, set as the geometric average
         p0[1] = np.sqrt(bounds[0][1] * bounds[1][1])
+        if fit_func == 'double':
+            p0[4] = np.sqrt(bounds[0][4] * bounds[1][4])
 
         fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
                             np.log10(np.max(t_el)) + 0.5, 128)
-
-        if fit_func == 'single':
-            func = single_exp_all 
-        else:
-            func = double_exp_all
 
         fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma,
                                            bounds, fit_flag, fit_x, p0=p0)
