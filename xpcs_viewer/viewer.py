@@ -608,7 +608,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def show_g2_fit_summary_func(self):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
-        self.tree = self.vk.get_fitting_tree()
+        
+        rows = self.get_selected_rows()
+        self.tree = self.vk.get_fitting_tree(rows)
         self.tree.show()
 
     def show_avg_jobinfo(self):

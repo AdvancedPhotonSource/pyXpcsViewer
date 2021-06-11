@@ -71,8 +71,8 @@ class ViewerKernel(FileLocator):
         xfile = self.cache[self.target[rows[0]]]
         return xfile.get_pg_tree()
     
-    def get_fitting_tree(self):
-        xf_list = self.get_xf_list(8) 
+    def get_fitting_tree(self, rows, max_points=12):
+        xf_list = self.get_xf_list(max_points, rows)
         result = {}
         for x in xf_list:
             result[x.label] = x.get_fitting_info(mode='g2_fitting')
