@@ -131,7 +131,8 @@ class XpcsFile(object):
     def load(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                  'ql_dyn', 'type', 'dqmap']
+                  'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist', 
+                  'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -232,13 +233,13 @@ class XpcsFile(object):
         :return:
         """
         fields = [
-            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
-            'ydim'
+            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim_x', 'pix_dim_y', 
+            'X_energy', 'xdim', 'ydim'
         ]
         res = get(self.full_path, fields, mode='alias', ret_type='dict')
 
         wlength = 12.398 / res['X_energy']
-        pix2q = res['pix_dim'] / res['det_dist'] * (2 * np.pi / wlength)
+        pix2q = res['pix_dim_x'] / res['det_dist'] * (2 * np.pi / wlength)
 
         qy_min = (0 - res['ccd_x0']) * pix2q
         qy_max = (res['xdim'] - res['ccd_x0']) * pix2q
