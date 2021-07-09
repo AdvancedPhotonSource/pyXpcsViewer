@@ -1,7 +1,8 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 import numpy as np
 import matplotlib.pyplot as plt
 # matplotlib.pyplot.style.use(['science', 'no-latex'])
@@ -23,17 +24,16 @@ class NavigationToolbarSimple(NavigationToolbar2QT):
         pass
 
 
-# # # # # # class MplCanvasBarH(QtGui.QWidget):
 class MplCanvasBarH(QtWidgets.QWidget):
     """
     MplWidget combines a MplCanvas with a vertical toolbar
     """
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbarSimple(self.hdl, self)
         self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
-        self.hbl = QtGui.QHBoxLayout()
+        self.hbl = QHBoxLayout()
         self.hbl.addWidget(self.hdl)
         self.hbl.addWidget(self.navi_toolbar)
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
@@ -44,16 +44,15 @@ class MplCanvasBarH(QtWidgets.QWidget):
         self.hdl.draw()
 
 
-#  class MplCanvasBarV(QtGui.QWidget):
-class MplCanvasBarV(QtWidgets.QWidget):
+class MplCanvasBarV(QWidget):
     """
     MplWidget combines a MplCanvas with a horizontal toolbar
     """
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
-        self.vbl = QtGui.QVBoxLayout()
+        self.vbl = QVBoxLayout()
         self.vbl.addWidget(self.navi_toolbar)
         self.vbl.addWidget(self.hdl)
         self.setLayout(self.vbl)
@@ -63,16 +62,15 @@ class MplCanvasBarV(QtWidgets.QWidget):
         self.hdl.draw()
 
 
-# class MplCanvasBar(QtGui.QWidget):
-class MplCanvasBar(QtWidgets.QWidget):
+class MplCanvasBar(QWidget):
     """
     MplWidget combines a MplCanvas with a Toolbar
     """
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbarSimple(self.hdl, self)
-        self.vbl = QtGui.QVBoxLayout()
+        self.vbl = QVBoxLayout()
         self.vbl.addWidget(self.hdl)
         self.vbl.addWidget(self.navi_toolbar)
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
