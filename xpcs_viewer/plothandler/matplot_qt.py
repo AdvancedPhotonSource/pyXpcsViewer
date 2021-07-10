@@ -5,8 +5,14 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 import numpy as np
 import matplotlib.pyplot as plt
-# matplotlib.pyplot.style.use(['science', 'no-latex'])
+import matplotlib
 
+# hide the lines in legend
+# https://stackoverflow.com/questions/21285885
+matplotlib.rcParams['legend.handlelength'] = 0
+matplotlib.rcParams['legend.numpoints'] = 1
+
+# matplotlib.pyplot.style.use(['science', 'no-latex'])
 
 # https://matplotlib.org/stable/api/markers_api.html
 markers = ['o', 'v', '^', '>', '<', 's', 'p', 'h', '*', '+', 'd', 'x']
