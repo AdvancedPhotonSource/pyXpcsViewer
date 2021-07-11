@@ -159,7 +159,7 @@ def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
 
 
 def pg_plot(hdl, xf_list, q_range, t_range, y_range,
-            y_auto=False, num_col=4,
+            y_auto=False, num_col=4, rows=None,
             offset=0, show_fit=False, show_label=False, bounds=None,
             fit_flag=None, plot_type='multiple', subtract_baseline=True,
             marker_size=5, label_size=4, fit_func='single'):
@@ -172,6 +172,9 @@ def pg_plot(hdl, xf_list, q_range, t_range, y_range,
     # col and rows for the 2d layout
     col = min(num_figs, num_col)
     row = (num_figs + col - 1) // col
+
+    if len(rows) == 0:
+        rows = list(range(len(xf_list)))
 
     hdl.adjust_canvas_size(num_col=col, num_row=row)
     hdl.clear()
@@ -190,7 +193,6 @@ def pg_plot(hdl, xf_list, q_range, t_range, y_range,
 
         t.setMouseEnabled(x=False, y=y_auto)
 
-    fit_val_dict = {}
     for m in range(num_data):
         # default base line to be 1.0; used for non-fitting or fit error cases
         baseline_offset = np.ones(num_qval)
@@ -203,7 +205,7 @@ def pg_plot(hdl, xf_list, q_range, t_range, y_range,
                     baseline_offset = fit_summary['fit_val'][:, 0, 3]
 
         for n in range(num_qval):
-            color = colors[m % len(colors)]
+            color = colors[rows[m] % len(colors)]
             label = None
             if plot_type == 'multiple':
                 ax = axes[n]
@@ -225,7 +227,7 @@ def pg_plot(hdl, xf_list, q_range, t_range, y_range,
             ax.setLabel('bottom', 'tau (s)')
             ax.setLabel('left', 'g2')
 
-            symbol = symbols[m % len(symbols)]
+            symbol = symbols[rows[m] % len(symbols)]
 
             x = tel[m]
             # normalize baseline

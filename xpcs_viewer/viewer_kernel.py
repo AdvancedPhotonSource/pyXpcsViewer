@@ -84,7 +84,8 @@ class ViewerKernel(FileLocator):
     def plot_g2(self, handler, q_range, t_range, y_range, max_points=128,
                 rows=None, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows) 
-        g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, **kwargs)
+        g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
+                      **kwargs)
         return
 
     def plot_tauq_pre(self, hdl=None, max_points=128, rows=None):
