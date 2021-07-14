@@ -756,6 +756,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if mode == 'source':
             self.list_view_source.setModel(file_list)
             self.box_source.setTitle('Source: %5d' % len(file_list))
+            self.box_source.parent().repaint()
         elif mode == 'target':
             self.list_view_target.setModel(file_list)
             self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
