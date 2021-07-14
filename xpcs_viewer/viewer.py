@@ -707,7 +707,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.export_g2()
 
     def reload_source(self):
-        self.vk.build()
+        self.vk.build(sort_method=self.sort_method.currentText())
         self.update_box(self.vk.source, mode='source')
         self.trie_search()
 
@@ -734,6 +734,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.work_dir.setText(f)
         self.vk = ViewerKernel(f, self.statusbar)
+        self.vk.build(sort_method=self.sort_method.currentText())
         self.avg_job_table.setModel(self.vk.avg_worker)
         # self.thread = QThread()
         # self.vk.moveToThread(self.thread)
