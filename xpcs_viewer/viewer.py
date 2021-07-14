@@ -121,6 +121,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.btn_g2_export.clicked.connect(self.export_g2)
         # disable browse function; it freezes on linux workstation;
         # self.pushButton.setEnabled(False)
+        self.btn_up.clicked.connect(lambda: self.reorder_target('up'))
+        self.btn_down.clicked.connect(lambda: self.reorder_target('down'))
 
         self.update_g2_fitting_function()
         self.show()
@@ -816,19 +818,27 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             else:
                 self.load_data()
 
-    def reorder_target(self):
-        target = []
-        self.list_view_target.selectAll()
-        for x in self.list_view_target.selectedIndexes():
-            target.append(x.data())
-        self.list_view_target.clearSelection()
+    def reorder_target(self, direction='up'):
+        rows = self.get_selected_rows()
+        if len(rows) != 1 or len(self.vk.target) <= 1:
+            return
+        row = rows[0]
 
-        if tuple(target) != tuple(self.vk.target):
-            self.vk.clear_target()
-            self.vk.add_target(target)
-            self.update_box(self.vk.target, mode='target')
-        else:
-            print('no reorder')
+        if direction == 'up' and row == 0:
+            self.statusbar.showMessage('alread on the top', 1000)
+            return
+        elif direction == 'down' and row == len(self.vk.target) - 1:
+            self.statusbar.showMessage('alread on the buttom', 1000)
+            return
+
+        item = self.vk.target.pop(row)
+        pos = row - 1 if direction == 'up' else row + 1
+        self.vk.target.insert(pos, item)
+        self.list_view_target.clearSelection()
+        self.list_view_source.repaint()
+        # self.list_view_source.selectAll()
+
+        return
 
     def remove_target(self):
         if self.data_state in [0, 1]:
