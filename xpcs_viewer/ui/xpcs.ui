@@ -105,7 +105,7 @@
               <item>
                <widget class="QLabel" name="label_56">
                 <property name="text">
-                 <string>sort:</string>
+                 <string>Sort:</string>
                 </property>
                </widget>
               </item>
@@ -144,19 +144,6 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>browse</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QPushButton" name="pushButton_11">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -166,6 +153,19 @@
                 </property>
                 <property name="text">
                  <string>reload</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>browse</string>
                 </property>
                </widget>
               </item>
@@ -3202,7 +3202,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>work_dir</tabstop>
-  <tabstop>pushButton</tabstop>
   <tabstop>pushButton_11</tabstop>
   <tabstop>list_view_source</tabstop>
   <tabstop>filter_type</tabstop>

@@ -707,7 +707,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.export_g2()
 
     def reload_source(self):
+        self.pushButton_11.setText('loading')
+        self.pushButton_11.setDisabled(True)
+        self.pushButton_11.parent().repaint()
         self.vk.build(sort_method=self.sort_method.currentText())
+        self.pushButton_11.setText('reload')
+        self.pushButton_11.setEnabled(True)
+        self.pushButton_11.parent().repaint()
+
         self.update_box(self.vk.source, mode='source')
         self.trie_search()
 
@@ -733,8 +740,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_state[:] = 0
 
         self.work_dir.setText(f)
+
         self.vk = ViewerKernel(f, self.statusbar)
-        self.vk.build(sort_method=self.sort_method.currentText())
+        self.reload_source()
+
         self.avg_job_table.setModel(self.vk.avg_worker)
         # self.thread = QThread()
         # self.vk.moveToThread(self.thread)
