@@ -118,7 +118,17 @@
                 </item>
                 <item>
                  <property name="text">
+                  <string>Filename-reverse</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>Index</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Index-reverse</string>
                  </property>
                 </item>
                 <item>

@@ -268,13 +268,11 @@ class FileLocator(object):
         # filter configure files
         flist = [x for x in flist if not x.startswith('.')]
 
-        if sort_method == 'Filename':
+        if sort_method.startswith('Filename'):
             flist.sort()
-        elif 'Time' in sort_method:
+        elif sort_method.startswith('Time'):
             flist.sort(key=lambda x: os.path.getmtime(os.path.join(path, x)))
-            if sort_method == 'Time-reverse':
-                flist.reverse()
-        elif sort_method == 'Index':
+        elif sort_method.startswith('Index'):
             def func(fname):
                 try:
                     # may fail when fname doesn't contain any number
@@ -290,6 +288,9 @@ class FileLocator(object):
                 finally:
                     return ans
             flist.sort(key=func)
+
+        if sort_method.endswith('-reverse'):
+            flist.reverse()
 
         self.source.replace(flist)
 
