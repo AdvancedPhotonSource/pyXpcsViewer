@@ -65,7 +65,7 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
-         max_points=8, legend=None, title=None, rows=None, qmax=10.0, qmin=0,
+         max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
          loc='best', marker_size=3, sampling=1):
 
     xscale = ['linear', 'log'][plot_type % 2]
@@ -80,6 +80,8 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
         Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
         Iq = offset_intensity(Iq, n, plot_offset, yscale)
         data.append([q, Iq])
+    
+    legend = [x.label for x in xf_list]
 
     mp_hdl.clear()
     mp_hdl.show_lines(data, xlabel=xlabel, ylabel=ylabel, legend=legend,
