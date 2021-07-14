@@ -39,6 +39,13 @@ class ListDataModel(QtCore.QAbstractListModel):
     def __getitem__(self, i):
         return self.input_list[i]
 
+    def pop(self, i=-1):
+        return self.input_list.pop(i)
+    
+    def insert(self, i, item):
+        self.input_list.insert(i, item)
+        self.layoutChanged.emit()
+
     def copy(self):
         return self.input_list.copy()
         self.layoutChanged.emit()
