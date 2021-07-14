@@ -103,6 +103,37 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
+               <widget class="QLabel" name="label_56">
+                <property name="text">
+                 <string>sort:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="sort_method">
+                <item>
+                 <property name="text">
+                  <string>Filename</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Index</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Time</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Time-reverse</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="pushButton">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
