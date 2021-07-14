@@ -93,7 +93,6 @@ class FileLocator(object):
         self.source_search = ListDataModel()
         self.target = ListDataModel()
         self.id_list = None
-        self.build(path)
         self.type = None
         self.cache = {}
         if max_cache_size is None:
@@ -249,7 +248,8 @@ class FileLocator(object):
 
         return
 
-    def build(self, path=None, filter_list=('.hdf', '.h5')):
+    def build(self, path=None, filter_list=('.hdf', '.h5'),
+              sort_method='Filename'):
         if path is None:
             path = self.path
 
@@ -267,7 +267,29 @@ class FileLocator(object):
 
         # filter configure files
         flist = [x for x in flist if not x.startswith('.')]
-        flist.sort()
+
+        if sort_method == 'Filename':
+            flist.sort()
+        elif 'Time' in sort_method:
+            flist.sort(key=lambda x: os.path.getmtime(os.path.join(path, x)))
+            if sort_method == 'Time-reverse':
+                flist.reverse()
+        elif sort_method == 'Index':
+            def func(fname):
+                try:
+                    # may fail when fname doesn't contain any number
+                    # get the start of a number
+                    start = [x.isdigit() for x in fname].index(True)
+                    # get the end of the number
+                    end = [x.isdigit() for x in fname[start:]].index(False)
+                    # end = fname.find('_')
+                    end = end + start
+                    ans = int(fname[start:end])
+                except Exception as e:
+                    ans = fname
+                finally:
+                    return ans
+            flist.sort(key=func)
 
         self.source.replace(flist)
 
