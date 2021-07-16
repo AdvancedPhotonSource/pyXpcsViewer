@@ -243,7 +243,14 @@ class FileLocator(object):
         if filter_type == 'prefix':
             ans = [x for x in self.source if x.startswith(val)]
         elif filter_type == 'substr':
-            ans = [x for x in self.source if val in x]
+            # split by white space
+            filter_str = val.split()
+            def func(x):
+                for t in filter_str:
+                    if t not in x:
+                        return False
+                return True
+            ans = [x for x in self.source if func(x)]
         self.source_search.replace(ans)
 
         return
