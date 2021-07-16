@@ -845,9 +845,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         item = self.vk.target.pop(row)
         pos = row - 1 if direction == 'up' else row + 1
         self.vk.target.insert(pos, item)
-        self.list_view_target.clearSelection()
-        self.list_view_source.repaint()
-        # self.list_view_source.selectAll()
+        idx = self.vk.target.index(pos)
+        self.list_view_target.setCurrentIndex(idx)
+        self.list_view_target.repaint()
 
         return
 
