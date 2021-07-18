@@ -1,12 +1,24 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+
+# hide the lines in legend
+# https://stackoverflow.com/questions/21285885
+matplotlib.rcParams['legend.handlelength'] = 0
+matplotlib.rcParams['legend.numpoints'] = 1
+
 # matplotlib.pyplot.style.use(['science', 'no-latex'])
 
-markers = ["o", "v", "^", "<", ">", "s", "p", "P", "*", "h", "H"]
+# https://matplotlib.org/stable/api/markers_api.html
+markers = ['o', 'v', '^', '>', '<', 's', 'p', 'h', '*', '+', 'd', 'x']
+
+colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
 
 
 class NavigationToolbarSimple(NavigationToolbar2QT):
@@ -18,17 +30,16 @@ class NavigationToolbarSimple(NavigationToolbar2QT):
         pass
 
 
-# # # # # # class MplCanvasBarH(QtGui.QWidget):
 class MplCanvasBarH(QtWidgets.QWidget):
     """
     MplWidget combines a MplCanvas with a vertical toolbar
     """
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbarSimple(self.hdl, self)
         self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
-        self.hbl = QtGui.QHBoxLayout()
+        self.hbl = QHBoxLayout()
         self.hbl.addWidget(self.hdl)
         self.hbl.addWidget(self.navi_toolbar)
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
@@ -39,16 +50,15 @@ class MplCanvasBarH(QtWidgets.QWidget):
         self.hdl.draw()
 
 
-#  class MplCanvasBarV(QtGui.QWidget):
-class MplCanvasBarV(QtWidgets.QWidget):
+class MplCanvasBarV(QWidget):
     """
     MplWidget combines a MplCanvas with a horizontal toolbar
     """
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
-        self.vbl = QtGui.QVBoxLayout()
+        self.vbl = QVBoxLayout()
         self.vbl.addWidget(self.navi_toolbar)
         self.vbl.addWidget(self.hdl)
         self.setLayout(self.vbl)
@@ -58,16 +68,15 @@ class MplCanvasBarV(QtWidgets.QWidget):
         self.hdl.draw()
 
 
-# class MplCanvasBar(QtGui.QWidget):
-class MplCanvasBar(QtWidgets.QWidget):
+class MplCanvasBar(QWidget):
     """
     MplWidget combines a MplCanvas with a Toolbar
     """
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbarSimple(self.hdl, self)
-        self.vbl = QtGui.QVBoxLayout()
+        self.vbl = QVBoxLayout()
         self.vbl.addWidget(self.hdl)
         self.vbl.addWidget(self.navi_toolbar)
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
@@ -205,7 +214,8 @@ class MplCanvas(FigureCanvasQTAgg):
                    title=None,
                    legend=None,
                    loc='best',
-                   rows=None
+                   rows=None,
+                   marker_size=3,
                    ):
 
         if legend in [None, False]:
@@ -231,13 +241,18 @@ class MplCanvas(FigureCanvasQTAgg):
             line_obj = []
             for n in range(len(data)):
                 mk = markers[n % len(markers)]
-                line = ax.plot(data[n][0], data[n][1], mk + '--', ms=3,
-                               alpha=alpha[n], label=legend[n])
+                cl = colors[n % len(colors)]
+                line = ax.plot(data[n][0], data[n][1], mk + '-', 
+                               ms=marker_size, alpha=alpha[n], label=legend[n],
+                               color=cl, mfc='none')
                 line_obj.append(line)
             self.obj = line_obj
 
-            if legend is not None:
+            if legend is not None and loc != 'outside':
                 ax.legend(loc=loc)
+            elif loc == 'outside':
+                ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
+            self.fig.tight_layout(rect=(0.05, 0.05, 0.95, 0.95))
 
         else:
             for n in range(len(data)):

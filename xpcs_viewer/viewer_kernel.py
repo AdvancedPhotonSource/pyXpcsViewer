@@ -2,12 +2,9 @@ import numpy as np
 from .file_locator import FileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
 from .module.average_toolbox import AverageToolbox
-from shutil import copyfile
-from sklearn.cluster import KMeans as sk_kmeans
 import h5py
-from .helper.listmodel import ListDataModel, TableDataModel
+from .helper.listmodel import TableDataModel
 import pyqtgraph as pg
-
 import os
 import logging
 
@@ -63,15 +60,6 @@ class ViewerKernel(FileLocator):
         if self.statusbar is not None:
             self.statusbar.showMessage(msg, 1500)
 
-    def hash(self, max_points=10):
-        if self.target is None:
-            return hash(None)
-        elif max_points <= 0:  # use all items
-            val = hash(tuple(self.target))
-        else:
-            val = hash(tuple(self.target[0:max_points]))
-        return val
-
     def get_g2_data(self, max_points, rows, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows)
         flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
@@ -83,8 +71,8 @@ class ViewerKernel(FileLocator):
         xfile = self.cache[self.target[rows[0]]]
         return xfile.get_pg_tree()
     
-    def get_fitting_tree(self):
-        xf_list = self.get_xf_list(8) 
+    def get_fitting_tree(self, rows, max_points=12):
+        xf_list = self.get_xf_list(max_points, rows)
         result = {}
         for x in xf_list:
             result[x.label] = x.get_fitting_info(mode='g2_fitting')
@@ -93,53 +81,20 @@ class ViewerKernel(FileLocator):
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2(self,
-                handler,
-                q_range=None,
-                t_range=None,
-                y_range=None,
-                offset=None,
-                show_fit=False,
-                max_points=50,
-                bounds=None,
-                show_label=False,
-                num_col=4,
-                rows=None,
-                fit_flag=None,
-                plot_type='multiple'):
-
-        fn_tuple = self.get_fn_tuple(max_points, rows=rows)
-        new_condition = (
-            (fn_tuple, num_col, show_fit, show_label),
-            (q_range, t_range, y_range, offset),
-            (bounds, fit_flag))
-
-        if self.meta['g2_plot_condition'] == new_condition:
-            # avoid meaningless rerun
-            logger.info('g2 plot parameters unchanged; skip')
-            return
-        else:
-            # cmp = tuple(
-            # i != j
-            # for i, j in zip(new_condition, self.meta['g2_plot_condition']))
-            self.meta['g2_plot_condition'] = new_condition
-            # plot_level = 4 * cmp[0] + 2 * cmp[1] + cmp[2]
-            # logger.info('plot level = %d', plot_level)
-
+    def plot_g2(self, handler, q_range, t_range, y_range, max_points=128,
+                rows=None, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows) 
-        g2mod.pg_plot(handler, xf_list, num_col, q_range, t_range, y_range,
-                      offset=offset, show_label=show_label, show_fit=show_fit,
-                      bounds=bounds, plot_type=plot_type, fit_flag=fit_flag)
-
+        g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
+                      **kwargs)
         return
 
-    def plot_tauq_pre(self, hdl=None, max_points=8, rows=None):
+    def plot_tauq_pre(self, hdl=None, max_points=128, rows=None):
         xf_list = self.get_xf_list(max_points, rows=rows)
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
 
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
-                  fit_flag=None, offset=None, max_points=8, q_range=None):
+                  fit_flag=None, offset=None, max_points=128, q_range=None):
         
         xf_list = self.get_xf_list(max_points, rows=rows) 
         result = {}
@@ -161,9 +116,9 @@ class ViewerKernel(FileLocator):
         extent = self.cache[self.target[0]].get_detector_extent()
         saxs2d.plot(ans, extent=extent, *args, **kwargs)
 
-    def plot_saxs_1d(self, mp_hdl, max_points=8, **kwargs):
+    def plot_saxs_1d(self, mp_hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        saxs1d.plot(xf_list, mp_hdl, legend=self.id_list, **kwargs)
+        saxs1d.plot(xf_list, mp_hdl, max_points=max_points, **kwargs)
 
     def setup_twotime(self, file_index=0, group='xpcs'):
         fname = self.target[file_index]
@@ -246,6 +201,9 @@ class ViewerKernel(FileLocator):
         record[0] += 1
 
         return
+    
+    def export_g2(self):
+       pass 
 
 
 if __name__ == "__main__":

@@ -1,20 +1,15 @@
 from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import Qt
-
-# from pyqtgraph.Qt import QtWidgets
-# from pyqtgraph import QtCore, QtGui
 
 import os
 import numpy as np
 import sys
 import json
-
-# log file
+import shutil
 import logging
+
 
 format = logging.Formatter('%(asctime)s %(message)s')
 home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
@@ -61,7 +56,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             7: "twotime",
             8: "exp_setup",
             9: "log",
-            10: "None"
+            # 10: "None"
         }
 
         # finite states
@@ -115,13 +110,23 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
+        self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
         self.load_default_setting()
+        self.btn_deselect.clicked.connect(self.clear_target_selection)
+        self.list_view_target.doubleClicked.connect(self.edit_label)
 
+        self.g2_fitting_function.currentIndexChanged.connect(
+            self.update_g2_fitting_function
+        )
+        # self.btn_g2_export.clicked.connect(self.export_g2)
         # disable browse function; it freezes on linux workstation;
         # self.pushButton.setEnabled(False)
+        self.btn_up.clicked.connect(lambda: self.reorder_target('up'))
+        self.btn_down.clicked.connect(lambda: self.reorder_target('down'))
 
+        self.update_g2_fitting_function()
         self.show()
-    
+
     def load_default_setting(self):
         # home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
         if not os.path.isdir(self.home_dir):
@@ -141,6 +146,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 new_size = (config["window_size_w"], config["window_size_h"])
                 logger.info('set mainwindow to size %s', new_size)
                 self.resize(*new_size)
+
+        # remove joblib cache
+        cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer',
+                                 'joblib/xpcs_viewer')
+        if os.path.isdir(cache_dir):
+            shutil.rmtree(cache_dir)
+
         return
 
     def get_selected_rows(self):
@@ -235,6 +247,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.statusbar.showMessage('Files loaded.', 1000)
 
         self.init_tab()
+        self.btn_load_data.setDisabled(True)
+        self.btn_load_data.setText('updated')
+        self.btn_load_data.repaint()
 
     def update_hdf_list(self):
         self.hdf_list.clear()
@@ -261,6 +276,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'cmap': self.cb_saxs2D_cmap.currentText(),
             'autorotate': self.saxs2d_autorotate.isChecked(),
             'display': self.saxs2d_display,
+            'autorange': self.saxs2d_autorange.isChecked(),
+            'vmin': self.saxs2d_min.value(),
+            'vmax': self.saxs2d_max.value(),
         }
         self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
@@ -272,9 +290,19 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
             'plot_norm': self.cb_saxs_norm.currentIndex(),
-            'rows': self.get_selected_rows()
+            'rows': self.get_selected_rows(),
+            'qmin': self.saxs1d_qmin.value(),
+            'qmax': self.saxs1d_qmax.value(),
+            'loc': self.saxs1d_legend_loc.currentText(),
+            'marker_size': self.sb_saxs_marker_size.value(),
+            'sampling': self.saxs1d_sampling.value()
         }
+        if kwargs['qmin'] >= kwargs['qmax']:
+            self.statusbar.showMessage('check qmin and qmax')
+            return
+
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
+        self.mp_saxs.repaint()
 
     def init_twotime(self):
         if not self.check_status():
@@ -316,7 +344,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('Twotime data not ready', 1000)
             return
 
-        if event.button == Qt.LeftButton:
+        if event.button == QtCore.Qt.LeftButton:
             self.statusbar.showMessage('Use right click to select points',
                                        1000)
             return
@@ -397,7 +425,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'xlabel': self.intt_xlabel.currentText()
         }
         self.vk.plot_intt(self.pg_intt, **kwargs)
-    
+
     def plot_tauq_pre(self):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
@@ -427,7 +455,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         kwargs = {
             'bounds': bounds,
-            'fit_flag': fit_flag, 
+            'fit_flag': fit_flag,
             'offset': self.sb_tauq_offset.value(),
             'rows': self.get_selected_rows(),
             'q_range': q_range,
@@ -448,13 +476,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.remove_job(index)
 
     def set_average_save_path(self):
-        save_path = QFileDialog.getExistingDirectory(self, 'Open directory')
+        save_path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, 'Open directory')
         self.avg_save_path.clear()
         self.avg_save_path.setText(save_path)
         return
 
     def set_average_save_name(self):
-        save_name = QFileDialog.getSaveFileName(self, 'Save as')
+        save_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save as')
         self.avg_save_name.clear()
         self.avg_save_name.setText(os.path.basename(save_name[0]))
         return
@@ -577,11 +606,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('the selected job isn\'s running', 1000)
             return
         worker.kill()
-    
+
     def show_g2_fit_summary_func(self):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
-        self.tree = self.vk.get_fitting_tree()
+        
+        rows = self.get_selected_rows()
+        self.tree = self.vk.get_fitting_tree(rows)
         self.tree.show()
 
     def show_avg_jobinfo(self):
@@ -597,7 +628,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
 
-        flag, tel, _, _, _ = self.vk.get_g2_data(max_points, rows=None)
+        flag, tel, qd, _, _ = self.vk.get_g2_data(max_points, rows=None)
         if not flag:
             self.statusbar.showMessage('g2 data is not consistent. abort', 999)
         t_min = np.min(tel)
@@ -606,19 +637,26 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         def to_e(x):
             return '%.2e' % x
 
-        self.g2_bmin.setText(to_e(t_min / 20))
+        self.g2_bmin.setValue(t_min / 20)
         # self.g2_bmax.setText(to_e(t_max * 10))
-        self.g2_bmax.setText(to_e(0.1))
+        self.g2_bmax.setValue(0.1)
 
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
 
+        if self.g2_qmin.value() > np.max(qd):
+            self.g2_qmin.setValue(np.min(qd) * 0.9)
+
+        qmax = self.g2_qmax.value()
+        if qmax < np.min(qd) or qmax < self.g2_qmin.value():
+            self.g2_qmin.setValue(np.max(qd) * 1.1)
+
     def plot_g2(self, max_points=3):
         if not self.check_status() or self.vk.type != 'Multitau':
             return
-        
+
         p = self.check_g2_number()
-        bounds, fit_flag = self.check_number()
+        bounds, fit_flag, fit_func = self.check_g2_fitting_number()
         if bounds is None:
             self.statusbar.showMessage('please check fitting bounds.')
             return
@@ -632,9 +670,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'q_range': (p[0], p[1]),
             't_range': (p[2], p[3]),
             'y_range': (p[4], p[5]),
+            'y_auto': self.g2_yauto.isChecked(),
             'rows': self.get_selected_rows(),
             'bounds': bounds,
-            'fit_flag': fit_flag
+            'fit_flag': fit_flag,
+            'marker_size': self.g2_marker_size.value(),
+            'subtract_baseline': self.g2_sub_baseline.isChecked(),
+            'fit_func': fit_func
+            # 'label_size': self.sb_g2_label_size.value(),
         }
         if kwargs['show_fit'] and sum(kwargs['fit_flag']) == 0:
             self.statusbar.showMessage('nothing to fit, really?', 1000)
@@ -643,7 +686,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_4.setDisabled(True)
         self.pushButton_4.setText('plotting')
 
-        self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+        try:
+            self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+        except ZeroDivisionError:
+            self.statusbar.showMessage('check range', 1000)
 
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')
@@ -653,21 +699,31 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # else:
         #     self.g2_err_msg.insertPlainText('\n'.join(err_msg))
 
-        # reset plot state for the diffusion tab so it will be updated when 
+        # reset plot state for the diffusion tab so it will be updated when
         # switch tabs;
         self.plot_state[6] = 0
 
+    def export_g2(self):
+        self.vk.export_g2()
 
     def reload_source(self):
-        self.vk.build()
+        self.pushButton_11.setText('loading')
+        self.pushButton_11.setDisabled(True)
+        self.pushButton_11.parent().repaint()
+        self.vk.build(sort_method=self.sort_method.currentText())
+        self.pushButton_11.setText('reload')
+        self.pushButton_11.setEnabled(True)
+        self.pushButton_11.parent().repaint()
+
         self.update_box(self.vk.source, mode='source')
+        self.trie_search()
 
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
             # DontUseNativeDialog is used so files are shown along with dirs;
-            f = QFileDialog.getExistingDirectory(
+            f = QtWidgets.QFileDialog.getExistingDirectory(
                 self, 'Open directory', self.start_wd,
-                QFileDialog.DontUseNativeDialog)
+                QtWidgets.QFileDialog.DontUseNativeDialog)
         else:
             f = path
 
@@ -684,7 +740,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_state[:] = 0
 
         self.work_dir.setText(f)
+
         self.vk = ViewerKernel(f, self.statusbar)
+        self.reload_source()
+
         self.avg_job_table.setModel(self.vk.avg_worker)
         # self.thread = QThread()
         # self.vk.moveToThread(self.thread)
@@ -697,6 +756,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if mode == 'source':
             self.list_view_source.setModel(file_list)
             self.box_source.setTitle('Source: %5d' % len(file_list))
+            self.box_source.parent().repaint()
+            self.list_view_source.parent().repaint()
         elif mode == 'target':
             self.list_view_target.setModel(file_list)
             self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
@@ -739,6 +800,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         # the target list has changed;
+        self.btn_load_data.setText('update')
+        self.btn_load_data.setEnabled(True)
+        self.btn_load_data.repaint()
         self.update_box(self.vk.target, mode='target')
 
         if self.data_state in [1, 2, 3]:
@@ -753,6 +817,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.tab_dict[tab_id] == 'average':
             self.update_average_box()
         elif self.box_auto_update.isChecked():
+            if self.tab_dict[tab_id] in ['saxs_1d', 'g2']:
+                self.statusbar.showMessage(
+                    'Auto loading is disabled for saxs_1d and g2', 1000)
+                self.statusbar.repaint()
+                return
             # avoid pressing enter when auto-load is enabled and lots of
             # files are added; it'll take long time to process;
             if len(self.vk.target) > 128:
@@ -761,19 +830,27 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             else:
                 self.load_data()
 
-    def reorder_target(self):
-        target = []
-        self.list_view_target.selectAll()
-        for x in self.list_view_target.selectedIndexes():
-            target.append(x.data())
-        self.list_view_target.clearSelection()
+    def reorder_target(self, direction='up'):
+        rows = self.get_selected_rows()
+        if len(rows) != 1 or len(self.vk.target) <= 1:
+            return
+        row = rows[0]
 
-        if tuple(target) != tuple(self.vk.target):
-            self.vk.clear_target()
-            self.vk.add_target(target)
-            self.update_box(self.vk.target, mode='target')
-        else:
-            print('no reorder')
+        if direction == 'up' and row == 0:
+            self.statusbar.showMessage('alread on the top', 1000)
+            return
+        elif direction == 'down' and row == len(self.vk.target) - 1:
+            self.statusbar.showMessage('alread on the buttom', 1000)
+            return
+
+        item = self.vk.target.pop(row)
+        pos = row - 1 if direction == 'up' else row + 1
+        self.vk.target.insert(pos, item)
+        idx = self.vk.target.index(pos)
+        self.list_view_target.setCurrentIndex(idx)
+        self.list_view_target.repaint()
+
+        return
 
     def remove_target(self):
         if self.data_state in [0, 1]:
@@ -807,7 +884,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             x.clear()
 
     def trie_search(self):
-        min_length = 2
+        min_length = 1
         val = self.filter_str.text()
         if len(val) == 0:
             self.source_model = self.vk.source
@@ -816,8 +893,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
             self.statusbar.showMessage(
-                'Please enter at least %d characters' % min_length, 1000
-            )
+                'Please enter at least %d characters' % min_length, 1000)
             return
 
         filter_type = ['prefix', 'substr'][self.filter_type.currentIndex()]
@@ -831,57 +907,61 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 self.g2_ymin, self.g2_ymax)
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
-            try:
-                val = float(key.text())
-            except Exception:
-                key.setText(str(default_val[n]))
-                return
-            else:
-                vals[n] = val
+            if isinstance(key, QtWidgets.QDoubleSpinBox):
+                val = key.value()
+            elif isinstance(key, QtWidgets.QLineEdit):
+                try:
+                    val = float(key.text())
+                except Exception:
+                    key.setText(str(default_val[n]))
+                    self.statusbar.showMessage('g2 number is invalid', 1000)
+            vals[n] = val
 
-        def swap_min_max(id1, id2, fun=str):
+        def swap_min_max(id1, id2):
             if vals[id1] > vals[id2]:
-                keys[id1].setText(fun(vals[id2]))
-                keys[id2].setText(fun(vals[id1]))
+                keys[id1].setValue(vals[id2])
+                keys[id2].setValue(vals[id1])
                 vals[id1], vals[id2] = vals[id2], vals[id1]
 
         swap_min_max(0, 1)
-        swap_min_max(2, 3, lambda x: '%.2e' % x)
+        # swap_min_max(2, 3, lambda x: '%.2e' % x)
         swap_min_max(4, 5)
 
         return vals
 
-    def check_number(self, default_val=(1e-6, 1e-2, 0.01, 0.20, 0.95, 1.05)):
+    def check_g2_fitting_number(self):
+        fit_func = ['single', 'double'][self.g2_fitting_function.currentIndex()]
+
         keys = (self.g2_amin, self.g2_amax, self.g2_bmin, self.g2_bmax,
-                self.g2_cmin, self.g2_cmax, self.g2_dmin, self.g2_dmax)
+                self.g2_cmin, self.g2_cmax, self.g2_dmin, self.g2_dmax,
+                self.g2_b2min, self.g2_b2max, self.g2_c2min, self.g2_c2max,
+                self.g2_fmin, self.g2_fmax)
+
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
-            try:
-                val = float(key.text())
-            except Exception:
-                key.setText(str(default_val[n]))
-                return None, None
-            else:
-                vals[n] = val
+            vals[n] = key.value()
 
-        def swap_min_max(id1, id2, fun=str):
+        def swap_min_max(id1, id2):
             if vals[id1] > vals[id2]:
-                keys[id1].setText(fun(vals[id2]))
-                keys[id2].setText(fun(vals[id1]))
+                keys[id1].setValue(vals[id2])
+                keys[id2].setValue(vals[id1])
                 vals[id1], vals[id2] = vals[id2], vals[id1]
 
-        swap_min_max(0, 1, lambda x: '%.2e' % x)
-        swap_min_max(2, 3)
-        swap_min_max(4, 5)
-        swap_min_max(6, 7)
+        for n in range(0, 7):
+            swap_min_max(2 * n, 2 * n + 1)
 
         vals = np.array(vals).reshape(len(keys) // 2, 2)
-        bounds = (tuple(vals[:, 0]), tuple(vals[:, 1]))
+        bounds = vals.T
 
-        fit_keys = (self.g2_afit, self.g2_bfit, self.g2_cfit, self.g2_dfit)
+        fit_keys = (self.g2_afit, self.g2_bfit, self.g2_cfit, self.g2_dfit,
+                    self.g2_b2fit, self.g2_c2fit, self.g2_ffit)
         fit_flag = [x.isChecked() for x in fit_keys]
 
-        return bounds, fit_flag
+        if fit_func == 'single':
+            fit_flag = fit_flag[0:4]
+            bounds = bounds[:, 0:4]
+
+        return bounds, fit_flag, fit_func
 
     def check_status(self, show_msg=True, min_state=2):
         flag = False
@@ -905,6 +985,53 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         return flag
 
+    def update_saxs2d_range(self, flag=True):
+        if not flag:
+            vmin = self.pg_saxs.levelMin
+            vmax = self.pg_saxs.levelMax
+            if vmin is not None:
+                self.saxs2d_min.setValue(vmin)
+            if vmax is not None:
+                self.saxs2d_max.setValue(vmax)
+            self.saxs2d_min.setEnabled(True)
+            self.saxs2d_max.setEnabled(True)
+        else:
+            self.saxs2d_min.setDisabled(True)
+            self.saxs2d_max.setDisabled(True)
+
+        self.saxs2d_min.parent().repaint()
+
+    def clear_target_selection(self):
+        self.list_view_target.clearSelection()
+        self.list_view_source.repaint()
+
+    def update_g2_fitting_function(self):
+        idx = self.g2_fitting_function.currentIndex()
+        title = [
+            "g2 fitting with Single Exp:  y = a·exp[-2(x/b)^c]+d",
+            "g2 fitting with Double Exp:  y = a·[f·exp[-(x/b)^c +" +
+            "(1-f)·exp[-(x/b2)^c2]^2+d"
+        ]
+        self.groupBox_2.setTitle(title[idx])
+
+        pvs = [[self.g2_b2min, self.g2_b2max, self.g2_b2fit],
+               [self.g2_c2min, self.g2_c2max, self.g2_c2fit],
+               [self.g2_fmin, self.g2_fmax, self.g2_ffit]]
+
+        # change from double to single
+        if idx == 0:
+            for n in range(3):
+                pvs[n][0].setDisabled(True)
+                pvs[n][1].setDisabled(True)
+                pvs[n][2].setDisabled(True)
+        # change from single to double
+        else:
+            for n in range(3):
+                pvs[n][2].setEnabled(True)
+                pvs[n][1].setEnabled(True)
+                if pvs[n][2].isChecked():
+                    pvs[n][0].setEnabled(True)
+
 
 def setup_windows_icon():
     # reference: https://stackoverflow.com/questions/1551605
@@ -924,7 +1051,8 @@ def setup_windows_icon():
 def run():
     if os.name == 'nt':
         setup_windows_icon()
-    QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(
+        QtCore.Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         # use arg[1] as the starting directory

@@ -50,12 +50,15 @@ pip uninstall xpcs-viewer
 5. Average Tool box
   ![average](/docs/images/average.png)
   
-6. g2 plot for multitau analysis
+6. g2 plot for multitau analysis. User can fit the time scale using the single exponential function, with the option to specify the fitting range and fitting flags (fix or fit).
   ![g2](/docs/images/g2mod.png)
 
 7. Diffusion analysis. g2 fitting in the previous panel is required to plot $\tau \mbox{vs.} q$.
   ![diffusion](/docs/images/diffusion.png)
-  
-8. Experiment condition viewer. It reads the file structure and string entries of the HDF file selected.
+
+8. Twotime correlation. User can select two q indexes either on the qmap or on the SAXS2D image.
+  ![diffusion](/docs/images/twotime.png)
+
+9. Experiment condition viewer. It reads the file structure and string entries of the HDF file selected.
   ![hdf-info](/docs/images/hdf_info.png)
  

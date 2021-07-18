@@ -4,7 +4,7 @@ import logging
 import os
 import numpy as np
 from sklearn.cluster import k_means as sk_kmeans
-from ..fileIO.hdf_reader import get, put
+from ..fileIO.hdf_reader import put
 from ..xpcs_file import XpcsFile as XF
 from collections import deque
 from shutil import copyfile
@@ -127,8 +127,14 @@ class AverageToolbox(QtCore.QRunnable):
         valid_list = deque()
         discard_list = deque()
 
-        def validate_g2_baseline(g2_data):
-            g2_baseline = np.mean(g2_data[-avg_window:, avg_qindex])
+        def validate_g2_baseline(g2_data, q_idx):
+            if q_idx >= g2_data.shape[1]:
+                idx = 0 
+                logger.info('q_index is out of range; using 0 instead')
+            else:
+                idx = q_idx
+
+            g2_baseline = np.mean(g2_data[-avg_window:, idx])
             if avg_blmax >= g2_baseline >= avg_blmin:
                 return True, g2_baseline
             else:
@@ -163,7 +169,7 @@ class AverageToolbox(QtCore.QRunnable):
                 fname = self.model[m]
                 try:
                     xf = XF(fname, cwd=self.work_dir, fields=fields)
-                    flag, val = validate_g2_baseline(xf.g2)
+                    flag, val = validate_g2_baseline(xf.g2, avg_qindex)
                     self.baseline[self.ptr] = val
                     self.ptr += 1
                 # except Exceptionn as ec:
@@ -178,11 +184,17 @@ class AverageToolbox(QtCore.QRunnable):
                     mask[m] = 0
 
                 self.signals.values.emit((self.jid, val))
+        
+        if np.sum(mask) == 0:
+            logger.info('no dataset is valid; check the baseline criteria.')
+        else:
+            for key in fields:
+                result[key] /= np.sum(mask)
+                if key == 'g2_err':
+                    result[key] /= np.sqrt(np.sum(mask))
 
-        for key in fields:
-            result[key] /= np.sum(mask)
-            if key == 'g2_err':
-                result[key] /= np.sqrt(np.sum(mask))
+            logger.info('the valid dataset number is %d / %d' % (
+                np.sum(mask), tot_num))
         
         for m in range(tot_num):
             if not mask[m]:

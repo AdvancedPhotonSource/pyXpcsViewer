@@ -1,12 +1,9 @@
 # import marisa_trie
 import os
 from os.path import commonprefix
-from .fileIO.hdf_to_str import get_hdf_info
-from .fileIO.hdf_reader import get, put, get_type
+from .fileIO.hdf_reader import get_type
 from .xpcs_file import XpcsFile as xf
 import logging
-import numpy as np
-from collections import deque
 from .helper.listmodel import ListDataModel
 
 logger = logging.getLogger(__name__)
@@ -96,7 +93,6 @@ class FileLocator(object):
         self.source_search = ListDataModel()
         self.target = ListDataModel()
         self.id_list = None
-        self.build(path)
         self.type = None
         self.cache = {}
         if max_cache_size is None:
@@ -247,12 +243,20 @@ class FileLocator(object):
         if filter_type == 'prefix':
             ans = [x for x in self.source if x.startswith(val)]
         elif filter_type == 'substr':
-            ans = [x for x in self.source if val in x]
+            # split by white space
+            filter_str = val.split()
+            def func(x):
+                for t in filter_str:
+                    if t not in x:
+                        return False
+                return True
+            ans = [x for x in self.source if func(x)]
         self.source_search.replace(ans)
 
         return
 
-    def build(self, path=None, filter_list=('.hdf', '.h5')):
+    def build(self, path=None, filter_list=('.hdf', '.h5'),
+              sort_method='Filename'):
         if path is None:
             path = self.path
 
@@ -270,7 +274,30 @@ class FileLocator(object):
 
         # filter configure files
         flist = [x for x in flist if not x.startswith('.')]
-        flist.sort()
+
+        if sort_method.startswith('Filename'):
+            flist.sort()
+        elif sort_method.startswith('Time'):
+            flist.sort(key=lambda x: os.path.getmtime(os.path.join(path, x)))
+        elif sort_method.startswith('Index'):
+            def func(fname):
+                try:
+                    # may fail when fname doesn't contain any number
+                    # get the start of a number
+                    start = [x.isdigit() for x in fname].index(True)
+                    # get the end of the number
+                    end = [x.isdigit() for x in fname[start:]].index(False)
+                    # end = fname.find('_')
+                    end = end + start
+                    ans = int(fname[start:end])
+                except Exception as e:
+                    ans = fname
+                finally:
+                    return ans
+            flist.sort(key=func)
+
+        if sort_method.endswith('-reverse'):
+            flist.reverse()
 
         self.source.replace(flist)
 

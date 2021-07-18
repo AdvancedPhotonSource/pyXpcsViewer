@@ -24,6 +24,26 @@ def single_exp_all(x, a, b, c, d):
     return a * np.exp(-2 * (x / b) ** c) + d
 
 
+def double_exp_all(x, a, b1, c1, d, b2, c2, f):
+    """
+    double exponential fitting for xpcs-multitau analysis
+    Args:
+        x: delay in seconds, float or 1d-numpy.ndarray
+        a: contrast
+        f: fraction for the 1st exp function; the 2nd has (1-f) weight
+        b1: tau for 1st exp function
+        c1: restriction factor for the 1st exp function
+        b2: tau for 2nd exp function
+        c2: restriction factor for the 2nd exp function
+        d: baseline
+    Return:
+        function value
+    """
+    t1 = np.exp(-1 * (x / b1) ** c1) * f
+    t2 = np.exp(-1 * (x / b2) ** c2) * (1 - f)
+    return a * (t1 + t2) ** 2 + d
+
+
 def power_law(x, a, b):
     """
     power law for fitting the diffusion factor
@@ -111,7 +131,8 @@ class XpcsFile(object):
     def load(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                  'ql_dyn', 'type', 'dqmap']
+                  'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist', 
+                  'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -149,6 +170,8 @@ class XpcsFile(object):
     def __getattr__(self, key):
         if key in self.__dict__:
             return self.__dict__[key]
+        else:
+            raise KeyError
 
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
@@ -171,6 +194,10 @@ class XpcsFile(object):
         dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
                           mode='raw',
                           ret_type='list')
+
+        # some dataset may swap the axis
+        if saxs.shape != dqmap.shape:
+            saxs = saxs.T
 
         if self.type == 'Twotime':
             key_c2t = '/'.join([rpath, 'C2T_all'])
@@ -206,13 +233,13 @@ class XpcsFile(object):
         :return:
         """
         fields = [
-            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim', 'X_energy', 'xdim',
-            'ydim'
+            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim_x', 'pix_dim_y', 
+            'X_energy', 'xdim', 'ydim'
         ]
         res = get(self.full_path, fields, mode='alias', ret_type='dict')
 
         wlength = 12.398 / res['X_energy']
-        pix2q = res['pix_dim'] / res['det_dist'] * (2 * np.pi / wlength)
+        pix2q = res['pix_dim_x'] / res['det_dist'] * (2 * np.pi / wlength)
 
         qy_min = (0 - res['ccd_x0']) * pix2q
         qy_max = (res['xdim'] - res['ccd_x0']) * pix2q
@@ -300,12 +327,15 @@ class XpcsFile(object):
             # fit_line is not useful to display
             result.pop('fit_line', None)
             val = result.pop('fit_val', None)
+            if result['fit_func'] == 'single':
+                prefix = ['a', 'b', 'c', 'd']
+            else:
+                prefix = ['a', 'b', 'c', 'd', 'b2', 'c2', 'f']
 
-            prefix = ['a', 'b', 'c', 'd']
             msg = []
             for n in range(val.shape[0]):
                 temp = []
-                for m in range(4):
+                for m in range(len(prefix)):
                     temp.append('%s = %f ± %f' % (
                         prefix[m], val[n, 0, m], val[n, 1, m]))
                 msg.append(', '.join(temp))
@@ -324,22 +354,39 @@ class XpcsFile(object):
         return result
 
     def fit_g2(self, q_range=None, t_range=None, bounds=None,
-               fit_flag=(True, True, True, True)):
+               fit_flag=None, fit_func='single'):
         """
         fit the g2 values using single exponential decay function
         :param q_range: a tuple of q lower bound and upper bound
         :param t_range: a tuple of t lower bound and upper bound
         :param bounds: bounds for fitting;
         :param fit_flag: tuple of bools; True to fit and False to float
+        :param fit_func: ['single' | 'double']: to fit with single exponential
+            or double exponential function
         :return: dictionary with the fitting result;
         """
+        assert len(bounds) == 2
+        if fit_func == 'single':
+            assert len(bounds[0]) == 4, \
+                "for single exp, the shape of bounds must be (2, 4)"
+            if fit_flag is None:
+                fit_flag = [True for _ in range(4)]
+            func = single_exp_all 
+        else:
+            assert len(bounds[0]) == 7, \
+                "for single exp, the shape of bounds must be (2, 4)"
+            if fit_flag is None:
+                fit_flag = [True for _ in range(7)]
+            func = double_exp_all
+
         if q_range is None:
             q_range = [np.min(self.ql_dyn) * 0.95, np.max(self.ql_dyn) * 1.05]
         
         if t_range is None:
             q_range = [np.min(self.t_el) * 0.95, np.max(self.t_el) * 1.05]
         
-        # create a data slice for given range;    
+        
+        # create a data slice for the given range;    
         t_slice = create_slice(self.t_el, t_range)
         q_slice = create_slice(self.ql_dyn, q_range)
 
@@ -348,19 +395,21 @@ class XpcsFile(object):
         g2 = self.g2[t_slice, q_slice]
         sigma = self.g2_err_mod[t_slice, q_slice]
 
+        # set the initial guess
         p0 = np.array(bounds).mean(axis=0)
+        # tau's bounds are in log scale, set as the geometric average
         p0[1] = np.sqrt(bounds[0][1] * bounds[1][1])
+        if fit_func == 'double':
+            p0[4] = np.sqrt(bounds[0][4] * bounds[1][4])
 
         fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
                             np.log10(np.max(t_el)) + 0.5, 128)
-        try:
-            fit_line, fit_val = fit_with_fixed(single_exp_all, t_el, g2, sigma,
-                                               bounds, fit_flag, fit_x, p0=p0)
-        except Exception as err:
-            print('failed to fit g2 for %s' % self.fname)
-            return None 
+
+        fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma,
+                                           bounds, fit_flag, fit_x, p0=p0)
 
         self.fit_summary = {
+            'fit_func': fit_func,
             'fit_val': fit_val,
             't_el': t_el,
             'q_val': q,
@@ -399,6 +448,17 @@ class XpcsFile(object):
 
         y = self.fit_summary['fit_val'][q_slice, 0, 1]
         sigma = self.fit_summary['fit_val'][q_slice, 1, 1]
+        
+        # filter out those invalid fittings; failed g2 fitting has -1 err
+        valid_idx = (sigma > 0)
+
+        if np.sum(valid_idx) == 0:
+            self.fit_summary['tauq_success'] = False
+            return
+
+        x = x[valid_idx]
+        y = y[valid_idx]
+        sigma = sigma[valid_idx]
 
         # reshape to two-dimension so the fit_with_fixed function works
         y = y.reshape(-1, 1)
@@ -413,6 +473,7 @@ class XpcsFile(object):
                                            fit_flag, fit_x, p0=p0) 
 
         # fit_line and fit_val are lists with just one element;
+        self.fit_summary['tauq_success'] = fit_line[0]['success']
         self.fit_summary['tauq_q'] = x
         self.fit_summary['tauq_tau'] = np.squeeze(y)
         self.fit_summary['tauq_tau_err'] = np.squeeze(sigma)

@@ -7,11 +7,16 @@ from sklearn import linear_model
 import joblib
 import os
 import time
+import traceback
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
 from joblib import Memory
 memory = Memory(cache_dir, verbose=0)
+
 
 @memory.cache
 def fit_with_fixed(*args, **kwargs):
@@ -133,13 +138,33 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
 
     fit_line = []
     for n in range(y.shape[1]):
-        popt, pcov = curve_fit(func, x, y[:, n],
-                               p0=p0, sigma=sigma[:, n],
-                               bounds=bounds_fit)
-        fit_val[n, 0, fit_flag] = popt
-        fit_val[n, 1, fit_flag] = np.sqrt(np.diag(pcov))
-        fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
-        fit_y = func(fit_x, *popt)
-        fit_line.append({'fit_x': fit_x, 'fit_y': fit_y})
+        flag = True
+        try:
+            popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n],
+                                   bounds=bounds_fit)
+        except (Exception, RuntimeError, ValueError, Warning) as err:
+            msg = "Fitting failed: %s" % traceback.format_exc()
+            logger.info(msg)
+            flag = False
+            fit_val[n, 0, fit_flag] = p0 
+            fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
+            # mark failed fitting to be negative so they can be filtered later
+            fit_val[n, 1, :] = -1
+            fit_y = None
+
+        else:
+            flag = True
+            msg = 'FittingSuccess'
+            # converge values
+            fit_val[n, 0, fit_flag] = popt
+            fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
+            # errors; the fixed variables have error of 0
+            fit_val[n, 1, fit_flag] = np.sqrt(np.diag(pcov))
+            # fit line
+            fit_y = func(fit_x, *popt)
+
+        finally:
+            fit_line.append({'fit_x': fit_x, 'fit_y': fit_y, 'success': flag,
+                             'msg': msg})
 
     return fit_line, fit_val
