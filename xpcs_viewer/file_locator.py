@@ -98,6 +98,13 @@ class FileLocator(object):
         if max_cache_size is None:
             # 2G
             self.max_cache_size = 1024 ** 3 * 2
+    
+    def set_path(self, path):
+        self.path = path
+    
+    def clear(self):
+        self.source.clear()
+        self.source_search.clear()
 
     def get_type(self, fname):
         return get_type(pjoin(self.cwd, fname))
