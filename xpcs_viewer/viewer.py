@@ -707,6 +707,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.export_g2()
 
     def reload_source(self):
+        if self.data_state <= 0:
+            self.statusbar.showMessage('no path is specified')
+            return
         self.pushButton_11.setText('loading')
         self.pushButton_11.setDisabled(True)
         self.pushButton_11.parent().repaint()
@@ -735,13 +738,21 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         # either choose a new work_dir or initialize from state=0
         # if f == curr_work_dir; then the state is kept the same;
-        if f != curr_work_dir or self.data_state == 0:
+        # if f != curr_work_dir or self.data_state == 0:
+        if self.data_state == 0:
             self.data_state = 1
             self.plot_state[:] = 0
 
         self.work_dir.setText(f)
 
-        self.vk = ViewerKernel(f, self.statusbar)
+        if self.vk is None:
+            self.vk = ViewerKernel(f, self.statusbar)
+        else:
+            self.vk.set_path(f)
+            self.vk.clear()
+
+        print(self.vk.cwd)
+
         self.reload_source()
 
         self.avg_job_table.setModel(self.vk.avg_worker)
