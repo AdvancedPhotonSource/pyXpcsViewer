@@ -874,6 +874,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.progress_bar.setValue(0)
         self.vk.remove_target(rmv_list)
+        # clear selection to avoid the bug: when the last one is selected, then
+        # the list will out of bounds
+        self.clear_target_selection()
 
         # if all files are removed; then go to state 1
         if self.vk.target in [[], None] or len(self.vk.target) == 0:
