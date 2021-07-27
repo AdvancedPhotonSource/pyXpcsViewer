@@ -788,7 +788,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         target = []
         for x in self.list_view_source.selectedIndexes():
-            target.append(x.data())
+            # in some cases, it will return None
+            val = x.data()
+            if val is not None:
+                target.append(val)
 
         # only max_display items are displayed; if all are selected; then the
         # ones not displayed are also used
