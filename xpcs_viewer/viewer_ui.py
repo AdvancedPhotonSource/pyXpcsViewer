@@ -545,7 +545,7 @@ class Ui_mainWindow(object):
         self.gridLayout_23.addWidget(self.sb_window, 0, 3, 1, 1)
         self.sb_intt_sampling = QtWidgets.QSpinBox(self.groupBox_7)
         self.sb_intt_sampling.setMinimum(1)
-        self.sb_intt_sampling.setProperty("value", 2)
+        self.sb_intt_sampling.setProperty("value", 1)
         self.sb_intt_sampling.setObjectName("sb_intt_sampling")
         self.gridLayout_23.addWidget(self.sb_intt_sampling, 0, 5, 1, 1)
         self.intt_xlabel = QtWidgets.QComboBox(self.groupBox_7)
@@ -1436,7 +1436,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(5)
+        self.tabWidget.setCurrentIndex(3)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
