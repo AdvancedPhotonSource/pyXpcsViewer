@@ -1,4 +1,5 @@
 from .saxs1d import offset_intensity, norm_saxs_data
+import numpy as np
 
 
 def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None, 
@@ -10,6 +11,8 @@ def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None,
     q = fc.ql_sta
     Iqp = fc.Iqp
 
+    if Iqp.ndim == 1:
+        Iqp = Iqp.reshape(1, -1) 
     sl = slice(0, min(q.size, Iqp.shape[1]))
     q = q[sl]
     Iqp = Iqp[:, sl]
