@@ -59,6 +59,7 @@ class XpcsFile(object):
     """
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
+
     def __init__(self, fname, cwd='.', fields=None):
         self.fname = fname
         self.full_path = os.path.join(cwd, fname)
@@ -86,7 +87,7 @@ class XpcsFile(object):
             ans.append(f"   {key.ljust(12)}: {val.ljust(30)}")
 
         return '\n'.join(ans)
-    
+
     def __repr__(self):
         ans = str(type(self))
         ans = '\n'.join([ans, self.__str__()])
@@ -131,8 +132,9 @@ class XpcsFile(object):
     def load(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                  'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist', 
-                  'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim']
+                  'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
+                  'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
+                  'avg_frames']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -153,11 +155,12 @@ class XpcsFile(object):
 
         # get t_el which is in the unit of seconds;
         if 't0' in ret and 'tau' in ret:
-            ret['t_el'] = ret['t0'] * ret['tau']
+            ret['t_el'] = ret['t0'] * ret['tau'] * ret['avg_frames']
 
         if self.type == 'Twotime':
             ret['g2'] = ret['g2_full']
-            ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
+            ret['t_el'] = np.arange(ret['g2'].shape[0]) * \
+                ret['t0'] * ret['avg_frames']
         else:
             # correct g2_err to avoid fitting divergence
             ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
@@ -233,7 +236,7 @@ class XpcsFile(object):
         :return:
         """
         fields = [
-            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim_x', 'pix_dim_y', 
+            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim_x', 'pix_dim_y',
             'X_energy', 'xdim', 'ydim'
         ]
         res = get(self.full_path, fields, mode='alias', ret_type='dict')
@@ -305,7 +308,7 @@ class XpcsFile(object):
         tree.setWindowTitle(self.fname)
         tree.resize(600, 800)
         return tree
-    
+
     def get_g2_fitting_line(self, q, tor=1E-6):
         """
         get the fitting line for q, within tor
@@ -371,7 +374,7 @@ class XpcsFile(object):
                 "for single exp, the shape of bounds must be (2, 4)"
             if fit_flag is None:
                 fit_flag = [True for _ in range(4)]
-            func = single_exp_all 
+            func = single_exp_all
         else:
             assert len(bounds[0]) == 7, \
                 "for single exp, the shape of bounds must be (2, 4)"
@@ -381,12 +384,11 @@ class XpcsFile(object):
 
         if q_range is None:
             q_range = [np.min(self.ql_dyn) * 0.95, np.max(self.ql_dyn) * 1.05]
-        
+
         if t_range is None:
             q_range = [np.min(self.t_el) * 0.95, np.max(self.t_el) * 1.05]
-        
-        
-        # create a data slice for the given range;    
+
+        # create a data slice for the given range;
         t_slice = create_slice(self.t_el, t_range)
         q_slice = create_slice(self.ql_dyn, q_range)
 
@@ -434,21 +436,21 @@ class XpcsFile(object):
             data = g2_err[:, n]
             idx = data > threshold
             avg = np.mean(data[idx])
-            g2_err_mod[np.logical_not(idx), n] = avg 
+            g2_err_mod[np.logical_not(idx), n] = avg
 
         return g2_err_mod
-    
+
     def fit_tauq(self, q_range, bounds, fit_flag):
         if self.fit_summary is None:
             return
-        
+
         x = self.fit_summary['q_val']
         q_slice = create_slice(x, q_range)
         x = x[q_slice]
 
         y = self.fit_summary['fit_val'][q_slice, 0, 1]
         sigma = self.fit_summary['fit_val'][q_slice, 1, 1]
-        
+
         # filter out those invalid fittings; failed g2 fitting has -1 err
         valid_idx = (sigma > 0)
 
@@ -469,8 +471,8 @@ class XpcsFile(object):
         fit_x = np.logspace(np.log10(np.min(x) / 1.1),
                             np.log10(np.max(x) * 1.1), 128)
 
-        fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds, 
-                                           fit_flag, fit_x, p0=p0) 
+        fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds,
+                                           fit_flag, fit_x, p0=p0)
 
         # fit_line and fit_val are lists with just one element;
         self.fit_summary['tauq_success'] = fit_line[0]['success']
