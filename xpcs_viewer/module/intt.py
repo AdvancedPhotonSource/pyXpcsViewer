@@ -64,7 +64,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel='Frame Index', **kwargs):
     :return:
     """
 
-    t0 = xf_list[0].t0
+    t0 = xf_list[0].t0 * xf_list[0].avg_frames
     data = []
     for fc in xf_list:
         x, y = smooth_data(fc, **kwargs)
