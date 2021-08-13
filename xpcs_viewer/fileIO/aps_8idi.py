@@ -15,6 +15,7 @@ key = {
   "saxs_2d": "/exchange/pixelSum",
   "Int_t": "/exchange/frameSum",
   "avg_frames": "/xpcs/avg_frames",
+  "stride_frames": "/xpcs/stride_frames",
   "ccd_x0": "/measurement/instrument/acquisition/beam_center_x",
   "ccd_y0": "/measurement/instrument/acquisition/beam_center_y",
   "det_dist": "/measurement/instrument/detector/distance",

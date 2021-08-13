@@ -134,7 +134,7 @@ class XpcsFile(object):
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
-                  'avg_frames']
+                  'avg_frames', 'stride_frames']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -153,14 +153,16 @@ class XpcsFile(object):
         ret = get(self.full_path, fields, 'alias')
         ret['dqmap'] = ret['dqmap'].astype(np.uint16)
 
+        # get the avg_frames and stride_frames into t0; t0 is in seconds
+        ret['t0'] = ret['t0'] * ret['avg_frames'] * ret['stride_frames']
+
         # get t_el which is in the unit of seconds;
-        if 't0' in ret and 'tau' in ret:
-            ret['t_el'] = ret['t0'] * ret['tau'] * ret['avg_frames']
+        if 'tau' in ret:
+            ret['t_el'] = ret['t0'] * ret['tau']
 
         if self.type == 'Twotime':
             ret['g2'] = ret['g2_full']
-            ret['t_el'] = np.arange(ret['g2'].shape[0]) * \
-                ret['t0'] * ret['avg_frames']
+            ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
         else:
             # correct g2_err to avoid fitting divergence
             ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
@@ -178,14 +180,7 @@ class XpcsFile(object):
 
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
-        key_frames = [
-            '/'.join([group, 'stride_frames']),
-            '/'.join([group, 'avg_frames'])
-        ]
-        stride, avg = get(self.full_path, key_frames, mode='raw',
-                          ret_type='list')
-        time_scale = max(self.t0, self.t1) * stride * avg
-        return time_scale
+        return self.t0 
 
     def get_twotime_maps(self, group='xpcs'):
         rpath = '/'.join([group, 'output_data'])
