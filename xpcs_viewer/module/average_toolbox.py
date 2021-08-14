@@ -219,10 +219,12 @@ class AverageToolbox(QtCore.QRunnable):
         t.setLabel('left', 'g2 baseline')
         self.ax = t.plot(symbol='o')
         if 'avg_blmin' in self.kwargs:
-            dn = pg.InfiniteLine(pos=self.kwargs['avg_blmin'], angle=0)
+            dn = pg.InfiniteLine(pos=self.kwargs['avg_blmin'], angle=0, 
+                                 pen=pg.mkPen('r'))
             t.addItem(dn)
         if 'avg_blmax' in self.kwargs:
-            up = pg.InfiniteLine(pos=self.kwargs['avg_blmax'], angle=0)
+            up = pg.InfiniteLine(pos=self.kwargs['avg_blmax'], angle=0,
+                                 pen=pg.mkPen('r'))
             # t.addItem(pg.FillBetweenItem(dn, up))
             t.addItem(up)
         t.setMouseEnabled(x=False, y=False)
