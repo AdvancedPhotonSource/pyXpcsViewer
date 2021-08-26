@@ -64,6 +64,12 @@ def norm_saxs_data(Iq, q, plot_norm=0):
     return Iq, q, xlabel, ylabel
 
 
+def switch_line_builder(hdl, state):
+    if state == True and hdl.line_builder is None:
+        hdl.link_line_builder()
+    elif state == False and hdl.line_builder is not None:
+        hdl.unlink_line_builder()
+
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
          max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
          loc='best', marker_size=3, sampling=1):
