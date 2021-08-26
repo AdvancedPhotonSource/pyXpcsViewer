@@ -83,6 +83,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # additional signal-slot settings
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
+        
+        self.box_saxs1d_draw_lines.stateChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
         # self.list_view_target.indexesMoved.connect(self.reorder_target)
@@ -303,6 +305,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
         self.mp_saxs.repaint()
+        # adjust the line behavior
+        self.switch_saxs1d_line()
+    
+    def switch_saxs1d_line(self):
+        if not self.check_status():
+            return
+        state = self.box_saxs1d_draw_lines.isChecked()
+        self.vk.switch_saxs1d_line(self.mp_saxs.hdl, state)
 
     def init_twotime(self):
         if not self.check_status():
