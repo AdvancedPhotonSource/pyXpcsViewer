@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import random
 
 # hide the lines in legend
 # https://stackoverflow.com/questions/21285885
@@ -34,6 +35,7 @@ class MplCanvasBarH(QtWidgets.QWidget):
     """
     MplWidget combines a MplCanvas with a vertical toolbar
     """
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
@@ -44,7 +46,7 @@ class MplCanvasBarH(QtWidgets.QWidget):
         self.hbl.addWidget(self.navi_toolbar)
         # self.navi_toolbar.setOrientation(QtCore.Qt.Vertical)
         self.setLayout(self.hbl)
-    
+
     def clear(self):
         self.hdl.clear()
         self.hdl.draw()
@@ -54,6 +56,7 @@ class MplCanvasBarV(QWidget):
     """
     MplWidget combines a MplCanvas with a horizontal toolbar
     """
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
@@ -72,6 +75,7 @@ class MplCanvasBar(QWidget):
     """
     MplWidget combines a MplCanvas with a Toolbar
     """
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
@@ -91,6 +95,24 @@ class MplCanvas(FigureCanvasQTAgg):
         self.shape = None
         self.axes = None
         self.obj = None
+        self.line_builder = None
+        self.cids = []
+
+    def link_line_builder(self):
+        if self.line_builder is None and self.shape == (1, 1):
+            self.line_builder = LineBuilder(self.fig, self.axes)
+            cid1 = self.fig.canvas.mpl_connect('button_press_event',
+                                               self.line_builder.mouse_click)
+            cid2 = self.fig.canvas.mpl_connect('motion_notify_event',
+                                               self.line_builder.mouse_move)
+            self.cids = [cid1, cid2]
+
+    def unlink_line_builder(self):
+        if self.line_builder is not None:
+            for cid in self.cids:
+                self.fig.canvas.mpl_disconnect(cid)
+            self.line_builder.clear()
+            self.line_builder = None
 
     def subplots(self, n, m, **kwargs):
         self.axes = self.fig.subplots(n, m, **kwargs)
@@ -98,11 +120,12 @@ class MplCanvas(FigureCanvasQTAgg):
         return self.axes
 
     def clear(self):
+        self.unlink_line_builder()
         self.clear_axes()
         self.fig.clear()
         self.axes = None
         self.obj = None
-    
+
     def adjust_canvas_size(self, num_col, num_row):
         t = self.parent().parent().parent()
         if t is None:
@@ -242,7 +265,7 @@ class MplCanvas(FigureCanvasQTAgg):
             for n in range(len(data)):
                 mk = markers[n % len(markers)]
                 cl = colors[n % len(colors)]
-                line = ax.plot(data[n][0], data[n][1], mk + '-', 
+                line = ax.plot(data[n][0], data[n][1], mk + '-',
                                ms=marker_size, alpha=alpha[n], label=legend[n],
                                color=cl, mfc='none')
                 line_obj.append(line)
@@ -333,3 +356,84 @@ MplToolbar = NavigationToolbar2QT
 #         widget = QtWidgets.QWidget()
 #         widget.setLayout(layout)
 #         self.setCentralWidget(widget)
+
+
+class LineBuilder(object):
+    '''
+        code copied from
+        http://chuanshuoge2.blogspot.com/2019/12/matplotlib-mouse-click-event\
+            -draw-line.html
+
+    '''
+    def __init__(self, fig, ax):
+        self.xs = []
+        self.ys = []
+        self.ax = ax
+        self.fig = fig
+        self.color = random.choice(colors)
+        self.num_lines = 0
+        self.labels = []
+
+    def clear(self):
+        self.xs = []
+        self.ys = []
+        for n in range(self.num_lines):
+            self.ax.lines.pop()
+            label = self.labels.pop()
+            label.remove()
+        self.fig.canvas.draw()
+
+    def mouse_click(self, event):
+        if not event.inaxes:
+            return
+
+        # left click
+        if event.button == 1:
+            self.xs.append(event.xdata)
+            self.ys.append(event.ydata)
+            # add a line to plot if it has 2 points
+            if len(self.xs) % 2 == 0:
+                line, = self.ax.plot([self.xs[-2], self.xs[-1]],
+                                     [self.ys[-2], self.ys[-1]], self.color)
+
+                # compute position to add label, notice the plot should be 
+                # logx-logy
+                cen_x = np.sqrt(self.xs[-2] * self.xs[-1])
+                cen_y = np.sqrt(self.ys[-2] * self.ys[-1])
+                dn_term = np.log(self.xs[-2] / self.xs[-1])
+                if dn_term == 0:
+                    dn_term = 1E-8
+                slope = np.log(self.ys[-2] / self.ys[-1]) / dn_term
+                label = self.ax.annotate('%.2f' % round(slope, 2),
+                                         (cen_x, cen_y), color=self.color)
+                self.labels.append(label)
+
+                line.figure.canvas.draw()
+                self.num_lines += 1
+
+        # right click
+        if event.button == 3:
+            if len(self.xs) > 0:
+                self.xs.pop()
+                self.ys.pop()
+            # delete last line drawn if the line is missing a point,
+            # never delete the original stock plot
+            if len(self.xs) % 2 == 1 and len(self.ax.lines) > 1:
+                self.ax.lines.pop()
+                self.num_lines -= 1
+
+            # refresh plot
+            self.fig.canvas.draw()
+
+        self.color = random.choice(colors)
+
+    def mouse_move(self, event):
+        if not event.inaxes:
+            return
+        # draw temporary line from a single point to the mouse position
+        # delete the temporary line when mouse move to another position
+        if len(self.xs) % 2 == 1:
+            line, = self.ax.plot([self.xs[-1], event.xdata],
+                                 [self.ys[-1], event.ydata], self.color)
+            line.figure.canvas.draw()
+            self.ax.lines.pop()
