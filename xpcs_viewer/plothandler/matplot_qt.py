@@ -397,8 +397,8 @@ class LineBuilder(object):
                                      [self.ys[-2], self.ys[-1]], self.color)
 
                 # compute position to add label, notice the plot should be 
-                # logx-logy
-                cen_x = np.sqrt(self.xs[-2] * self.xs[-1])
+                # logx-logy; slightly offset cen_x to make the label more clear
+                cen_x = np.sqrt(self.xs[-2] * self.xs[-1] * 1.1)
                 cen_y = np.sqrt(self.ys[-2] * self.ys[-1])
                 dn_term = np.log(self.xs[-2] / self.xs[-1])
                 if dn_term == 0:
