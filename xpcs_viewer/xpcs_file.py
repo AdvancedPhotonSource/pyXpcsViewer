@@ -65,12 +65,13 @@ class XpcsFile(object):
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
 
+        # label is a short string to describe the file/filename
+        self.label = create_id(fname)
+
         self.type = get_type(self.full_path)
         self.keys, attr = self.load(fields)
         self.__dict__.update(attr)
 
-        # label is a short string to describe the file/filename
-        self.label = create_id(fname)
         self.hdf_info = None
         self.fit_summary = None
 
@@ -134,7 +135,8 @@ class XpcsFile(object):
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
-                  'avg_frames', 'stride_frames']
+                  'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
+                  'dnophi']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -167,7 +169,42 @@ class XpcsFile(object):
             # correct g2_err to avoid fitting divergence
             ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
 
+        for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
+            ret[key] = int(ret[key])
+        
+        if ret['snophi'] != 1:
+            self.reshape_phi_analysis(ret)
+
         return ret.keys(), ret
+    
+    def reshape_phi_analysis(self, ret):
+        new_shape = (ret['snoq'], ret['snophi'])
+        fields = ['sphilist']
+        sphilist = get(self.full_path, fields, mode='alias')['sphilist']
+        nan_idx = np.isnan(sphilist)
+
+        saxs1d = np.zeros_like(sphilist)
+        saxs1d[~nan_idx] = ret['saxs_1d']
+        saxs1d[nan_idx] = np.nan
+        saxs1d = saxs1d.reshape(*new_shape).T
+        sphilist = sphilist.reshape(*new_shape).T
+        avg = np.nanmean(saxs1d, axis=0)
+        saxs1d = np.vstack([avg, saxs1d])
+
+        labels = [self.label + '_%d' % (n + 1) for n in range(ret['snophi'])]
+        labels = [self.label + '_avg'] + labels
+        ret['saxs_1d'] = {
+            'x': saxs1d,
+            'y': sphilist,
+            'num_lines': ret['snophi'],
+        }
+        # import matplotlib.pyplot as plt
+        # for n in range(ret['snophi'] + 1):
+        #     print(labels[n])
+        #     plt.plot(saxs1d[n], label=labels[n])
+        # plt.show()
+        # plt.legend()
+        return
 
     def at(self, key):
         return self.__dict__[key]

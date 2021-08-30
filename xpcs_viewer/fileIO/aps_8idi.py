@@ -28,6 +28,12 @@ key = {
   "g2_full": "/exchange/g2full",
   "g2_partials": "/exchange/g2partials",
   "G2": "/exchange/G2",
-  "IP": "/exchange/IF",
-  "IF": "/exchange/IP"
+  "IP": "/exchange/IP",
+  "IF": "/exchange/IF",
+  "snophi": "/xpcs/snophi",
+  "snoq": "/xpcs/snoq",
+  "sphilist": "/xpcs/sphilist",
+  "dnophi": "/xpcs/dnophi",
+  "dnoq": "/xpcs/dnoq",
+  "dphilist": "/xpcs/dphilist",
 }
