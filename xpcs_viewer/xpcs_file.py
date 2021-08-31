@@ -198,7 +198,7 @@ class XpcsFile(object):
             saxs1d = np.vstack([avg, saxs1d])
 
             labels = [self.label + '_%d' % (n + 1) for n in range(info['snophi'])]
-            labels = [self.label + '_avg'] + labels
+            labels = [self.label] + labels
 
         else:        
             sq = info['ql_sta']
