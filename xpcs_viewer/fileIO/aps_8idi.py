@@ -36,4 +36,6 @@ key = {
   "dnophi": "/xpcs/dnophi",
   "dnoq": "/xpcs/dnoq",
   "dphilist": "/xpcs/dphilist",
+  "sphispan": "/xpcs/sphispan",
+  "sqspan": "/xpcs/sqspan",
 }

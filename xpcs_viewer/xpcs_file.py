@@ -172,38 +172,47 @@ class XpcsFile(object):
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
         
-        if ret['snophi'] != 1:
-            self.reshape_phi_analysis(ret)
+        self.reshape_phi_analysis(ret)
 
         return ret.keys(), ret
     
-    def reshape_phi_analysis(self, ret):
-        new_shape = (ret['snoq'], ret['snophi'])
-        fields = ['sphilist']
-        sphilist = get(self.full_path, fields, mode='alias')['sphilist']
-        nan_idx = np.isnan(sphilist)
+    def reshape_phi_analysis(self, info):
+        new_shape = (info['snoq'], info['snophi'])
+        fields = ['sphilist', 'sqspan', 'sphispan']
+        ret = get(self.full_path, fields, mode='alias', ret_type='list')
+        sphilist, sqspan, sphispan = ret
 
-        saxs1d = np.zeros_like(sphilist)
-        saxs1d[~nan_idx] = ret['saxs_1d']
-        saxs1d[nan_idx] = np.nan
-        saxs1d = saxs1d.reshape(*new_shape).T
-        sphilist = sphilist.reshape(*new_shape).T
-        avg = np.nanmean(saxs1d, axis=0)
-        saxs1d = np.vstack([avg, saxs1d])
+        sphi = (sphispan[1:] + sphispan[:-1]) / 2.0
 
-        labels = [self.label + '_%d' % (n + 1) for n in range(ret['snophi'])]
-        labels = [self.label + '_avg'] + labels
-        ret['saxs_1d'] = {
-            'x': saxs1d,
-            'y': sphilist,
-            'num_lines': ret['snophi'],
+        if info['snophi'] > 1:
+            sq = (sqspan[1:] + sqspan[:-1]) / 2.0
+
+            nan_idx = np.isnan(sphilist)
+            saxs1d = np.zeros_like(sphilist)
+            saxs1d[~nan_idx] = info['saxs_1d']
+            saxs1d[nan_idx] = np.nan
+            saxs1d = saxs1d.reshape(*new_shape).T
+            #sphilist = sphilist.reshape(*new_shape).T
+
+            avg = np.nanmean(saxs1d, axis=0)
+            saxs1d = np.vstack([avg, saxs1d])
+
+            labels = [self.label + '_%d' % (n + 1) for n in range(info['snophi'])]
+            labels = [self.label + '_avg'] + labels
+
+        else:        
+            sq = info['ql_sta']
+            sq = sq[~np.isnan(sq)]
+            saxs1d = info['saxs_1d'].reshape(1, -1)
+            labels = [self.label]
+
+        info['saxs_1d'] = {
+            'q': sq,
+            'Iq': saxs1d,
+            'phi': sphi,
+            'num_lines': info['snophi'],
+            'labels': labels,
         }
-        # import matplotlib.pyplot as plt
-        # for n in range(ret['snophi'] + 1):
-        #     print(labels[n])
-        #     plt.plot(saxs1d[n], label=labels[n])
-        # plt.show()
-        # plt.legend()
         return
 
     def at(self, key):
