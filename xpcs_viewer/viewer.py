@@ -297,7 +297,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'qmax': self.saxs1d_qmax.value(),
             'loc': self.saxs1d_legend_loc.currentText(),
             'marker_size': self.sb_saxs_marker_size.value(),
-            'sampling': self.saxs1d_sampling.value()
+            'sampling': self.saxs1d_sampling.value(),
+            'all_phi': self.box_all_phi.isChecked(),
         }
         if kwargs['qmin'] >= kwargs['qmax']:
             self.statusbar.showMessage('check qmin and qmax')
@@ -641,8 +642,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         flag, tel, qd, _, _ = self.vk.get_g2_data(max_points, rows=None)
         if not flag:
             self.statusbar.showMessage('g2 data is not consistent. abort', 999)
-        t_min = np.min(tel)
-        t_max = np.max(tel)
+        # tel is a list of arrays, which may have diffent shape;
+        t_min = np.min([t[0] for t in tel])
+        t_max = np.max([t[-1] for t in tel])
 
         def to_e(x):
             return '%.2e' % x
