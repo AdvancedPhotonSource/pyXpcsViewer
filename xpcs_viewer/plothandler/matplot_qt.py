@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import random
+import time
 
 # hide the lines in legend
 # https://stackoverflow.com/questions/21285885
@@ -378,6 +379,7 @@ class LineBuilder(object):
         self.color = random.choice(colors)
         self.num_lines = 0
         self.labels = []
+        self.curr_time = -1
 
     def clear(self):
         self.xs = []
@@ -404,12 +406,12 @@ class LineBuilder(object):
                 # compute position to add label, notice the plot should be 
                 # logx-logy; slightly offset cen_x to make the label more clear
                 cen_x = np.sqrt(self.xs[-2] * self.xs[-1] * 1.1)
-                cen_y = np.sqrt(self.ys[-2] * self.ys[-1])
+                cen_y = np.sqrt(self.ys[-2] * self.ys[-1] * 1.1)
                 dn_term = np.log(self.xs[-2] / self.xs[-1])
                 if dn_term == 0:
                     dn_term = 1E-8
                 slope = np.log(self.ys[-2] / self.ys[-1]) / dn_term
-                label = self.ax.annotate('%.2f' % round(slope, 2),
+                label = self.ax.annotate('$q^{%.2f}$' % round(slope, 2),
                                          (cen_x, cen_y), color=self.color)
                 self.labels.append(label)
 
@@ -437,6 +439,10 @@ class LineBuilder(object):
             return
         # draw temporary line from a single point to the mouse position
         # delete the temporary line when mouse move to another position
+        if time.perf_counter() - self.curr_time < 0.1:
+            return
+
+        self.curr_time = time.perf_counter()
         if len(self.xs) % 2 == 1:
             line, = self.ax.plot([self.xs[-1], event.xdata],
                                  [self.ys[-1], event.ydata], self.color)

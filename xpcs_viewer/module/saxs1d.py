@@ -104,7 +104,7 @@ def plot2(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
          max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
-         loc='best', marker_size=3, sampling=1):
+         loc='best', marker_size=3, sampling=1, all_phi=False):
 
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
@@ -131,7 +131,12 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
         Iq = Iq[:, sl]
         q = q[sl]
 
-        for m in range(Iq.shape[0]):
+        if all_phi:
+            num_lines = Iq.shape[0]
+        else:
+            num_lines = 1
+
+        for m in range(num_lines):
             cl, mk = get_color_marker(plot_id)
             Iqm = offset_intensity(Iq[m], plot_id, plot_offset, yscale)
             Iqm, _, xlabel, ylabel = norm_saxs_data(Iqm, q, plot_norm)
