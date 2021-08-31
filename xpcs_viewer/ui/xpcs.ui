@@ -714,23 +714,37 @@
                </item>
                <item row="0" column="1">
                 <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="1" column="11" colspan="2">
-                  <widget class="QPushButton" name="pushButton_10">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
+                 <item row="0" column="1" colspan="2">
+                  <widget class="QComboBox" name="cb_saxs_type">
+                   <property name="currentIndex">
+                    <number>3</number>
                    </property>
-                   <property name="text">
-                    <string>Plot 1D SAXS</string>
-                   </property>
+                   <item>
+                    <property name="text">
+                     <string>I - q</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I - log(q)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>log(I) - q</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>log(I) - log(q)</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
-                 <item row="1" column="7">
-                  <widget class="QLabel" name="label_54">
+                 <item row="0" column="9">
+                  <widget class="QLabel" name="label_23">
                    <property name="text">
-                    <string>marker_size:</string>
+                    <string>normalization:</string>
                    </property>
                   </widget>
                  </item>
@@ -798,13 +812,6 @@
                    </property>
                    <property name="value">
                     <double>0.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="7">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>offset:</string>
                    </property>
                   </widget>
                  </item>
@@ -886,53 +893,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="4">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000500000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="9">
-                  <widget class="QLabel" name="label_23">
-                   <property name="text">
-                    <string>normalization:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1" colspan="2">
-                  <widget class="QComboBox" name="cb_saxs_type">
-                   <property name="currentIndex">
-                    <number>3</number>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>I - q</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I - log(q)</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>log(I) - q</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>log(I) - log(q)</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
                  <item row="0" column="3">
                   <widget class="QLabel" name="label_55">
                    <property name="text">
@@ -950,10 +910,63 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="11" colspan="2">
-                  <widget class="QCheckBox" name="box_saxs1d_draw_lines">
+                 <item row="1" column="4">
+                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.000500000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="12" rowspan="2" colspan="2">
+                  <widget class="QPushButton" name="pushButton_10">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="text">
-                    <string>Draw Lines</string>
+                    <string>Plot 1D SAXS</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="11">
+                  <widget class="QCheckBox" name="box_saxs1d_draw_lines">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;draw a straight line on the double-log plot to estimate the power-law dependency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string>draw lines</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="11">
+                  <widget class="QCheckBox" name="box_all_phi">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string>show all phi</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="5" colspan="3">
+                  <widget class="QLabel" name="label_54">
+                   <property name="text">
+                    <string>marker_size:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5" colspan="3">
+                  <widget class="QLabel" name="label_22">
+                   <property name="text">
+                    <string>offset:</string>
                    </property>
                   </widget>
                  </item>
