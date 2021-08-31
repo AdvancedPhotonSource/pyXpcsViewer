@@ -22,6 +22,12 @@ colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
 
 
+def get_color_marker(n):
+    mk = markers[n % len(markers)]
+    cl = colors[n % len(colors)]
+    return (cl, mk)
+
+
 class NavigationToolbarSimple(NavigationToolbar2QT):
     def __init__(self, *kw, **kwargs):
         super(NavigationToolbarSimple, self).__init__(*kw, **kwargs)
@@ -263,8 +269,7 @@ class MplCanvas(FigureCanvasQTAgg):
             ax = self.subplots(1, 1)
             line_obj = []
             for n in range(len(data)):
-                mk = markers[n % len(markers)]
-                cl = colors[n % len(colors)]
+                cl, mk = get_color_marker(n)
                 line = ax.plot(data[n][0], data[n][1], mk + '-',
                                ms=marker_size, alpha=alpha[n], label=legend[n],
                                color=cl, mfc='none')
