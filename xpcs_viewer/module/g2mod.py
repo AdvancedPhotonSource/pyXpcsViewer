@@ -73,7 +73,8 @@ def get_data(xf_list, q_range=None, t_range=None):
 
     t_shape = set([t.shape for t in tel])
     q_shape = set([q.shape for q in qd])
-    if len(t_shape) != 1 or len(q_shape) != 1:
+    # if len(t_shape) != 1 or len(q_shape) != 1:
+    if len(q_shape) != 1:
         logger.error('the data files are not consistent in tau or q')
         flag = False
 
