@@ -748,6 +748,13 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="1" column="5" colspan="3">
+                  <widget class="QLabel" name="label_54">
+                   <property name="text">
+                    <string>marker_size:</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="1" column="8">
                   <widget class="QDoubleSpinBox" name="sb_saxs_marker_size">
                    <property name="minimum">
@@ -893,6 +900,13 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="0" column="5" colspan="3">
+                  <widget class="QLabel" name="label_22">
+                   <property name="text">
+                    <string>offset:</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="3">
                   <widget class="QLabel" name="label_55">
                    <property name="text">
@@ -923,7 +937,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="12" rowspan="2" colspan="2">
+                 <item row="0" column="13" rowspan="2" colspan="2">
                   <widget class="QPushButton" name="pushButton_10">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -936,37 +950,32 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="11">
-                  <widget class="QCheckBox" name="box_saxs1d_draw_lines">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;draw a straight line on the double-log plot to estimate the power-law dependency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="text">
-                    <string>draw lines</string>
-                   </property>
+                 <item row="0" column="11" colspan="2">
+                  <widget class="QComboBox" name="saxs1d_lb_type">
+                   <item>
+                    <property name="text">
+                     <string>no drawing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>slope drawing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>horizontal line</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
-                 <item row="1" column="11">
+                 <item row="1" column="11" colspan="2">
                   <widget class="QCheckBox" name="box_all_phi">
                    <property name="toolTip">
                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string>show all phi</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="5" colspan="3">
-                  <widget class="QLabel" name="label_54">
-                   <property name="text">
-                    <string>marker_size:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="5" colspan="3">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>offset:</string>
                    </property>
                   </widget>
                  </item>

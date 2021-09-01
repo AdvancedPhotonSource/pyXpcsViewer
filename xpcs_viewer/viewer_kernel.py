@@ -120,8 +120,8 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(max_points)
         saxs1d.plot(xf_list, mp_hdl, max_points=max_points, **kwargs)
     
-    def switch_saxs1d_line(self, mp_hdl, state):
-        saxs1d.switch_line_builder(mp_hdl, state)
+    def switch_saxs1d_line(self, mp_hdl, lb_type):
+        saxs1d.switch_line_builder(mp_hdl, lb_type)
 
     def setup_twotime(self, file_index=0, group='xpcs'):
         fname = self.target[file_index]

@@ -84,7 +84,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_2t_map.hdl.mpl_connect('button_press_event',
                                        self.update_twotime_qindex)
         
-        self.box_saxs1d_draw_lines.stateChanged.connect(self.switch_saxs1d_line)
+        self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
         # self.list_view_target.indexesMoved.connect(self.reorder_target)
@@ -312,8 +312,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def switch_saxs1d_line(self):
         if not self.check_status():
             return
-        state = self.box_saxs1d_draw_lines.isChecked()
-        self.vk.switch_saxs1d_line(self.mp_saxs.hdl, state)
+        lb_type = self.saxs1d_lb_type.currentIndex()
+        lb_type = [None, 'slope', 'hline'][lb_type]
+        self.vk.switch_saxs1d_line(self.mp_saxs.hdl, lb_type)
 
     def init_twotime(self):
         if not self.check_status():

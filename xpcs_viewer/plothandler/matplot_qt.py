@@ -105,9 +105,16 @@ class MplCanvas(FigureCanvasQTAgg):
         self.line_builder = None
         self.cids = []
 
-    def link_line_builder(self):
+    def link_line_builder(self, lb_type=None):
+        if lb_type is None:
+            self.unlink_line_builder()
+        
+        if self.line_builder is not None and \
+            self.line_builder.lb_type != lb_type:
+            self.unlink_line_builder()
+
         if self.line_builder is None and self.shape == (1, 1):
-            self.line_builder = LineBuilder(self.fig, self.axes)
+            self.line_builder = LineBuilder(self.fig, self.axes, lb_type)
             cid1 = self.fig.canvas.mpl_connect('button_press_event',
                                                self.line_builder.mouse_click)
             cid2 = self.fig.canvas.mpl_connect('motion_notify_event',
@@ -371,7 +378,7 @@ class LineBuilder(object):
             -draw-line.html
 
     '''
-    def __init__(self, fig, ax):
+    def __init__(self, fig, ax, lb_type='hline'):
         self.xs = []
         self.ys = []
         self.ax = ax
@@ -380,6 +387,7 @@ class LineBuilder(object):
         self.num_lines = 0
         self.labels = []
         self.curr_time = -1
+        self.lb_type = lb_type
 
     def clear(self):
         self.xs = []
@@ -389,7 +397,40 @@ class LineBuilder(object):
             label = self.labels.pop()
             label.remove()
         self.fig.canvas.draw()
+    
+    def plot_line(self):
+        if self.lb_type == 'slope':
+            xa, xb = self.xs[-2], self.xs[-1]
+            ya, yb = self.ys[-2], self.ys[-1]
+            dn_term = np.log(xa / xb)
+            if dn_term == 0:
+                dn_term = 1E-8
+            slope = np.log(ya / yb) / dn_term
+            txt = '$q^{%.2f}$' % slope 
 
+            # compute position to add label, notice the plot should be 
+            # logx-logy; slightly offset cen_x to make the label more clear
+            cen_x = np.sqrt(xa * xb * 1.2)
+            cen_y = np.sqrt(ya * yb * 1.2)
+
+        elif self.lb_type == 'hline':
+            xa, xb = self.xs[-2], self.xs[-1]
+            ya, yb = self.ys[-1], self.ys[-1]
+            delta_x = 2 * np.pi / abs(xa - xb)
+            txt = '$\\Delta_x={%.1f}\\AA$' % delta_x 
+
+            cen_x = np.sqrt(xa * xa)
+            cen_y = np.sqrt(ya * yb * 0.3)
+        else:
+            return
+
+        line, = self.ax.plot([xa, xb], [ya, yb], self.color)
+        label = self.ax.annotate(txt, (cen_x, cen_y), color=self.color)
+        self.labels.append(label)
+
+        line.figure.canvas.draw()
+        self.num_lines += 1
+    
     def mouse_click(self, event):
         if not event.inaxes:
             return
@@ -400,23 +441,7 @@ class LineBuilder(object):
             self.ys.append(event.ydata)
             # add a line to plot if it has 2 points
             if len(self.xs) % 2 == 0:
-                line, = self.ax.plot([self.xs[-2], self.xs[-1]],
-                                     [self.ys[-2], self.ys[-1]], self.color)
-
-                # compute position to add label, notice the plot should be 
-                # logx-logy; slightly offset cen_x to make the label more clear
-                cen_x = np.sqrt(self.xs[-2] * self.xs[-1] * 1.1)
-                cen_y = np.sqrt(self.ys[-2] * self.ys[-1] * 1.1)
-                dn_term = np.log(self.xs[-2] / self.xs[-1])
-                if dn_term == 0:
-                    dn_term = 1E-8
-                slope = np.log(self.ys[-2] / self.ys[-1]) / dn_term
-                label = self.ax.annotate('$q^{%.2f}$' % round(slope, 2),
-                                         (cen_x, cen_y), color=self.color)
-                self.labels.append(label)
-
-                line.figure.canvas.draw()
-                self.num_lines += 1
+                self.plot_line()
 
         # right click
         if event.button == 3:
@@ -428,6 +453,8 @@ class LineBuilder(object):
             if len(self.xs) % 2 == 1 and len(self.ax.lines) > 1:
                 self.ax.lines.pop()
                 self.num_lines -= 1
+                label = self.labels.pop()
+                label.remove()
 
             # refresh plot
             self.fig.canvas.draw()
@@ -444,7 +471,11 @@ class LineBuilder(object):
 
         self.curr_time = time.perf_counter()
         if len(self.xs) % 2 == 1:
-            line, = self.ax.plot([self.xs[-1], event.xdata],
-                                 [self.ys[-1], event.ydata], self.color)
+            if self.lb_type == 'slope':
+                line, = self.ax.plot([self.xs[-1], event.xdata],
+                                     [self.ys[-1], event.ydata], self.color)
+            else:
+                line, = self.ax.plot([self.xs[-1], event.xdata],
+                                     [event.ydata, event.ydata], self.color)
             line.figure.canvas.draw()
             self.ax.lines.pop()
