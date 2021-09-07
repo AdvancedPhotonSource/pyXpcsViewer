@@ -384,16 +384,20 @@ class LineBuilder(object):
         self.ax = ax
         self.fig = fig
         self.color = random.choice(colors)
+        self.color_hist = []
         self.num_lines = 0
         self.labels = []
         self.curr_time = -1
         self.lb_type = lb_type
+        self.reserve_lines = len(self.ax.lines)
 
     def clear(self):
         self.xs = []
         self.ys = []
-        for n in range(self.num_lines):
+        self.color_hist = []
+        for n in range(len(self.ax.lines) - self.reserve_lines):
             self.ax.lines.pop()
+        for n in range(len(self.labels)):
             label = self.labels.pop()
             label.remove()
         self.fig.canvas.draw()
@@ -430,6 +434,8 @@ class LineBuilder(object):
 
         line.figure.canvas.draw()
         self.num_lines += 1
+        self.color_hist.append(self.color)
+        self.color = random.choice(colors)
     
     def mouse_click(self, event):
         if not event.inaxes:
@@ -439,30 +445,38 @@ class LineBuilder(object):
         if event.button == 1:
             self.xs.append(event.xdata)
             self.ys.append(event.ydata)
+
+            if self.lb_type == 'hline':
+                line = self.ax.axvline(event.xdata, color=self.color, ls=':')
+                line.figure.canvas.draw()
+
             # add a line to plot if it has 2 points
-            if len(self.xs) % 2 == 0:
+            if len(self.xs) % 2 == 0 and len(self.xs) > 0:
                 self.plot_line()
 
         # right click
         if event.button == 3:
-            if len(self.xs) > 0:
+            if len(self.xs) == 0:
+                return
+            else:
                 self.xs.pop()
                 self.ys.pop()
+                if self.lb_type == 'hline':
+                    self.ax.lines.pop()
             # delete last line drawn if the line is missing a point,
             # never delete the original stock plot
-            if len(self.xs) % 2 == 1 and len(self.ax.lines) > 1:
+            if len(self.xs) % 2 == 1 and \
+                len(self.ax.lines) > self.reserve_lines:
                 self.ax.lines.pop()
                 self.num_lines -= 1
+                self.color = self.color_hist.pop()
                 label = self.labels.pop()
                 label.remove()
-
             # refresh plot
             self.fig.canvas.draw()
 
-        self.color = random.choice(colors)
-
     def mouse_move(self, event):
-        if not event.inaxes:
+        if self.lb_type is None or not event.inaxes:
             return
         # draw temporary line from a single point to the mouse position
         # delete the temporary line when mouse move to another position
