@@ -50,11 +50,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             1: "saxs_1d",
             2: "stability",
             3: "intensity_t",
-            4: "average",
-            5: "g2",
-            6: "diffusion",
-            7: "twotime",
-            8: "exp_setup",
+            4: "g2",
+            5: "diffusion",
+            6: "twotime",
+            7: "average",
+            8: "metadata",
             9: "log",
             # 10: "None"
         }
@@ -208,7 +208,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_intt()
         elif tab_name == 'twotime':
             self.init_twotime()
-        elif tab_name == 'exp_setup':
+        elif tab_name == 'metadata':
             self.update_hdf_list()
         elif tab_name == 'stability':
             self.update_stab_list()
