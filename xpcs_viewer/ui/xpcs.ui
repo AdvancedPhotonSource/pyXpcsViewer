@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>XPCS_Viewer</string>
+   <string>pyXPCSViewer</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -52,9 +52,9 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QGridLayout" name="gridLayout_32">
+      <layout class="QGridLayout" name="gridLayout_9">
        <item row="0" column="0">
-        <widget class="QSplitter" name="splitter_4">
+        <widget class="QSplitter" name="splitter_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -216,8 +216,8 @@
           <widget class="QWidget" name="layoutWidget">
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <layout class="QGridLayout" name="gridLayout_18">
-              <item row="0" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
                <widget class="QComboBox" name="filter_type">
                 <item>
                  <property name="text">
@@ -231,7 +231,7 @@
                 </item>
                </widget>
               </item>
-              <item row="0" column="1" colspan="2">
+              <item>
                <widget class="QLineEdit" name="filter_str">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -253,7 +253,11 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0" rowspan="2" colspan="2">
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
                <widget class="QPushButton" name="pushButton_2">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -272,7 +276,7 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="2" rowspan="2">
+              <item>
                <widget class="QPushButton" name="pushButton_3">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -425,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -674,6 +678,22 @@
             <string>SAXS-1D</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_25">
+            <item row="0" column="0">
+             <widget class="MplCanvasBarV" name="mp_saxs" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>600</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="0">
              <widget class="QGroupBox" name="groupBox_6">
               <property name="sizePolicy">
@@ -714,6 +734,70 @@
                </item>
                <item row="0" column="1">
                 <layout class="QGridLayout" name="gridLayout_16">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_21">
+                   <property name="text">
+                    <string>type:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QLabel" name="label_55">
+                   <property name="text">
+                    <string>sampling:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="9">
+                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QSpinBox" name="saxs1d_sampling">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="5">
+                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.000500000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="2">
+                  <widget class="QLabel" name="label_49">
+                   <property name="text">
+                    <string>q range (Å⁻¹)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="6" colspan="3">
+                  <widget class="QLabel" name="label_22">
+                   <property name="text">
+                    <string>offset:</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="1" colspan="2">
                   <widget class="QComboBox" name="cb_saxs_type">
                    <property name="currentIndex">
@@ -741,21 +825,7 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="9">
-                  <widget class="QLabel" name="label_23">
-                   <property name="text">
-                    <string>normalization:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="5" colspan="3">
-                  <widget class="QLabel" name="label_54">
-                   <property name="text">
-                    <string>marker_size:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="8">
+                 <item row="1" column="9">
                   <widget class="QDoubleSpinBox" name="sb_saxs_marker_size">
                    <property name="minimum">
                     <double>1.000000000000000</double>
@@ -768,61 +838,14 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2" colspan="2">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmin">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.002000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="10">
-                  <widget class="QComboBox" name="cb_saxs_norm">
-                   <item>
-                    <property name="text">
-                     <string>none</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = Iq2</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = Iq4</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = I/Io</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_21">
+                 <item row="1" column="6" colspan="3">
+                  <widget class="QLabel" name="label_54">
                    <property name="text">
-                    <string>type:</string>
+                    <string>marker_size:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="8">
-                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="10">
+                 <item row="1" column="11">
                   <widget class="QComboBox" name="saxs1d_legend_loc">
                    <item>
                     <property name="text">
@@ -886,71 +909,78 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="1" column="9">
+                 <item row="1" column="12" colspan="2">
+                  <widget class="QCheckBox" name="box_all_phi">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string>show all phi</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="11">
+                  <widget class="QComboBox" name="cb_saxs_norm">
+                   <item>
+                    <property name="text">
+                     <string>none</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I' = Iq2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I' = Iq4</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I' = I/Io</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="0" column="10">
+                  <widget class="QLabel" name="label_23">
+                   <property name="text">
+                    <string>normalization:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2" colspan="2">
+                  <widget class="QDoubleSpinBox" name="saxs1d_qmin">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.002000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="10">
                   <widget class="QLabel" name="label_52">
                    <property name="text">
                     <string>legend loc:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" colspan="2">
-                  <widget class="QLabel" name="label_49">
-                   <property name="text">
-                    <string>q range (Å⁻¹)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="5" colspan="3">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>offset:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QLabel" name="label_55">
-                   <property name="text">
-                    <string>sampling:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4">
-                  <widget class="QSpinBox" name="saxs1d_sampling">
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>1</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="4">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000500000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="13" rowspan="2" colspan="2">
+                 <item row="1" column="14" colspan="2">
                   <widget class="QPushButton" name="pushButton_10">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="text">
-                    <string>Plot 1D SAXS</string>
+                    <string>Plot</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="11" colspan="2">
+                 <item row="0" column="12" colspan="4">
                   <widget class="QComboBox" name="saxs1d_lb_type">
                    <item>
                     <property name="text">
@@ -969,35 +999,9 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="1" column="11" colspan="2">
-                  <widget class="QCheckBox" name="box_all_phi">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="text">
-                    <string>show all phi</string>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </item>
               </layout>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="MplCanvasBarV" name="mp_saxs" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>600</width>
-                <height>0</height>
-               </size>
-              </property>
              </widget>
             </item>
            </layout>
@@ -1042,7 +1046,7 @@
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>235</width>
+                   <width>40</width>
                    <height>20</height>
                   </size>
                  </property>
@@ -1183,116 +1187,126 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <spacer name="horizontalSpacer_12">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
+            <item row="1" column="0" colspan="3">
+             <widget class="QGroupBox" name="groupBox_7">
+              <property name="minimumSize">
                <size>
-                <width>581</width>
-                <height>20</height>
+                <width>0</width>
+                <height>0</height>
                </size>
               </property>
-             </spacer>
-            </item>
-            <item row="1" column="1">
-             <widget class="QGroupBox" name="groupBox_7">
               <property name="title">
-               <string>Setting</string>
+               <string>Intensity-Time Plot Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_23">
                <item row="0" column="0">
-                <widget class="QLabel" name="label_9">
-                 <property name="text">
-                  <string>max datasets:</string>
+                <spacer name="horizontalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
-                </widget>
-               </item>
-               <item row="0" column="6">
-                <widget class="QLabel" name="label_34">
-                 <property name="text">
-                  <string>xlabel:</string>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>344</width>
+                   <height>20</height>
+                  </size>
                  </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="label_31">
-                 <property name="text">
-                  <string>moving average:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="4">
-                <widget class="QLabel" name="label_11">
-                 <property name="text">
-                  <string>sampling:</string>
-                 </property>
-                </widget>
+                </spacer>
                </item>
                <item row="0" column="1">
-                <widget class="QSpinBox" name="sb_intt_max">
-                 <property name="value">
-                  <number>10</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="3">
-                <widget class="QSpinBox" name="sb_window">
-                 <property name="maximum">
-                  <number>999</number>
-                 </property>
-                 <property name="value">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="5">
-                <widget class="QSpinBox" name="sb_intt_sampling">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="value">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="7">
-                <widget class="QComboBox" name="intt_xlabel">
-                 <item>
-                  <property name="text">
-                   <string>Time (second)</string>
-                  </property>
+                <layout class="QGridLayout" name="gridLayout_18">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_9">
+                   <property name="text">
+                    <string>max datasets:</string>
+                   </property>
+                  </widget>
                  </item>
-                 <item>
-                  <property name="text">
-                   <string>Frame Index</string>
-                  </property>
+                 <item row="0" column="1">
+                  <widget class="QSpinBox" name="sb_intt_max">
+                   <property name="value">
+                    <number>10</number>
+                   </property>
+                  </widget>
                  </item>
-                </widget>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_31">
+                   <property name="text">
+                    <string>moving average:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QSpinBox" name="sb_window">
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                   <property name="value">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QLabel" name="label_11">
+                   <property name="text">
+                    <string>sampling:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QSpinBox" name="sb_intt_sampling">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="6">
+                  <widget class="QLabel" name="label_34">
+                   <property name="text">
+                    <string>xlabel:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="7">
+                  <widget class="QComboBox" name="intt_xlabel">
+                   <item>
+                    <property name="text">
+                     <string>Time (second)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Frame Index</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="8">
+                  <widget class="QPushButton" name="btn_intt">
+                   <property name="text">
+                    <string>plot Intensity-T</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
-               <item row="1" column="0" colspan="8">
-                <widget class="QPushButton" name="btn_intt">
-                 <property name="text">
-                  <string>plot Intensity-T</string>
+               <item row="0" column="2">
+                <spacer name="horizontalSpacer_11">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
-                </widget>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>343</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </widget>
-            </item>
-            <item row="1" column="2">
-             <spacer name="horizontalSpacer_11">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>580</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </widget>
@@ -2438,7 +2452,7 @@
                </size>
               </property>
               <property name="title">
-               <string>Twotime Setting</string>
+               <string>Twotime Visualization Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_37">
                <item row="0" column="0">
@@ -2734,7 +2748,7 @@
             <item row="1" column="0">
              <widget class="QGroupBox" name="groupBox_8">
               <property name="title">
-               <string>Averaging setting:</string>
+               <string>Averaging Setting:</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_30">
                <item row="0" column="0">
@@ -3233,8 +3247,6 @@
   <tabstop>work_dir</tabstop>
   <tabstop>pushButton_11</tabstop>
   <tabstop>list_view_source</tabstop>
-  <tabstop>filter_type</tabstop>
-  <tabstop>filter_str</tabstop>
   <tabstop>box_auto_update</tabstop>
   <tabstop>btn_load_data</tabstop>
   <tabstop>list_view_target</tabstop>
