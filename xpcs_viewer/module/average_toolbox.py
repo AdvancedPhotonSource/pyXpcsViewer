@@ -141,8 +141,6 @@ class AverageToolbox(QtCore.QRunnable):
                 return False, g2_baseline
 
         result = {}
-        for key in fields:
-            result[key] = 0
 
         t0 = time.perf_counter()
         for n in range(steps):
@@ -179,7 +177,13 @@ class AverageToolbox(QtCore.QRunnable):
 
                 if flag:
                     for key in fields:
-                        result[key] += xf.at(key)
+                        if key not in result:
+                            result[key] = xf.at(key)
+                        elif key != 'saxs_1d':
+                            result[key] += xf.at(key)
+                        # saxs_1d is now a dictionary; only accumulate Iq
+                        elif key == 'saxs_1d':
+                            result['saxs_1d']['Iq'] += xf.at('saxs_1d')['Iq']
                 else:
                     mask[m] = 0
 
@@ -189,7 +193,11 @@ class AverageToolbox(QtCore.QRunnable):
             logger.info('no dataset is valid; check the baseline criteria.')
         else:
             for key in fields:
-                result[key] /= np.sum(mask)
+                if key == 'saxs_1d':
+                    # only keep the Iq component, put method doesn't accept dict
+                    result['saxs_1d'] = result['saxs_1d']['Iq'] / np.sum(mask)
+                else:
+                    result[key] /= np.sum(mask)
                 if key == 'g2_err':
                     result[key] /= np.sqrt(np.sum(mask))
 
