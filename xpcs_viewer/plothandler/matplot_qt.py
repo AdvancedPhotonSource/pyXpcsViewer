@@ -288,7 +288,6 @@ class MplCanvas(FigureCanvasQTAgg):
                 ax.legend(loc=loc)
             elif loc == 'outside':
                 ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
-            self.fig.tight_layout(rect=(0.05, 0.05, 0.95, 0.95))
 
         else:
             for n in range(len(data)):
@@ -301,6 +300,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_title(title)
         self.axes.set_xlabel(xlabel)
         self.axes.set_ylabel(ylabel)
+        self.fig.tight_layout(rect=(0.07, 0.07, 0.93, 0.93))
         self.draw()
         return
 

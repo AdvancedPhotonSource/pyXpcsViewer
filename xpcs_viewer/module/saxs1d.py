@@ -152,7 +152,7 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
         ax.legend(loc=loc)
     elif loc == 'outside':
         ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
-    mp_hdl.fig.tight_layout(rect=(0.05, 0.05, 0.95, 0.95))
+    mp_hdl.fig.tight_layout(rect=(0.07, 0.07, 0.93, 0.93))
 
     mp_hdl.draw()
     return
