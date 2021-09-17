@@ -67,8 +67,8 @@ class TableDataModel(QtCore.QAbstractTableModel):
         else:
             self.input_list = input_list
         self.max_display = max_display
-        self.xlabels = ['id', 'size', 'progress', 'time', 'ETA (s)',
-                        'finish', 'name']
+        self.xlabels = ['id', 'size', 'progress', 'start', 'ETA (s)',
+                        'finish', 'fname']
 
     # overwrite parent method
     def data(self, index, role):
