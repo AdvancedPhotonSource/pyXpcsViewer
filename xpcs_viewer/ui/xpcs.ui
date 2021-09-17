@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>7</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -2788,25 +2788,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1" colspan="2">
-                  <widget class="QDoubleSpinBox" name="avg_blmin">
-                   <property name="specialValueText">
-                    <string/>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>10.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.010000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.950000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="6" column="2" colspan="4">
                   <widget class="QLineEdit" name="avg_save_path">
                    <property name="clearButtonEnabled">
@@ -2819,44 +2800,6 @@
                    <property name="text">
                     <string>g2 max:</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QComboBox" name="cb_avg_chunk_size">
-                   <property name="maximumSize">
-                    <size>
-                     <width>80</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="currentIndex">
-                    <number>2</number>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>32</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>64</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>128</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>256</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>512</string>
-                    </property>
-                   </item>
                   </widget>
                  </item>
                  <item row="7" column="6">
@@ -2985,13 +2928,70 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1" colspan="2">
+                 <item row="0" column="2" colspan="2">
+                  <widget class="QComboBox" name="cb_avg_chunk_size">
+                   <property name="maximumSize">
+                    <size>
+                     <width>80</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="currentIndex">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>32</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>64</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>128</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>256</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>512</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" colspan="3">
                   <widget class="QSpinBox" name="avg_qindex">
                    <property name="maximum">
                     <number>999</number>
                    </property>
                    <property name="value">
                     <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1" colspan="3">
+                  <widget class="QDoubleSpinBox" name="avg_blmin">
+                   <property name="specialValueText">
+                    <string/>
+                   </property>
+                   <property name="decimals">
+                    <number>3</number>
+                   </property>
+                   <property name="maximum">
+                    <double>10.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.010000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.950000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -3244,82 +3244,134 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>work_dir</tabstop>
-  <tabstop>pushButton_11</tabstop>
-  <tabstop>list_view_source</tabstop>
   <tabstop>box_auto_update</tabstop>
-  <tabstop>btn_load_data</tabstop>
-  <tabstop>list_view_target</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>saxs2d_display</tabstop>
   <tabstop>cb_saxs2D_cmap</tabstop>
-  <tabstop>cb_saxs2D_type</tabstop>
-  <tabstop>pushButton_5</tabstop>
-  <tabstop>cb_saxs_type</tabstop>
-  <tabstop>sb_saxs_offset</tabstop>
-  <tabstop>cb_stab_type</tabstop>
-  <tabstop>sb_stab_offset</tabstop>
-  <tabstop>pushButton_7</tabstop>
-  <tabstop>cb_stab</tabstop>
-  <tabstop>cb_stab_norm</tabstop>
-  <tabstop>sb_intt_max</tabstop>
-  <tabstop>sb_window</tabstop>
-  <tabstop>sb_intt_sampling</tabstop>
-  <tabstop>intt_xlabel</tabstop>
-  <tabstop>btn_intt</tabstop>
-  <tabstop>max_thread_count</tabstop>
-  <tabstop>avg_blmax</tabstop>
-  <tabstop>avg_blmin</tabstop>
-  <tabstop>avg_save_path</tabstop>
+  <tabstop>g2_c2min</tabstop>
   <tabstop>cb_avg_chunk_size</tabstop>
-  <tabstop>btn_set_average_save_name</tabstop>
-  <tabstop>bx_avg_G2IPIF</tabstop>
-  <tabstop>avg_window</tabstop>
-  <tabstop>bx_avg_g2g2err</tabstop>
-  <tabstop>avg_save_name</tabstop>
-  <tabstop>btn_set_average_save_path</tabstop>
-  <tabstop>bx_avg_saxs</tabstop>
+  <tabstop>list_view_target</tabstop>
+  <tabstop>max_thread_count</tabstop>
   <tabstop>avg_qindex</tabstop>
+  <tabstop>avg_window</tabstop>
+  <tabstop>avg_blmin</tabstop>
+  <tabstop>avg_blmax</tabstop>
+  <tabstop>bx_avg_saxs</tabstop>
+  <tabstop>bx_avg_g2g2err</tabstop>
+  <tabstop>bx_avg_G2IPIF</tabstop>
+  <tabstop>avg_save_path</tabstop>
+  <tabstop>btn_set_average_save_path</tabstop>
+  <tabstop>avg_save_name</tabstop>
+  <tabstop>btn_set_average_save_name</tabstop>
   <tabstop>btn_submit_job</tabstop>
   <tabstop>avg_job_pop</tabstop>
   <tabstop>btn_avg_jobinfo</tabstop>
   <tabstop>btn_avg_kill</tabstop>
   <tabstop>btn_start_avg_job</tabstop>
   <tabstop>avg_job_table</tabstop>
-  <tabstop>scrollArea</tabstop>
+  <tabstop>work_dir</tabstop>
+  <tabstop>sort_method</tabstop>
+  <tabstop>pushButton_11</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>list_view_source</tabstop>
+  <tabstop>filter_type</tabstop>
+  <tabstop>filter_str</tabstop>
+  <tabstop>pushButton_2</tabstop>
+  <tabstop>pushButton_3</tabstop>
+  <tabstop>btn_load_data</tabstop>
+  <tabstop>btn_deselect</tabstop>
+  <tabstop>btn_up</tabstop>
+  <tabstop>btn_down</tabstop>
+  <tabstop>cb_saxs2D_type</tabstop>
+  <tabstop>saxs2d_autorotate</tabstop>
+  <tabstop>pushButton_5</tabstop>
+  <tabstop>saxs2d_min</tabstop>
+  <tabstop>saxs2d_max</tabstop>
+  <tabstop>saxs2d_autorange</tabstop>
+  <tabstop>cb_saxs_type</tabstop>
+  <tabstop>saxs1d_sampling</tabstop>
+  <tabstop>sb_saxs_offset</tabstop>
+  <tabstop>cb_saxs_norm</tabstop>
+  <tabstop>saxs1d_lb_type</tabstop>
   <tabstop>g2_show_label</tabstop>
+  <tabstop>saxs1d_qmin</tabstop>
+  <tabstop>saxs1d_qmax</tabstop>
+  <tabstop>sb_saxs_marker_size</tabstop>
+  <tabstop>saxs1d_legend_loc</tabstop>
+  <tabstop>box_all_phi</tabstop>
+  <tabstop>pushButton_10</tabstop>
+  <tabstop>cb_stab_type</tabstop>
+  <tabstop>sb_stab_offset</tabstop>
+  <tabstop>cb_stab_norm</tabstop>
+  <tabstop>cb_stab</tabstop>
+  <tabstop>pushButton_7</tabstop>
+  <tabstop>sb_intt_max</tabstop>
+  <tabstop>sb_window</tabstop>
+  <tabstop>sb_intt_sampling</tabstop>
+  <tabstop>intt_xlabel</tabstop>
+  <tabstop>btn_intt</tabstop>
   <tabstop>pushButton_4</tabstop>
-  <tabstop>sb_g2_column</tabstop>
-  <tabstop>sb_g2_offset</tabstop>
-  <tabstop>g2_show_fit</tabstop>
   <tabstop>g2_plot_type</tabstop>
+  <tabstop>g2_qmin</tabstop>
+  <tabstop>g2_qmax</tabstop>
+  <tabstop>g2_tmin</tabstop>
+  <tabstop>g2_tmax</tabstop>
+  <tabstop>g2_ymin</tabstop>
+  <tabstop>g2_ymax</tabstop>
+  <tabstop>g2_yauto</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>g2_amin</tabstop>
+  <tabstop>g2_amax</tabstop>
   <tabstop>g2_afit</tabstop>
+  <tabstop>g2_bmin</tabstop>
+  <tabstop>g2_bmax</tabstop>
   <tabstop>g2_bfit</tabstop>
+  <tabstop>g2_cmin</tabstop>
+  <tabstop>g2_cmax</tabstop>
   <tabstop>g2_cfit</tabstop>
+  <tabstop>g2_dmin</tabstop>
+  <tabstop>g2_dmax</tabstop>
   <tabstop>g2_dfit</tabstop>
-  <tabstop>twotime_autorotate</tabstop>
-  <tabstop>cb_twotime_type</tabstop>
-  <tabstop>cb_twotime_qmap_cmap</tabstop>
-  <tabstop>twotime_autocrop</tabstop>
-  <tabstop>cb_twotime_saxs_cmap</tabstop>
-  <tabstop>cb_twotime_cmap</tabstop>
+  <tabstop>g2_show_fit</tabstop>
   <tabstop>tauq_amin</tabstop>
   <tabstop>tauq_amax</tabstop>
   <tabstop>tauq_afit</tabstop>
+  <tabstop>sb_g2_column</tabstop>
+  <tabstop>hdf_list</tabstop>
+  <tabstop>hdf_key_filter</tabstop>
+  <tabstop>g2_sub_baseline</tabstop>
   <tabstop>tauq_bmin</tabstop>
   <tabstop>tauq_bmax</tabstop>
   <tabstop>tauq_bfit</tabstop>
   <tabstop>tauq_qmin</tabstop>
   <tabstop>tauq_qmax</tabstop>
   <tabstop>pushButton_8</tabstop>
+  <tabstop>g2_c2max</tabstop>
+  <tabstop>g2_b2fit</tabstop>
   <tabstop>cb_tauq_type</tabstop>
   <tabstop>sb_tauq_offset</tabstop>
-  <tabstop>pushButton_12</tabstop>
-  <tabstop>twotime_q_index</tabstop>
-  <tabstop>cb_twotime_group</tabstop>
+  <tabstop>g2_b2max</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>g2_marker_size</tabstop>
+  <tabstop>saxs2d_display</tabstop>
   <tabstop>hdf_info</tabstop>
-  <tabstop>hdf_list</tabstop>
-  <tabstop>hdf_key_filter</tabstop>
+  <tabstop>cb_twotime_type</tabstop>
+  <tabstop>cb_twotime_saxs_cmap</tabstop>
+  <tabstop>cb_twotime_qmap_cmap</tabstop>
+  <tabstop>twotime_autorotate</tabstop>
+  <tabstop>twotime_autocrop</tabstop>
+  <tabstop>cb_twotime_group</tabstop>
+  <tabstop>twotime_q_index</tabstop>
+  <tabstop>cb_twotime_cmap</tabstop>
+  <tabstop>pushButton_12</tabstop>
+  <tabstop>g2_c2fit</tabstop>
+  <tabstop>g2_fmin</tabstop>
+  <tabstop>g2_fmax</tabstop>
+  <tabstop>g2_ffit</tabstop>
+  <tabstop>show_g2_fit_summary</tabstop>
+  <tabstop>btn_g2_export</tabstop>
+  <tabstop>btn_g2_refit</tabstop>
+  <tabstop>sb_g2_offset</tabstop>
+  <tabstop>g2_b2min</tabstop>
+  <tabstop>g2_fitting_function</tabstop>
  </tabstops>
  <resources>
   <include location="resources/icons.qrc"/>
