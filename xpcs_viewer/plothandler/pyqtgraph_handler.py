@@ -1,5 +1,5 @@
 import pyqtgraph as pg
-from pyqtgraph import ImageView, PlotWidget, GraphicsLayoutWidget
+from pyqtgraph import ImageView, GraphicsLayoutWidget
 from .mpl_cmaps_in_ImageItem import pg_get_cmap
 import matplotlib.pyplot as plt
 from PyQt5 import QtCore

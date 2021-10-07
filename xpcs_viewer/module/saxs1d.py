@@ -1,4 +1,3 @@
-from build.lib.xpcs_viewer.plothandler import matplot_qt
 import numpy as np
 from .g2mod import create_slice
 from ..plothandler.matplot_qt import get_color_marker
