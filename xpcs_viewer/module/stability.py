@@ -1,5 +1,4 @@
 from .saxs1d import offset_intensity, norm_saxs_data
-import numpy as np
 
 
 def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None, 
