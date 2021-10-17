@@ -1,5 +1,4 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
 
 
 class ListDataModel(QtCore.QAbstractListModel):
@@ -13,7 +12,7 @@ class ListDataModel(QtCore.QAbstractListModel):
 
     # overwrite parent method
     def data(self, index, role):
-        if role == Qt.DisplayRole:
+        if role == QtCore.Qt.DisplayRole:
             content = self.input_list[index.row()]
             return str(content)
 
@@ -72,7 +71,7 @@ class TableDataModel(QtCore.QAbstractTableModel):
 
     # overwrite parent method
     def data(self, index, role):
-        if role == Qt.DisplayRole:
+        if role == QtCore.Qt.DisplayRole:
             x = self.input_list[index.row()]
             ret = [x.jid, x.size, x._progress, x.stime, x.eta, x.etime,
                    x.short_name]
@@ -87,8 +86,8 @@ class TableDataModel(QtCore.QAbstractTableModel):
         return len(self.xlabels)
 
     def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
                 return self.xlabels[section]
 
     def extend(self, new_input_list):
