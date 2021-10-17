@@ -1,23 +1,17 @@
 import numpy as np
-import scipy as sp
 from scipy.optimize import curve_fit
-from scipy.stats import linregress as sp_stats
 import traceback
 from sklearn import linear_model
-import joblib
 import os
-import time
 import traceback
 import logging
+from joblib import Memory
 
 
 logger = logging.getLogger(__name__)
-
 cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
-from joblib import Memory
+
 memory = Memory(cache_dir, verbose=0)
-
-
 @memory.cache
 def fit_with_fixed(*args, **kwargs):
     # wrap the fitting function in memory so avoid re-run

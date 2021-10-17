@@ -1,17 +1,16 @@
+import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, pyqtSlot
 import logging
-import os
+import uuid
+import time
 import numpy as np
 from sklearn.cluster import k_means as sk_kmeans
 from ..fileIO.hdf_reader import put
 from ..xpcs_file import XpcsFile as XF
 from collections import deque
 from shutil import copyfile
-import time
 from ..helper.listmodel import ListDataModel
-import uuid
-import time
 import pyqtgraph as pg
 
 
