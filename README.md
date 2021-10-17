@@ -1,4 +1,4 @@
-# xpcs viewer
+# pyXPCSViewer
 A python-based interactive visualization tool to view XPCS dataset.
 
 
@@ -7,32 +7,68 @@ A python-based interactive visualization tool to view XPCS dataset.
 Only the APS-8IDI's XPCS data format is supported, for both multi-tau and two-time correlation. The nexus file format for XPCS measurement, which is still under
 discussion, is not supported yet.
 
- ## Install and Uninstall
 
-If your python environment is outdated or if you don’t have python3 installed, it highly recommends installing the newest version of [anaconda3](https://www.anaconda.com/products/individual). 
+## Install and Uninstall
+ 
 
- If you have critical python applications installed and you don't want xpcs-viewer to break their dependencies, it's recommended to setup a [virtual environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) to isolate xpcs-viewer. 
+It's highly recommended to setup a new [virtual environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) to isolate pyXPCSViewer, so it doesn't mess up the dependencies of your existing applications.
 
-To install, open a terminal (or _"Anaconda Prompt"_ on windows) and run
+0.  Install conda following the instructions at [link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
-```bash
-pip install xpcs-viewer
-```
+1. It's highly recommended to setup a new [virtual environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) to isolate pyXPCSViewer, so it doesn't mess up the dependencies of your existing applications. Create a brand-new environment with conda
 
-Alternatively, you may just clone/download this repository.
+	```
+	conda create -n your_env_name python==3.9.7
+	``` 
+	Replace **your\_env\_name** with your choice of environment name. 
 
-To run the viewer, open a terminal (or _"Anaconda Prompt"_ on windows) and run
+2.  Activate the new environment for your pyXPCSViewer
 
-``` bash
-run_viewer path_to_hdf_directory		# run the viewer from the hdf directory, or
-run_viewer										      # run in the current directory
-```
+	```
+	conda activate your_env_name
+	```
 
-To uninstall:
+3.  Install pyXPCSViewer
+	
+	```
+	pip install xpcs-viewer
+	```
+	Please note, running conda and pip commands together is generally not recommended. pyXPCSViewer will only use pip or conda once its compatibility issues are resolved.
+4.  Launch pyXPCSViewer
 
-``` bash
-pip uninstall xpcs-viewer
-```
+    1.  Activate your environment described in step 2 if you haven’t.
+    2.  run
+  
+		``` bash
+		run_viewer path_to_hdf_directory        # run the viewer from the hdf directory, or
+		run_viewer                              # run in the current directory
+		```
+	3. On MacOS and Linux, you can create an alias in .bashrc (or .zshrc if you're using zsh) like 
+	 
+	 ``` bash
+	 alias your_shortcut_name='conda activate your_env_name; run_viewer $@; conda deactivate'
+	 ```
+	 then source your rc file (```source .bashrc```) and you can run ```your_shortcut_name``` to launch pyXPCSViewer directly.
+5.  To upgrade:
+	 1.  Activate your environment described in step 2 if you haven’t.
+	 2.  run
+
+	``` bash
+	pip install -U xpcs-viewer
+	```
+6.  To uninstall:
+	 1.  Activate your environment described in step 2 if you haven’t.
+	 2.  run
+	 
+	``` bash
+	pip uninstall xpcs-viewer
+	```
+	 3. If you want to remove the environment all together, first deactivate the environment with ```conda deactivate```, if you're in the pyXPCSViewer environment, then run
+	
+	``` bash
+	conda remove -n your_env_name --all
+	```
+
 
 ## Gallery
 1. The integrated scattering pattern over the whole time series.
