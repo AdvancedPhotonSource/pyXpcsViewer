@@ -1,5 +1,4 @@
-from PyQt5 import QtCore
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
 
