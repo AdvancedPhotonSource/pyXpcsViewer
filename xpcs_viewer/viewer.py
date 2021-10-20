@@ -765,8 +765,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.vk.set_path(f)
             self.vk.clear()
 
-        print(self.vk.cwd)
-
         self.reload_source()
 
         self.avg_job_table.setModel(self.vk.avg_worker)
