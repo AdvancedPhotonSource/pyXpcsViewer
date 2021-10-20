@@ -181,6 +181,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.plot_intt()
         elif tab_name == 'g2':
             self.plot_g2()
+        elif tab_name == 'twotime':
+            self.init_twotime()
 
     def init_tab(self):
         if self.data_state < 2:
