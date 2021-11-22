@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1879</width>
+    <width>1878</width>
     <height>1035</height>
    </rect>
   </property>
@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1343,7 +1343,7 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1371</width>
+                 <width>1370</width>
                  <height>712</height>
                 </rect>
                </property>
@@ -1792,7 +1792,7 @@
                      <number>5</number>
                     </property>
                     <property name="maximum">
-                     <double>1000.000000000000000</double>
+                     <double>999.999000000000024</double>
                     </property>
                     <property name="value">
                      <double>1.000000000000000</double>
@@ -1808,7 +1808,7 @@
                      <double>0.000010000000000</double>
                     </property>
                     <property name="maximum">
-                     <double>100.000000000000000</double>
+                     <double>999.999000000000024</double>
                     </property>
                     <property name="value">
                      <double>0.000010000000000</double>
@@ -1900,7 +1900,7 @@
                      <number>3</number>
                     </property>
                     <property name="maximum">
-                     <double>1.000000000000000</double>
+                     <double>999.999000000000024</double>
                     </property>
                     <property name="singleStep">
                      <double>0.010000000000000</double>
@@ -1916,7 +1916,7 @@
                      <number>3</number>
                     </property>
                     <property name="maximum">
-                     <double>10.000000000000000</double>
+                     <double>999.999000000000024</double>
                     </property>
                     <property name="singleStep">
                      <double>0.010000000000000</double>
@@ -1986,6 +1986,9 @@
                     <property name="minimum">
                      <double>0.000010000000000</double>
                     </property>
+                    <property name="maximum">
+                     <double>999.999900000000025</double>
+                    </property>
                     <property name="value">
                      <double>0.000010000000000</double>
                     </property>
@@ -1995,6 +1998,9 @@
                    <widget class="QDoubleSpinBox" name="g2_bmax">
                     <property name="decimals">
                      <number>5</number>
+                    </property>
+                    <property name="maximum">
+                     <double>999.999000000000024</double>
                     </property>
                     <property name="value">
                      <double>1.000000000000000</double>
