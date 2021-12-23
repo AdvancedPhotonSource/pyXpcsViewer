@@ -144,14 +144,15 @@ class ViewerKernel(FileLocator):
         twotime.plot_twotime_map(xfile, hdl, meta=self.meta, **kwargs)
         return
 
-    def plot_twotime(self, hdl, current_file_index=0, plot_index=1, **kwargs):
+    def plot_twotime(self, hdl, hdl_map, current_file_index=0, 
+                     plot_index=1, **kwargs):
         if self.type != 'Twotime':
             self.show_message('Analysis type must be twotime.')
             return None
 
         fname = self.target[current_file_index]
         xfile = self.cache[fname]
-        ret = twotime.plot_twotime(xfile, hdl, plot_index=plot_index,
+        ret = twotime.plot_twotime(xfile, hdl, hdl_map, plot_index=plot_index,
                                    meta=self.meta, **kwargs)
         return ret
 

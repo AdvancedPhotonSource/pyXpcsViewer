@@ -88,18 +88,33 @@ def plot_twotime_map(xfile,
         saxs = np.log10(saxs).astype(np.float32)
 
     hdl.clear()
-    ax = hdl.subplots(1, 2, sharex=True, sharey=True)
+    ax = hdl.subplots(1, 3, sharex=True, sharey=True)
     im0 = ax[0].imshow(saxs, cmap=plt.get_cmap(saxs_cmap))
     im1 = ax[1].imshow(dqmap, cmap=plt.get_cmap(qmap_cmap))
+    im2 = ax[2].imshow(np.zeros_like(dqmap), vmin=0, vmax=2)
+
     ax[0].set_title('SAXS-2D')
     ax[1].set_title('dqmap')
+    ax[2].set_title('selection')
     plt.colorbar(im0, ax=ax[0])
     plt.colorbar(im1, ax=ax[1])
+    plt.colorbar(im2, ax=ax[2])
     hdl.draw()
 
 
-def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet', vmin=None,
-                 vmax=None):
+def update_twotime_map(meta, hdl):
+    dqmap = meta['twotime_dqmap']
+
+    selection = np.zeros_like(dqmap, dtype=np.uint8)
+    for n, x in enumerate(meta['twotime_plot_list']):
+        if x > 0:
+            selection += (dqmap == x).astype(np.uint8) * (n + 1)
+    hdl.axes[2].imshow(selection, vmin=0, vmax=2)
+    hdl.draw()
+
+
+def plot_twotime(xfile, hdl, hdl_map, meta, plot_index=1, cmap='jet', 
+                vmin=None, vmax=None):
 
     if xfile.type != 'Twotime':
         return None
@@ -175,4 +190,6 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet', vmin=None,
     hdl.fig.tight_layout()
 
     hdl.draw()
+
+    update_twotime_map(meta, hdl_map)
     return ret

@@ -411,7 +411,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if kwargs['plot_index'] == 0:
             self.statusbar.showMessage("No twotime data for plot_indx = 0.")
             return
-        self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
+        self.vk.plot_twotime(self.mp_2t.hdl, self.mp_2t_map.hdl, **kwargs)
 
     def edit_label(self):
         if not self.check_status():
