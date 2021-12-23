@@ -398,14 +398,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # 'current_file_index': max(0, self.list_view_target.currentRow()),
             'current_file_index': file_index,
             'plot_index': self.twotime_q_index.value(),
-            'cmap': self.cb_twotime_cmap.currentText()
+            'cmap': self.cb_twotime_cmap.currentText(),
+            'vmin': self.c2_min.value(),
+            'vmax': self.c2_max.value(),
         }
+
+        if kwargs['vmin'] < 0:
+            kwargs['vmin'] = None
+        if kwargs['vmax'] < 0:
+            kwargs['vmax'] = None
+
         if kwargs['plot_index'] == 0:
             self.statusbar.showMessage("No twotime data for plot_indx = 0.")
             return
-        ret = self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
-        # if ret is not None:
-        #     self.vk.get_twotime_qindex(ret[1], ret[0], self.mp_2t_map.hdl)
+        self.vk.plot_twotime(self.mp_2t.hdl, **kwargs)
 
     def edit_label(self):
         if not self.check_status():
@@ -1032,7 +1038,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def clear_target_selection(self):
         self.list_view_target.clearSelection()
-        self.list_view_source.repaint()
+        # self.list_view_target.repaint()
 
     def update_g2_fitting_function(self):
         idx = self.g2_fitting_function.currentIndex()

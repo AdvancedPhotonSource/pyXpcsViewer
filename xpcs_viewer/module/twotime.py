@@ -98,7 +98,11 @@ def plot_twotime_map(xfile,
     hdl.draw()
 
 
-def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
+def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet', vmin=None,
+                 vmax=None):
+
+    if xfile.type != 'Twotime':
+        return None
 
     if plot_index not in meta['twotime_idlist']:
         msg = 'plot_index is not found.'
@@ -112,52 +116,43 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
     else:
         ret = None
 
-    if xfile.type != 'Twotime':
-        return ret
+    if 'twotime_plot_list' not in meta:
+        meta['twotime_plot_list'] = [-1, -1] 
+        meta['twotime_ims'] = []
+    
+    if plot_index != meta['twotime_plot_list'][-1]:
+        meta['twotime_plot_list'].append(plot_index)
+        c2 = xfile.get_twotime_c2(plot_index=plot_index,
+                                  twotime_key=meta['twotime_key'])
+        meta['twotime_ims'].append(np.copy(c2))
+        if len(meta['twotime_plot_list']) > 2:
+            meta['twotime_plot_list'].pop(0)
+        if len(meta['twotime_ims']) > 2:
+            meta['twotime_ims'].pop(0)
 
-    plot_index_record = []
-    if 'twotime_plot_index' not in meta:
-        meta['twotime_plot_index'] = plot_index
-        plot_index_record = [plot_index, plot_index] 
-    else:
-        if meta['twotime_plot_index'] == plot_index:
-            return ret
-        else:
-            plot_index_record = [meta['twotime_plot_index'], plot_index]
-            meta['twotime_plot_index'] = plot_index
+    plot_list = meta['twotime_plot_list']
 
-    c2 = xfile.get_twotime_c2(plot_index=plot_index,
-                              twotime_key=meta['twotime_key'])
-
-    t = meta['twotime_scale'] * np.arange(len(c2))
+    t = meta['twotime_scale'] * np.arange(len(meta['twotime_ims'][-1]))
     t_min = np.min(t)
     t_max = np.max(t)
 
-    if 'twotime_ims' not in meta:
-        meta['twotime_ims'] = []
+    num_c2 = len(meta['twotime_ims'])
+    # num_c2 = 1 -> 2 column;
+    # num_c2 = 2 -> 3 column;
 
     hdl.clear()
-    ax = None
-    c2_list = None
-    if len(meta['twotime_ims']) == 0:
-        c2_list = [c2]
-        meta['twotime_ims'].append(np.copy(c2))
-        ax = hdl.subplots(1, 2)
+    ax = hdl.subplots(1, num_c2 + 1)
 
-    elif len(meta['twotime_ims']) == 1:
-        c2_list = [np.copy(meta['twotime_ims'][0]), c2]
-        meta['twotime_ims'].pop(0)
-        meta['twotime_ims'].append(np.copy(c2))
-        ax = hdl.subplots(1, 3)
+    title = ['A: %d' % plot_list[0], 'B: %d' % plot_list[1]]
 
-    title = ['A: %d' % plot_index_record[0], 'B: %d' % plot_index_record[1]]
-
-    for n in range(len(c2_list)):
-        im = ax[n].imshow(c2_list[n],
+    for n in range(num_c2):
+        im = ax[n].imshow(meta['twotime_ims'][n],
                           interpolation='none',
                           origin='lower',
                           extent=([t_min, t_max, t_min, t_max]),
-                          cmap=plt.get_cmap(cmap))
+                          cmap=plt.get_cmap(cmap),
+                          vmin=vmin,
+                          vmax=vmax)
         plt.colorbar(im, ax=ax[n])
         ax[n].set_ylabel('t1 (s)')
         ax[n].set_xlabel('t2 (s)')
@@ -180,5 +175,4 @@ def plot_twotime(xfile, hdl, meta, plot_index=1, cmap='jet'):
     hdl.fig.tight_layout()
 
     hdl.draw()
-
     return ret
