@@ -265,10 +265,9 @@ class XpcsFile(object):
             return None
 
         c2 = c2_half + np.transpose(c2_half)
-        c2_translate = np.zeros(c2.shape)
-        c2_translate[:, 0] = c2[:, -1]
-        c2_translate[:, 1:] = c2[:, :-1]
-        c2 = np.where(c2 > 1.3, c2_translate, c2)
+        diag_idx = np.diag_indices(c2_half.shape[0], ndim=2)
+        c2[diag_idx] /= 2
+
         return c2
 
     def get_detector_extent(self):
