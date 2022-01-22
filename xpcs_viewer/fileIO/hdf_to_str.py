@@ -24,6 +24,9 @@ def c2r(x):
 
 def describe_numpy(arr):
     repr = str(arr.shape) + ', ' + str(arr.dtype) + ':'
+    if arr.dtype == np.bool:
+        return repr
+
     if arr.size > 1:
         res = describe(arr.ravel())
         repr += 'minmax = %s, mean = %s' % (c2r(res.minmax),
@@ -93,5 +96,5 @@ def get_hdf_info(path, fname):
 
 
 if __name__ == '__main__':
-    pass
+    get_hdf_info('/Users/mqichu/Downloads', 'A2299_S1-SEO-C-OA_Lq1_180C_att06_002_0001-1000.hdf')
 
