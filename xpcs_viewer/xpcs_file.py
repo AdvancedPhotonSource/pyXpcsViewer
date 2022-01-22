@@ -188,11 +188,13 @@ class XpcsFile(object):
             sq = (sqspan[1:] + sqspan[:-1]) / 2.0
 
             nan_idx = np.isnan(sphilist)
-            saxs1d = np.zeros_like(sphilist)
-            saxs1d[~nan_idx] = info['saxs_1d']
+            if info['saxs_1d'].shape == sphilist.shape:
+                saxs1d = info['saxs_1d']
+            else:
+                saxs1d = np.zeros_like(sphilist)
+                saxs1d[~nan_idx] = info['saxs_1d']
             saxs1d[nan_idx] = np.nan
             saxs1d = saxs1d.reshape(*new_shape).T
-            #sphilist = sphilist.reshape(*new_shape).T
 
             avg = np.nanmean(saxs1d, axis=0)
             saxs1d = np.vstack([avg, saxs1d])
