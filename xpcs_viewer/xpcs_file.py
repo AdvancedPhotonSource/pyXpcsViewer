@@ -55,6 +55,32 @@ def power_law(x, a, b):
     return a * x ** b
 
 
+def reshape_static_analysis(info):
+    shape = (int(info['snoq']), int(info['snophi']))
+    size = shape[0] * shape[1]
+    # results from gpu code has a dimension problem; to be fixed later
+    if not isinstance(info['sphilist'], float): 
+        nan_idx = np.isnan(info['sphilist'])
+        Iqp = info['Iqp']
+        # if using the original data doesn't contain nan
+        if nan_idx.shape[0] != Iqp.shape[1]:
+            x = np.zeros((Iqp.shape[0], size), dtype=np.float32)
+            for n in range(Iqp.shape[0]):
+                x[n, ~nan_idx] = Iqp[n]
+                x[n, nan_idx] = np.nan
+            Iqp = x
+
+        Iqp = Iqp.reshape(Iqp.shape[0], *shape)
+        # average the phi dimension
+        Iqp = np.nanmean(Iqp, axis=2)
+        q = info['ql_sta'].reshape(*shape).T
+        q = np.nanmean(q, axis=0)
+        return Iqp, q
+
+    else:
+        return None, None
+
+
 class XpcsFile(object):
     """
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
@@ -136,7 +162,7 @@ class XpcsFile(object):
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
                   'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
-                  'dnophi']
+                  'dnophi', 'sphilist']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -202,6 +228,12 @@ class XpcsFile(object):
             labels = [self.label + '_%d' % (n + 1)
                       for n in range(info['snophi'])]
             labels = [self.label] + labels
+
+            # reshape Iqp and ql_sta
+            Iqp, q = reshape_static_analysis(info)
+            if Iqp is not None:
+                info['Iqp'] = Iqp
+                info['ql_sta'] = q 
 
         else:
             sq = info['ql_sta']
