@@ -171,11 +171,11 @@ class XpcsFile(object):
 
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
-        
+
         self.reshape_phi_analysis(ret)
 
         return ret.keys(), ret
-    
+
     def reshape_phi_analysis(self, info):
         new_shape = (info['snoq'], info['snophi'])
         fields = ['sphilist', 'sqspan', 'sphispan']
@@ -199,10 +199,11 @@ class XpcsFile(object):
             avg = np.nanmean(saxs1d, axis=0)
             saxs1d = np.vstack([avg, saxs1d])
 
-            labels = [self.label + '_%d' % (n + 1) for n in range(info['snophi'])]
+            labels = [self.label + '_%d' % (n + 1)
+                      for n in range(info['snophi'])]
             labels = [self.label] + labels
 
-        else:        
+        else:
             sq = info['ql_sta']
             sq = sq[~np.isnan(sq)]
             saxs1d = info['saxs_1d'].reshape(1, -1)
@@ -228,7 +229,7 @@ class XpcsFile(object):
 
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
-        return self.t0 
+        return self.t0
 
     def get_twotime_maps(self, group='xpcs'):
         rpath = '/'.join([group, 'output_data'])
@@ -477,7 +478,11 @@ class XpcsFile(object):
         for n in range(g2_err.shape[1]):
             data = g2_err[:, n]
             idx = data > threshold
-            avg = np.mean(data[idx])
+            # avoid averaging of empty slice
+            if np.sum(idx) > 0:
+                avg = np.mean(data[idx])
+            else:
+                avg = threshold
             g2_err_mod[np.logical_not(idx), n] = avg
 
         return g2_err_mod
