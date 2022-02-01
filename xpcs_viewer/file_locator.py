@@ -5,6 +5,8 @@ from .fileIO.hdf_reader import get_type
 from .xpcs_file import XpcsFile as xf
 import logging
 from .helper.listmodel import ListDataModel
+import traceback
+
 
 logger = logging.getLogger(__name__)
 pjoin = os.path.join
@@ -174,6 +176,7 @@ class FileLocator(object):
                 except Exception as e:
                     logger.info("failed to load file: %s", fn)
                     logger.info("%s", str(e))
+                    print(traceback.format_exc())
 
         if flag_del:
             for key in existing_keys:
