@@ -39,16 +39,6 @@ def norm_saxs_data(Iq, q, plot_norm=0):
     if plot_norm not in range(4):
         raise ValueError('plot_norm must be in [0, 1, 2, 3]')
 
-    # make sure the dimesions match and orders are right
-    if Iq.size != q.size:
-        size = min(Iq.size, q.size)
-        Iq = Iq[-size:]
-        q = q[-size:]
-
-    sort_idx = np.argsort(q)
-    q = q[sort_idx]
-    Iq = Iq[sort_idx]
-
     ylabel = 'Intensity'
     if plot_norm == 1:
         Iq = Iq * np.square(q)
