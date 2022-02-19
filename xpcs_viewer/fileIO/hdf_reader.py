@@ -82,11 +82,13 @@ def get(fname, fields, mode='raw', ret_type='dict'):
 
             if type(val) == np.ndarray:
                 # get rid of length=1 axies;
-                if key not in ['g2', 'g2_err']:
+                if key not in ['g2', 'g2_err', 'g2_full', 'g2_partials',
+                               'ql_dyn', 'ql_sta']:
                     val = np.squeeze(val)
-
-                if key == 'ql_dyn' and val.ndim == 0:
-                    val = np.array([val])
+                # ql_dyn and ql_sta must be an array, even there's only one
+                # element
+                if key in ['ql_dyn', 'ql_sta']:
+                    val = val[0]
 
             elif type(val) in [np.bytes_, bytes]:
                 # converts bytes to unicode;
