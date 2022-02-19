@@ -9,6 +9,7 @@ from .helper.fitting import fit_with_fixed
 import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
 from pyqtgraph.Qt import QtGui
+import traceback
 
 
 def single_exp_all(x, a, b, c, d):
@@ -95,7 +96,7 @@ class XpcsFile(object):
         self.label = create_id(fname)
 
         self.type = get_type(self.full_path)
-        self.keys, attr = self.load(fields)
+        self.keys, attr = self._load(fields)
         self.__dict__.update(attr)
 
         self.hdf_info = None
@@ -120,9 +121,6 @@ class XpcsFile(object):
         ans = '\n'.join([ans, self.__str__()])
         return ans
 
-    def __add__(self, other):
-        pass
-
     def get_hdf_info(self, fstr=None):
         """
         get a text representation of the xpcs file; the entries are organized
@@ -130,7 +128,7 @@ class XpcsFile(object):
         :param fstr: list of filter strings, ['string_1', 'string_2', ...]
         :return: a list strings
         """
-        # only call it once because it may take long time to generate the str
+        # cache the data because it may take long time to generate the str
         if self.hdf_info is None:
             self.hdf_info = get_hdf_info(self.cwd, self.fname)
 
@@ -156,7 +154,7 @@ class XpcsFile(object):
 
         return msg
 
-    def load(self, extra_fields=None):
+    def _load(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
@@ -203,6 +201,12 @@ class XpcsFile(object):
         return ret.keys(), ret
 
     def reshape_phi_analysis(self, info):
+        """
+        the saxs1d and stability data are compressed. the values of the empty 
+        static bins are not saved. this function reshapes the array and fills
+        the empty bins with nan. nanmean is performed to get the correct
+        results;
+        """
         new_shape = (info['snoq'], info['snophi'])
         fields = ['sphilist', 'sqspan', 'sphispan']
         ret = get(self.full_path, fields, mode='alias', ret_type='list')
@@ -333,9 +337,11 @@ class XpcsFile(object):
 
         if mode == 'saxs2d':
             try:
-                win = ImageViewDev()
+                # win = ImageViewDev()
+                win = pg.ImageView()
                 saxs2d.plot([self.saxs_2d], win, **kwargs)
             except Exception:
+                traceback.print_exc()
                 pass
         elif mode == 'saxs1d':
             win = MplCanvasBarV()
@@ -367,7 +373,7 @@ class XpcsFile(object):
         self.show('stability', **kwargs)
 
     def get_pg_tree(self):
-        _, data = self.load()
+        _, data = self._load()
         for key, val in data.items():
             if isinstance(val, np.ndarray):
                 if val.size > 4096:
