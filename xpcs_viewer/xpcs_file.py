@@ -195,6 +195,8 @@ class XpcsFile(object):
 
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
+        print('ql_sta', ret['ql_sta'].shape)
+        print('ql_dyn', ret['ql_dyn'].shape)
 
         self.reshape_phi_analysis(ret)
 
@@ -252,6 +254,9 @@ class XpcsFile(object):
             'num_lines': info['snophi'],
             'labels': labels,
         }
+        # for k, v in info.items():
+        #     if isinstance(v, np.ndarray):
+        #         print(k, v.shape)
         return
 
     def at(self, key):
@@ -285,6 +290,8 @@ class XpcsFile(object):
         if self.type == 'Twotime':
             key_c2t = '/'.join([rpath, 'C2T_all'])
             idlist = get(self.full_path, [key_c2t], mode='raw')[key_c2t]
+            if idlist.size == 1:
+                idlist = idlist.reshape(1)
             idlist = [int(x[3:]) for x in idlist]
         else:
             idlist = [None]
