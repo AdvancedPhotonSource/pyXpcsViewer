@@ -186,7 +186,7 @@ def plot_twotime(xfile, hdl, hdl_map, meta, plot_index=1, cmap='jet',
     ax[-1].set_xscale('log')
     ax[-1].set_ylabel('g2')
     ax[-1].set_xlabel('t (s)')
-    ax[-1].set_title('Full/Partical g2')
+    ax[-1].set_title('Full/Partial g2')
     hdl.fig.tight_layout()
 
     hdl.draw()
