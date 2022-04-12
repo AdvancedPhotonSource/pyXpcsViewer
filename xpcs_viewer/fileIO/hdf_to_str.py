@@ -24,7 +24,7 @@ def c2r(x):
 
 def describe_numpy(arr):
     repr = str(arr.shape) + ', ' + str(arr.dtype) + ':'
-    if arr.dtype == np.bool:
+    if arr.dtype in [np.bool, bytes, object]:
         return repr
 
     if arr.size > 1:
