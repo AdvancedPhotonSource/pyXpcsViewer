@@ -182,7 +182,14 @@ class AverageToolbox(QtCore.QRunnable):
                             result[key] += xf.at(key)
                         # saxs_1d is now a dictionary; only accumulate Iq
                         elif key == 'saxs_1d':
-                            result['saxs_1d']['Iq'] += xf.at('saxs_1d')['Iq']
+                            if xf['saxs_1d']['num_lines'] == 1:
+                                # only one phi partition
+                                saxs1d = xf.at('saxs_1d')['Iq']
+                            else:
+                                # if num_lines or snophi > 1; there is an
+                                # extra row of data for the averaegd result.
+                                saxs1d = xf.at('saxs_1d')['Iq'][1:]
+                            result['saxs_1d']['Iq'] += saxs1d
                 else:
                     mask[m] = 0
 
