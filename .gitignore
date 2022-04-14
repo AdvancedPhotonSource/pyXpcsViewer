@@ -149,3 +149,4 @@ cython_debug/
 .loglogin
 .vscode
 core
+.DS_Store
