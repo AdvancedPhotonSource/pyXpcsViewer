@@ -191,6 +191,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         tab_name = self.tab_dict[new_tab_id]
         self.statusbar.clearMessage()
 
+        # always replot tauq
+        if tab_name == 'diffusion':
+            self.plot_tauq_pre()
         # the plots on this tab is already done;
         if self.plot_state[new_tab_id] > 0:
             return
@@ -218,8 +221,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'g2':
             self.set_g2_range()
             self.plot_g2(10)
-        elif tab_name == 'diffusion':
-            self.plot_tauq_pre()
+        # elif tab_name == 'diffusion':
+        #     self.plot_tauq_pre()
 
         self.plot_state[new_tab_id] = 1
 
