@@ -140,6 +140,8 @@ class AverageToolbox(QtCore.QRunnable):
                 return False, g2_baseline
 
         result = {}
+        for key in fields:
+            result[key] = 0
 
         t0 = time.perf_counter()
         for n in range(steps):
@@ -176,20 +178,11 @@ class AverageToolbox(QtCore.QRunnable):
 
                 if flag:
                     for key in fields:
-                        if key not in result:
-                            result[key] = xf.at(key)
-                        elif key != 'saxs_1d':
+                        if key != 'saxs_1d':
                             result[key] += xf.at(key)
-                        # saxs_1d is now a dictionary; only accumulate Iq
-                        elif key == 'saxs_1d':
-                            if xf['saxs_1d']['num_lines'] == 1:
-                                # only one phi partition
-                                saxs1d = xf.at('saxs_1d')['Iq']
-                            else:
-                                # if num_lines or snophi > 1; there is an
-                                # extra row of data for the averaegd result.
-                                saxs1d = xf.at('saxs_1d')['Iq'][1:]
-                            result['saxs_1d']['Iq'] += saxs1d
+                        else:
+                            data = xf.at('saxs_1d')['data_raw']
+                            result['saxs_1d'] += data
                 else:
                     mask[m] = 0
 
@@ -201,7 +194,7 @@ class AverageToolbox(QtCore.QRunnable):
             for key in fields:
                 if key == 'saxs_1d':
                     # only keep the Iq component, put method doesn't accept dict
-                    result['saxs_1d'] = result['saxs_1d']['Iq'] / np.sum(mask)
+                    result['saxs_1d'] = result['saxs_1d'] / np.sum(mask)
                 else:
                     result[key] /= np.sum(mask)
                 if key == 'g2_err':

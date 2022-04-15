@@ -214,6 +214,8 @@ class XpcsFile(object):
 
         sphi = (sphispan[1:] + sphispan[:-1]) / 2.0
 
+        data_raw = info['saxs_1d']
+
         if info['snophi'] > 1:
             sq = (sqspan[1:] + sqspan[:-1]) / 2.0
 
@@ -248,6 +250,7 @@ class XpcsFile(object):
         info['saxs_1d'] = {
             'q': sq,
             'Iq': saxs1d,
+            'data_raw': data_raw,
             'phi': sphi,
             'num_lines': info['snophi'],
             'labels': labels,
