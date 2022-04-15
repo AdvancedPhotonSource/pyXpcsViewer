@@ -121,7 +121,7 @@ class AverageToolbox(QtCore.QRunnable):
         logger.info('average job %d starts', self.jid)
         tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
-        mask = np.ones(tot_num, dtype=np.int)
+        mask = np.zeros(tot_num, dtype=np.int)
         prev_percentage = 0
         valid_list = deque()
         discard_list = deque()
@@ -141,7 +141,7 @@ class AverageToolbox(QtCore.QRunnable):
 
         result = {}
         for key in fields:
-            result[key] = 0
+            result[key] = None 
 
         t0 = time.perf_counter()
         for n in range(steps):
@@ -179,12 +179,17 @@ class AverageToolbox(QtCore.QRunnable):
                 if flag:
                     for key in fields:
                         if key != 'saxs_1d':
-                            result[key] += xf.at(key)
+                            data = xf.at(key)
                         else:
                             data = xf.at('saxs_1d')['data_raw']
-                            result['saxs_1d'] += data
-                else:
-                    mask[m] = 0
+                        if result[key] is None:
+                            result[key] = data
+                            mask[m] = 1
+                        elif result[key].shape == data.shape:
+                            result[key] += data
+                            mask[m] = 1
+                        else:
+                            logger.info(f'data shape does not match for key {key}, {fname}')
 
                 self.signals.values.emit((self.jid, val))
         
