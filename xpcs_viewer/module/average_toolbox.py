@@ -10,6 +10,7 @@ from ..xpcs_file import XpcsFile as XF
 from shutil import copyfile
 from ..helper.listmodel import ListDataModel
 import pyqtgraph as pg
+from tqdm import trange
 
 
 logger = logging.getLogger(__name__)
@@ -301,7 +302,7 @@ def do_average(flist, work_dir=None, save_path=None, avg_window=3,
     for key in fields:
         result[key] = None 
 
-    for m in range(tot_num):
+    for m in trange(tot_num):
         fname = flist[m]
         try:
             xf = XF(fname, cwd=work_dir, fields=fields)
