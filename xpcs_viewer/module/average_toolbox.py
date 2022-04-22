@@ -113,8 +113,8 @@ class AverageToolbox(QtCore.QRunnable):
         self.args = args
         self.kwargs = kwargs
 
-    def do_average(self, chunk_size=256, save_path=None, origin_path=None,
-                   avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05,
+    def do_average(self, chunk_size=256, save_path=None, avg_window=3, 
+                   avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05,
                    fields=['saxs_2d']):
         self.stime = time.strftime('%H:%M:%S')
         self.status = 'running'
@@ -123,7 +123,6 @@ class AverageToolbox(QtCore.QRunnable):
         steps = (tot_num + chunk_size - 1) // chunk_size
         mask = np.zeros(tot_num, dtype=np.int)
         prev_percentage = 0
-        valid_list = deque()
         discard_list = deque()
 
         def validate_g2_baseline(g2_data, q_idx):
