@@ -2,7 +2,6 @@
 
 A python-based interactive visualization tool for XPCS results at APS 8-ID.
 
-![saxs2d](/docs/images/saxs2d.png)
 ![g2](/docs/images/g2mod.png)
 
 ## Install pyXpcsViewer
