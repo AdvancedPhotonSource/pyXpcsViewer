@@ -116,6 +116,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_deselect.clicked.connect(self.clear_target_selection)
         self.list_view_target.doubleClicked.connect(self.edit_label)
 
+        self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
+
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
         )
@@ -303,6 +305,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'marker_size': self.sb_saxs_marker_size.value(),
             'sampling': self.saxs1d_sampling.value(),
             'all_phi': self.box_all_phi.isChecked(),
+            'absolute_crosssection': self.cbox_use_abs.isChecked(),
+            'subtract_background': self.cb_sub_bkg.isChecked(),
+            'weight': self.bkg_weight.value(),
         }
         if kwargs['qmin'] >= kwargs['qmax']:
             self.statusbar.showMessage('check qmin and qmax')
@@ -490,6 +495,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tauq_msg.clear()
         self.tauq_msg.setData(msg)
         self.tauq_msg.parent().repaint()
+    
+    def select_bkgfile(self):
+        path = self.work_dir.text()
+        f = QtWidgets.QFileDialog.getOpenFileName(self, 
+            caption='select the file for background subtraction',
+            directory=path)[0]
+        if os.path.isfile(f):
+            self.le_bkg_fname.setText(f)
+            self.vk.select_bkgfile(f)
+        else:
+            return
 
     def remove_avg_job(self):
         index = self.avg_job_table.currentIndex().row()
@@ -920,6 +936,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for x in [self.pg_saxs, self.pg_intt, self.mp_tauq, self.mp_2t,
                   self.mp_2t_map, self.mp_g2, self.mp_saxs, self.mp_stab]:
             x.clear()
+        self.le_bkg_fname.clear()
 
     def trie_search(self):
         min_length = 1

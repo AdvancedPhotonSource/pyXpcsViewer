@@ -62,38 +62,12 @@ def switch_line_builder(hdl, lb_type=None):
     # elif lb_type is None and hdl.line_builder is not None:
     #     hdl.unlink_line_builder()
 
-def plot2(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
-         max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
-         loc='best', marker_size=3, sampling=1):
-
-    xscale = ['linear', 'log'][plot_type % 2]
-    yscale = ['linear', 'log'][plot_type // 2]
-
-    data = []
-    for n, fi in enumerate(xf_list[slice(0, max_points)]):
-        Iq, q = fi.saxs_1d, fi.ql_sta
-        sl = create_slice(q, (qmin, qmax))
-        Iq = Iq[sl][::sampling]
-        q = q[sl][::sampling]
-        Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
-        Iq = offset_intensity(Iq, n, plot_offset, yscale)
-        data.append([q, Iq])
-    
-    legend = [x.label for x in xf_list]
-
-    mp_hdl.clear()
-    mp_hdl.show_lines(data, xlabel=xlabel, ylabel=ylabel, legend=legend,
-                      rows=rows, loc=loc, marker_size=marker_size)
-
-    mp_hdl.axes.set_title(title)
-    mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
-    mp_hdl.draw()
-    return
-
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
          max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
-         loc='best', marker_size=3, sampling=1, all_phi=False):
+         loc='best', marker_size=3, sampling=1, all_phi=False, 
+         absolute_crosssection=False, subtract_background=False, 
+         bkg_file=None, weight=1.0):
 
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
@@ -109,6 +83,14 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
             if t < len(xf_list):
                 alpha[t] = 1.0
 
+    if subtract_background and bkg_file is not None:
+        Iq_bkg, q_bkg = bkg_file.saxs_1d['Iq'], bkg_file.saxs_1d['q']
+        # apply sampling
+        Iq_bkg, q_bkg = Iq_bkg[:, ::sampling], q_bkg[::sampling]
+        sl = create_slice(q_bkg, (qmin, qmax))
+        Iq_bkg = Iq_bkg[:, sl]
+        q_bkg = q_bkg[sl]
+
     plot_id = 0
     for n, fi in enumerate(xf_list[slice(0, max_points)]):
         Iq, q = fi.saxs_1d['Iq'], fi.saxs_1d['q']
@@ -119,6 +101,14 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
         sl = create_slice(q, (qmin, qmax))
         Iq = Iq[:, sl]
         q = q[sl]
+
+        if subtract_background and bkg_file is not None:
+            if np.allclose(q, q_bkg):
+                Iq = Iq - weight * Iq_bkg
+                bad_index = Iq <= 0
+                Iq[bad_index] = float('nan')
+            else:
+                print('bkg not applied because bkg q has different values.')
 
         if all_phi:
             num_lines = Iq.shape[0]
