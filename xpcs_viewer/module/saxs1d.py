@@ -84,16 +84,21 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
                 alpha[t] = 1.0
 
     if subtract_background and bkg_file is not None:
-        Iq_bkg, q_bkg = bkg_file.saxs_1d['Iq'], bkg_file.saxs_1d['q']
+        Iq_bkg = np.copy(bkg_file.saxs_1d['Iq'])
+        q_bkg = np.copy(bkg_file.saxs_1d['q'])
         # apply sampling
         Iq_bkg, q_bkg = Iq_bkg[:, ::sampling], q_bkg[::sampling]
+
         sl = create_slice(q_bkg, (qmin, qmax))
         Iq_bkg = Iq_bkg[:, sl]
         q_bkg = q_bkg[sl]
+        if absolute_crosssection and \
+            bkg_file.abs_cross_section_scale is not None:
+            Iq_bkg *= bkg_file.abs_cross_section_scale
 
     plot_id = 0
     for n, fi in enumerate(xf_list[slice(0, max_points)]):
-        Iq, q = fi.saxs_1d['Iq'], fi.saxs_1d['q']
+        Iq, q = np.copy(fi.saxs_1d['Iq']), np.copy(fi.saxs_1d['q'])
         # apply sampling
         Iq, q = Iq[:, ::sampling], q[::sampling]
 
@@ -101,6 +106,10 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
         sl = create_slice(q, (qmin, qmax))
         Iq = Iq[:, sl]
         q = q[sl]
+
+        if absolute_crosssection and \
+            fi.abs_cross_section_scale is not None:
+            Iq *= fi.abs_cross_section_scale
 
         if subtract_background and bkg_file is not None:
             if np.allclose(q, q_bkg):
