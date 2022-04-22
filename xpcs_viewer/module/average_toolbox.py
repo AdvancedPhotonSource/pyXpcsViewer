@@ -5,10 +5,8 @@ import logging
 import uuid
 import time
 import numpy as np
-from sklearn.cluster import k_means as sk_kmeans
 from ..fileIO.hdf_reader import put
 from ..xpcs_file import XpcsFile as XF
-from collections import deque
 from shutil import copyfile
 from ..helper.listmodel import ListDataModel
 import pyqtgraph as pg
@@ -123,7 +121,6 @@ class AverageToolbox(QtCore.QRunnable):
         steps = (tot_num + chunk_size - 1) // chunk_size
         mask = np.zeros(tot_num, dtype=np.int)
         prev_percentage = 0
-        discard_list = deque()
 
         def validate_g2_baseline(g2_data, q_idx):
             if q_idx >= g2_data.shape[1]:
@@ -194,6 +191,7 @@ class AverageToolbox(QtCore.QRunnable):
         
         if np.sum(mask) == 0:
             logger.info('no dataset is valid; check the baseline criteria.')
+            return
         else:
             for key in fields:
                 if key == 'saxs_1d':
@@ -207,10 +205,6 @@ class AverageToolbox(QtCore.QRunnable):
             logger.info('the valid dataset number is %d / %d' % (
                 np.sum(mask), tot_num))
         
-        for m in range(tot_num):
-            if not mask[m]:
-                discard_list.append(self.model[m])
-
         logger.info('create file: {}'.format(save_path))
         copyfile(self.origin_path, save_path)
         put(save_path, result, mode='alias')
@@ -276,3 +270,88 @@ class AverageToolbox(QtCore.QRunnable):
         tree.setWindowTitle('Job_%d_%s' % (self.jid, self.model[0]))
         tree.resize(600, 800)
         return tree
+
+
+def do_average(flist, work_dir=None, save_path=None, avg_window=3, 
+               avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05,
+               fields=['saxs_2d', 'saxs_1d', 'g2', 'g2_err']):
+
+    if work_dir is None:
+        work_dir = './' 
+
+    tot_num = len(flist)
+    abs_cs_scale_tot = 0.0
+    baseline = np.zeros(tot_num, dtype=np.float32)
+    mask = np.zeros(tot_num, dtype=np.int)
+
+    def validate_g2_baseline(g2_data, q_idx):
+        if q_idx >= g2_data.shape[1]:
+            idx = 0 
+            logger.info('q_index is out of range; using 0 instead')
+        else:
+            idx = q_idx
+
+        g2_baseline = np.mean(g2_data[-avg_window:, idx])
+        if avg_blmax >= g2_baseline >= avg_blmin:
+            return True, g2_baseline
+        else:
+            return False, g2_baseline
+
+    result = {}
+    for key in fields:
+        result[key] = None 
+
+    for m in range(tot_num):
+        fname = flist[m]
+        try:
+            xf = XF(fname, cwd=work_dir, fields=fields)
+            flag, val = validate_g2_baseline(xf.g2, avg_qindex)
+            baseline[m] = val
+        except Exception as ec:
+            flag, val = False, 0
+            logger.error('file %s is damaged, skip', fname)
+
+        if flag:
+            for key in fields:
+                if key != 'saxs_1d':
+                    data = xf.at(key)
+                else:
+                    data = xf.at('saxs_1d')['data_raw']
+                    if xf.abs_cross_section_scale is not None:
+                        data *= xf.abs_cross_section_scale
+                        abs_cs_scale_tot += xf.abs_cross_section_scale 
+
+                if result[key] is None:
+                    result[key] = data
+                    mask[m] = 1
+                elif result[key].shape == data.shape:
+                    result[key] += data
+                    mask[m] = 1
+                else:
+                    logger.info(f'data shape does not match for key {key}, {fname}')
+    
+    if np.sum(mask) == 0:
+        logger.info('no dataset is valid; check the baseline criteria.')
+        return
+    else:
+        for key in fields:
+            if key == 'saxs_1d':
+                # only keep the Iq component, put method doesn't accept dict
+                # result['saxs_1d'] = result['saxs_1d'] / np.sum(mask)
+                result['saxs_1d'] /= abs_cs_scale_tot
+            else:
+                result[key] /= np.sum(mask)
+            if key == 'g2_err':
+                result[key] /= np.sqrt(np.sum(mask))
+
+        logger.info('the valid dataset number is %d / %d' % (
+            np.sum(mask), tot_num))
+
+    original_file = os.path.join(work_dir, flist[0])
+    if save_path is None:
+        save_path = 'AVG' + os.path.basename(flist[0])
+    logger.info('create file: {}'.format(save_path))
+    copyfile(original_file, save_path)
+    put(save_path, result, mode='alias')
+
+    return baseline 
