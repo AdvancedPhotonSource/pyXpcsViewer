@@ -2,9 +2,9 @@
 
 A python-based interactive visualization tool for XPCS results at APS 8-ID.
 
-![g2](/docs/images/g2mod.png)
-![g2]<img src=/docs/images/g2mod.png width="100" height="100">
-<!-- <img src="https://your-image-url.type" width="100" height="100"> -->
+<!-- ![g2](/docs/images/g2mod.png) -->
+![g2]<img src=/docs/images/g2mod.png width="500" height="500">
+
 
 ## Install pyXpcsViewer
 `pyXpcsViewer` can be installed via `pip`:
