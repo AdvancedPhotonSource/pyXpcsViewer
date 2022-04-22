@@ -317,9 +317,11 @@ def do_average(flist, work_dir=None, save_path=None, avg_window=3,
                     data = xf.at(key)
                 else:
                     data = xf.at('saxs_1d')['data_raw']
-                    if xf.abs_cross_section_scale is not None:
-                        data *= xf.abs_cross_section_scale
-                        abs_cs_scale_tot += xf.abs_cross_section_scale 
+                    scale = xf.abs_cross_section_scale
+                    if scale is None:
+                        scale = 1.0
+                    data *= scale
+                    abs_cs_scale_tot += scale
 
                 if result[key] is None:
                     result[key] = data
@@ -336,8 +338,6 @@ def do_average(flist, work_dir=None, save_path=None, avg_window=3,
     else:
         for key in fields:
             if key == 'saxs_1d':
-                # only keep the Iq component, put method doesn't accept dict
-                # result['saxs_1d'] = result['saxs_1d'] / np.sum(mask)
                 result['saxs_1d'] /= abs_cs_scale_tot
             else:
                 result[key] /= np.sum(mask)
