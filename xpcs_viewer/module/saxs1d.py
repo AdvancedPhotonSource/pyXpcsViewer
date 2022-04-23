@@ -133,6 +133,13 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
             plot_id += 1
         
     ax.set_xlabel(xlabel)
+
+    if plot_norm == 0:  # no normalization
+        if absolute_crosssection:
+            ylabel = ylabel + ' (1/cm)'
+        else:
+            ylabel = ylabel + ' (photon/pixel/frame)'
+
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
