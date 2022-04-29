@@ -11,8 +11,8 @@ import time
 
 # hide the lines in legend
 # https://stackoverflow.com/questions/21285885
-matplotlib.rcParams['legend.handlelength'] = 0
-matplotlib.rcParams['legend.numpoints'] = 1
+# matplotlib.rcParams['legend.handlelength'] = 2
+# matplotlib.rcParams['legend.numpoints'] = 1
 
 # matplotlib.pyplot.style.use(['science', 'no-latex'])
 
