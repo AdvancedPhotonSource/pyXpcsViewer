@@ -12,7 +12,7 @@ pip install -U pyXpcsViewer
 ```
 The same command can be used to update `pyXpcsViewer` to the latest version. We recommend using a fresh python virtual environment for the install. 
 
-Please visit our [Wiki page](https://github.com/qzhang234/dummy_xpcsviewer_Wiki/wiki) for:
+Please visit our [Wiki page](https://github.com/AdvancedPhotonSource/pyXpcsViewer/wiki) for:
 
 * A step-by-step instructions on installing pyXpcsViewer;
 * A quick look of `pyXpcsViewer` CLI, (a.k.a. 'Script Mode'), which allows users to build customized analysis workflow and figure-rendering based on `pyXpcsViewer`'s core functionalities.
