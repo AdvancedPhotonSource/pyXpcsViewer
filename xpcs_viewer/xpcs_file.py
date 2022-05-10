@@ -159,7 +159,7 @@ class XpcsFile(object):
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
                   'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
-                  'dnophi', 'sphilist']
+                  'dnophi', 'sphilist', 'dphilist']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
