@@ -1,7 +1,6 @@
 import os
 import numpy as np
-from .fileIO.hdf_reader import get, get_type, create_id
-from .plothandler.pyqtgraph_handler import ImageViewDev
+from .fileIO.hdf_reader import get, get_type, create_id, get_abs_cs_scale
 from .plothandler.matplot_qt import MplCanvasBarV
 from .module import saxs2d, saxs1d, intt, stability, g2mod
 from .module.g2mod import create_slice
@@ -198,6 +197,9 @@ class XpcsFile(object):
 
         self.reshape_phi_analysis(ret)
 
+        scale = get_abs_cs_scale(self.full_path)
+        ret['abs_cross_section_scale'] = scale
+
         return ret.keys(), ret
 
     def reshape_phi_analysis(self, info):
@@ -342,7 +344,6 @@ class XpcsFile(object):
 
         if mode == 'saxs2d':
             try:
-                # win = ImageViewDev()
                 win = pg.ImageView()
                 saxs2d.plot([self.saxs_2d], win, **kwargs)
             except Exception:

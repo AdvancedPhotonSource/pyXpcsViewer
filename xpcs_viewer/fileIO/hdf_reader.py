@@ -49,6 +49,15 @@ def put(save_path, result, mode='raw'):
         return
 
 
+def get_abs_cs_scale(fname):
+    key = hdf_key['abs_cross_section_scale']
+    with h5py.File(fname, 'r') as f:
+        if key not in f:
+            return None
+        else:
+            return float(f[key][()])
+
+
 def get(fname, fields, mode='raw', ret_type='dict'):
     """
     get the values for the various keys listed in fields for a single

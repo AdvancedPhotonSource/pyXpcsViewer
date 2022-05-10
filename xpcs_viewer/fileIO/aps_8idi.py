@@ -38,4 +38,5 @@ key = {
   "dphilist": "/xpcs/dphilist",
   "sphispan": "/xpcs/sphispan",
   "sqspan": "/xpcs/sqspan",
+  "abs_cross_section_scale": "/measurement/sample/absolute_cross_section_scale",
 }

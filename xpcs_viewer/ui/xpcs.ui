@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1877</width>
-    <height>1035</height>
+    <height>1036</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -719,7 +719,7 @@
                  </property>
                 </spacer>
                </item>
-               <item row="0" column="2">
+               <item row="0" column="3">
                 <spacer name="horizontalSpacer_8">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -738,63 +738,6 @@
                   <widget class="QLabel" name="label_21">
                    <property name="text">
                     <string>type:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QLabel" name="label_55">
-                   <property name="text">
-                    <string>sampling:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="9">
-                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="5">
-                  <widget class="QSpinBox" name="saxs1d_sampling">
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>1</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="5">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000500000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0" colspan="2">
-                  <widget class="QLabel" name="label_49">
-                   <property name="text">
-                    <string>q range (Å⁻¹)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="6" colspan="3">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>offset:</string>
                    </property>
                   </widget>
                  </item>
@@ -825,6 +768,86 @@
                    </item>
                   </widget>
                  </item>
+                 <item row="0" column="12">
+                  <widget class="QComboBox" name="cb_saxs_norm">
+                   <item>
+                    <property name="text">
+                     <string>none</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I' = Iq2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I' = Iq4</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>I' = I/Io</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="0" column="6" colspan="3">
+                  <widget class="QLabel" name="label_22">
+                   <property name="text">
+                    <string>offset:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="13" colspan="4">
+                  <widget class="QComboBox" name="saxs1d_lb_type">
+                   <item>
+                    <property name="text">
+                     <string>no drawing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>slope drawing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>horizontal line</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="2">
+                  <widget class="QLabel" name="label_49">
+                   <property name="text">
+                    <string>q range (Å⁻¹)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="5">
+                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.000500000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QSpinBox" name="saxs1d_sampling">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="1" column="9">
                   <widget class="QDoubleSpinBox" name="sb_saxs_marker_size">
                    <property name="minimum">
@@ -845,7 +868,20 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="11">
+                 <item row="0" column="9">
+                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="12">
                   <widget class="QComboBox" name="saxs1d_legend_loc">
                    <item>
                     <property name="text">
@@ -909,48 +945,35 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="1" column="12" colspan="2">
-                  <widget class="QCheckBox" name="box_all_phi">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
+                 <item row="2" column="12">
+                  <widget class="QLabel" name="label_59">
                    <property name="text">
-                    <string>show all phi</string>
+                    <string>weight</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="11">
-                  <widget class="QComboBox" name="cb_saxs_norm">
-                   <item>
-                    <property name="text">
-                     <string>none</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = Iq2</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = Iq4</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = I/Io</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="10">
-                  <widget class="QLabel" name="label_23">
+                 <item row="2" column="0" colspan="5">
+                  <widget class="QCheckBox" name="cbox_use_abs">
                    <property name="text">
-                    <string>normalization:</string>
+                    <string>using absolute cross section</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2" colspan="2">
+                 <item row="0" column="3" colspan="2">
+                  <widget class="QLabel" name="label_55">
+                   <property name="text">
+                    <string>sampling:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="6" colspan="5">
+                  <widget class="QLineEdit" name="le_bkg_fname">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2" colspan="3">
                   <widget class="QDoubleSpinBox" name="saxs1d_qmin">
                    <property name="decimals">
                     <number>4</number>
@@ -960,46 +983,77 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="10">
+                 <item row="2" column="11">
+                  <widget class="QPushButton" name="btn_select_bkgfile">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>select</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="10" colspan="2">
                   <widget class="QLabel" name="label_52">
                    <property name="text">
                     <string>legend loc:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="14" colspan="2">
-                  <widget class="QPushButton" name="pushButton_10">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
+                 <item row="0" column="10" colspan="2">
+                  <widget class="QLabel" name="label_23">
                    <property name="text">
-                    <string>Plot</string>
+                    <string>normalization:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="12" colspan="4">
-                  <widget class="QComboBox" name="saxs1d_lb_type">
-                   <item>
-                    <property name="text">
-                     <string>no drawing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>slope drawing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>horizontal line</string>
-                    </property>
-                   </item>
+                 <item row="2" column="5">
+                  <widget class="QCheckBox" name="cb_sub_bkg">
+                   <property name="text">
+                    <string>subtract background</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="13" colspan="4">
+                  <widget class="QCheckBox" name="box_all_phi">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string>show all phi</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="13" colspan="4">
+                  <widget class="QDoubleSpinBox" name="bkg_weight">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <double>99.999899999999997</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
                   </widget>
                  </item>
                 </layout>
+               </item>
+               <item row="0" column="2">
+                <widget class="QPushButton" name="pushButton_10">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Plot</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -1343,8 +1397,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1369</width>
-                 <height>712</height>
+                 <width>1362</width>
+                 <height>721</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -3330,7 +3384,6 @@
   <tabstop>sb_saxs_marker_size</tabstop>
   <tabstop>saxs1d_legend_loc</tabstop>
   <tabstop>box_all_phi</tabstop>
-  <tabstop>pushButton_10</tabstop>
   <tabstop>cb_stab_type</tabstop>
   <tabstop>sb_stab_offset</tabstop>
   <tabstop>cb_stab_norm</tabstop>
@@ -3416,8 +3469,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1002</x>
+     <y>972</y>
     </hint>
     <hint type="destinationlabel">
      <x>976</x>
@@ -3432,8 +3485,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -3448,8 +3501,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>899</x>
-     <y>101</y>
+     <x>1196</x>
+     <y>982</y>
     </hint>
     <hint type="destinationlabel">
      <x>585</x>
@@ -3480,12 +3533,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1169</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1309</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3496,12 +3549,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1323</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1309</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3512,12 +3565,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1172</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1517</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3544,12 +3597,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1310</x>
+     <y>971</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1517</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3560,12 +3613,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1232</x>
+     <y>935</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1502</x>
+     <y>954</y>
     </hint>
    </hints>
   </connection>
@@ -3576,8 +3629,8 @@
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>569</x>
-     <y>136</y>
+     <x>809</x>
+     <y>972</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
@@ -3592,12 +3645,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1000</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1517</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3608,12 +3661,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1148</x>
-     <y>916</y>
+     <x>1265</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -3640,12 +3693,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1039</x>
+     <y>935</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1502</x>
+     <y>954</y>
     </hint>
    </hints>
   </connection>
@@ -3672,12 +3725,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1382</x>
-     <y>918</y>
+     <x>1557</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -3688,8 +3741,8 @@
    <slot>plot_stability_iq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1517</x>
+     <y>972</y>
     </hint>
     <hint type="destinationlabel">
      <x>1081</x>
@@ -3704,12 +3757,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1365</x>
+     <y>934</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1502</x>
+     <y>954</y>
     </hint>
    </hints>
   </connection>
@@ -3720,12 +3773,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1556</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1309</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3752,12 +3805,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>810</x>
-     <y>918</y>
+     <x>715</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -3768,12 +3821,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1517</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1517</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3784,8 +3837,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1702</x>
+     <y>954</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -3800,8 +3853,8 @@
    <slot>plot_saxs_2D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>90</y>
+     <x>1502</x>
+     <y>954</y>
     </hint>
     <hint type="destinationlabel">
      <x>401</x>
@@ -3832,8 +3885,8 @@
    <slot>plot_saxs_1D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
@@ -3864,8 +3917,8 @@
    <slot>plot_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1309</x>
+     <y>972</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3880,8 +3933,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>809</x>
-     <y>101</y>
+     <x>1562</x>
+     <y>982</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
@@ -3896,12 +3949,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>90</y>
+     <x>939</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>565</x>
-     <y>90</y>
+     <x>1309</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -3912,8 +3965,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1253</x>
+     <y>972</y>
     </hint>
     <hint type="destinationlabel">
      <x>1126</x>
@@ -3944,12 +3997,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
    </hints>
   </connection>
@@ -3960,12 +4013,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
    </hints>
   </connection>
@@ -3976,12 +4029,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>803</x>
+     <y>895</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
    </hints>
   </connection>
@@ -3992,12 +4045,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>803</x>
+     <y>932</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
    </hints>
   </connection>
@@ -4008,12 +4061,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>803</x>
+     <y>858</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
    </hints>
   </connection>
@@ -4024,12 +4077,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1149</x>
+     <y>810</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>86</y>
+     <x>822</x>
+     <y>811</y>
     </hint>
    </hints>
   </connection>
@@ -4040,12 +4093,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1149</x>
+     <y>847</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>86</y>
+     <x>822</x>
+     <y>848</y>
     </hint>
    </hints>
   </connection>
@@ -4056,12 +4109,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1149</x>
+     <y>927</y>
     </hint>
     <hint type="destinationlabel">
-     <x>569</x>
-     <y>136</y>
+     <x>809</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -4072,12 +4125,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>86</y>
+     <x>1149</x>
+     <y>967</y>
     </hint>
     <hint type="destinationlabel">
-     <x>569</x>
-     <y>136</y>
+     <x>809</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -4088,12 +4141,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>876</x>
-     <y>950</y>
+     <x>812</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4104,12 +4157,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>970</x>
-     <y>950</y>
+     <x>1034</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4120,12 +4173,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>803</x>
+     <y>932</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>803</x>
+     <y>969</y>
     </hint>
    </hints>
   </connection>
@@ -4136,12 +4189,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>803</x>
+     <y>969</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>615</x>
+     <y>859</y>
     </hint>
    </hints>
   </connection>
@@ -4152,12 +4205,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1382</x>
-     <y>952</y>
+     <x>1557</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4168,12 +4221,12 @@
    <slot>clearSelection()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>58</x>
-     <y>537</y>
+     <x>78</x>
+     <y>995</y>
     </hint>
     <hint type="destinationlabel">
-     <x>74</x>
-     <y>558</y>
+     <x>104</x>
+     <y>911</y>
     </hint>
    </hints>
   </connection>
@@ -4184,12 +4237,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1148</x>
-     <y>950</y>
+     <x>1265</x>
+     <y>933</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4200,12 +4253,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>970</x>
-     <y>916</y>
+     <x>1034</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1579</x>
-     <y>958</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4216,12 +4269,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1454</x>
+     <y>857</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1330</x>
+     <y>858</y>
     </hint>
    </hints>
   </connection>
@@ -4232,12 +4285,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1454</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1330</x>
+     <y>897</y>
     </hint>
    </hints>
   </connection>
@@ -4248,12 +4301,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1454</x>
+     <y>934</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1330</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4264,12 +4317,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1454</x>
+     <y>971</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1330</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -4280,12 +4333,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1759</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1635</x>
+     <y>897</y>
     </hint>
    </hints>
   </connection>
@@ -4296,12 +4349,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1759</x>
+     <y>934</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1635</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4312,12 +4365,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1759</x>
+     <y>971</y>
     </hint>
     <hint type="destinationlabel">
-     <x>549</x>
-     <y>101</y>
+     <x>1635</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
@@ -4328,12 +4381,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1441</x>
-     <y>939</y>
+     <x>1720</x>
+     <y>932</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1547</x>
-     <y>923</y>
+     <x>1802</x>
+     <y>935</y>
     </hint>
    </hints>
   </connection>
@@ -4344,12 +4397,60 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1485</x>
-     <y>901</y>
+     <x>1720</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1557</x>
-     <y>897</y>
+     <x>1802</x>
+     <y>935</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_sub_bkg</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>le_bkg_fname</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>917</x>
+     <y>957</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1181</x>
+     <y>964</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_sub_bkg</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>btn_select_bkgfile</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>887</x>
+     <y>959</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1382</x>
+     <y>965</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_sub_bkg</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>bkg_weight</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1026</x>
+     <y>947</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1627</x>
+     <y>965</y>
     </hint>
    </hints>
   </connection>

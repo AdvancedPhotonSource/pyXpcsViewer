@@ -7,6 +7,8 @@ from .helper.listmodel import TableDataModel
 import pyqtgraph as pg
 import os
 import logging
+from .xpcs_file import XpcsFile
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,10 @@ class ViewerKernel(FileLocator):
 
     def reset_meta(self):
         self.meta = {
+            # saxs 1d:
+            'saxs1d_bkg_fname': None,
+            'saxs1d_bkg_xf': None,
+
             # twotime
             'twotime_fname': None,
             'twotime_dqmap': None,
@@ -38,7 +44,7 @@ class ViewerKernel(FileLocator):
             'g2_num_points': None,
             'g2_data': None,
             'g2_plot_condition': tuple([None, None, None]),
-            'g2_fit_val': {}
+            'g2_fit_val': {},
         }
         return
 
@@ -59,6 +65,12 @@ class ViewerKernel(FileLocator):
 
         if self.statusbar is not None:
             self.statusbar.showMessage(msg, 1500)
+    
+    def select_bkgfile(self, f):
+        fname = os.path.basename(f)
+        path = os.path.dirname(f)
+        self.meta['saxs1d_bkg_fname'] = f
+        self.meta['saxs1d_bkg_xf'] = XpcsFile(fname, path)
 
     def get_g2_data(self, max_points, rows, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows)
@@ -118,7 +130,8 @@ class ViewerKernel(FileLocator):
 
     def plot_saxs_1d(self, mp_hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        saxs1d.plot(xf_list, mp_hdl, max_points=max_points, **kwargs)
+        saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
+                    max_points=max_points, **kwargs)
     
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         saxs1d.switch_line_builder(mp_hdl, lb_type)
