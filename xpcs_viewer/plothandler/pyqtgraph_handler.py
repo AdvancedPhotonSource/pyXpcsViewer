@@ -116,8 +116,8 @@ class ImageViewDev(ImageView):
                 second_point=None, label=None):
         # label: label of roi; default is None, which is for roi-draw
 
-        if label is not None and label in self.hdl.roi:
-            self.hdl.remove_item(label)
+        if label is not None and label in self.roi_record:
+            self.remove_roi(label)
 
         if sl_mode == 'inclusive':
             pen = pg.mkPen(color=color, width=width, style=QtCore.Qt.DotLine)
@@ -184,7 +184,6 @@ class ImageViewDev(ImageView):
         self.roi_record[label] = new_roi
         self.addItem(new_roi)
         new_roi.sigRemoveRequested.connect(lambda: self.remove_roi(label))
-
         return label 
     
     def remove_rois(self, filter_str=None):
@@ -199,7 +198,20 @@ class ImageViewDev(ImageView):
         t = self.roi_record.pop(roi_key, None)
         if t is not None:
             self.removeItem(t)
-    
+
+    def get_roi_list(self):
+        parameter = []
+        for key, roi in self.roi_record.items():
+            if key.startswith('RingB'):
+                temp = {
+                    'sl_type': 'Ring',
+                    'radius': (roi.getState()['size'][1],
+                        self.roi_record['RingA'].getState()['size'][1])}
+                parameter.append(temp)
+            elif key.startswith('roi'):
+                temp = roi.get_parameter()
+                parameter.append(temp)
+        return parameter
 
 
 class PlotWidgetDev(GraphicsLayoutWidget):
@@ -218,7 +230,6 @@ class PlotWidgetDev(GraphicsLayoutWidget):
         width = self.width()
         canvas_size = max(min_size, int(width / num_col * aspect * num_row))
         self.setMinimumSize(QtCore.QSize(0, canvas_size))
-
 
 
 class PieROI(pg.ROI):
@@ -272,6 +283,7 @@ class PieROI(pg.ROI):
         size = state['size']
         dist = np.hypot(size[0], size[1] / 2.0)
         ret = {
+            'sl_type': 'Pie',
             'dist': dist,
             'angle_range': angle_range,
             'pos': tuple(self.pos())
