@@ -127,6 +127,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_up.clicked.connect(lambda: self.reorder_target('up'))
         self.btn_down.clicked.connect(lambda: self.reorder_target('down'))
 
+        # saxs2d roi
+        self.btn_saxs2d_roi_add.clicked.connect(self.saxs2d_roi_add)
+
         self.update_g2_fitting_function()
         self.show()
 
@@ -282,13 +285,29 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {
             'plot_type': self.cb_saxs2D_type.currentText(),
             'cmap': self.cb_saxs2D_cmap.currentText(),
-            'autorotate': self.saxs2d_autorotate.isChecked(),
+            'rotate': self.saxs2d_rotate.isChecked(),
             'display': self.saxs2d_display,
             'autorange': self.saxs2d_autorange.isChecked(),
             'vmin': self.saxs2d_min.value(),
             'vmax': self.saxs2d_max.value(),
         }
         self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
+    
+    def saxs2d_roi_add(self):
+        if not self.check_status(show_msg=False):
+            return
+        #         sl_type='Pie', width=3, sl_mode='exclusive',
+        #         second_point=None, label=Non
+        sl_type_idx = self.cb_saxs2D_roi_type.currentIndex()
+        if sl_type_idx == 0:
+            return
+        kwargs = {
+            'sl_type': (None, 'Pie', 'Circle', 'Line')[sl_type_idx],
+            'color': 'r',
+            'width': 1,
+            'radius': 100,
+        }
+        self.vk.add_roi(self.pg_saxs, **kwargs)
 
     def plot_saxs_1D(self):
         if not self.check_status():
@@ -308,12 +327,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'absolute_crosssection': self.cbox_use_abs.isChecked(),
             'subtract_background': self.cb_sub_bkg.isChecked(),
             'weight': self.bkg_weight.value(),
+            'show_roi': self.box_show_roi.isChecked(),
+            'show_phi_roi': self.box_show_phi_roi.isChecked(),
         }
         if kwargs['qmin'] >= kwargs['qmax']:
             self.statusbar.showMessage('check qmin and qmax')
             return
 
-        self.vk.plot_saxs_1d(self.mp_saxs.hdl, **kwargs)
+        self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs.hdl, **kwargs)
         self.mp_saxs.repaint()
         # adjust the line behavior
         self.switch_saxs1d_line()
