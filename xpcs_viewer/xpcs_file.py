@@ -159,7 +159,7 @@ class XpcsFile(object):
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
                   'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
-                  'dnophi', 'sphilist', 'dphilist']
+                  'dnophi', 'sphilist', 'dphilist', 'sqspan', 'ql_sta']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -574,6 +574,103 @@ class XpcsFile(object):
         self.fit_summary['tauq_fit_val'] = fit_val[0]
 
         return self.fit_summary
+    
+    def compute_qmap(self):
+        shape = (self.ydim, self.xdim)
+        k0 = 2 * np.pi / (12.398 / self.X_energy)
+        v = np.arange(shape[0], dtype=np.uint32) - self.ccd_y0
+        h = np.arange(shape[1], dtype=np.uint32) - self.ccd_x0
+        vg, hg = np.meshgrid(v, h, indexing='ij')
+
+        r = np.hypot(vg * self.pix_dim_y, hg * self.pix_dim_x)
+        r_pixel = np.hypot(vg, hg)
+        # phi = np.arctan2(vg, hg)
+        # to be compatible with matlab xpcs-gui; phi = 0 starts at 6 clock
+        # and it goes clockwise;
+        phi = np.arctan2(hg, vg)
+        phi[phi < 0] = phi[phi < 0] + np.pi * 2.0
+        phi = np.max(phi) - phi     # make it clockwise
+
+        alpha = np.arctan(r / self.det_dist)
+        qr = np.sin(alpha) * k0
+        qr = 2 * np.sin(alpha / 2) * k0
+        # qx = qr * np.cos(phi)
+        # qy = qr * np.sin(phi)
+        phi = np.rad2deg(phi)
+
+        # keep phi and q as np.float64 to keep the precision.
+        qmap = {
+            'phi': phi,
+            'q': qr,
+            'r_pixel': r_pixel
+        }
+
+        return qmap
+    
+    def get_roi_data(self, roi_parameter, phi_num=180):
+        qmap_all = self.compute_qmap()
+        qmap = qmap_all['q']
+        pmap = qmap_all['phi']
+        rmap = qmap_all['r_pixel']
+
+        if roi_parameter['sl_type'] == 'Pie':
+            pmin, pmax = roi_parameter['angle_range'] 
+            if pmax < pmin:
+                pmax += 360.0
+                pmap[pmap < pmin] += 360.0
+            proi = np.logical_and(pmap >= pmin, pmap < pmax)
+            qmap_idx = np.zeros_like(qmap, dtype=np.uint32)
+
+            index = 1
+            qsize = len(self.sqspan) - 1
+            for n in range(qsize):
+                q0, q1 = self.sqspan[n: n + 2]
+                select = (qmap >= q0) * (qmap < q1)
+                qmap_idx[select] = index
+                index += 1
+            qmap_idx = (qmap_idx * proi).ravel()
+
+            saxs_roi = np.bincount(qmap_idx, self.saxs_2d.ravel(),
+                                   minlength=qsize+1)
+            saxs_nor = np.bincount(qmap_idx, minlength=qsize+1)
+            saxs_nor[saxs_nor == 0] = 1.0
+            saxs_roi = saxs_roi * 1.0 / saxs_nor
+
+            # remove the 0th term
+            saxs_roi = saxs_roi[1:]
+
+            # set the qmax cutoff
+            dist = roi_parameter['dist']
+            # qmax = qmap[int(self.ccd_y0), int(self.ccd_x0 + dist)]
+            wlength = 12.398 / self.X_energy
+            qmax = dist * self.pix_dim_x / self.det_dist * 2 * np.pi / wlength
+            saxs_roi[self.ql_sta >= qmax] = 0
+            saxs_roi[saxs_roi <=0] = np.nan
+            return self.ql_sta, saxs_roi
+
+        elif roi_parameter['sl_type'] == 'Ring':
+            rmin, rmax = roi_parameter['radius']
+            if rmin > rmax:
+                rmin, rmax = rmax, rmin
+            rroi = np.logical_and(rmap >= rmin, rmap < rmax)
+            phi_min, phi_max = np.min(pmap[rroi]), np.max(pmap[rroi])
+            x = np.linspace(phi_min, phi_max, phi_num)
+            delta = (phi_max - phi_min) / phi_num
+            index = ((pmap - phi_min) / delta).astype(np.int64)
+            index[index == phi_num] = phi_num - 1
+            index += 1
+            # q_avg = qmap[rroi].mean()
+            index = (index * rroi).ravel()
+
+            saxs_roi = np.bincount(index, self.saxs_2d.ravel(),
+                                   minlength=phi_num+1)
+            saxs_nor = np.bincount(index, minlength=phi_num+1)
+            saxs_nor[saxs_nor == 0] = 1.0
+            saxs_roi = saxs_roi * 1.0 / saxs_nor
+
+            # remove the 0th term
+            saxs_roi = saxs_roi[1:]
+            return x, saxs_roi
 
 
 def test1():
