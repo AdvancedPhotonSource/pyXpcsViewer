@@ -8,15 +8,13 @@ def fill_center(input, out):
     return
 
 
-def list_to_numpy(ans, autorotate=True):
+def list_to_numpy(ans, rotate=True):
     v_size = 0
     h_size = 0
 
-    rotate = False
     for n in range(len(ans)):
-        if autorotate and ans[n].shape[0] > ans[n].shape[1]:
+        if rotate:
             ans[n] = ans[n].swapaxes(0, 1)
-            rotate = True
 
     for x in ans:
         v_size = max(v_size, x.shape[0])
@@ -33,11 +31,11 @@ def list_to_numpy(ans, autorotate=True):
     return ret, rotate
 
 
-def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', autorotate=False,
+def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
          epsilon=None, display=None, extent=None, autorange=True, vmin=None,
          vmax=None):
-
-    ans, rotate = list_to_numpy(ans, autorotate)
+    #
+    ans, rotate = list_to_numpy(ans, rotate)
     # if pg_hdl is None:
     #     from pyqtgraph_handler import ImageViewDev
     #     pg_hdl = ImageViewDev()
