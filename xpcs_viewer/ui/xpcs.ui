@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1877</width>
-    <height>1036</height>
+    <width>2628</width>
+    <height>1701</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -516,10 +516,75 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="3">
-                  <widget class="QLabel" name="label_12">
+                 <item row="1" column="9">
+                  <widget class="QLabel" name="label_58">
                    <property name="text">
-                    <string>type:</string>
+                    <string>ROI type:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="12" rowspan="2">
+                  <widget class="QPushButton" name="pushButton_5">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Plot 2D SAXS</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" colspan="2">
+                  <widget class="QDoubleSpinBox" name="saxs2d_min">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-99.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>99999.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4" colspan="2">
+                  <widget class="QDoubleSpinBox" name="saxs2d_max">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-99.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>99999.000000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_50">
+                   <property name="text">
+                    <string>min:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="6" colspan="3">
+                  <widget class="QCheckBox" name="saxs2d_rotate">
+                   <property name="text">
+                    <string>rotate</string>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
                    </property>
                   </widget>
                  </item>
@@ -535,6 +600,16 @@
                      <string>linear</string>
                     </property>
                    </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="6" colspan="3">
+                  <widget class="QCheckBox" name="saxs2d_autorange">
+                   <property name="text">
+                    <string>auto-range</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
                   </widget>
                  </item>
                  <item row="0" column="1" colspan="2">
@@ -571,26 +646,6 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="9" rowspan="2">
-                  <widget class="QPushButton" name="pushButton_5">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Plot 2D SAXS</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_50">
-                   <property name="text">
-                    <string>min:</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="1" column="3">
                   <widget class="QLabel" name="label_51">
                    <property name="text">
@@ -598,58 +653,41 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="6" colspan="3">
-                  <widget class="QCheckBox" name="saxs2d_autorange">
+                 <item row="0" column="3">
+                  <widget class="QLabel" name="label_12">
                    <property name="text">
-                    <string>auto-range</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
+                    <string>type:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="6" colspan="3">
-                  <widget class="QCheckBox" name="saxs2d_autorotate">
+                 <item row="1" column="10">
+                  <widget class="QComboBox" name="cb_saxs2D_roi_type">
+                   <item>
+                    <property name="text">
+                     <string>None</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Q-Wedge</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Phi-Ring</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Line</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="11">
+                  <widget class="QPushButton" name="btn_saxs2d_roi_add">
                    <property name="text">
-                    <string>auto-rotate</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="4" colspan="2">
-                  <widget class="QDoubleSpinBox" name="saxs2d_max">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="minimum">
-                    <double>-99.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>99999.000000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1" colspan="2">
-                  <widget class="QDoubleSpinBox" name="saxs2d_min">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="minimum">
-                    <double>-99.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>99999.000000000000000</double>
+                    <string>Add</string>
                    </property>
                   </widget>
                  </item>
@@ -706,346 +744,102 @@
                <string>SAXS 1D Plot Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_24">
-               <item row="0" column="0">
-                <spacer name="horizontalSpacer_7">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+               <item row="1" column="0">
+                <widget class="QGroupBox" name="groupBox_14">
+                 <property name="title">
+                  <string>Background</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
+                 <layout class="QGridLayout" name="gridLayout_34">
+                  <item row="0" column="0">
+                   <widget class="QCheckBox" name="cb_sub_bkg">
+                    <property name="text">
+                     <string>subtract background</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLineEdit" name="le_bkg_fname">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QPushButton" name="btn_select_bkgfile">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="text">
+                     <string>select</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QLabel" name="label_59">
+                    <property name="text">
+                     <string>weight</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="4">
+                   <widget class="QDoubleSpinBox" name="bkg_weight">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>99.999899999999997</double>
+                    </property>
+                    <property name="value">
+                     <double>1.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </item>
-               <item row="0" column="3">
-                <spacer name="horizontalSpacer_8">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+               <item row="1" column="1">
+                <widget class="QGroupBox" name="groupBox_13">
+                 <property name="title">
+                  <string>Display</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
+                 <layout class="QGridLayout" name="gridLayout_32">
+                  <item row="0" column="2">
+                   <widget class="QCheckBox" name="box_show_roi">
+                    <property name="text">
+                     <string>q-I_ROIs</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QCheckBox" name="box_all_phi">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>q-I_Phi</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QCheckBox" name="box_show_phi_roi">
+                    <property name="text">
+                     <string>phi-I ROIs</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </item>
-               <item row="0" column="1">
-                <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_21">
-                   <property name="text">
-                    <string>type:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1" colspan="2">
-                  <widget class="QComboBox" name="cb_saxs_type">
-                   <property name="currentIndex">
-                    <number>3</number>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>I - q</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I - log(q)</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>log(I) - q</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>log(I) - log(q)</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="12">
-                  <widget class="QComboBox" name="cb_saxs_norm">
-                   <item>
-                    <property name="text">
-                     <string>none</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = Iq2</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = Iq4</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>I' = I/Io</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="6" colspan="3">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>offset:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="13" colspan="4">
-                  <widget class="QComboBox" name="saxs1d_lb_type">
-                   <item>
-                    <property name="text">
-                     <string>no drawing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>slope drawing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>horizontal line</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="1" column="0" colspan="2">
-                  <widget class="QLabel" name="label_49">
-                   <property name="text">
-                    <string>q range (Å⁻¹)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="5">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmax">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000500000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="5">
-                  <widget class="QSpinBox" name="saxs1d_sampling">
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>1</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="9">
-                  <widget class="QDoubleSpinBox" name="sb_saxs_marker_size">
-                   <property name="minimum">
-                    <double>1.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>20.000000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>5.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="6" colspan="3">
-                  <widget class="QLabel" name="label_54">
-                   <property name="text">
-                    <string>marker_size:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="9">
-                  <widget class="QDoubleSpinBox" name="sb_saxs_offset">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="12">
-                  <widget class="QComboBox" name="saxs1d_legend_loc">
-                   <item>
-                    <property name="text">
-                     <string>best</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>outside</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>upper right</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>upper left</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>lower left</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>lower right</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>right</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>center left</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>center right</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>lower center</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>upper center</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>center</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="2" column="12">
-                  <widget class="QLabel" name="label_59">
-                   <property name="text">
-                    <string>weight</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0" colspan="5">
-                  <widget class="QCheckBox" name="cbox_use_abs">
-                   <property name="text">
-                    <string>using absolute cross section</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3" colspan="2">
-                  <widget class="QLabel" name="label_55">
-                   <property name="text">
-                    <string>sampling:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="6" colspan="5">
-                  <widget class="QLineEdit" name="le_bkg_fname">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2" colspan="3">
-                  <widget class="QDoubleSpinBox" name="saxs1d_qmin">
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.002000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="11">
-                  <widget class="QPushButton" name="btn_select_bkgfile">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>select</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="10" colspan="2">
-                  <widget class="QLabel" name="label_52">
-                   <property name="text">
-                    <string>legend loc:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="10" colspan="2">
-                  <widget class="QLabel" name="label_23">
-                   <property name="text">
-                    <string>normalization:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="5">
-                  <widget class="QCheckBox" name="cb_sub_bkg">
-                   <property name="text">
-                    <string>subtract background</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="13" colspan="4">
-                  <widget class="QCheckBox" name="box_all_phi">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show saxs_1d lines for  all phi partitions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="text">
-                    <string>show all phi</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="13" colspan="4">
-                  <widget class="QDoubleSpinBox" name="bkg_weight">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="maximum">
-                    <double>99.999899999999997</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="0" column="2">
+               <item row="1" column="2">
                 <widget class="QPushButton" name="pushButton_10">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
@@ -1053,6 +847,264 @@
                  <property name="text">
                   <string>Plot</string>
                  </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="3">
+                <widget class="QGroupBox" name="groupBox_15">
+                 <property name="title">
+                  <string>Basic</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_16">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_21">
+                    <property name="text">
+                     <string>type:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1" colspan="2">
+                   <widget class="QComboBox" name="cb_saxs_type">
+                    <property name="currentIndex">
+                     <number>3</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>I - q</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I - log(q)</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>log(I) - q</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>log(I) - log(q)</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QLabel" name="label_55">
+                    <property name="text">
+                     <string>sampling:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="4">
+                   <widget class="QSpinBox" name="saxs1d_sampling">
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="value">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="5">
+                   <widget class="QLabel" name="label_22">
+                    <property name="text">
+                     <string>offset:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="6">
+                   <widget class="QDoubleSpinBox" name="sb_saxs_offset">
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.050000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="7">
+                   <widget class="QLabel" name="label_23">
+                    <property name="text">
+                     <string>normalization:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="8">
+                   <widget class="QComboBox" name="cb_saxs_norm">
+                    <item>
+                     <property name="text">
+                      <string>none</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = Iq2</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = Iq4</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>I' = I/Io</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="0" column="9">
+                   <widget class="QComboBox" name="saxs1d_lb_type">
+                    <item>
+                     <property name="text">
+                      <string>no drawing</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>slope drawing</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>horizontal line</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QLabel" name="label_49">
+                    <property name="text">
+                     <string>q range (Å⁻¹)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2" colspan="2">
+                   <widget class="QDoubleSpinBox" name="saxs1d_qmin">
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.002000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="4">
+                   <widget class="QDoubleSpinBox" name="saxs1d_qmax">
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.000500000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>1.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="5">
+                   <widget class="QLabel" name="label_54">
+                    <property name="text">
+                     <string>marker_size:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="6">
+                   <widget class="QDoubleSpinBox" name="sb_saxs_marker_size">
+                    <property name="minimum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>20.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>5.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="7">
+                   <widget class="QLabel" name="label_52">
+                    <property name="text">
+                     <string>legend loc:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="8">
+                   <widget class="QComboBox" name="saxs1d_legend_loc">
+                    <item>
+                     <property name="text">
+                      <string>best</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>outside</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>upper right</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>upper left</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>lower left</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>lower right</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>right</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>center left</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>center right</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>lower center</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>upper center</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>center</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="1" column="9">
+                   <widget class="QCheckBox" name="cbox_use_abs">
+                    <property name="text">
+                     <string>using absolute cross section</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </widget>
                </item>
               </layout>
@@ -1397,8 +1449,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1362</width>
-                 <height>721</height>
+                 <width>1693</width>
+                 <height>1247</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -3368,7 +3420,7 @@
   <tabstop>btn_up</tabstop>
   <tabstop>btn_down</tabstop>
   <tabstop>cb_saxs2D_type</tabstop>
-  <tabstop>saxs2d_autorotate</tabstop>
+  <tabstop>saxs2d_rotate</tabstop>
   <tabstop>pushButton_5</tabstop>
   <tabstop>saxs2d_min</tabstop>
   <tabstop>saxs2d_max</tabstop>
@@ -3383,7 +3435,6 @@
   <tabstop>saxs1d_qmax</tabstop>
   <tabstop>sb_saxs_marker_size</tabstop>
   <tabstop>saxs1d_legend_loc</tabstop>
-  <tabstop>box_all_phi</tabstop>
   <tabstop>cb_stab_type</tabstop>
   <tabstop>sb_stab_offset</tabstop>
   <tabstop>cb_stab_norm</tabstop>
@@ -3469,8 +3520,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1002</x>
-     <y>972</y>
+     <x>1495</x>
+     <y>1584</y>
     </hint>
     <hint type="destinationlabel">
      <x>976</x>
@@ -3485,8 +3536,8 @@
    <slot>plot_g2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
     <hint type="destinationlabel">
      <x>926</x>
@@ -3501,8 +3552,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1196</x>
-     <y>982</y>
+     <x>1716</x>
+     <y>1603</y>
     </hint>
     <hint type="destinationlabel">
      <x>585</x>
@@ -3517,8 +3568,8 @@
    <slot>trie_search()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>420</x>
-     <y>485</y>
+     <x>591</x>
+     <y>774</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -3533,12 +3584,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1169</x>
-     <y>933</y>
+     <x>1707</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1309</x>
-     <y>972</y>
+     <x>2135</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3549,12 +3600,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1323</x>
-     <y>933</y>
+     <x>1873</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1309</x>
-     <y>972</y>
+     <x>2135</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3565,12 +3616,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1172</x>
-     <y>933</y>
+     <x>1730</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1517</x>
-     <y>972</y>
+     <x>2093</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3581,8 +3632,8 @@
    <slot>remove_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>426</x>
-     <y>523</y>
+     <x>807</x>
+     <y>834</y>
     </hint>
     <hint type="destinationlabel">
      <x>518</x>
@@ -3597,12 +3648,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1310</x>
-     <y>971</y>
+     <x>1874</x>
+     <y>1576</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1517</x>
-     <y>972</y>
+     <x>2093</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3613,12 +3664,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1232</x>
-     <y>935</y>
+     <x>1563</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1502</x>
-     <y>954</y>
+     <x>2289</x>
+     <y>1562</y>
     </hint>
    </hints>
   </connection>
@@ -3629,8 +3680,8 @@
    <slot>plot_tauq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>809</x>
-     <y>972</y>
+     <x>1272</x>
+     <y>1584</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
@@ -3645,12 +3696,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1000</x>
-     <y>933</y>
+     <x>1546</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1517</x>
-     <y>972</y>
+     <x>2093</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3661,12 +3712,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1265</x>
-     <y>896</y>
+     <x>1891</x>
+     <y>1402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -3677,8 +3728,8 @@
    <slot>load_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>426</x>
-     <y>90</y>
+     <x>807</x>
+     <y>129</y>
     </hint>
     <hint type="destinationlabel">
      <x>776</x>
@@ -3693,12 +3744,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1039</x>
-     <y>935</y>
+     <x>1358</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1502</x>
-     <y>954</y>
+     <x>2289</x>
+     <y>1562</y>
     </hint>
    </hints>
   </connection>
@@ -3709,8 +3760,8 @@
    <slot>add_target()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>147</x>
-     <y>523</y>
+     <x>186</x>
+     <y>834</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -3725,12 +3776,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1557</x>
-     <y>896</y>
+     <x>2215</x>
+     <y>1402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -3741,8 +3792,8 @@
    <slot>plot_stability_iq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1517</x>
-     <y>972</y>
+     <x>2093</x>
+     <y>1584</y>
     </hint>
     <hint type="destinationlabel">
      <x>1081</x>
@@ -3751,18 +3802,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>saxs2d_autorotate</sender>
+   <sender>saxs2d_rotate</sender>
    <signal>stateChanged(int)</signal>
    <receiver>pushButton_5</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1365</x>
-     <y>934</y>
+     <x>1720</x>
+     <y>1525</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1502</x>
-     <y>954</y>
+     <x>2289</x>
+     <y>1562</y>
     </hint>
    </hints>
   </connection>
@@ -3773,12 +3824,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1556</x>
-     <y>933</y>
+     <x>2135</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1309</x>
-     <y>972</y>
+     <x>2135</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3789,8 +3840,8 @@
    <slot>reload_source()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>269</x>
-     <y>90</y>
+     <x>553</x>
+     <y>129</y>
     </hint>
     <hint type="destinationlabel">
      <x>730</x>
@@ -3805,12 +3856,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>715</x>
-     <y>896</y>
+     <x>1305</x>
+     <y>1402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -3821,12 +3872,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1517</x>
-     <y>933</y>
+     <x>2093</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1517</x>
-     <y>972</y>
+     <x>2093</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3837,8 +3888,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1702</x>
-     <y>954</y>
+     <x>2361</x>
+     <y>1570</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -3853,8 +3904,8 @@
    <slot>plot_saxs_2D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1502</x>
-     <y>954</y>
+     <x>2289</x>
+     <y>1562</y>
     </hint>
     <hint type="destinationlabel">
      <x>401</x>
@@ -3869,8 +3920,8 @@
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>92</x>
-     <y>934</y>
+     <x>140</x>
+     <y>1557</y>
     </hint>
     <hint type="destinationlabel">
      <x>68</x>
@@ -3885,8 +3936,8 @@
    <slot>plot_saxs_1D()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
@@ -3901,8 +3952,8 @@
    <slot>load_data()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>172</x>
-     <y>942</y>
+     <x>302</x>
+     <y>1566</y>
     </hint>
     <hint type="destinationlabel">
      <x>345</x>
@@ -3917,8 +3968,8 @@
    <slot>plot_intt()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1309</x>
-     <y>972</y>
+     <x>2135</x>
+     <y>1584</y>
     </hint>
     <hint type="destinationlabel">
      <x>1874</x>
@@ -3933,8 +3984,8 @@
    <slot>show_hdf_info()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1562</x>
-     <y>982</y>
+     <x>2141</x>
+     <y>1603</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
@@ -3949,12 +4000,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>939</x>
-     <y>933</y>
+     <x>1465</x>
+     <y>1526</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1309</x>
-     <y>972</y>
+     <x>2135</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -3965,8 +4016,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1253</x>
-     <y>972</y>
+     <x>1775</x>
+     <y>1584</y>
     </hint>
     <hint type="destinationlabel">
      <x>1126</x>
@@ -3981,12 +4032,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>420</x>
-     <y>485</y>
+     <x>591</x>
+     <y>774</y>
     </hint>
     <hint type="destinationlabel">
-     <x>147</x>
-     <y>523</y>
+     <x>186</x>
+     <y>834</y>
     </hint>
    </hints>
   </connection>
@@ -3997,12 +4048,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>615</x>
-     <y>896</y>
+     <x>1049</x>
+     <y>1489</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
    </hints>
   </connection>
@@ -4013,12 +4064,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>615</x>
-     <y>933</y>
+     <x>1049</x>
+     <y>1535</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
    </hints>
   </connection>
@@ -4029,12 +4080,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>803</x>
-     <y>895</y>
+     <x>1262</x>
+     <y>1488</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
    </hints>
   </connection>
@@ -4045,12 +4096,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>803</x>
-     <y>932</y>
+     <x>1262</x>
+     <y>1534</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
    </hints>
   </connection>
@@ -4061,12 +4112,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>803</x>
-     <y>858</y>
+     <x>1262</x>
+     <y>1435</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
    </hints>
   </connection>
@@ -4077,12 +4128,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1149</x>
-     <y>810</y>
+     <x>1696</x>
+     <y>1404</y>
     </hint>
     <hint type="destinationlabel">
-     <x>822</x>
-     <y>811</y>
+     <x>1276</x>
+     <y>1405</y>
     </hint>
    </hints>
   </connection>
@@ -4093,12 +4144,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1149</x>
-     <y>847</y>
+     <x>1696</x>
+     <y>1447</y>
     </hint>
     <hint type="destinationlabel">
-     <x>822</x>
-     <y>848</y>
+     <x>1276</x>
+     <y>1448</y>
     </hint>
    </hints>
   </connection>
@@ -4109,12 +4160,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1149</x>
-     <y>927</y>
+     <x>1696</x>
+     <y>1537</y>
     </hint>
     <hint type="destinationlabel">
-     <x>809</x>
-     <y>972</y>
+     <x>1272</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -4125,12 +4176,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1149</x>
-     <y>967</y>
+     <x>1696</x>
+     <y>1581</y>
     </hint>
     <hint type="destinationlabel">
-     <x>809</x>
-     <y>972</y>
+     <x>1272</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -4141,12 +4192,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>812</x>
-     <y>933</y>
+     <x>1452</x>
+     <y>1445</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4157,12 +4208,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1034</x>
-     <y>933</y>
+     <x>1598</x>
+     <y>1445</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4173,12 +4224,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>803</x>
-     <y>932</y>
+     <x>1262</x>
+     <y>1534</y>
     </hint>
     <hint type="destinationlabel">
-     <x>803</x>
-     <y>969</y>
+     <x>1262</x>
+     <y>1580</y>
     </hint>
    </hints>
   </connection>
@@ -4189,12 +4240,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>803</x>
-     <y>969</y>
+     <x>1262</x>
+     <y>1580</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>859</y>
+     <x>1049</x>
+     <y>1443</y>
     </hint>
    </hints>
   </connection>
@@ -4205,12 +4256,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1557</x>
-     <y>933</y>
+     <x>2215</x>
+     <y>1445</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4237,12 +4288,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1265</x>
-     <y>933</y>
+     <x>1891</x>
+     <y>1445</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4253,12 +4304,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1034</x>
-     <y>896</y>
+     <x>1598</x>
+     <y>1402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4269,12 +4320,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1454</x>
-     <y>857</y>
+     <x>2082</x>
+     <y>1431</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1330</x>
-     <y>858</y>
+     <x>1920</x>
+     <y>1432</y>
     </hint>
    </hints>
   </connection>
@@ -4285,12 +4336,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1454</x>
-     <y>896</y>
+     <x>2082</x>
+     <y>1489</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1330</x>
-     <y>897</y>
+     <x>1920</x>
+     <y>1490</y>
     </hint>
    </hints>
   </connection>
@@ -4301,12 +4352,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1454</x>
-     <y>934</y>
+     <x>2082</x>
+     <y>1540</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1330</x>
-     <y>935</y>
+     <x>1920</x>
+     <y>1541</y>
     </hint>
    </hints>
   </connection>
@@ -4317,12 +4368,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1454</x>
-     <y>971</y>
+     <x>2082</x>
+     <y>1583</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1330</x>
-     <y>972</y>
+     <x>1920</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -4333,12 +4384,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1759</x>
-     <y>896</y>
+     <x>2458</x>
+     <y>1489</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1635</x>
-     <y>897</y>
+     <x>2296</x>
+     <y>1490</y>
     </hint>
    </hints>
   </connection>
@@ -4349,12 +4400,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1759</x>
-     <y>934</y>
+     <x>2458</x>
+     <y>1540</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1635</x>
-     <y>935</y>
+     <x>2296</x>
+     <y>1541</y>
     </hint>
    </hints>
   </connection>
@@ -4365,12 +4416,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1759</x>
-     <y>971</y>
+     <x>2458</x>
+     <y>1583</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1635</x>
-     <y>972</y>
+     <x>2296</x>
+     <y>1584</y>
     </hint>
    </hints>
   </connection>
@@ -4381,12 +4432,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1720</x>
-     <y>932</y>
+     <x>2079</x>
+     <y>1557</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4397,12 +4448,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1720</x>
-     <y>896</y>
+     <x>2530</x>
+     <y>1402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1802</x>
-     <y>935</y>
+     <x>2549</x>
+     <y>1553</y>
     </hint>
    </hints>
   </connection>
@@ -4413,12 +4464,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>917</x>
-     <y>957</y>
+     <x>1112</x>
+     <y>1557</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1181</x>
-     <y>964</y>
+     <x>1563</x>
+     <y>1558</y>
     </hint>
    </hints>
   </connection>
@@ -4429,12 +4480,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>887</x>
-     <y>959</y>
+     <x>1112</x>
+     <y>1557</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1382</x>
-     <y>965</y>
+     <x>1725</x>
+     <y>1566</y>
     </hint>
    </hints>
   </connection>
@@ -4445,12 +4496,44 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1026</x>
-     <y>947</y>
+     <x>1112</x>
+     <y>1557</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1627</x>
-     <y>965</y>
+     <x>1913</x>
+     <y>1558</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>box_show_phi_roi</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>box_show_roi</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>2308</x>
+     <y>1545</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2149</x>
+     <y>1549</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>box_show_phi_roi</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>box_all_phi</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>2355</x>
+     <y>1538</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2023</x>
+     <y>1536</y>
     </hint>
    </hints>
   </connection>
