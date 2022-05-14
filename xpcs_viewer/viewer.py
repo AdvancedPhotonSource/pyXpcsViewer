@@ -304,7 +304,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {
             'sl_type': (None, 'Pie', 'Circle', 'Line')[sl_type_idx],
             'width': 1,
-            'radius': 100,
+            'radius': None,
         }
         self.vk.add_roi(self.pg_saxs, **kwargs)
 

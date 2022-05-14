@@ -134,6 +134,11 @@ class ViewerKernel(FileLocator):
         if kwargs['sl_type'] == 'Pie':
             hdl.add_roi(cen=cen, color='k', **kwargs)
         elif kwargs['sl_type'] == 'Circle':
+            if kwargs['radius'] is None:
+                radius_v = min(xf_list[0].mask.shape[0] - cen[1], cen[1])
+                radius_h = min(xf_list[0].mask.shape[1] - cen[0], cen[0])
+                kwargs['radius'] = min(radius_h, radius_v) * 0.8
+
             hdl.add_roi(cen=cen, label='RingA', color='w', **kwargs)
             kwargs['radius'] = kwargs['radius'] * 0.80
             hdl.add_roi(cen=cen, label='RingB', color='w', **kwargs)
