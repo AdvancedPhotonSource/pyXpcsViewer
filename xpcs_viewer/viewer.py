@@ -303,7 +303,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         kwargs = {
             'sl_type': (None, 'Pie', 'Circle', 'Line')[sl_type_idx],
-            'color': 'r',
             'width': 1,
             'radius': 100,
         }
