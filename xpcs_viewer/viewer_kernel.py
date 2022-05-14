@@ -132,11 +132,11 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(max_points)
         cen = (xf_list[0].ccd_x0, xf_list[0].ccd_y0)
         if kwargs['sl_type'] == 'Pie':
-            hdl.add_roi(cen=cen, **kwargs)
+            hdl.add_roi(cen=cen, color='k', **kwargs)
         elif kwargs['sl_type'] == 'Circle':
-            hdl.add_roi(cen=cen, label='RingA', **kwargs)
+            hdl.add_roi(cen=cen, label='RingA', color='w', **kwargs)
             kwargs['radius'] = kwargs['radius'] * 0.80
-            hdl.add_roi(cen=cen, label='RingB', **kwargs)
+            hdl.add_roi(cen=cen, label='RingB', color='w', **kwargs)
 
     def plot_saxs_1d(self, pg_hdl, mp_hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
