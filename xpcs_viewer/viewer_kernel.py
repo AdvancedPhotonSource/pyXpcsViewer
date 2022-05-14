@@ -127,11 +127,27 @@ class ViewerKernel(FileLocator):
         # extents = extent = (qy_min, qy_max, qx_min, qx_max)
         extent = self.cache[self.target[0]].get_detector_extent()
         saxs2d.plot(ans, extent=extent, *args, **kwargs)
-
-    def plot_saxs_1d(self, mp_hdl, max_points=128, **kwargs):
+    
+    def add_roi(self, hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
+        cen = (xf_list[0].ccd_x0, xf_list[0].ccd_y0)
+        if kwargs['sl_type'] == 'Pie':
+            hdl.add_roi(cen=cen, color='k', **kwargs)
+        elif kwargs['sl_type'] == 'Circle':
+            if kwargs['radius'] is None:
+                radius_v = min(xf_list[0].mask.shape[0] - cen[1], cen[1])
+                radius_h = min(xf_list[0].mask.shape[1] - cen[0], cen[0])
+                kwargs['radius'] = min(radius_h, radius_v) * 0.8
+
+            hdl.add_roi(cen=cen, label='RingA', color='w', **kwargs)
+            kwargs['radius'] = kwargs['radius'] * 0.80
+            hdl.add_roi(cen=cen, label='RingB', color='w', **kwargs)
+
+    def plot_saxs_1d(self, pg_hdl, mp_hdl, max_points=128, **kwargs):
+        xf_list = self.get_xf_list(max_points)
+        roi_list = pg_hdl.get_roi_list()
         saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
-                    max_points=max_points, **kwargs)
+                    max_points=max_points, roi_list=roi_list, **kwargs)
     
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         saxs1d.switch_line_builder(mp_hdl, lb_type)

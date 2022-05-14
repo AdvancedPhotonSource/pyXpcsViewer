@@ -67,7 +67,8 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
          max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
          loc='best', marker_size=3, sampling=1, all_phi=False, 
          absolute_crosssection=False, subtract_background=False, 
-         bkg_file=None, weight=1.0):
+         bkg_file=None, weight=1.0, roi_list=None, show_roi=True,
+         show_phi_roi=True):
 
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
@@ -123,6 +124,9 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
             num_lines = Iq.shape[0]
         else:
             num_lines = 1
+        
+        if show_phi_roi:
+            num_lines = 0 
 
         for m in range(num_lines):
             cl, mk = get_color_marker(plot_id)
@@ -131,17 +135,47 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
             ax.plot(q, Iqm, mk + '-', label=fi.saxs_1d['labels'][m],
                     ms=marker_size, alpha=alpha[n], color=cl, mfc='none')
             plot_id += 1
-        
-    ax.set_xlabel(xlabel)
+
+        if show_roi and roi_list is not None and not show_phi_roi:
+            for param in roi_list:
+                if not param['sl_type'] == 'Pie':
+                    continue
+                q, y = fi.get_roi_data(param)
+                cl, mk = get_color_marker(plot_id)
+                Iqm = offset_intensity(y, plot_id, plot_offset, yscale)
+                Iqm, _, xlabel, ylabel = norm_saxs_data(Iqm, q, plot_norm)
+                ax.plot(q, Iqm, mk + '-', 
+                        label=fi.saxs_1d['labels'][0]+'_roi_'+str(plot_id),
+                        ms=marker_size, alpha=alpha[n], color=cl, mfc='none')
+                plot_id += 1
+
+        if show_phi_roi:
+            for param in roi_list:
+                if param['sl_type'] == 'Pie':
+                    continue
+                x, y = fi.get_roi_data(param)
+                cl, mk = get_color_marker(plot_id)
+                ax.plot(x, y, mk + '-', 
+                        label=fi.saxs_1d['labels'][0]+'_ring',
+                        ms=marker_size, alpha=alpha[n], color=cl, mfc='none')
+                plot_id += 1
 
     if plot_norm == 0:  # no normalization
         if absolute_crosssection:
-            ylabel = ylabel + ' (1/cm)'
+            ylabel = 'Intensity (1/cm)'
         else:
-            ylabel = ylabel + ' (photon/pixel/frame)'
+            ylabel = 'Intensity (photon/pixel/frame)'
 
-    ax.set_ylabel(ylabel)
+    if show_phi_roi:
+        ax.set_xlabel('phi (degree)')
+        ax.set_ylabel('Intensity')
+    else:
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
     ax.set_title(title)
+    if show_phi_roi:
+        xscale = 'linear'
     mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
     if loc != 'outside':
         ax.legend(loc=loc)
