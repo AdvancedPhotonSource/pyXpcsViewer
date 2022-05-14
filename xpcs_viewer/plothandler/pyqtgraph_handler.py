@@ -130,40 +130,15 @@ class ImageViewDev(ImageView):
             'hoverPen': pen,
             'handlePen': pen
         }
-        if sl_type == 'Ellipse':
-            new_roi = pg.EllipseROI(cen, [60, 80], **kwargs)
-            # add scale handle
-            new_roi.addScaleHandle([0.5, 0], [0.5, 1], )
-            new_roi.addScaleHandle([0.5, 1], [0.5, 0])
-            new_roi.addScaleHandle([0, 0.5], [1, 0.5])
-            new_roi.addScaleHandle([1, 0.5], [0, 0.5])
 
-        elif sl_type == 'Circle':
+        if sl_type == 'Circle':
             if second_point is not None:
                 radius = np.sqrt((second_point[1] - cen[1]) ** 2 + 
                                  (second_point[0] - cen[0]) ** 2)
             new_roi = pg.CircleROI(pos=[cen[0] - radius, cen[1] - radius],
-                                   radius=radius,
+                                   radius=radius, movable=False,
                                    **kwargs)
 
-        elif sl_type == 'Polygon':
-            if num_edges is None:
-                num_edges = np.random.random_integers(6, 10)
-
-            # add angle offset so that the new rois don't overlap with each
-            # other
-            offset = np.random.random_integers(0, 359)
-            theta = np.linspace(0, np.pi * 2, num_edges + 1) + offset
-            x = radius * np.cos(theta) + cen[0]
-            y = radius * np.sin(theta) + cen[1]
-            pts = np.vstack([x, y]).T
-            new_roi = pg.PolyLineROI(pts, closed=True, **kwargs)
-
-        elif sl_type == 'Rectangle':
-            new_roi = pg.RectROI(cen, [30, 150], **kwargs)
-            new_roi.addScaleHandle([0, 0], [1, 1])
-            # new_roi.addRotateHandle([0, 1], [0.5, 0.5])
-        
         elif sl_type == 'Line':
             if second_point is None:
                 return
@@ -172,7 +147,7 @@ class ImageViewDev(ImageView):
                               **kwargs)
         elif sl_type == 'Pie':
             width = kwargs.pop('width', 1)
-            new_roi = PieROI(cen, radius, **kwargs)
+            new_roi = PieROI(cen, radius, movable=False, **kwargs)
         else:
             raise TypeError('type not implemented. %s' % sl_type)
 
@@ -205,8 +180,8 @@ class ImageViewDev(ImageView):
             if key.startswith('RingB'):
                 temp = {
                     'sl_type': 'Ring',
-                    'radius': (roi.getState()['size'][1],
-                        self.roi_record['RingA'].getState()['size'][1])}
+                    'radius': (roi.getState()['size'][1] / 2.0,
+                        self.roi_record['RingA'].getState()['size'][1] / 2.0)}
                 parameter.append(temp)
             elif key.startswith('roi'):
                 temp = roi.get_parameter()
@@ -244,8 +219,7 @@ class PieROI(pg.ROI):
 
     def __init__(self, pos, size, **args):
         cen = (pos[0], pos[1] - size / 2.0)
-        pg.ROI.__init__(self, cen, [size, size], aspectLocked=False, 
-                        movable=False, **args)
+        pg.ROI.__init__(self, cen, [size, size], aspectLocked=False, **args)
         # _updateView is a rendering method inherited; used here to force
         # update the view
         self.sigRegionChanged.connect(self._updateView)
