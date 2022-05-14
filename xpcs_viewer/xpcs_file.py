@@ -159,7 +159,8 @@ class XpcsFile(object):
                   'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
                   'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
-                  'dnophi', 'sphilist', 'dphilist', 'sqspan', 'ql_sta']
+                  'dnophi', 'sphilist', 'dphilist', 'sqspan', 'ql_sta',
+                  'mask']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -619,6 +620,7 @@ class XpcsFile(object):
                 pmax += 360.0
                 pmap[pmap < pmin] += 360.0
             proi = np.logical_and(pmap >= pmin, pmap < pmax)
+            proi = np.logical_and(proi, (self.mask > 0))
             qmap_idx = np.zeros_like(qmap, dtype=np.uint32)
 
             index = 1
@@ -653,6 +655,8 @@ class XpcsFile(object):
             if rmin > rmax:
                 rmin, rmax = rmax, rmin
             rroi = np.logical_and(rmap >= rmin, rmap < rmax)
+            rroi = np.logical_and(rroi, (self.mask > 0))
+
             phi_min, phi_max = np.min(pmap[rroi]), np.max(pmap[rroi])
             x = np.linspace(phi_min, phi_max, phi_num)
             delta = (phi_max - phi_min) / phi_num
