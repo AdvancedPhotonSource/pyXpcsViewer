@@ -299,12 +299,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         #         sl_type='Pie', width=3, sl_mode='exclusive',
         #         second_point=None, label=Non
         sl_type_idx = self.cb_saxs2D_roi_type.currentIndex()
-        if sl_type_idx == 0:
-            return
+        color = ('g', 'y', 'b', 'r', 'c', 'm', 'k', 'w')[
+            self.cb_saxs2D_roi_color.currentIndex()]
         kwargs = {
-            'sl_type': (None, 'Pie', 'Circle', 'Line')[sl_type_idx],
-            'width': 1,
-            'radius': None,
+            'sl_type': ('Pie', 'Circle')[sl_type_idx],
+            'width': self.sb_saxs2D_roi_width.value(),
+            'color': color,
         }
         self.vk.add_roi(self.pg_saxs, **kwargs)
 

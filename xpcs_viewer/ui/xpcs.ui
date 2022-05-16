@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -466,7 +466,7 @@
               </item>
              </layout>
             </item>
-            <item row="1" column="0">
+            <item row="1" column="0" colspan="2">
              <widget class="ImageViewDev" name="pg_saxs" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -494,217 +494,257 @@
                <string>SAXS 2D Plot Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_40">
-               <item row="0" column="0">
-                <spacer name="horizontalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="0" column="1">
-                <layout class="QGridLayout" name="gridLayout_3">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_13">
-                   <property name="text">
-                    <string>colormap:</string>
-                   </property>
-                  </widget>
+                <widget class="QComboBox" name="cb_saxs2D_cmap">
+                 <item>
+                  <property name="text">
+                   <string>jet</string>
+                  </property>
                  </item>
-                 <item row="1" column="9">
-                  <widget class="QLabel" name="label_58">
-                   <property name="text">
-                    <string>ROI type:</string>
-                   </property>
-                  </widget>
+                 <item>
+                  <property name="text">
+                   <string>hot</string>
+                  </property>
                  </item>
-                 <item row="0" column="12" rowspan="2">
-                  <widget class="QPushButton" name="pushButton_5">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Plot 2D SAXS</string>
-                   </property>
-                  </widget>
+                 <item>
+                  <property name="text">
+                   <string>plasma</string>
+                  </property>
                  </item>
-                 <item row="1" column="1" colspan="2">
-                  <widget class="QDoubleSpinBox" name="saxs2d_min">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="minimum">
-                    <double>-99.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>99999.000000000000000</double>
-                   </property>
-                  </widget>
+                 <item>
+                  <property name="text">
+                   <string>viridis</string>
+                  </property>
                  </item>
-                 <item row="1" column="4" colspan="2">
-                  <widget class="QDoubleSpinBox" name="saxs2d_max">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="decimals">
-                    <number>4</number>
-                   </property>
-                   <property name="minimum">
-                    <double>-99.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>99999.000000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
+                 <item>
+                  <property name="text">
+                   <string>magma</string>
+                  </property>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_50">
-                   <property name="text">
-                    <string>min:</string>
-                   </property>
-                  </widget>
+                 <item>
+                  <property name="text">
+                   <string>gray</string>
+                  </property>
                  </item>
-                 <item row="0" column="6" colspan="3">
-                  <widget class="QCheckBox" name="saxs2d_rotate">
-                   <property name="text">
-                    <string>rotate</string>
-                   </property>
-                   <property name="checked">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QComboBox" name="cb_saxs2D_type">
+                 <item>
+                  <property name="text">
+                   <string>log</string>
+                  </property>
                  </item>
-                 <item row="0" column="4" colspan="2">
-                  <widget class="QComboBox" name="cb_saxs2D_type">
-                   <item>
-                    <property name="text">
-                     <string>log</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>linear</string>
-                    </property>
-                   </item>
-                  </widget>
+                 <item>
+                  <property name="text">
+                   <string>linear</string>
+                  </property>
                  </item>
-                 <item row="1" column="6" colspan="3">
-                  <widget class="QCheckBox" name="saxs2d_autorange">
-                   <property name="text">
-                    <string>auto-range</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1" colspan="2">
-                  <widget class="QComboBox" name="cb_saxs2D_cmap">
-                   <item>
-                    <property name="text">
-                     <string>jet</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>hot</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>plasma</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>viridis</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>magma</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>gray</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QLabel" name="label_51">
-                   <property name="text">
-                    <string>max:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QLabel" name="label_12">
-                   <property name="text">
-                    <string>type:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="10">
-                  <widget class="QComboBox" name="cb_saxs2D_roi_type">
-                   <item>
-                    <property name="text">
-                     <string>None</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Q-Wedge</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Phi-Ring</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Line</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="1" column="11">
-                  <widget class="QPushButton" name="btn_saxs2d_roi_add">
-                   <property name="text">
-                    <string>Add</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                </widget>
+               </item>
+               <item row="0" column="7">
+                <widget class="QLabel" name="label_51">
+                 <property name="text">
+                  <string>max:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QLabel" name="label_50">
+                 <property name="text">
+                  <string>min:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="8">
+                <widget class="QDoubleSpinBox" name="saxs2d_max">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="minimum">
+                  <double>-99.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>99999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>cmap:</string>
+                 </property>
+                </widget>
                </item>
                <item row="0" column="2">
-                <spacer name="horizontalSpacer_3">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>type:</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
+                </widget>
+               </item>
+               <item row="0" column="4">
+                <widget class="QCheckBox" name="saxs2d_rotate">
+                 <property name="text">
+                  <string>rotate</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="6">
+                <widget class="QDoubleSpinBox" name="saxs2d_min">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="minimum">
+                  <double>-99.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>99999.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="9">
+                <widget class="QCheckBox" name="saxs2d_autorange">
+                 <property name="text">
+                  <string>auto-range</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="10">
+                <widget class="QPushButton" name="pushButton_5">
+                 <property name="minimumSize">
                   <size>
-                   <width>40</width>
-                   <height>20</height>
+                   <width>0</width>
+                   <height>0</height>
                   </size>
                  </property>
-                </spacer>
+                 <property name="text">
+                  <string>Plot 2D SAXS</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QGroupBox" name="groupBox_16">
+              <property name="title">
+               <string>ROI</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_3">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_58">
+                 <property name="text">
+                  <string>type:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="cb_saxs2D_roi_type">
+                 <item>
+                  <property name="text">
+                   <string>Q-Wedge</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Phi-Ring</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_60">
+                 <property name="text">
+                  <string>color:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QComboBox" name="cb_saxs2D_roi_color">
+                 <item>
+                  <property name="text">
+                   <string>green</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>yellow</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>blue</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>red</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>cyan</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>magenta</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>black</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>white</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="4">
+                <widget class="QLabel" name="label_61">
+                 <property name="text">
+                  <string>linewidth:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QDoubleSpinBox" name="sb_saxs2D_roi_width">
+                 <property name="minimum">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.500000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="6">
+                <widget class="QPushButton" name="btn_saxs2d_roi_add">
+                 <property name="text">
+                  <string>Add</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -3422,9 +3462,6 @@
   <tabstop>cb_saxs2D_type</tabstop>
   <tabstop>saxs2d_rotate</tabstop>
   <tabstop>pushButton_5</tabstop>
-  <tabstop>saxs2d_min</tabstop>
-  <tabstop>saxs2d_max</tabstop>
-  <tabstop>saxs2d_autorange</tabstop>
   <tabstop>cb_saxs_type</tabstop>
   <tabstop>saxs1d_sampling</tabstop>
   <tabstop>sb_saxs_offset</tabstop>
