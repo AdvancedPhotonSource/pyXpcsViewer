@@ -147,6 +147,13 @@ class ViewerKernel(FileLocator):
         roi_list = pg_hdl.get_roi_list()
         saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
                     max_points=max_points, roi_list=roi_list, **kwargs)
+
+    def export_saxs_1d(self, pg_hdl, folder, max_points=128):
+        xf_list = self.get_xf_list(max_points)
+        roi_list = pg_hdl.get_roi_list()
+        for xf in xf_list:
+            xf.export_saxs1d(roi_list, folder)
+        return
     
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         saxs1d.switch_line_builder(mp_hdl, lb_type)

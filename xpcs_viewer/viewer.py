@@ -127,6 +127,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_up.clicked.connect(lambda: self.reorder_target('up'))
         self.btn_down.clicked.connect(lambda: self.reorder_target('down'))
 
+        # saxs1d export profiles
+        self.btn_export_saxs1d.clicked.connect(self.saxs1d_export)
+
         # saxs2d roi
         self.btn_saxs2d_roi_add.clicked.connect(self.saxs2d_roi_add)
 
@@ -337,14 +340,26 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_saxs.repaint()
         # adjust the line behavior
         self.switch_saxs1d_line()
-    
+
     def switch_saxs1d_line(self):
         if not self.check_status():
             return
         lb_type = self.saxs1d_lb_type.currentIndex()
         lb_type = [None, 'slope', 'hline'][lb_type]
         self.vk.switch_saxs1d_line(self.mp_saxs.hdl, lb_type)
+    
+    def saxs1d_export(self):
+        if not self.check_status():
+           return
 
+        folder = QtWidgets.QFileDialog.getExistingDirectory(self, 
+            caption='select a folder to export SAXS profiles')
+
+        if folder in [None, '']:
+            return
+
+        self.vk.export_saxs_1d(self.pg_saxs, folder)
+    
     def init_twotime(self):
         if not self.check_status():
             return
