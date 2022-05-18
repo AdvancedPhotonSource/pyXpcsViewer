@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2628</width>
-    <height>1701</height>
+    <width>1873</width>
+    <height>1027</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -784,7 +784,7 @@
                <string>SAXS 1D Plot Setting</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_24">
-               <item row="1" column="0">
+               <item row="1" column="0" rowspan="2">
                 <widget class="QGroupBox" name="groupBox_14">
                  <property name="title">
                   <string>Background</string>
@@ -840,7 +840,7 @@
                  </layout>
                 </widget>
                </item>
-               <item row="1" column="1">
+               <item row="1" column="1" rowspan="2">
                 <widget class="QGroupBox" name="groupBox_13">
                  <property name="title">
                   <string>Display</string>
@@ -873,20 +873,14 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="0" column="4">
+                   <widget class="QPushButton" name="btn_export_saxs1d">
+                    <property name="text">
+                     <string>Export profiles</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="QPushButton" name="pushButton_10">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Plot</string>
-                 </property>
                 </widget>
                </item>
                <item row="0" column="0" colspan="3">
@@ -1145,6 +1139,19 @@
                    </widget>
                   </item>
                  </layout>
+                </widget>
+               </item>
+               <item row="1" column="2" rowspan="2">
+                <widget class="QPushButton" name="pushButton_10">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Plot</string>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -1489,8 +1496,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1693</width>
-                 <height>1247</height>
+                 <width>1365</width>
+                 <height>704</height>
                 </rect>
                </property>
                <property name="sizePolicy">

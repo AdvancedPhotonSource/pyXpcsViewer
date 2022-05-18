@@ -675,7 +675,29 @@ class XpcsFile(object):
             # remove the 0th term
             saxs_roi = saxs_roi[1:]
             return x, saxs_roi
+    
+    def export_saxs1d(self, roi_list, folder):
+        # export ROI
+        idx = 0
+        for roi in roi_list:
+            fname = os.path.join(folder,
+                self.label + '_' + roi['sl_type'] + f'_{idx:03d}.txt')
+            idx += 1
+            x, y = self.get_roi_data(roi)
+            if roi['sl_type'] == 'Ring':
+                header = 'phi(degree) Intensity'
+            else:
+                header = 'q(1/Angstron) Intensity'
+            np.savetxt(fname, np.vstack([x, y]).T, header=header)
 
+        # export all saxs1d 
+        fname = os.path.join(folder, self.label + '_' + 'saxs1d.txt')
+        Iq, q = self.saxs_1d['Iq'], self.saxs_1d['q']
+        header = 'q(1/Angstron) Intensity'
+        for n in range(Iq.shape[0] - 1):
+            header += f' Intensity_phi{n + 1 :03d}'
+        np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
+            
 
 def test1():
     cwd = '../../../xpcs_data'
