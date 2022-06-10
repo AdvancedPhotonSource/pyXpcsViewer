@@ -403,8 +403,10 @@ class XpcsFile(object):
         """
         if self.fit_summary is None:
             return None, None
-        flag = np.abs(self.fit_summary['q_val'] - q) < tor
-        idx = np.argmin(flag)
+        idx = np.argmin(np.abs(self.fit_summary['q_val'] - q))
+        if abs(self.fit_summary['q_val'][idx] - q) > tor:
+            return None, None
+
         fit_x = self.fit_summary['fit_line'][idx]['fit_x']
         fit_y = self.fit_summary['fit_line'][idx]['fit_y']
         return fit_x, fit_y
