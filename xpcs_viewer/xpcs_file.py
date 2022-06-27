@@ -201,6 +201,11 @@ class XpcsFile(object):
         scale = get_abs_cs_scale(self.full_path)
         ret['abs_cross_section_scale'] = scale
 
+        # apply mask
+        if ret['mask'].shape != ret['saxs_2d'].shape:
+            ret['mask'] = ret['mask'].T
+        ret['saxs_2d'] = ret['saxs_2d'] * ret['mask']
+
         return ret.keys(), ret
 
     def reshape_phi_analysis(self, info):
