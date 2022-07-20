@@ -156,11 +156,11 @@ class XpcsFile(object):
     def _load(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
-                  'ql_dyn', 'type', 'dqmap', 'ccd_x0', 'ccd_y0', 'det_dist',
+                  'ql_dyn', 'type', 'dqmap', 'bcx', 'bcy', 'det_dist',
                   'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
                   'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
                   'dnophi', 'sphilist', 'dphilist', 'sqspan', 'ql_sta',
-                  'mask']
+                  'mask', 'ccdx', 'ccdx0', 'ccdy', 'ccdy0']
 
         # extra fields for twotime analysis
         if self.type == 'Twotime':
@@ -195,6 +195,9 @@ class XpcsFile(object):
 
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
+
+        ret['bcx'] += (ret['ccdx'] - ret['ccdx0']) / ret['pix_dim_x']
+        ret['bcy'] += (ret['ccdy'] - ret['ccdy0']) / ret['pix_dim_y']
 
         self.reshape_phi_analysis(ret)
 
@@ -328,7 +331,7 @@ class XpcsFile(object):
         :return:
         """
         fields = [
-            'ccd_x0', 'ccd_y0', 'det_dist', 'pix_dim_x', 'pix_dim_y',
+            'bcx', 'bcy', 'det_dist', 'pix_dim_x', 'pix_dim_y',
             'X_energy', 'xdim', 'ydim'
         ]
         res = get(self.full_path, fields, mode='alias', ret_type='dict')
@@ -336,11 +339,11 @@ class XpcsFile(object):
         wlength = 12.398 / res['X_energy']
         pix2q = res['pix_dim_x'] / res['det_dist'] * (2 * np.pi / wlength)
 
-        qy_min = (0 - res['ccd_x0']) * pix2q
-        qy_max = (res['xdim'] - res['ccd_x0']) * pix2q
+        qy_min = (0 - res['bcx']) * pix2q
+        qy_max = (res['xdim'] - res['bcx']) * pix2q
 
-        qx_min = (0 - res['ccd_y0']) * pix2q
-        qx_max = (res['ydim'] - res['ccd_y0']) * pix2q
+        qx_min = (0 - res['bcy']) * pix2q
+        qx_max = (res['ydim'] - res['bcy']) * pix2q
         extent = (qy_min, qy_max, qx_min, qx_max)
 
         return extent
@@ -584,10 +587,10 @@ class XpcsFile(object):
         return self.fit_summary
     
     def compute_qmap(self):
-        shape = (self.ydim, self.xdim)
+        shape = self.saxs_2d.shape
         k0 = 2 * np.pi / (12.398 / self.X_energy)
-        v = np.arange(shape[0], dtype=np.uint32) - self.ccd_y0
-        h = np.arange(shape[1], dtype=np.uint32) - self.ccd_x0
+        v = np.arange(shape[0], dtype=np.uint32) - self.bcy
+        h = np.arange(shape[1], dtype=np.uint32) - self.bcx
         vg, hg = np.meshgrid(v, h, indexing='ij')
 
         r = np.hypot(vg * self.pix_dim_y, hg * self.pix_dim_x)
@@ -650,7 +653,7 @@ class XpcsFile(object):
 
             # set the qmax cutoff
             dist = roi_parameter['dist']
-            # qmax = qmap[int(self.ccd_y0), int(self.ccd_x0 + dist)]
+            # qmax = qmap[int(self.bcy), int(self.bcx + dist)]
             wlength = 12.398 / self.X_energy
             qmax = dist * self.pix_dim_x / self.det_dist * 2 * np.pi / wlength
             saxs_roi[self.ql_sta >= qmax] = 0
