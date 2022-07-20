@@ -177,10 +177,13 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
     if show_phi_roi:
         xscale = 'linear'
     mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
-    if loc != 'outside':
-        ax.legend(loc=loc)
-    elif loc == 'outside':
-        ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
+    # avoid adding legend when there are too many lines;
+    if len(xf_list) <= 20:
+        if loc != 'outside':
+            ax.legend(loc=loc)
+        elif loc == 'outside':
+            ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
+
     mp_hdl.fig.tight_layout(rect=(0.07, 0.07, 0.93, 0.93))
 
     mp_hdl.draw()

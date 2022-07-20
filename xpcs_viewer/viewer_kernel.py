@@ -130,7 +130,7 @@ class ViewerKernel(FileLocator):
     
     def add_roi(self, hdl, max_points=128, **kwargs):
         xf_list = self.get_xf_list(max_points)
-        cen = (xf_list[0].ccd_x0, xf_list[0].ccd_y0)
+        cen = (xf_list[0].bcx, xf_list[0].bcy)
         if kwargs['sl_type'] == 'Pie':
             hdl.add_roi(cen=cen, radius=100, **kwargs)
         elif kwargs['sl_type'] == 'Circle':
