@@ -1,4 +1,5 @@
 import numpy as np
+import pyqtgraph as pg
 
 
 def fill_center(input, out):
@@ -33,7 +34,7 @@ def list_to_numpy(ans, rotate=True):
 
 def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
          epsilon=None, display=None, extent=None, autorange=True, vmin=None,
-         vmax=None):
+         vmax=None, center=None):
     #
     ans, rotate = list_to_numpy(ans, rotate)
     # if pg_hdl is None:
@@ -67,5 +68,8 @@ def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
     pg_hdl.adjust_viewbox()
     if extent is not None:
         pg_hdl.add_readback(display=display, extent=extent)
+
+    if center is not None:
+        pg_hdl.add_roi(sl_type='Center', center=center, label='Center')
 
     return rotate # , pg_hdl.levelMin, pg_hdl.levelMax
