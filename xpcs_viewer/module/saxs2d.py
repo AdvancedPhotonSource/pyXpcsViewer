@@ -24,7 +24,7 @@ def list_to_numpy(ans, rotate=True):
 
     ret = np.zeros(shape=(len(ans), *new_size), dtype=np.float32)
     for n, x in enumerate(ans):
-        if x.shape == ret:
+        if x.shape == ret.shape[1:]:
             ret[n] = x
         else:
             fill_center(x, ret[n])
