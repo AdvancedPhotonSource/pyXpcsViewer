@@ -1,8 +1,5 @@
 import pyqtgraph as pg
 from pyqtgraph import ImageView, GraphicsLayoutWidget
-from .mpl_cmaps_in_ImageItem import pg_get_cmap
-import matplotlib.pyplot as plt
-# from PyQt5 import QtCore, QtGui
 from pyqtgraph import QtGui, QtCore
 import numpy as np
 
@@ -41,7 +38,7 @@ class ImageViewDev(ImageView):
                                      }
 
     def set_colormap(self, cmap):
-        pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
+        pg_cmap = pg.colormap.getFromMatplotlib(cmap)
         self.setColorMap(pg_cmap)
 
     def add_readback(self, display=None, extent=None, type='log'):
@@ -165,7 +162,7 @@ class ImageViewDev(ImageView):
             self.roi_idx += 1
         self.roi_record[label] = new_roi
         self.addItem(new_roi)
-        if sl_type is not 'Center':
+        if sl_type != 'Center':
             new_roi.sigRemoveRequested.connect(lambda: self.remove_roi(label))
         return label 
     
