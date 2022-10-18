@@ -201,6 +201,13 @@ class XpcsFile(object):
 
         self.reshape_phi_analysis(ret)
 
+        # sort q
+        ord_idx = np.argsort(ret['saxs_1d']['q'])
+        ret['saxs_1d']['q'] = ret['saxs_1d']['q'][ord_idx]
+        ret['saxs_1d']['Iq'] = ret['saxs_1d']['Iq'][:, ord_idx]
+        ret['Iqp'] = ret['Iqp'][:, ord_idx]
+        ret['ql_sta'] = ret['ql_sta'][ord_idx]
+
         scale = get_abs_cs_scale(self.full_path)
         ret['abs_cross_section_scale'] = scale
 
