@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import describe
 import os
 import warnings
-warnings.filterwarnings("error")
+# warnings.filterwarnings("error")
 
 np.set_printoptions(precision=3, suppress=True)
 

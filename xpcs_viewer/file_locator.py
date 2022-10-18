@@ -164,7 +164,7 @@ class FileLocator(object):
         for n in range(total_num):
             fn = self.target[n]
             if progress_bar is not None:
-                progress_bar.setValue((n + 1) / total_num * 100)
+                progress_bar.setValue(int((n + 1) / total_num * 100))
 
             if fn in existing_keys:
                 # already exist
