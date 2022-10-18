@@ -1,8 +1,5 @@
 import pyqtgraph as pg
 from pyqtgraph import ImageView, GraphicsLayoutWidget
-from .mpl_cmaps_in_ImageItem import pg_get_cmap
-import matplotlib.pyplot as plt
-# from PyQt5 import QtCore, QtGui
 from pyqtgraph import QtGui, QtCore
 import numpy as np
 
@@ -41,7 +38,7 @@ class ImageViewDev(ImageView):
                                      }
 
     def set_colormap(self, cmap):
-        pg_cmap = pg_get_cmap(plt.get_cmap(cmap))
+        pg_cmap = pg.colormap.getFromMatplotlib(cmap)
         self.setColorMap(pg_cmap)
 
     def add_readback(self, display=None, extent=None, type='log'):
@@ -103,6 +100,7 @@ class ImageViewDev(ImageView):
 
     def clear(self):
         super(ImageViewDev, self).clear()
+
         self.remove_rois()
         self.reset_limits()
         # incase the signal isn't connected to anything.
@@ -113,7 +111,7 @@ class ImageViewDev(ImageView):
     
     def add_roi(self, cen=None, num_edges=None, radius=60, color='r',
                 sl_type='Pie', width=3, sl_mode='exclusive',
-                second_point=None, label=None):
+                second_point=None, label=None, center=None):
         # label: label of roi; default is None, which is for roi-draw
 
         if label is not None and label in self.roi_record:
@@ -148,6 +146,12 @@ class ImageViewDev(ImageView):
         elif sl_type == 'Pie':
             width = kwargs.pop('width', 1)
             new_roi = PieROI(cen, radius, movable=False, **kwargs)
+        elif sl_type == 'Center':
+            if center is None:
+                return
+            new_roi = pg.ScatterPlotItem()
+            new_roi.addPoints(x=[center[0]], y=[center[1]], symbol='+', 
+                              size=15)
         else:
             raise TypeError('type not implemented. %s' % sl_type)
 
@@ -158,7 +162,8 @@ class ImageViewDev(ImageView):
             self.roi_idx += 1
         self.roi_record[label] = new_roi
         self.addItem(new_roi)
-        new_roi.sigRemoveRequested.connect(lambda: self.remove_roi(label))
+        if sl_type != 'Center':
+            new_roi.sigRemoveRequested.connect(lambda: self.remove_roi(label))
         return label 
     
     def remove_rois(self, filter_str=None):
@@ -177,7 +182,9 @@ class ImageViewDev(ImageView):
     def get_roi_list(self):
         parameter = []
         for key, roi in self.roi_record.items():
-            if key.startswith('RingB'):
+            if key == 'Center':
+                continue
+            elif key.startswith('RingB'):
                 temp = {
                     'sl_type': 'Ring',
                     'radius': (roi.getState()['size'][1] / 2.0,

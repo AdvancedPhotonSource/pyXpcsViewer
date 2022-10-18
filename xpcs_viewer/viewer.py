@@ -60,7 +60,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         # finite states
         self.data_state = 0
-        self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int)
+        self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int64)
         self.thread_pool = QtCore.QThreadPool()
         logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
 

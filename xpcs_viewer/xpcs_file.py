@@ -157,7 +157,7 @@ class XpcsFile(object):
         # default common fields for both twotime and multitau analysis;
         fields = ['saxs_2d', "saxs_1d", 'Iqp', 'ql_sta', 'Int_t', 't0', 't1',
                   'ql_dyn', 'type', 'dqmap', 'bcx', 'bcy', 'det_dist',
-                  'pix_dim_x', 'pix_dim_y', 'X_energy', 'xdim', 'ydim',
+                  'pix_dim_x', 'pix_dim_y', 'X_energy',
                   'avg_frames', 'stride_frames', 'snoq', 'snophi', 'dnoq',
                   'dnophi', 'sphilist', 'dphilist', 'sqspan', 'ql_sta',
                   'mask', 'ccdx', 'ccdx0', 'ccdy', 'ccdy0']
@@ -200,6 +200,13 @@ class XpcsFile(object):
         ret['bcy'] += (ret['ccdy'] - ret['ccdy0']) / ret['pix_dim_y']
 
         self.reshape_phi_analysis(ret)
+
+        # sort q
+        ord_idx = np.argsort(ret['saxs_1d']['q'])
+        ret['saxs_1d']['q'] = ret['saxs_1d']['q'][ord_idx]
+        ret['saxs_1d']['Iq'] = ret['saxs_1d']['Iq'][:, ord_idx]
+        ret['Iqp'] = ret['Iqp'][:, ord_idx]
+        ret['ql_sta'] = ret['ql_sta'][ord_idx]
 
         scale = get_abs_cs_scale(self.full_path)
         ret['abs_cross_section_scale'] = scale
@@ -330,21 +337,18 @@ class XpcsFile(object):
         get the angular extent on the detector, for saxs2d, qmap/display;
         :return:
         """
-        fields = [
-            'bcx', 'bcy', 'det_dist', 'pix_dim_x', 'pix_dim_y',
-            'X_energy', 'xdim', 'ydim'
-        ]
-        res = get(self.full_path, fields, mode='alias', ret_type='dict')
+        shape = self.saxs_2d.shape
 
-        wlength = 12.398 / res['X_energy']
-        pix2q = res['pix_dim_x'] / res['det_dist'] * (2 * np.pi / wlength)
+        wlength = 12.398 / self.X_energy
+        pix2q_x = self.pix_dim_x / self.det_dist * (2 * np.pi / wlength)
+        pix2q_y = self.pix_dim_y / self.det_dist * (2 * np.pi / wlength)
 
-        qy_min = (0 - res['bcx']) * pix2q
-        qy_max = (res['xdim'] - res['bcx']) * pix2q
+        qx_min = (0 - self.bcx) * pix2q_x
+        qx_max = (shape[1] - self.bcx) * pix2q_x
 
-        qx_min = (0 - res['bcy']) * pix2q
-        qx_max = (res['ydim'] - res['bcy']) * pix2q
-        extent = (qy_min, qy_max, qx_min, qx_max)
+        qy_min = (0 - self.bcy) * pix2q_y
+        qy_max = (shape[0] - self.bcy) * pix2q_y
+        extent = (qx_min, qx_max, qy_min, qy_max)
 
         return extent
 

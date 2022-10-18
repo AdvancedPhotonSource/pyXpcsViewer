@@ -2,6 +2,9 @@ import h5py
 import numpy as np
 from scipy.stats import describe
 import os
+import warnings
+# warnings.filterwarnings("error")
+
 np.set_printoptions(precision=3, suppress=True)
 
 
@@ -24,12 +27,17 @@ def c2r(x):
 
 def describe_numpy(arr):
     repr = str(arr.shape) + ', ' + str(arr.dtype) + ':'
-    if arr.dtype in [np.bool, bytes, object]:
+    if arr.dtype in [bool, bytes, object]:
         return repr
 
     if arr.size > 1:
-        res = describe(arr.ravel())
-        repr += 'minmax = %s, mean = %s' % (c2r(res.minmax),
+        try:
+            res = describe(arr.ravel())
+        except Exception:
+            repr += 'failed to check'
+            pass
+        else:
+            repr += 'minmax = %s, mean = %s' % (c2r(res.minmax),
                                             c2r(res.mean))
     else:
         repr += 'val = %s' % c2r(arr[0])
