@@ -2,6 +2,7 @@
 A python-based interactive visualization tool to view XPCS dataset.
 
 To cite pyXpcsViewer:   
+
 Chu et al., "pyXPCSviewer: an open-source interactive tool for X-ray photon correlation spectroscopy visualization and analysis", [Journal of Synchrotron Radiation, (2022) 29, 1122–1129](https://onlinelibrary.wiley.com/doi/epdf/10.1107/S1600577522004830)
 
 
