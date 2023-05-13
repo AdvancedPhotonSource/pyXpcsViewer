@@ -444,6 +444,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'cmap': self.cb_twotime_cmap.currentText(),
             'vmin': self.c2_min.value(),
             'vmax': self.c2_max.value(),
+            'show_box': self.twotime_showbox.isChecked(),
+            'correct_diag': self.twotime_correct_diag.isChecked(),
         }
 
         if kwargs['vmin'] < 0:

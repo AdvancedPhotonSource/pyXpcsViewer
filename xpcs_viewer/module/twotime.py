@@ -3,6 +3,19 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
 
+def correct_diagonal_c2(c2):
+    size = c2.shape[0]
+    side_band = c2[(np.arange(size - 1), np.arange(1, size))]
+    diag_val = np.zeros(size)
+    diag_val[:-1] += side_band
+    diag_val[1:] += side_band
+    norm = np.ones(size)
+    norm[1:-1] = 2
+    c2_copy = np.copy(c2)
+    c2_copy[np.diag_indices(c2.shape[0])] = diag_val / norm
+    return c2_copy
+
+
 def get_twotime_qindex(meta, ix, iy, hdl):
     shape = meta['twotime_dqmap'].shape
     if len(hdl.axes[0].patches) >= 2:
@@ -114,7 +127,7 @@ def update_twotime_map(meta, hdl):
 
 
 def plot_twotime(xfile, hdl, hdl_map, meta, plot_index=1, cmap='jet', 
-                vmin=None, vmax=None):
+                vmin=None, vmax=None, show_box=False, correct_diag=False):
 
     if xfile.type != 'Twotime':
         return None
@@ -161,7 +174,11 @@ def plot_twotime(xfile, hdl, hdl_map, meta, plot_index=1, cmap='jet',
     title = ['A: %d' % plot_list[0], 'B: %d' % plot_list[1]]
 
     for n in range(num_c2):
-        im = ax[n].imshow(meta['twotime_ims'][n],
+        c2 = meta['twotime_ims'][n]
+        if correct_diag:
+            c2 = correct_diagonal_c2(meta['twotime_ims'][n])
+
+        im = ax[n].imshow(c2,
                           interpolation='none',
                           origin='lower',
                           extent=([t_min, t_max, t_min, t_max]),
@@ -179,14 +196,25 @@ def plot_twotime(xfile, hdl, hdl_map, meta, plot_index=1, cmap='jet',
     g2p = g2p[:, 1:]
 
     t = meta['twotime_scale'] * np.arange(g2f.size)
-    ax[-1].plot(t, g2f, lw=3, color='blue', alpha=0.5)
+    ax[-1].plot(t, g2f, lw=3, color='blue', alpha=0.5, label='full')
+
+    delta_t = (t_max - t_min) / (g2p.shape[0])
     for n in range(g2p.shape[0]):
         t = meta['twotime_scale'] * np.arange(g2p[n].size)
-        ax[-1].plot(t, g2p[n], label='partial%d' % n, alpha=0.5)
+        ax[-1].plot(t, g2p[n], label=f'{n}', alpha=0.5)
+
+        if show_box:
+            xy = (delta_t * n, delta_t * n)
+            rect = plt.Rectangle(xy, delta_t, delta_t, 
+                             facecolor='none', edgecolor='k', alpha=0.5)
+            ax[-2].add_patch(rect)
+            ax[-2].text(*xy, f'{n}')
+
     ax[-1].set_xscale('log')
     ax[-1].set_ylabel('g2')
     ax[-1].set_xlabel('t (s)')
     ax[-1].set_title('Full/Partial g2')
+    ax[-1].legend()
     hdl.fig.tight_layout()
 
     hdl.draw()

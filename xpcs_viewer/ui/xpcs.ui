@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>6</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1496,8 +1496,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>2843</width>
-                 <height>1992</height>
+                 <width>3052</width>
+                 <height>2280</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -2629,94 +2629,34 @@
                </item>
                <item row="0" column="1">
                 <layout class="QGridLayout" name="gridLayout_2">
-                 <item row="1" column="9">
-                  <widget class="QComboBox" name="cb_twotime_cmap">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>jet</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>hot</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>plasma</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>viridis</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>magma</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>gray</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="12">
-                  <widget class="QCheckBox" name="twotime_autocrop">
+                 <item row="0" column="11">
+                  <widget class="QCheckBox" name="twotime_autorotate">
                    <property name="text">
-                    <string>auto-crop?</string>
+                    <string>auto-rotate</string>
                    </property>
                    <property name="checked">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="5" colspan="2">
-                  <widget class="QComboBox" name="cb_twotime_saxs_cmap">
-                   <item>
-                    <property name="text">
-                     <string>jet</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>hot</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>plasma</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>viridis</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>magma</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>gray</string>
-                    </property>
-                   </item>
+                 <item row="1" column="5" colspan="2">
+                  <widget class="QSpinBox" name="twotime_q_index">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="maximum">
+                    <number>9999</number>
+                   </property>
+                   <property name="value">
+                    <number>3</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_36">
+                   <property name="text">
+                    <string>type:</string>
+                   </property>
                   </widget>
                  </item>
                  <item row="0" column="1" colspan="2">
@@ -2732,6 +2672,36 @@
                     </property>
                    </item>
                   </widget>
+                 </item>
+                 <item row="0" column="12">
+                  <widget class="QCheckBox" name="twotime_autocrop">
+                   <property name="text">
+                    <string>auto-crop</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="7" colspan="2">
+                  <widget class="QLabel" name="label_28">
+                   <property name="text">
+                    <string>twotime_cmap:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="12">
+                  <widget class="QDoubleSpinBox" name="c2_max">
+                   <property name="minimum">
+                    <double>-1.000000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>-1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" colspan="2">
+                  <widget class="QComboBox" name="cb_twotime_group"/>
                  </item>
                  <item row="0" column="9">
                   <widget class="QComboBox" name="cb_twotime_qmap_cmap">
@@ -2779,37 +2749,98 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="11">
-                  <widget class="QCheckBox" name="twotime_autorotate">
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_29">
                    <property name="text">
-                    <string>auto-rotate?</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
+                    <string>Group:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1" colspan="2">
-                  <widget class="QComboBox" name="cb_twotime_group"/>
-                 </item>
-                 <item row="1" column="7" colspan="2">
-                  <widget class="QLabel" name="label_28">
+                 <item row="1" column="10">
+                  <widget class="QLabel" name="label_57">
                    <property name="text">
-                    <string>twotime_cmap:</string>
+                    <string>min-max:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="5" colspan="2">
-                  <widget class="QSpinBox" name="twotime_q_index">
-                   <property name="minimum">
-                    <number>0</number>
+                 <item row="0" column="5" colspan="2">
+                  <widget class="QComboBox" name="cb_twotime_saxs_cmap">
+                   <item>
+                    <property name="text">
+                     <string>jet</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>hot</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>plasma</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>viridis</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>magma</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>gray</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="9">
+                  <widget class="QComboBox" name="cb_twotime_cmap">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
                    </property>
-                   <property name="maximum">
-                    <number>9999</number>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
                    </property>
-                   <property name="value">
-                    <number>3</number>
-                   </property>
+                   <item>
+                    <property name="text">
+                     <string>jet</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>hot</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>plasma</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>viridis</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>magma</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>gray</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                  <item row="0" column="3" colspan="2">
@@ -2826,24 +2857,17 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="0" column="10">
+                  <widget class="QCheckBox" name="twotime_showbox">
+                   <property name="text">
+                    <string>show-partial-box</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="7" colspan="2">
                   <widget class="QLabel" name="label_37">
                    <property name="text">
                     <string>qmap_cmap:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_36">
-                   <property name="text">
-                    <string>type:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_29">
-                   <property name="text">
-                    <string>Group:</string>
                    </property>
                   </widget>
                  </item>
@@ -2857,20 +2881,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="12">
-                  <widget class="QDoubleSpinBox" name="c2_max">
-                   <property name="minimum">
-                    <double>-1.000000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>-1.000000000000000</double>
+                 <item row="1" column="13">
+                  <widget class="QPushButton" name="pushButton_12">
+                   <property name="text">
+                    <string>Plot</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="10">
-                  <widget class="QLabel" name="label_57">
+                 <item row="0" column="13">
+                  <widget class="QCheckBox" name="twotime_correct_diag">
                    <property name="text">
-                    <string>min-max:</string>
+                    <string>correct-diag</string>
                    </property>
                   </widget>
                  </item>
@@ -2888,13 +2909,6 @@
                   </size>
                  </property>
                 </spacer>
-               </item>
-               <item row="0" column="2">
-                <widget class="QPushButton" name="pushButton_12">
-                 <property name="text">
-                  <string>Plot</string>
-                 </property>
-                </widget>
                </item>
               </layout>
              </widget>
@@ -3290,11 +3304,11 @@
                  <property name="selectionBehavior">
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
-                 <attribute name="horizontalHeaderDefaultSectionSize">
-                  <number>100</number>
-                 </attribute>
                  <attribute name="horizontalHeaderMinimumSectionSize">
                   <number>19</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>100</number>
                  </attribute>
                  <attribute name="horizontalHeaderStretchLastSection">
                   <bool>true</bool>
