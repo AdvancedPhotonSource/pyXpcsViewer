@@ -284,6 +284,15 @@ class XpcsFile(object):
         else:
             raise KeyError
 
+    def read_extra_metadata(self, key, alias, callback_function=None):
+        value = get(self.full_path, [key], ret_type='list')[0]
+        if callback_function is not None:
+            value = callback_function(value)
+        if alias in self.__dict__:
+            raise KeyError('alias already exist. Choose a different one')
+        else:
+            self.__dict__[alias] = value
+
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
         return self.t0
