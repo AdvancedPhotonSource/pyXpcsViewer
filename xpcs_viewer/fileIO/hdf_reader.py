@@ -3,6 +3,7 @@ import os
 import numpy as np
 import json
 import logging
+from .ftype_utils import get_ftype
 
 
 logger = logging.getLogger(__name__)
@@ -36,11 +37,11 @@ colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
 symbols = ['o', 's', 't', 'd', '+']
 
 
-def put(save_path, result, mode='raw'):
+def put(save_path, result, ftype='legacy', mode='raw'):
     with h5py.File(save_path, 'a') as f:
         for key, val in result.items():
             if mode == 'alias':
-                key = hdf_key[key]
+                key = hdf_key[ftype][key]
             if key in f:
                 del f[key]
             if isinstance(val, np.ndarray) and val.ndim == 1:
@@ -49,8 +50,8 @@ def put(save_path, result, mode='raw'):
         return
 
 
-def get_abs_cs_scale(fname):
-    key = hdf_key['abs_cross_section_scale']
+def get_abs_cs_scale(fname, ftype='legacy'):
+    key = hdf_key[ftype]['abs_cross_section_scale']
     with h5py.File(fname, 'r') as f:
         if key not in f:
             return None
@@ -58,7 +59,7 @@ def get_abs_cs_scale(fname):
             return float(f[key][()])
 
 
-def get(fname, fields, mode='raw', ret_type='dict'):
+def get(fname, fields, mode='raw', ret_type='dict', ftype='legacy'):
     """
     get the values for the various keys listed in fields for a single
     file;
@@ -74,7 +75,7 @@ def get(fname, fields, mode='raw', ret_type='dict'):
     with h5py.File(fname, 'r') as HDF_Result:
         for key in fields:
             if mode == 'alias':
-                key2 = hdf_key[key]
+                key2 = hdf_key[ftype][key]
             elif mode == 'raw':
                 key2 = key
             else:
@@ -113,13 +114,13 @@ def get(fname, fields, mode='raw', ret_type='dict'):
 
 
 def get_type(fname):
+    ftype = get_ftype(fname)
     try:
-        ret = get(fname, ['type'], mode='alias')['type']
+        ret = get(fname, ['type'], mode='alias', ftype=ftype)['type']
         ret = ret.capitalize()
-    except Exception:
-        return None
-    else:
-        return ret
+    except:
+        ret = None
+    return ret
 
 
 def create_id(fname):
