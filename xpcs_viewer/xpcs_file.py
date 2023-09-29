@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from .fileIO.hdf_reader import get, get_type, create_id, get_abs_cs_scale
+from .fileIO.ftype_utils import get_ftype
 from .plothandler.matplot_qt import MplCanvasBarV
 from .module import saxs2d, saxs1d, intt, stability, g2mod
 from .module.g2mod import create_slice
@@ -9,6 +10,8 @@ import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
 from pyqtgraph.Qt import QtGui
 import traceback
+
+
 
 
 def single_exp_all(x, a, b, c, d):
@@ -93,8 +96,14 @@ class XpcsFile(object):
 
         # label is a short string to describe the file/filename
         self.label = create_id(fname)
+        self.ftype = get_ftype(self.full_path)
+        # print(fname, self.ftype)
 
-        self.type = get_type(self.full_path)
+        if self.ftype == 'nexus':
+            self.type = 'Multitau'
+        else:
+            self.type = get_type(self.full_path)
+
         self.keys, attr = self._load(fields)
         self.__dict__.update(attr)
 
@@ -176,7 +185,7 @@ class XpcsFile(object):
         # avoid multiple keys
         fields = list(set(fields))
 
-        ret = get(self.full_path, fields, 'alias')
+        ret = get(self.full_path, fields, 'alias', ftype=self.ftype)
         ret['dqmap'] = ret['dqmap'].astype(np.uint16)
 
         # get the avg_frames and stride_frames into t0; t0 is in seconds
@@ -208,7 +217,7 @@ class XpcsFile(object):
         ret['Iqp'] = ret['Iqp'][:, ord_idx]
         ret['ql_sta'] = ret['ql_sta'][ord_idx]
 
-        scale = get_abs_cs_scale(self.full_path)
+        scale = get_abs_cs_scale(self.full_path, ftype=self.ftype)
         ret['abs_cross_section_scale'] = scale
 
         # apply mask
@@ -227,7 +236,8 @@ class XpcsFile(object):
         """
         new_shape = (info['snoq'], info['snophi'])
         fields = ['sphilist', 'sqspan', 'sphispan']
-        ret = get(self.full_path, fields, mode='alias', ret_type='list')
+        ret = get(self.full_path, fields, mode='alias', ret_type='list',
+                  ftype=self.ftype)
         sphilist, sqspan, sphispan = ret
 
         sphi = (sphispan[1:] + sphispan[:-1]) / 2.0
@@ -285,7 +295,7 @@ class XpcsFile(object):
             raise KeyError
 
     def read_extra_metadata(self, key, alias, callback_function=None):
-        value = get(self.full_path, [key], ret_type='list')[0]
+        value = get(self.full_path, [key], ret_type='list', ftype=self.ftype)[0]
         if callback_function is not None:
             value = callback_function(value)
         if alias in self.__dict__:
@@ -299,14 +309,15 @@ class XpcsFile(object):
 
     def get_twotime_maps(self, group='xpcs'):
         rpath = '/'.join([group, 'output_data'])
-        rpath = get(self.full_path, [rpath], mode='raw')[rpath]
+        rpath = get(self.full_path, [rpath], mode='raw', ftype=self.ftype)[rpath]
 
         key_dqmap = '/'.join([group, 'dqmap'])
         key_saxs = '/'.join([rpath, 'pixelSum'])
 
         dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
                           mode='raw',
-                          ret_type='list')
+                          ret_type='list',
+                          ftype=self.ftype)
 
         # some dataset may swap the axis
         if saxs.shape != dqmap.shape:
@@ -314,7 +325,8 @@ class XpcsFile(object):
 
         if self.type == 'Twotime':
             key_c2t = '/'.join([rpath, 'C2T_all'])
-            idlist = get(self.full_path, [key_c2t], mode='raw')[key_c2t]
+            idlist = get(self.full_path, [key_c2t], mode='raw',
+                         ftype=self.ftype)[key_c2t]
             if idlist.size == 1:
                 idlist = idlist.reshape(1)
             idlist = [int(x[3:]) for x in idlist]
@@ -330,7 +342,8 @@ class XpcsFile(object):
         :return: a 2d numpy.ndarray representation of twotime correlation.
         """
         c2_key = '/'.join([twotime_key, 'C2T_all/g2_%05d' % plot_index])
-        c2_half = get(self.full_path, [c2_key], mode='raw')[c2_key]
+        c2_half = get(self.full_path, [c2_key], mode='raw',
+                      ftype=self.ftype)[c2_key]
 
         if c2_half is None:
             return None
