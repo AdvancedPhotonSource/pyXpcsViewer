@@ -120,7 +120,7 @@ class AverageToolbox(QtCore.QRunnable):
         logger.info('average job %d starts', self.jid)
         tot_num = len(self.model)
         steps = (tot_num + chunk_size - 1) // chunk_size
-        mask = np.zeros(tot_num, dtype=np.int)
+        mask = np.zeros(tot_num, dtype=np.int64)
         prev_percentage = 0
 
         def validate_g2_baseline(g2_data, q_idx):
@@ -283,7 +283,7 @@ def do_average(flist, work_dir=None, save_path=None, avg_window=3,
     tot_num = len(flist)
     abs_cs_scale_tot = 0.0
     baseline = np.zeros(tot_num, dtype=np.float32)
-    mask = np.zeros(tot_num, dtype=np.int)
+    mask = np.zeros(tot_num, dtype=np.int64)
 
     def validate_g2_baseline(g2_data, q_idx):
         if q_idx >= g2_data.shape[1]:
