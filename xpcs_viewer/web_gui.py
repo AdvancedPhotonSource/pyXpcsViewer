@@ -5,9 +5,13 @@
 
 from numpy.core.defchararray import title
 from xpcs_viewer_app import app
-import dash_core_components as dcc
-import dash_html_components as html
-from dash_html_components.Label import Label
+# import dash_core_components as dcc
+# import dash_html_components as html
+from dash import dcc
+from dash import html
+# from html.Label import Label
+from dash.html import Label
+
 import plotly.express as px
 from dash.dependencies import Input, Output
 import os
@@ -86,7 +90,7 @@ def list_to_dash(alist, val=None, label_prefix=None):
 
 
 def gen_file_list(path=None):
-    path = "/Users/mqichu/local_dev/xpcs_data/test_data"
+    path = "/Users/mqichu/Documents/xpcs_data/test_data"
     fname = os.listdir(path)
     flist = list_to_dash(fname)
     xf_dict.clear()
@@ -100,8 +104,8 @@ def gen_file_list(path=None):
 def generate_sax1d_df():
     df_list = []
     for key in xf_dict.keys():
-        df = pd.DataFrame({'saxs1d': xf_dict[key].saxs_1d,
-                            'q': xf_dict[key].ql_sta})
+        df = pd.DataFrame.from_dict({'saxs1d': xf_dict[key].saxs_1d['Iq'][0],
+        	                    'q': xf_dict[key].ql_sta})
         df['label'] = key 
         df_list.append(df)
     saxs1d_df = pd.concat(df_list, ignore_index=True)
