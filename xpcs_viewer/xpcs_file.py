@@ -12,8 +12,6 @@ from pyqtgraph.Qt import QtGui
 import traceback
 
 
-
-
 def single_exp_all(x, a, b, c, d):
     """
     single exponential fitting for xpcs-multitau analysis
@@ -97,7 +95,6 @@ class XpcsFile(object):
         # label is a short string to describe the file/filename
         self.label = create_id(fname)
         self.ftype = get_ftype(self.full_path)
-        # print(fname, self.ftype)
 
         if self.ftype == 'nexus':
             self.type = 'Multitau'
@@ -308,17 +305,20 @@ class XpcsFile(object):
         return self.t0
 
     def get_twotime_maps(self, group='xpcs'):
-        rpath = '/'.join([group, 'output_data'])
-        rpath = get(self.full_path, [rpath], mode='raw', ftype=self.ftype)[rpath]
+        # rpath = '/'.join([group, 'output_data'])
+        # rpath = get(self.full_path, [rpath], mode='raw', ftype=self.ftype)[rpath]
 
-        key_dqmap = '/'.join([group, 'dqmap'])
-        key_saxs = '/'.join([rpath, 'pixelSum'])
+        # key_dqmap = '/'.join([group, 'dqmap'])
+        # key_saxs = '/'.join([rpath, 'pixelSum'])
 
-        dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
-                          mode='raw',
-                          ret_type='list',
-                          ftype=self.ftype)
-
+        # dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
+        #                   mode='raw',
+        #                   ret_type='list',
+        #                   ftype=self.ftype)
+        rpath = '/' 
+        dqmap, saxs = get(self.full_path, ['dqmap', 'saxs_2d'], mode='alias',
+                          ret_type='list', ftype=self.ftype)
+                    
         # some dataset may swap the axis
         if saxs.shape != dqmap.shape:
             saxs = saxs.T
