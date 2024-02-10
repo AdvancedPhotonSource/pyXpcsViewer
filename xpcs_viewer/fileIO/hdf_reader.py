@@ -14,23 +14,7 @@ if not os.path.isdir(home_dir):
     os.mkdir(home_dir)
 key_fname = os.path.join(home_dir, 'default.json')
 
-# if no such file; then use 8idi configure
-# if not os.path.isfile(key_fname):
-# TODO: force update the configure file; 
-if True:
-    from .aps_8idi import key as aps_8idi_key
-    with open(key_fname, 'w') as f:
-        json.dump(aps_8idi_key, f, indent=4)
-    logger.info('no key configuration files found; using APS-8IDI')
-
-with open(key_fname) as f:
-    try:
-        hdf_key = json.load(f)
-    except json.JSONDecodeError as e:
-        logger.info('default.json in .xpcs_viewer is damaged. %s', e)
-        from .aps_8idi import key as aps_8idi_key
-        hdf_key = aps_8idi_key
-
+from .aps_8idi import key as hdf_key
 
 # colors and symbols for plots
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
@@ -71,7 +55,6 @@ def get(fname, fields, mode='raw', ret_type='dict', ftype='legacy'):
     :return: dictionary or dictionary;
     """
     ret = {}
-
     with h5py.File(fname, 'r') as HDF_Result:
         for key in fields:
             if mode == 'alias':
