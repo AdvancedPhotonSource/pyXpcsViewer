@@ -1,4 +1,5 @@
 from .saxs1d import offset_intensity, norm_saxs_data
+import os
 
 
 def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None, 
@@ -25,7 +26,7 @@ def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None,
 
     mp_hdl.clear()
     mp_hdl.show_lines(data, xlabel=xlabel, ylabel=ylabel, legend=legend)
-
-    mp_hdl.axes.set_title(title)
+    
+    mp_hdl.axes.set_title(os.path.basename(fc.full_path))
     mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
     mp_hdl.draw()

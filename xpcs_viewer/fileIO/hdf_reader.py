@@ -99,20 +99,33 @@ def get(fname, fields, mode='raw', ret_type='dict', ftype='legacy'):
 def get_type(fname):
     ftype = get_ftype(fname)
     try:
-        ret = get(fname, ['type'], mode='alias', ftype=ftype)['type']
-        ret = ret.capitalize()
+        if fname.endswith('_Twotime.hdf'):
+            return 'Twotime'
+        else:
+            ret = get(fname, ['type'], mode='alias', ftype=ftype)['type']
+            ret = ret.capitalize()
     except:
         ret = None
     return ret
 
 
-def create_id(fname):
+def create_id_previous(fname):
     x = os.path.basename(fname)
     idx_1 = x.find('_')
     idx_2 = x.rfind('_', 0, len(x))
     idx_3 = x.rfind('_', 0, idx_2)
     ret = x[0: idx_1] + x[idx_3: idx_2]
     return ret
+
+
+def create_id(fname):
+    if len(fname) < 10:
+        return fname
+
+    id_str = fname[0:10]
+    if id_str[-2] == '_':
+        id_str = id_str[:-2]
+    return id_str
 
 
 if __name__ == '__main__':

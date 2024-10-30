@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>6</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1496,8 +1496,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>3052</width>
-                 <height>2280</height>
+                 <width>3247</width>
+                 <height>2203</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -1656,7 +1656,7 @@
                      <double>0.010000000000000</double>
                     </property>
                     <property name="value">
-                     <double>1.200000000000000</double>
+                     <double>1.800000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -1682,7 +1682,7 @@
                      </sizepolicy>
                     </property>
                     <property name="text">
-                     <string>1.0</string>
+                     <string>100.0</string>
                     </property>
                    </widget>
                   </item>
@@ -2075,7 +2075,7 @@
                      <double>0.010000000000000</double>
                     </property>
                     <property name="value">
-                     <double>0.200000000000000</double>
+                     <double>0.800000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -2156,7 +2156,7 @@
                      <double>9999.999900000000707</double>
                     </property>
                     <property name="value">
-                     <double>1.000000000000000</double>
+                     <double>100.000000000000000</double>
                     </property>
                    </widget>
                   </item>

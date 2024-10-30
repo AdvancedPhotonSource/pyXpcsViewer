@@ -95,9 +95,11 @@ class XpcsFile(object):
         # label is a short string to describe the file/filename
         self.label = create_id(fname)
         self.ftype = get_ftype(self.full_path)
-
+        
+        print('self.ftype', self.ftype)
         if self.ftype == 'nexus':
-            self.type = 'Multitau'
+            # self.type = 'Multitau'
+            self.type = get_type(self.full_path)
         else:
             self.type = get_type(self.full_path)
 
@@ -201,7 +203,7 @@ class XpcsFile(object):
 
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
-
+        print(ret['bcx'], ret['ccdx'], ret['ccdx0'], ret['pix_dim_x'])
         ret['bcx'] += (ret['ccdx'] - ret['ccdx0']) / ret['pix_dim_x']
         ret['bcy'] += (ret['ccdy'] - ret['ccdy0']) / ret['pix_dim_y']
 
@@ -324,7 +326,8 @@ class XpcsFile(object):
             saxs = saxs.T
 
         if self.type == 'Twotime':
-            key_c2t = '/'.join([rpath, 'C2T_all'])
+            # key_c2t = '/'.join([rpath, 'C2T_all'])
+            key_c2t = '/exchange/C2T_all'
             idlist = get(self.full_path, [key_c2t], mode='raw',
                          ftype=self.ftype)[key_c2t]
             if idlist.size == 1:
@@ -341,7 +344,7 @@ class XpcsFile(object):
         :param plot_index: the targeted q index;
         :return: a 2d numpy.ndarray representation of twotime correlation.
         """
-        c2_key = '/'.join([twotime_key, 'C2T_all/g2_%05d' % plot_index])
+        c2_key =  f'/exchange/C2T_all/g2_{plot_index:05d}'
         c2_half = get(self.full_path, [c2_key], mode='raw',
                       ftype=self.ftype)[c2_key]
 

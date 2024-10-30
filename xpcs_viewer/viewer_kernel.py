@@ -126,8 +126,9 @@ class ViewerKernel(FileLocator):
         ans = [self.cache[fn].saxs_2d for fn in self.target]
         # extents = extent = (qy_min, qy_max, qx_min, qx_max)
         extent = self.cache[self.target[0]].get_detector_extent()
-        center = (self.cache[self.target[0]].bcx,
-                  self.cache[self.target[0]].bcy)
+        center = (self.cache[self.target[0]].bcy,
+                  self.cache[self.target[0]].bcx)
+        print(center)
         saxs2d.plot(ans, extent=extent, center=center, *args, **kwargs)
     
     def add_roi(self, hdl, max_points=128, **kwargs):

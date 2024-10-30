@@ -715,7 +715,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.g2_bmin.setValue(t_min / 20)
         # self.g2_bmax.setText(to_e(t_max * 10))
-        self.g2_bmax.setValue(0.1)
+        self.g2_bmax.setValue(t_max * 10)
 
         self.g2_tmin.setText(to_e(t_min / 1.1))
         self.g2_tmax.setText(to_e(t_max * 1.1))
