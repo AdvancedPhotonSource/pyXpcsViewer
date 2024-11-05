@@ -44,7 +44,10 @@ def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
     if plot_type == 'log':
         if epsilon is None or epsilon < 0:
             temp = ans.ravel()
-            epsilon = np.min(temp[temp > 0])
+            try:
+                epsilon = np.min(temp[temp > 0])
+            except Exception as e:
+                epsilon = 1
         ans = np.log10(ans + epsilon)
     ans = ans.astype(np.float32)
 
