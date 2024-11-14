@@ -172,11 +172,11 @@ class FileLocator(object):
             else:
                 # read from file and output as a dictionary
                 try:
-                    self.cache[fn] = xf(fn, self.cwd)
+                    temp = xf(fn, self.cwd)
+                    self.cache[fn] = temp
                 except Exception as e:
-                    logger.info("failed to load file: %s", fn)
-                    logger.info("%s", str(e))
-                    print(traceback.format_exc())
+                    logger.error("failed to load file: %s", fn)
+                    logger.error(traceback.format_exc())
 
         if flag_del:
             for key in existing_keys:

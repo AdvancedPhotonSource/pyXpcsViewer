@@ -96,7 +96,6 @@ class XpcsFile(object):
         self.label = create_id(fname)
         self.ftype = get_ftype(self.full_path)
         
-        print('self.ftype', self.ftype)
         if self.ftype == 'nexus':
             # self.type = 'Multitau'
             self.type = get_type(self.full_path)
@@ -186,24 +185,26 @@ class XpcsFile(object):
 
         ret = get(self.full_path, fields, 'alias', ftype=self.ftype)
         ret['dqmap'] = ret['dqmap'].astype(np.uint16)
-
-        # get the avg_frames and stride_frames into t0; t0 is in seconds
-        ret['t0'] = ret['t0'] * ret['avg_frames'] * ret['stride_frames']
+        
+        # t0: acquire time/exposure time
+        # t1: acquire period
+        # get the avg_frames and stride_frames into t1; t1 is in seconds
+        ret['t1'] = ret['t1'] * ret['avg_frames'] * ret['stride_frames']
 
         # get t_el which is in the unit of seconds;
         if 'tau' in ret:
-            ret['t_el'] = ret['t0'] * ret['tau']
+            ret['t_el'] = ret['t1'] * ret['tau']
 
         if self.type == 'Twotime':
             ret['g2'] = ret['g2_full']
-            ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t0']
+            ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t1']
         else:
             # correct g2_err to avoid fitting divergence
             ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
 
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
-        print(ret['bcx'], ret['ccdx'], ret['ccdx0'], ret['pix_dim_x'])
+        # print(ret['bcx'], ret['ccdx'], ret['ccdx0'], ret['pix_dim_x'])
         ret['bcx'] += (ret['ccdx'] - ret['ccdx0']) / ret['pix_dim_x']
         ret['bcy'] += (ret['ccdy'] - ret['ccdy0']) / ret['pix_dim_y']
 
@@ -304,7 +305,7 @@ class XpcsFile(object):
 
     def get_time_scale(self, group='xpcs'):
         # acquire time scale for twotime analysis
-        return self.t0
+        return self.t1
 
     def get_twotime_maps(self, group='xpcs'):
         # rpath = '/'.join([group, 'output_data'])
