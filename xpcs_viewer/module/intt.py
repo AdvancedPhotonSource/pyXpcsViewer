@@ -63,12 +63,11 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel='Frame Index', **kwargs):
     :param kwargs: used to define how to average/sample the data
     :return:
     """
-    t1 = xf_list[0].t1
     data = []
     for fc in xf_list:
         x, y = smooth_data(fc, **kwargs)
         if xlabel != 'Frame Index':
-            x = x * t1
+            x = x * fc.t1
         data.append([x, y])
 
     pg_hdl.clear()
@@ -106,7 +105,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel='Frame Index', **kwargs):
     for n in range(len(data)):
         y = np.abs(np.fft.fft(data[n][1]))
 
-        x = np.arange(y.size // 2) / (y.size * t1 * kwargs['sampling'])
+        x = np.arange(y.size // 2) / (y.size * xf_list[n].t1 * kwargs['sampling'])
         y = y[slice(0, y.size // 2)]
         # get ride of zero frequency;
         y[0] = 0
