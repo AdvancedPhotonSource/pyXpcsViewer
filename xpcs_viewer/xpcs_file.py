@@ -204,7 +204,6 @@ class XpcsFile(object):
 
         for key in ['snoq', 'snophi', 'dnoq', 'dnophi']:
             ret[key] = int(ret[key])
-        # print(ret['bcx'], ret['ccdx'], ret['ccdx0'], ret['pix_dim_x'])
         ret['bcx'] += (ret['ccdx'] - ret['ccdx0']) / ret['pix_dim_x']
         ret['bcy'] += (ret['ccdy'] - ret['ccdy0']) / ret['pix_dim_y']
 

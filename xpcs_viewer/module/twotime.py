@@ -19,9 +19,11 @@ def correct_diagonal_c2(c2):
 def get_twotime_qindex(meta, ix, iy, hdl):
     shape = meta['twotime_dqmap'].shape
     if len(hdl.axes[0].patches) >= 2:
-        hdl.axes[0].patches.pop(0)
+        for patch in hdl.axes[0].patches[:-1]:  # Remove all but last patch
+            patch.remove()
     if len(hdl.axes[1].patches) >= 2:
-        hdl.axes[1].patches.pop(0)
+        for patch in hdl.axes[1].patches[:-1]:  # Remove all but last patch
+            patch.remove()
 
     h = np.argmin(np.abs(np.arange(shape[1]) - ix))
     v = np.argmin(np.abs(np.arange(shape[0]) - iy))
