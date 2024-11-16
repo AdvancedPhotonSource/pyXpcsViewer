@@ -1,13 +1,14 @@
 from PyQt5 import QtCore, QtWidgets
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
-
+import pyqtgraph as pg
 import os
 import numpy as np
 import sys
 import json
 import shutil
 import logging
+from pyqtgraph.Qt import QtCore 
 
 
 format = logging.Formatter('%(asctime)s %(message)s')
@@ -79,15 +80,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.start_wd = os.path.abspath(self.start_wd)
         logger.info('Start up directory is [{}]'.format(self.start_wd))
 
-        # additional signal-slot settings
-        self.mp_2t_map.hdl.mpl_connect('button_press_event',
-                                       self.update_twotime_qindex)
         
         self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
         # self.list_view_target.indexesMoved.connect(self.reorder_target)
         self.list_view_target.clicked.connect(self.update_selection)
+
+        self.mp_2t_hdls = None
+        self.init_twotime_plot_handler()
+        self.twotime_kwargs = None
 
         self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
         self.cb_twotime_saxs_cmap.currentIndexChanged.connect(
@@ -360,62 +362,86 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.vk.export_saxs_1d(self.pg_saxs, folder)
     
+    def init_twotime_plot_handler(self):
+        if not self.check_status():
+            return
+        # Multitau tau analysis also has dqmap
+        if self.vk.type != "Twotime":
+            self.statusbar.showMessage("The target files must be twotime " +
+                                       "analysis files")
+            return
+
+        # self.mp_2t.setBackground('w')
+        self.mp_2t_hdls = {}
+        labels = ['saxs', 'dqmap']
+        cmaps = ['viridis', 'tab20']
+        for n in range(2):
+            plot_item = self.mp_2t_map.addPlot(row=0, col=10*n, colspan=9, rowspan=1)
+            # Remove axes
+            plot_item.hideAxis('left')
+            plot_item.hideAxis('bottom')
+            # Optional: remove margins around the plot
+            plot_item.getViewBox().setDefaultPadding(0)
+
+            plot_item.setMouseEnabled(x=False, y=False)
+            image_item = pg.ImageItem(np.ones((128, 128)))
+            image_item.setOpts(axisOrder='row-major')  # Set to row-major order
+
+            # Create colorbar
+            cmap = pg.colormap.getFromMatplotlib(cmaps[n])
+            colorbar = pg.ColorBarItem(
+                colorMap=cmap,       # Or use custom colormap
+                width=15,                 # Width of colorbar
+                interactive=False          # Allow scaling by dragging colorbar
+            )
+            # Link colorbar with image
+            plot_item.addItem(image_item)
+            plot_item.setAspectLocked(True)
+            colorbar.setImageItem(image_item)
+            colorbar.setFixedHeight(plot_item.viewRect().height())
+
+            self.mp_2t_map.addItem(colorbar, row=0, col=10*n+9, colspan=1, rowspan=1)  # Add colorbar to plot
+            self.mp_2t_hdls[labels[n]] = image_item
+            self.mp_2t_hdls[labels[n] + '_colorbar'] = colorbar
+        self.mp_2t_hdls['dqmap'].mouseClickEvent = self.pick_twotime_index
+        self.mp_2t_hdls['saxs'].mouseClickEvent = self.pick_twotime_index
+        self.mp_2t.getView().setBackgroundColor('w')
+        self.mp_2t_hdls['tt'] = self.mp_2t
+    
+    def pick_twotime_index(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            pos = event.pos()
+            x, y = int(pos.x()), int(pos.y())
+
+            if self.mp_2t_hdls['dqmap'].image is not None:  # Check if there's image data
+                value = self.mp_2t_hdls['dqmap'].image[y, x]  # Note: y, x order for numpy arrays
+                num_frames = self.mp_2t_hdls['tt'].getProcessedImage().shape[0]
+                if 0 < value <= num_frames:  # Check if value is within valid range
+                    self.mp_2t_hdls['tt'].setCurrentIndex(int(value) - 1)
+        event.accept()  # Mark the event as handled
+
     def init_twotime(self):
         if not self.check_status():
             return
-        rows = self.get_selected_rows()
-        file_index = 0
-        if len(rows) > 0:
-            file_index = rows[0]
+        if self.mp_2t_hdls is None:
+            self.init_twotime_plot_handler()
 
         # Multitau tau analysis also has dqmap
         if self.vk.type != "Twotime":
             self.statusbar.showMessage("The target files must be twotime " +
                                        "analysis.", 1000)
-        res = self.vk.setup_twotime(file_index=file_index)
-        self.cb_twotime_group.clear()
-        self.cb_twotime_group.addItems(res)
 
         kwargs = {
             # if nothing is selected, currentRow = -1; then plot 0th row;
             'scale': self.cb_twotime_type.currentText(),
-            'saxs_cmap': self.cb_twotime_saxs_cmap.currentText(),
-            'qmap_cmap': self.cb_twotime_qmap_cmap.currentText(),
+            # 'saxs_cmap': self.cb_twotime_saxs_cmap.currentText(),
+            # 'qmap_cmap': self.cb_twotime_qmap_cmap.currentText(),
             'auto_rotate': self.twotime_autorotate.isChecked(),
             'auto_crop': self.twotime_autocrop.isChecked(),
         }
 
-        self.vk.plot_twotime_map(self.mp_2t_map.hdl, **kwargs)
+        self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
         self.plot_twotime()
-
-    def update_twotime_qindex(self, event):
-        """
-        connected to mp_2t.hdl which fetches the mouse click event and plot
-        the selected qphi index on the qmap, also plot the twotime for the
-        qphi index.
-        :param event: mouse click event
-        :return: None
-        """
-        if self.data_state < 3:
-            self.statusbar.showMessage('Twotime data not ready', 1000)
-            return
-
-        if event.button == QtCore.Qt.LeftButton:
-            self.statusbar.showMessage('Use right click to select points',
-                                       1000)
-            return
-
-        ix, iy = event.xdata, event.ydata
-        # filter events that's outside the boundaries
-        if ix is None or iy is None:
-            logger.warning('the click event is outside the canvas')
-            return
-        qindex = self.vk.get_twotime_qindex(ix, iy, self.mp_2t_map.hdl)
-
-        # qindex is linked to plot_twotime(); avoid double shot
-        if qindex != self.twotime_q_index.value():
-            self.twotime_q_index.setValue(qindex)
-            self.plot_twotime()
 
     def plot_twotime(self):
         """
@@ -440,23 +466,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # the model base listwidget doesn't have currentRow method
             # 'current_file_index': max(0, self.list_view_target.currentRow()),
             'current_file_index': file_index,
-            'plot_index': self.twotime_q_index.value(),
+            # 'plot_index': self.twotime_q_index.value(),
             'cmap': self.cb_twotime_cmap.currentText(),
             'vmin': self.c2_min.value(),
             'vmax': self.c2_max.value(),
             'show_box': self.twotime_showbox.isChecked(),
             'correct_diag': self.twotime_correct_diag.isChecked(),
+            'layout': self.cb_tt_layout.currentText(),
         }
-
-        if kwargs['vmin'] < 0:
-            kwargs['vmin'] = None
-        if kwargs['vmax'] < 0:
-            kwargs['vmax'] = None
-
-        if kwargs['plot_index'] == 0:
-            self.statusbar.showMessage("No twotime data for plot_indx = 0.")
-            return
-        self.vk.plot_twotime(self.mp_2t.hdl, self.mp_2t_map.hdl, **kwargs)
+        self.vk.plot_twotime(self.mp_2t_hdls, **kwargs)
 
     def edit_label(self):
         if not self.check_status():
@@ -967,11 +985,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.load_data()
 
     def reset_gui(self):
+        print('reset_gui called')
         self.data_state = 1
         self.plot_state[:] = 0
         self.vk.reset_kernel()
-        for x in [self.pg_saxs, self.pg_intt, self.mp_tauq, self.mp_2t,
-                  self.mp_2t_map, self.mp_g2, self.mp_saxs, self.mp_stab]:
+        for x in [self.pg_saxs, self.pg_intt, self.mp_tauq, 
+                  self.mp_g2, self.mp_saxs, self.mp_stab]:
             x.clear()
         self.le_bkg_fname.clear()
 

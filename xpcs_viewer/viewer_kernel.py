@@ -2,7 +2,6 @@ import numpy as np
 from .file_locator import FileLocator
 from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
 from .module.average_toolbox import AverageToolbox
-import h5py
 from .helper.listmodel import TableDataModel
 import pyqtgraph as pg
 import os
@@ -34,8 +33,8 @@ class ViewerKernel(FileLocator):
             'twotime_fname': None,
             'twotime_dqmap': None,
             'twotime_ready': False,
-            'twotime_ims': [],
-            'twotime_text': None,
+            'twotime_map_kwargs': None,
+            'twotime_kwargs': None,
             # avg
             'avg_file_list': None,
             'avg_intt_minmax': None,
@@ -160,37 +159,34 @@ class ViewerKernel(FileLocator):
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         saxs1d.switch_line_builder(mp_hdl, lb_type)
 
-    def setup_twotime(self, file_index=0, group='xpcs'):
-        fname = self.target[file_index]
-        res = []
-        with h5py.File(os.path.join(self.cwd, fname), 'r') as f:
-            for key in f.keys():
-                if 'xpcs' in key:
-                    res.append(key)
-        return res
-
-    def get_twotime_qindex(self, ix, iy, hdl):
-        res = twotime.get_twotime_qindex(self.meta, ix, iy, hdl)
-        return res
-
     def plot_twotime_map(self, hdl, fname=None, **kwargs):
         if fname is None:
             fname = self.target[0]
+
+        config = {'fname': fname, **kwargs} 
+        if self.meta['twotime_map_kwargs'] == config:
+            return
+        else:
+            self.meta['twotime_map_kwargs'] = config
 
         xfile = self.cache[fname]
         twotime.plot_twotime_map(xfile, hdl, meta=self.meta, **kwargs)
         return
 
-    def plot_twotime(self, hdl, hdl_map, current_file_index=0, 
-                     plot_index=1, **kwargs):
+    def plot_twotime(self, hdl, current_file_index=0, **kwargs):
         if self.type != 'Twotime':
             self.show_message('Analysis type must be twotime.')
             return None
 
         fname = self.target[current_file_index]
+        config = {'fname': fname, **kwargs}
+        if self.meta['twotime_kwargs'] == config:
+            return
+        else:
+            self.meta['twotime_kwargs'] = config
+
         xfile = self.cache[fname]
-        ret = twotime.plot_twotime(xfile, hdl, hdl_map, plot_index=plot_index,
-                                   meta=self.meta, **kwargs)
+        ret = twotime.plot_twotime(xfile, hdl, meta=self.meta, **kwargs)
         return ret
 
     def plot_intt(self, pg_hdl, max_points=128, rows=None, **kwargs):
@@ -219,10 +215,6 @@ class ViewerKernel(FileLocator):
     def remove_job(self, index):
         self.avg_worker.pop(index)
         return
-
-    # def register_avg_worker(self, worker):
-    #     g2_hist = np.zeros(worker.size, dtype=np.float32)
-    #     self.avg_wo
 
     def update_avg_info(self, jid):
         self.avg_worker.layoutChanged.emit()
