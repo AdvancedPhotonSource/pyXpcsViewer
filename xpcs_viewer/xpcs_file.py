@@ -10,6 +10,53 @@ import pyqtgraph as pg
 from .fileIO.hdf_to_str import get_hdf_info
 from pyqtgraph.Qt import QtGui
 import traceback
+import h5py
+import time
+from multiprocessing.pool import Pool
+
+
+def get_single_c2(args):
+    full_path, index_str, max_size = args
+
+    c2_prefix = '/exchange/C2T_all'
+    with h5py.File(full_path, 'r') as f:
+        c2_half = f[f'{c2_prefix}/{index_str}'][()]
+        c2 = c2_half + np.transpose(c2_half)
+        diag_idx = np.diag_indices(c2_half.shape[0], ndim=2)
+        c2[diag_idx] /= 2
+        if max_size > 0 and max_size < c2.shape[0]:
+            sampling_rate = (c2.shape[0] + max_size - 1) // max_size
+            c2 = c2[::sampling_rate, ::sampling_rate] 
+        c2 = np.flipud(c2)
+    return c2
+
+
+def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
+                         max_size=512, num_workers=12):
+    # t0 = time.perf_counter()
+    idx_toload = []
+    c2_prefix = '/exchange/C2T_all'
+    with h5py.File(full_path, 'r') as f:
+        idxlist = list(f[c2_prefix])
+        for idx in idxlist:
+            if dq_selection is not None and int(idx[4:]) not in dq_selection:
+                continue
+            else:
+                idx_toload.append(idx)
+            if max_c2_num > 0 and len(idx_toload) > max_c2_num:
+                break
+    args_list = [(full_path, index, max_size) for index in idx_toload]
+
+    if len(args_list) >= 6:
+        with Pool(min(len(args_list), num_workers)) as p:
+            result = p.map(get_single_c2, args_list)
+    else:
+        result = [get_single_c2(args) for args in args_list]
+
+    c2_all = np.array(result)
+    # t1 = time.perf_counter()
+    # print(c2_all.shape, f'{num_workers=} time to load: ', t1 - t0)
+    return c2_all
 
 
 def single_exp_all(x, a, b, c, d):
@@ -107,6 +154,8 @@ class XpcsFile(object):
 
         self.hdf_info = None
         self.fit_summary = None
+        self.c2_all_data = None
+        self.c2_kwargs = None
 
     def __str__(self):
         ans = ['File:' + str(self.full_path)]
@@ -307,16 +356,6 @@ class XpcsFile(object):
         return self.t1
 
     def get_twotime_maps(self, group='xpcs'):
-        # rpath = '/'.join([group, 'output_data'])
-        # rpath = get(self.full_path, [rpath], mode='raw', ftype=self.ftype)[rpath]
-
-        # key_dqmap = '/'.join([group, 'dqmap'])
-        # key_saxs = '/'.join([rpath, 'pixelSum'])
-
-        # dqmap, saxs = get(self.full_path, [key_dqmap, key_saxs],
-        #                   mode='raw',
-        #                   ret_type='list',
-        #                   ftype=self.ftype)
         rpath = '/' 
         dqmap, saxs = get(self.full_path, ['dqmap', 'saxs_2d'], mode='alias',
                           ret_type='list', ftype=self.ftype)
@@ -337,25 +376,19 @@ class XpcsFile(object):
             idlist = [None]
         return dqmap, saxs, rpath, idlist
 
-    def get_twotime_c2(self, twotime_key, plot_index):
-        """
-        get the twotime data for a particular key and index
-        :param twotime_key: the twotime analysis key
-        :param plot_index: the targeted q index;
-        :return: a 2d numpy.ndarray representation of twotime correlation.
-        """
-        c2_key =  f'/exchange/C2T_all/g2_{plot_index:05d}'
-        c2_half = get(self.full_path, [c2_key], mode='raw',
-                      ftype=self.ftype)[c2_key]
-
-        if c2_half is None:
-            return None
-
-        c2 = c2_half + np.transpose(c2_half)
-        diag_idx = np.diag_indices(c2_half.shape[0], ndim=2)
-        c2[diag_idx] /= 2
-
-        return c2
+    def get_twotime_c2(self, dq_selection=None, max_c2_num=-1,
+                       max_size=512):
+        kwargs = (dq_selection, max_c2_num, max_size)
+        if self.c2_kwargs == kwargs and self.c2_all_data is not None:
+            return self.c2_all_data
+        else:
+            self.c2_kwargs = kwargs
+            c2_all = get_c2_from_hdf_fast(self.full_path,
+                                          dq_selection=dq_selection, 
+                                          max_c2_num=max_c2_num,
+                                          max_size=max_size)
+            self.c2_all_data = c2_all
+            return c2_all
 
     def get_detector_extent(self):
         """
