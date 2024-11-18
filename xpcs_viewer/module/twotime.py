@@ -55,8 +55,8 @@ def plot_twotime_map(xfile,
     if highlight_dqbin is not None:
         dq_bin = highlight_dqbin
     elif highlight_xy is not None:
-        dqmap_disp[highlight_xy] = qindex_max + 1
-        x, y =highlight_xy
+        x, y = highlight_xy
+        # dqmap_disp[highlight_xy] = qindex_max + 1
         if (x >= 0 and y >= 0 and x < dqmap.shape[1] and y < dqmap.shape[0]):
             dq_bin = dqmap[y, x]
     if dq_bin is not None and dq_bin != np.nan and dq_bin > 0:

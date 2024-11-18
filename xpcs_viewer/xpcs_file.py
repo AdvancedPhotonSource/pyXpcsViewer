@@ -50,7 +50,8 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
     # t0 = time.perf_counter()
     idx_toload = []
     c2_prefix = '/exchange/C2T_all'
-    acquire_period_key = '/entry/instrument/bluesky/metadata/acquire_period'
+    # acquire_period_key = '/entry/instrument/bluesky/metadata/acquire_period'
+    acquire_period_key = '/entry/instrument/bluesky/metadata/t1'
     with h5py.File(full_path, 'r') as f:
         acquire_period = f[acquire_period_key][()]
         idxlist = list(f[c2_prefix])
