@@ -1,5 +1,4 @@
 import numpy as np
-from matplotlib.patches import Circle
 import pyqtgraph as pg
 
 
@@ -18,14 +17,13 @@ def correct_diagonal_c2(c2):
 
 def plot_twotime_map(xfile,
                      hdl,
-                     meta=None,
-                     group='xpcs',
                      scale='log',
                      auto_crop=True,
+                     highlight_xy=None,
+                     highlight_dqbin=None,
                      auto_rotate=True):
 
-    dqmap, saxs, rpath, idlist = xfile.get_twotime_maps(group)
-    time_scale = xfile.get_time_scale(group)
+    dqmap, saxs = xfile.get_twotime_maps()
 
     if auto_crop:
         idx = np.nonzero(dqmap >= 1)
@@ -41,7 +39,8 @@ def plot_twotime_map(xfile,
 
     # emphasize the beamstop region which has qindex = 0;
     qindex_max = np.max(dqmap)
-    dqmap[dqmap == 0] = qindex_max + 1
+    dqmap = dqmap.astype(np.float32)
+    dqmap[dqmap == 0] = np.nan
 
     if scale == 'log':
         min_val = np.min(saxs[saxs > 0])
@@ -50,8 +49,24 @@ def plot_twotime_map(xfile,
 
     hdl['saxs'].setImage(saxs)
     hdl['saxs_colorbar'].setLevels(low=np.min(saxs), high=np.max(saxs))
-    hdl['dqmap'].setImage(dqmap)
-    hdl['dqmap_colorbar'].setLevels(low=np.min(dqmap), high=np.max(dqmap))
+
+    dqmap_disp = np.copy(dqmap)
+    dq_bin = None
+    if highlight_dqbin is not None:
+        dq_bin = highlight_dqbin
+    elif highlight_xy is not None:
+        dqmap_disp[highlight_xy] = qindex_max + 1
+        x, y =highlight_xy
+        if (x >= 0 and y >= 0 and x < dqmap.shape[1] and y < dqmap.shape[0]):
+            dq_bin = dqmap[y, x]
+    if dq_bin is not None and dq_bin != np.nan and dq_bin > 0:
+        dqmap_disp[dqmap == dq_bin] = qindex_max + 1
+    else:
+        dq_bin = None
+
+    hdl['dqmap'].setImage(dqmap_disp)
+    hdl['dqmap_colorbar'].setLevels(low=np.nanmin(dqmap), high=qindex_max + 1)
+    return dq_bin
 
 
 def update_twotime_map(meta, hdl):
@@ -72,7 +87,7 @@ def plot_twotime(xfile, hdl, meta, cmap='jet',
     if xfile.type != 'Twotime':
         return None
 
-    c2 = xfile.get_twotime_c2()
+    c2, delta_t = xfile.get_twotime_c2()
 
     meta['twotime_ims'] = np.copy(c2)
     # t = meta['twotime_scale'] * np.arange(c2.shape[0])
@@ -80,7 +95,16 @@ def plot_twotime(xfile, hdl, meta, cmap='jet',
     if correct_diag:
         c2 = correct_diagonal_c2(c2)
 
-    hdl['tt'].setImage(c2)
+    hdl['tt'].imageItem.setScale(delta_t)
+    hdl['tt'].setImage(c2, autoRange=True)
+    # hdl['tt'].setImage(c2, autoRange=False)
+    # Set x and y limits to match the image dimensions
+    # x_max = c2.shape[2] * delta_t
+    # y_max = c2.shape[1] * delta_t
+    # hdl['tt'].view.setLimits(xMin=0, xMax=x_max, yMin=0, yMax=y_max)
+    # hdl['tt'].view.setXRange(0, x_max, padding=0)
+    # hdl['tt'].view.setYRange(0, y_max, padding=0)
+
     cmap = pg.colormap.getFromMatplotlib(cmap)
     hdl['tt'].setColorMap(cmap)
     hdl['tt'].ui.histogram.setHistogramRange(mn=0, mx=3)
