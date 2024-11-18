@@ -362,11 +362,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def init_twotime_plot_handler(self):
         if not self.check_status():
             return
-        # Multitau tau analysis also has dqmap
-        if self.vk.type != "Twotime":
-            self.statusbar.showMessage("The target files must be twotime " +
-                                       "analysis files")
-            return
 
         # self.mp_2t.setBackground('w')
         self.mp_2t_hdls = {}
@@ -422,7 +417,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             x, y = int(pos.x()), int(pos.y())
             dq_bin = self.init_twotime(map_only=True, highlight_xy=(x, y))
             if dq_bin is not None and dq_bin != np.nan:
-                self.mp_2t_hdls['tt'].setCurrentIndex(int(dq_bin) - 1)
+                if self.mp_2t_hdls['tt'].image is not None:
+                    self.mp_2t_hdls['tt'].setCurrentIndex(int(dq_bin) - 1)
         event.accept()  # Mark the event as handled
 
     def init_twotime(self, map_only=False, highlight_xy=None, highlight_dqbin=None):
@@ -993,7 +989,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.load_data()
 
     def reset_gui(self):
-        print('reset_gui called')
         self.data_state = 1
         self.plot_state[:] = 0
         self.vk.reset_kernel()

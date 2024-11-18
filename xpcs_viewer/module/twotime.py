@@ -46,7 +46,6 @@ def plot_twotime_map(xfile,
         min_val = np.min(saxs[saxs > 0])
         saxs[saxs <= 0] = min_val
         saxs = np.log10(saxs).astype(np.float32)
-
     hdl['saxs'].setImage(saxs)
     hdl['saxs_colorbar'].setLevels(low=np.min(saxs), high=np.max(saxs))
 
@@ -87,6 +86,8 @@ def plot_twotime(xfile, hdl, meta, cmap='jet',
     if xfile.type != 'Twotime':
         return None
     c2_result = xfile.get_twotime_c2()
+    if c2_result is None:
+        return None
     c2, delta_t = c2_result['c2_all'], c2_result['delta_t']
 
     meta['twotime_ims'] = np.copy(c2)

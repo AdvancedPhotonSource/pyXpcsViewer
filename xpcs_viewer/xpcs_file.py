@@ -11,7 +11,6 @@ from .fileIO.hdf_to_str import get_hdf_info
 from pyqtgraph.Qt import QtGui
 import traceback
 import h5py
-import time
 from multiprocessing.pool import Pool
 from functools import lru_cache
 
@@ -32,12 +31,16 @@ def get_single_c2(args):
     return c2, sampling_rate
 
 
-
 @lru_cache(maxsize=128)
 def get_twotime_maps(full_path):
     with h5py.File(full_path, 'r') as f:
         dqmap = f['/xpcs/dqmap'][()]
-        saxs = f[f'/exchange/pixelSum'][0]
+        # import matplotlib.pyplot as plt
+        # plt.imshow(dqmap)
+        # plt.show()
+        saxs = f[f'/exchange/pixelSum'][()]
+        if saxs.ndim == 3:
+            saxs = saxs[0]
     # some dataset may swap the axis
     if saxs.shape != dqmap.shape:
         saxs = saxs.T
@@ -55,10 +58,12 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
     # acquire_period_key = '/entry/instrument/bluesky/metadata/acquire_period'
     acquire_period_key = '/entry/instrument/bluesky/metadata/t1'
     with h5py.File(full_path, 'r') as f:
+        if c2_prefix not in f:
+            return None
+        idxlist = list(f[c2_prefix])
         acquire_period = f[acquire_period_key][()]
         g2_full = f[g2_full_key][()]
         g2_partial = f[g2_partial_key][()]
-        idxlist = list(f[c2_prefix])
         for idx in idxlist:
             if dq_selection is not None and int(idx[4:]) not in dq_selection:
                 continue
