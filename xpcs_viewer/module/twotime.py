@@ -86,8 +86,8 @@ def plot_twotime(xfile, hdl, meta, cmap='jet',
 
     if xfile.type != 'Twotime':
         return None
-
-    c2, delta_t = xfile.get_twotime_c2()
+    c2_result = xfile.get_twotime_c2()
+    c2, delta_t = c2_result['c2_all'], c2_result['delta_t']
 
     meta['twotime_ims'] = np.copy(c2)
     # t = meta['twotime_scale'] * np.arange(c2.shape[0])

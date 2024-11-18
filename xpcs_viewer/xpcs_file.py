@@ -50,10 +50,14 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
     # t0 = time.perf_counter()
     idx_toload = []
     c2_prefix = '/exchange/C2T_all'
+    g2_full_key = '/exchange/g2full'            # Dataset {5000, 25}
+    g2_partial_key = '/exchange/g2partials'     # Dataset {1000, 5, 25} 
     # acquire_period_key = '/entry/instrument/bluesky/metadata/acquire_period'
     acquire_period_key = '/entry/instrument/bluesky/metadata/t1'
     with h5py.File(full_path, 'r') as f:
         acquire_period = f[acquire_period_key][()]
+        g2_full = f[g2_full_key][()]
+        g2_partial = f[g2_partial_key][()]
         idxlist = list(f[c2_prefix])
         for idx in idxlist:
             if dq_selection is not None and int(idx[4:]) not in dq_selection:
@@ -63,6 +67,8 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
             if max_c2_num > 0 and len(idx_toload) > max_c2_num:
                 break
     args_list = [(full_path, index, max_size) for index in idx_toload]
+    g2_full = np.swapaxes(g2_full, 0, 1)
+    g2_partial = np.swapaxes(g2_partial, 0, 2)
 
     if len(args_list) >= 6:
         with Pool(min(len(args_list), num_workers)) as p:
@@ -74,7 +80,14 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
     sampling_rate_all = set([res[1] for res in result])
     assert len(sampling_rate_all) == 1, f"Sampling rate not consistent {sampling_rate_all}"
     sampling_rate = list(sampling_rate_all)[0]
-    return c2_all, sampling_rate * acquire_period
+    c2_result = {
+        'c2_all': c2_all,
+        'g2_full': g2_full,
+        'g2_partial': g2_partial,
+        'delta_t': acquire_period * sampling_rate,
+        'dq_selection': dq_selection,
+    }
+    return c2_result
 
 
 def single_exp_all(x, a, b, c, d):
@@ -381,16 +394,15 @@ class XpcsFile(object):
                        max_size=512):
         kwargs = (dq_selection, max_c2_num, max_size)
         if self.c2_kwargs == kwargs and self.c2_all_data is not None:
-            return self.c2_all_data, self.c2_delta_t
+            return self.c2_all_data
         else:
             self.c2_kwargs = kwargs
-            c2_all, delta_t = get_c2_from_hdf_fast(self.full_path,
+            c2_result = get_c2_from_hdf_fast(self.full_path,
                                           dq_selection=dq_selection, 
                                           max_c2_num=max_c2_num,
                                           max_size=max_size)
-            self.c2_all_data = c2_all
-            self.c2_delta_t = delta_t
-            return c2_all, delta_t
+            self.c2_all_data = c2_result
+            return c2_result 
 
     def get_detector_extent(self):
         """
