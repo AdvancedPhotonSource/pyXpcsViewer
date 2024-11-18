@@ -384,8 +384,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             plot_item.setMouseEnabled(x=False, y=False)
             image_item = pg.ImageItem(np.ones((128, 128)))
             image_item.setOpts(axisOrder='row-major')  # Set to row-major order
-            text_item = pg.TextItem(text=text_labels[n], color='white', anchor=(0, 0))
-            # text_item.setPos(0, 0)
+            text_item = pg.TextItem(text=text_labels[n], color='white', anchor=(0, 1))
+            text_item.setPos(0, 0)
+            text_item.setZValue(1)    # Ensure text is above image
+
             plot_item.addItem(text_item)
             plot_item.addItem(image_item)
             plot_item.setAspectLocked(True)
