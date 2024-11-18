@@ -80,7 +80,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.start_wd = os.path.abspath(self.start_wd)
         logger.info('Start up directory is [{}]'.format(self.start_wd))
 
-        
         self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
@@ -93,8 +92,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
         self.cb_twotime_saxs_cmap.currentIndexChanged.connect(
-            self.init_twotime)
-        self.cb_twotime_qmap_cmap.currentIndexChanged.connect(
             self.init_twotime)
         self.twotime_autorotate.stateChanged.connect(self.init_twotime)
         self.twotime_autocrop.stateChanged.connect(self.init_twotime)
@@ -374,9 +371,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.mp_2t.setBackground('w')
         self.mp_2t_hdls = {}
         labels = ['saxs', 'dqmap']
+        text_labels = ['scattering', 'dynamic_qmap']
         cmaps = ['viridis', 'tab20']
         for n in range(2):
-            plot_item = self.mp_2t_map.addPlot(row=0, col=10*n, colspan=9, rowspan=1)
+            plot_item = self.mp_2t_map.addPlot(row=0, col=n)
             # Remove axes
             plot_item.hideAxis('left')
             plot_item.hideAxis('bottom')
@@ -386,41 +384,46 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             plot_item.setMouseEnabled(x=False, y=False)
             image_item = pg.ImageItem(np.ones((128, 128)))
             image_item.setOpts(axisOrder='row-major')  # Set to row-major order
-
-            # Create colorbar
-            cmap = pg.colormap.getFromMatplotlib(cmaps[n])
-            colorbar = pg.ColorBarItem(
-                colorMap=cmap,       # Or use custom colormap
-                width=15,                 # Width of colorbar
-                interactive=False          # Allow scaling by dragging colorbar
-            )
-            # Link colorbar with image
+            text_item = pg.TextItem(text=text_labels[n], color='white', anchor=(0, 0))
+            # text_item.setPos(0, 0)
+            plot_item.addItem(text_item)
             plot_item.addItem(image_item)
             plot_item.setAspectLocked(True)
-            colorbar.setImageItem(image_item)
-            colorbar.setFixedHeight(plot_item.viewRect().height())
 
-            self.mp_2t_map.addItem(colorbar, row=0, col=10*n+9, colspan=1, rowspan=1)  # Add colorbar to plot
+            cmap = pg.colormap.getFromMatplotlib(cmaps[n])
+            if n == 1:
+                positions = cmap.pos
+                colors = cmap.color
+                new_color = [0, 0, 1, 1.0]
+                colors[-1] = new_color
+                # need to convert to 0-255 range for pyqtgraph ColorMap
+                cmap = pg.ColorMap(positions, colors * 255)
+            colorbar = plot_item.addColorBar(image_item, colorMap=cmap)
             self.mp_2t_hdls[labels[n]] = image_item
             self.mp_2t_hdls[labels[n] + '_colorbar'] = colorbar
+
         self.mp_2t_hdls['dqmap'].mouseClickEvent = self.pick_twotime_index
         self.mp_2t_hdls['saxs'].mouseClickEvent = self.pick_twotime_index
-        self.mp_2t.getView().setBackgroundColor('w')
+        # self.mp_2t.getView().setBackgroundColor('w')
+        self.mp_2t.ui.graphicsView.setBackground('w')
         self.mp_2t_hdls['tt'] = self.mp_2t
+        self.mp_2t_hdls['tt'].view.invertY(False)
+        self.mp_2t.view.setLabel('left', 't2', units='s')
+        self.mp_2t.view.setLabel('bottom', 't1', units='s')
+
+        self.mp_2t.sigTimeChanged.connect(
+            lambda x: self.init_twotime(map_only=True, highlight_dqbin=x+1))
     
     def pick_twotime_index(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.pos()
             x, y = int(pos.x()), int(pos.y())
-
-            if self.mp_2t_hdls['dqmap'].image is not None:  # Check if there's image data
-                value = self.mp_2t_hdls['dqmap'].image[y, x]  # Note: y, x order for numpy arrays
-                num_frames = self.mp_2t_hdls['tt'].getProcessedImage().shape[0]
-                if 0 < value <= num_frames:  # Check if value is within valid range
-                    self.mp_2t_hdls['tt'].setCurrentIndex(int(value) - 1)
+            dq_bin = self.init_twotime(map_only=True, highlight_xy=(x, y))
+            if dq_bin is not None and dq_bin != np.nan:
+                self.mp_2t_hdls['tt'].setCurrentIndex(int(dq_bin) - 1)
         event.accept()  # Mark the event as handled
 
-    def init_twotime(self):
+    def init_twotime(self, map_only=False, highlight_xy=None, highlight_dqbin=None):
         if not self.check_status():
             return
         if self.mp_2t_hdls is None:
@@ -438,10 +441,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # 'qmap_cmap': self.cb_twotime_qmap_cmap.currentText(),
             'auto_rotate': self.twotime_autorotate.isChecked(),
             'auto_crop': self.twotime_autocrop.isChecked(),
+            'highlight_xy': highlight_xy,
+            'highlight_dqbin': highlight_dqbin
         }
 
-        self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
-        self.plot_twotime()
+        dq_bin = self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
+        if not map_only:
+            self.plot_twotime()
+        return dq_bin
 
     def plot_twotime(self):
         """
@@ -472,7 +479,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'vmax': self.c2_max.value(),
             'show_box': self.twotime_showbox.isChecked(),
             'correct_diag': self.twotime_correct_diag.isChecked(),
-            'layout': self.cb_tt_layout.currentText(),
         }
         self.vk.plot_twotime(self.mp_2t_hdls, **kwargs)
 

@@ -7,6 +7,14 @@ import numpy as np
 pg.setConfigOptions(imageAxisOrder='row-major')
 
 
+
+class ImageViewPlotItem(ImageView):
+    # ImageView only supports x/y tics when view is a PlotItem
+    def __init__(self, *args, **kwargs) -> None:
+        plot_item = pg.PlotItem()
+        super(ImageViewPlotItem, self).__init__(*args, view=plot_item, **kwargs)
+
+
 class ImageViewDev(ImageView):
     def __init__(self, *args, **kwargs) -> None:
         super(ImageViewDev, self).__init__(*args, **kwargs)
