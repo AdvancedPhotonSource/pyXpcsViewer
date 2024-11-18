@@ -13,6 +13,7 @@ import traceback
 import h5py
 import time
 from multiprocessing.pool import Pool
+from functools import lru_cache
 
 
 def get_single_c2(args):
@@ -24,19 +25,34 @@ def get_single_c2(args):
         c2 = c2_half + np.transpose(c2_half)
         diag_idx = np.diag_indices(c2_half.shape[0], ndim=2)
         c2[diag_idx] /= 2
+        sampling_rate = 1
         if max_size > 0 and max_size < c2.shape[0]:
             sampling_rate = (c2.shape[0] + max_size - 1) // max_size
             c2 = c2[::sampling_rate, ::sampling_rate] 
-        c2 = np.flipud(c2)
-    return c2
+    return c2, sampling_rate
 
 
+
+@lru_cache(maxsize=128)
+def get_twotime_maps(full_path):
+    with h5py.File(full_path, 'r') as f:
+        dqmap = f['/xpcs/dqmap'][()]
+        saxs = f[f'/exchange/pixelSum'][0]
+    # some dataset may swap the axis
+    if saxs.shape != dqmap.shape:
+        saxs = saxs.T
+    return dqmap, saxs
+
+
+@lru_cache(maxsize=128)
 def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
                          max_size=512, num_workers=12):
     # t0 = time.perf_counter()
     idx_toload = []
     c2_prefix = '/exchange/C2T_all'
+    acquire_period_key = '/entry/instrument/bluesky/metadata/acquire_period'
     with h5py.File(full_path, 'r') as f:
+        acquire_period = f[acquire_period_key][()]
         idxlist = list(f[c2_prefix])
         for idx in idxlist:
             if dq_selection is not None and int(idx[4:]) not in dq_selection:
@@ -53,10 +69,11 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
     else:
         result = [get_single_c2(args) for args in args_list]
 
-    c2_all = np.array(result)
-    # t1 = time.perf_counter()
-    # print(c2_all.shape, f'{num_workers=} time to load: ', t1 - t0)
-    return c2_all
+    c2_all = np.array([res[0] for res in result])
+    sampling_rate_all = set([res[1] for res in result])
+    assert len(sampling_rate_all) == 1, f"Sampling rate not consistent {sampling_rate_all}"
+    sampling_rate = list(sampling_rate_all)[0]
+    return c2_all, sampling_rate * acquire_period
 
 
 def single_exp_all(x, a, b, c, d):
@@ -355,40 +372,24 @@ class XpcsFile(object):
         # acquire time scale for twotime analysis
         return self.t1
 
-    def get_twotime_maps(self, group='xpcs'):
-        rpath = '/' 
-        dqmap, saxs = get(self.full_path, ['dqmap', 'saxs_2d'], mode='alias',
-                          ret_type='list', ftype=self.ftype)
-                    
-        # some dataset may swap the axis
-        if saxs.shape != dqmap.shape:
-            saxs = saxs.T
-
-        if self.type == 'Twotime':
-            # key_c2t = '/'.join([rpath, 'C2T_all'])
-            key_c2t = '/exchange/C2T_all'
-            idlist = get(self.full_path, [key_c2t], mode='raw',
-                         ftype=self.ftype)[key_c2t]
-            if idlist.size == 1:
-                idlist = idlist.reshape(1)
-            idlist = [int(x[3:]) for x in idlist]
-        else:
-            idlist = [None]
-        return dqmap, saxs, rpath, idlist
+    def get_twotime_maps(self):
+        dqmap, saxs = get_twotime_maps(self.full_path)
+        return dqmap, saxs
 
     def get_twotime_c2(self, dq_selection=None, max_c2_num=-1,
                        max_size=512):
         kwargs = (dq_selection, max_c2_num, max_size)
         if self.c2_kwargs == kwargs and self.c2_all_data is not None:
-            return self.c2_all_data
+            return self.c2_all_data, self.c2_delta_t
         else:
             self.c2_kwargs = kwargs
-            c2_all = get_c2_from_hdf_fast(self.full_path,
+            c2_all, delta_t = get_c2_from_hdf_fast(self.full_path,
                                           dq_selection=dq_selection, 
                                           max_c2_num=max_c2_num,
                                           max_size=max_size)
             self.c2_all_data = c2_all
-            return c2_all
+            self.c2_delta_t = delta_t
+            return c2_all, delta_t
 
     def get_detector_extent(self):
         """

@@ -162,7 +162,6 @@ class ViewerKernel(FileLocator):
     def plot_twotime_map(self, hdl, fname=None, **kwargs):
         if fname is None:
             fname = self.target[0]
-
         config = {'fname': fname, **kwargs} 
         if self.meta['twotime_map_kwargs'] == config:
             return
@@ -170,8 +169,7 @@ class ViewerKernel(FileLocator):
             self.meta['twotime_map_kwargs'] = config
 
         xfile = self.cache[fname]
-        twotime.plot_twotime_map(xfile, hdl, meta=self.meta, **kwargs)
-        return
+        return twotime.plot_twotime_map(xfile, hdl, **kwargs)
 
     def plot_twotime(self, hdl, current_file_index=0, **kwargs):
         if self.type != 'Twotime':
