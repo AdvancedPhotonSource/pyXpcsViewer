@@ -35,9 +35,6 @@ def get_single_c2(args):
 def get_twotime_maps(full_path):
     with h5py.File(full_path, 'r') as f:
         dqmap = f['/xpcs/dqmap'][()]
-        # import matplotlib.pyplot as plt
-        # plt.imshow(dqmap)
-        # plt.show()
         saxs = f[f'/exchange/pixelSum'][()]
         if saxs.ndim == 3:
             saxs = saxs[0]
@@ -90,6 +87,7 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
         'g2_full': g2_full,
         'g2_partial': g2_partial,
         'delta_t': acquire_period * sampling_rate,
+        'acquire_period': acquire_period,
         'dq_selection': dq_selection,
     }
     return c2_result
