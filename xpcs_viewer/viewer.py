@@ -366,24 +366,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.mp_2t.setBackground('w')
         self.mp_2t_hdls = {}
         labels = ['saxs', 'dqmap']
-        text_labels = ['scattering', 'dynamic_qmap']
+        titles = ['scattering', 'dynamic_qmap']
         cmaps = ['viridis', 'tab20']
         for n in range(2):
             plot_item = self.mp_2t_map.addPlot(row=0, col=n)
             # Remove axes
             plot_item.hideAxis('left')
             plot_item.hideAxis('bottom')
-            # Optional: remove margins around the plot
             plot_item.getViewBox().setDefaultPadding(0)
 
             plot_item.setMouseEnabled(x=False, y=False)
             image_item = pg.ImageItem(np.ones((128, 128)))
             image_item.setOpts(axisOrder='row-major')  # Set to row-major order
-            text_item = pg.TextItem(text=text_labels[n], color='white', anchor=(0, 1))
-            text_item.setPos(0, 0)
-            text_item.setZValue(1)    # Ensure text is above image
 
-            plot_item.addItem(text_item)
+            plot_item.setTitle(titles[n])
             plot_item.addItem(image_item)
             plot_item.setAspectLocked(True)
 
@@ -398,6 +394,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             colorbar = plot_item.addColorBar(image_item, colorMap=cmap)
             self.mp_2t_hdls[labels[n]] = image_item
             self.mp_2t_hdls[labels[n] + '_colorbar'] = colorbar
+
+        c2g2_plot = self.mp_2t_map.addPlot(row=0, col=2)
+        self.mp_2t_hdls['c2g2'] = c2g2_plot
 
         self.mp_2t_hdls['dqmap'].mouseClickEvent = self.pick_twotime_index
         self.mp_2t_hdls['saxs'].mouseClickEvent = self.pick_twotime_index
