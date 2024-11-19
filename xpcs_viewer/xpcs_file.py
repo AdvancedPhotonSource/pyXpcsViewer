@@ -150,8 +150,13 @@ def reshape_static_analysis(info):
         if nan_idx.shape[0] != Iqp.shape[1]:
             x = np.zeros((Iqp.shape[0], size), dtype=np.float32)
             for n in range(Iqp.shape[0]):
-                x[n, ~nan_idx] = Iqp[n]
-                x[n, nan_idx] = np.nan
+                valid_size = len(Iqp[n])
+                if np.sum(len(nan_idx)) == valid_size:
+                    x[n, ~nan_idx] = Iqp[n]
+                    x[n, nan_idx] = np.nan
+                else:
+                    x[n, 0:valid_size] = Iqp[n]
+                    x[n, valid_size:] = np.nan
             Iqp = x
 
         Iqp = Iqp.reshape(Iqp.shape[0], *shape)
@@ -336,8 +341,14 @@ class XpcsFile(object):
                 saxs1d = info['saxs_1d']
             else:
                 saxs1d = np.zeros_like(sphilist)
-                saxs1d[~nan_idx] = info['saxs_1d']
-            saxs1d[nan_idx] = np.nan
+                valid_size = len(info['saxs_1d'])
+                if np.sum(~nan_idx) == valid_size:
+                    saxs1d[~nan_idx] = info['saxs_1d']
+                    saxs1d[nan_idx] = np.nan
+                else:
+                    saxs1d[0:valid_size] = info['saxs_1d']
+                    saxs1d[valid_size:] = np.nan
+
             saxs1d = saxs1d.reshape(*new_shape).T
 
             avg = np.nanmean(saxs1d, axis=0)
