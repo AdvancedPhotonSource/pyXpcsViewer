@@ -368,6 +368,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         labels = ['saxs', 'dqmap']
         titles = ['scattering', 'dynamic_qmap']
         cmaps = ['viridis', 'tab20']
+        self.mp_2t_map.setBackground('w')
         for n in range(2):
             plot_item = self.mp_2t_map.addPlot(row=0, col=n)
             # Remove axes
@@ -432,10 +433,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                                        "analysis.", 1000)
 
         kwargs = {
-            # if nothing is selected, currentRow = -1; then plot 0th row;
             'scale': self.cb_twotime_type.currentText(),
-            # 'saxs_cmap': self.cb_twotime_saxs_cmap.currentText(),
-            # 'qmap_cmap': self.cb_twotime_qmap_cmap.currentText(),
             'auto_rotate': self.twotime_autorotate.isChecked(),
             'auto_crop': self.twotime_autocrop.isChecked(),
             'highlight_xy': highlight_xy,
