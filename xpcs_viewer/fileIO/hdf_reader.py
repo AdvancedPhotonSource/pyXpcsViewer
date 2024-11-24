@@ -109,22 +109,25 @@ def get_type(fname):
     return ret
 
 
-def create_id_previous(fname):
-    x = os.path.basename(fname)
-    idx_1 = x.find('_')
-    idx_2 = x.rfind('_', 0, len(x))
-    idx_3 = x.rfind('_', 0, idx_2)
-    ret = x[0: idx_1] + x[idx_3: idx_2]
-    return ret
-
-
-def create_id(fname):
+def create_id(fname, label_style=None):
     if len(fname) < 10:
         return fname
 
-    id_str = fname[0:10]
-    if id_str[-2] == '_':
-        id_str = id_str[:-2]
+    if label_style is None:
+        selection = [0, 1, -1]
+    else:
+        selection = [int(x) for x in label_style.split(',')]
+
+    segments = os.path.splitext(fname)[0].split('_')
+    if segments[-1].startswith('r'):
+        try:
+            simplified_repeat = f'{int(segments[-1][1:]):02d}'
+            segments[-1] = simplified_repeat
+        except Exception:
+            pass
+
+    id_str = '_'.join([segments[i] for i in selection])
+
     return id_str
 
 

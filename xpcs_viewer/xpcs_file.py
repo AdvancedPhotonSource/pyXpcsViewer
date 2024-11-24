@@ -44,7 +44,7 @@ def get_twotime_maps(full_path):
     return dqmap, saxs
 
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=16)
 def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
                          max_size=512, num_workers=12):
     # t0 = time.perf_counter()
@@ -173,13 +173,13 @@ class XpcsFile(object):
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
 
-    def __init__(self, fname, cwd='.', fields=None):
+    def __init__(self, fname, cwd='.', fields=None, label_style=None):
         self.fname = fname
         self.full_path = os.path.join(cwd, fname)
         self.cwd = cwd
 
         # label is a short string to describe the file/filename
-        self.label = create_id(fname)
+        self.label = create_id(fname, label_style=label_style)
         self.ftype = get_ftype(self.full_path)
         
         if self.ftype == 'nexus':

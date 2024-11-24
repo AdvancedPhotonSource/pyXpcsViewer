@@ -8,7 +8,8 @@ import sys
 import json
 import shutil
 import logging
-from pyqtgraph.Qt import QtCore 
+from pyqtgraph.Qt import QtCore
+import argparse
 
 
 format = logging.Formatter('%(asctime)s %(message)s')
@@ -38,11 +39,12 @@ sys.excepthook = exception_hook
 
 
 class XpcsViewer(QtWidgets.QMainWindow, Ui):
-    def __init__(self, path=None):
+    def __init__(self, path=None, label_style=None):
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
         self.tab_id = 0
         self.home_dir = home_dir
+        self.label_style = label_style
 
         self.tabWidget.setCurrentIndex(self.tab_id)
         self.tab_dict = {
@@ -253,7 +255,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         logger.info('loading hdf files into RAM')
 
         # the state must be 2
-        self.vk.load(progress_bar=self.progress_bar)
+        self.vk.load(progress_bar=self.progress_bar,
+                     label_style=self.label_style)
 
         self.data_state = 3
         self.plot_state[:] = 0
@@ -1164,16 +1167,24 @@ def run():
         setup_windows_icon()
     QtWidgets.QApplication.setAttribute(
         QtCore.Qt.AA_EnableHighDpiScaling, True)
-    app = QtWidgets.QApplication(sys.argv)
-    if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
-        # use arg[1] as the starting directory
-        window = XpcsViewer(sys.argv[1])
-    elif len(sys.argv) > 2:
-        # deal with white space cases
-        path = '_'.join(sys.argv[1:])
-        window = XpcsViewer(path)
-    else:
-        window = XpcsViewer()
+    
+    argparser = argparse.ArgumentParser(
+        description='pyXpcsViewer: a GUI tool for XPCS data analysis')
+    argparser.add_argument('--path', type=str, help='path to the result folder',
+                          default='./')
+    # Positional argument
+    argparser.add_argument("positional_path", nargs="?", default=None,
+                        help="positional path to the result folder")
+    # Determine the directory to monitor
+    argparser.add_argument('--label_style', type=str, help='label style',
+                          default=None)
+
+    args = argparser.parse_args()
+    if args.positional_path is not None:
+        args.path = args.positional_path
+    
+    app = QtWidgets.QApplication([])
+    window = XpcsViewer(path=args.path, label_style=args.label_style)
     app.exec_()
 
 

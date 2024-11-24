@@ -153,7 +153,7 @@ class FileLocator(object):
         return ret
 
     def load(self, file_list=None, max_number=1024, progress_bar=None,
-             flag_del=True):
+             flag_del=True, label_style=None):
 
         if file_list in [None, []]:
             file_list = self.target
@@ -172,7 +172,7 @@ class FileLocator(object):
             else:
                 # read from file and output as a dictionary
                 try:
-                    temp = xf(fn, self.cwd)
+                    temp = xf(fn, self.cwd, label_style=label_style)
                     self.cache[fn] = temp
                 except Exception as e:
                     logger.error("failed to load file: %s", fn)
