@@ -208,7 +208,7 @@ class AverageToolbox(QtCore.QRunnable):
         
         logger.info('create file: {}'.format(save_path))
         copyfile(self.origin_path, save_path)
-        put(save_path, result, mode='alias')
+        put(save_path, result, ftype='nexus', mode='alias')
 
         self.status = 'finished'
         self.signals.status.emit((self.jid, self.status))
@@ -353,6 +353,6 @@ def do_average(flist, work_dir=None, save_path=None, avg_window=3,
         save_path = 'AVG' + os.path.basename(flist[0])
     logger.info('create file: {}'.format(save_path))
     copyfile(original_file, save_path)
-    put(save_path, result, mode='alias')
+    put(save_path, result, ftype='nexus', mode='alias')
 
     return baseline 
