@@ -34,7 +34,7 @@ def get_single_c2(args):
 @lru_cache(maxsize=128)
 def get_twotime_maps(full_path):
     with h5py.File(full_path, 'r') as f:
-        dqmap = f['/xpcs/dqmap'][()]
+        dqmap = f['/qmap/dqmap'][()]
         saxs = f[f'/exchange/pixelSum'][()]
         if saxs.ndim == 3:
             saxs = saxs[0]
@@ -180,14 +180,10 @@ class XpcsFile(object):
 
         # label is a short string to describe the file/filename
         self.label = create_id(fname, label_style=label_style)
-        self.ftype = get_ftype(self.full_path)
+        # self.ftype = get_ftype(self.full_path)
+        self.ftype =  'nexus'
+        self.type = 'Multitau'
         
-        if self.ftype == 'nexus':
-            # self.type = 'Multitau'
-            self.type = get_type(self.full_path)
-        else:
-            self.type = get_type(self.full_path)
-
         self.keys, attr = self._load(fields)
         self.__dict__.update(attr)
 
@@ -304,8 +300,9 @@ class XpcsFile(object):
         ret['Iqp'] = ret['Iqp'][:, ord_idx]
         ret['ql_sta'] = ret['ql_sta'][ord_idx]
 
-        scale = get_abs_cs_scale(self.full_path, ftype=self.ftype)
-        ret['abs_cross_section_scale'] = scale
+        # scale = get_abs_cs_scale(self.full_path, ftype=self.ftype)
+        # ret['abs_cross_section_scale'] = scale
+        ret['abs_cross_section_scale'] = 1.0
 
         # apply mask
         if ret['mask'].shape != ret['saxs_2d'].shape:

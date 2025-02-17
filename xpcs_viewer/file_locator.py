@@ -109,7 +109,8 @@ class FileLocator(object):
         self.source_search.clear()
 
     def get_type(self, fname):
-        return get_type(pjoin(self.cwd, fname))
+        # return get_type(pjoin(self.cwd, fname))
+        return 'Multitau'
 
     # def get(self, fname, fields_raw, **kwargs):
     #     return get(pjoin(self.cwd, fname), fields_raw, **kwargs)

@@ -222,7 +222,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'twotime':
             self.init_twotime()
         elif tab_name == 'metadata':
-            self.update_hdf_list()
+            # fix me
+            # self.update_hdf_list()
+            pass
         elif tab_name == 'stability':
             self.update_stab_list()
         elif tab_name == 'average':
