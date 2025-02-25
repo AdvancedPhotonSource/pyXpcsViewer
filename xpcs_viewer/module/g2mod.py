@@ -61,13 +61,13 @@ def create_slice(arr, x_range):
 
 def get_data(xf_list, q_range=None, t_range=None):
     tslice = create_slice(xf_list[0].t_el, t_range)
-    qslice = create_slice(xf_list[0].ql_dyn, q_range)
+    qslice = create_slice(xf_list[0].dqlist, q_range)
 
     flag = True
     tel, qd, g2, g2_err = [], [], [], []
     for fc in xf_list:
         tel.append(fc.t_el[tslice])
-        qd.append(fc.ql_dyn[qslice])
+        qd.append(fc.dqlist[qslice])
         g2.append(fc.g2[tslice, qslice])
         g2_err.append(fc.g2_err[tslice, qslice])
 

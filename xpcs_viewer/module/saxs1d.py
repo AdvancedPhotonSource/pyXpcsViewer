@@ -57,10 +57,6 @@ def norm_saxs_data(Iq, q, plot_norm=0):
 
 def switch_line_builder(hdl, lb_type=None):
     hdl.link_line_builder(lb_type)
-    # if lb_type is not None:
-    #     hdl.link_line_builder(lb_type)
-    # elif lb_type is None and hdl.line_builder is not None:
-    #     hdl.unlink_line_builder()
 
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,

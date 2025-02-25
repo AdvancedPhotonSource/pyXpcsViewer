@@ -8,7 +8,7 @@ def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None,
     xscale = ['linear', 'log'][plot_type % 2]
     yscale = ['linear', 'log'][plot_type // 2]
 
-    q = fc.ql_sta
+    q = fc.sqlist
     Iqp = fc.Iqp
 
     if Iqp.ndim == 1:

@@ -1,5 +1,4 @@
 import numpy as np
-import pyqtgraph as pg
 
 
 def fill_center(input, out):
@@ -35,12 +34,7 @@ def list_to_numpy(ans, rotate=True):
 def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
          epsilon=None, display=None, extent=None, autorange=True, vmin=None,
          vmax=None, center=None):
-    #
     ans, rotate = list_to_numpy(ans, rotate)
-    # if pg_hdl is None:
-    #     from pyqtgraph_handler import ImageViewDev
-    #     pg_hdl = ImageViewDev()
-
     if plot_type == 'log':
         if epsilon is None or epsilon < 0:
             temp = ans.ravel()
