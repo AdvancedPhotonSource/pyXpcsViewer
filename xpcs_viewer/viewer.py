@@ -816,7 +816,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_11.setText('loading')
         self.pushButton_11.setDisabled(True)
         self.pushButton_11.parent().repaint()
-        self.vk.build(sort_method=self.sort_method.currentText())
+        path = self.work_dir.text()
+        self.vk.build(path=path, sort_method=self.sort_method.currentText())
         self.pushButton_11.setText('reload')
         self.pushButton_11.setEnabled(True)
         self.pushButton_11.parent().repaint()
@@ -837,8 +838,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('{} is not a folder.'.format(f), 1000)
             f = self.start_wd
 
-        curr_work_dir = self.work_dir.text()
-
         # either choose a new work_dir or initialize from state=0
         # if f == curr_work_dir; then the state is kept the same;
         # if f != curr_work_dir or self.data_state == 0:
@@ -855,10 +854,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.vk.clear()
 
         self.reload_source()
-
         self.avg_job_table.setModel(self.vk.avg_worker)
-        # self.thread = QThread()
-        # self.vk.moveToThread(self.thread)
         self.source_model = self.vk.source
         self.update_box(self.vk.source, mode='source')
 

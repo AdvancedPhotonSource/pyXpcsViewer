@@ -18,6 +18,7 @@ class ViewerKernel(FileLocator):
         self.statusbar = statusbar
         self.meta = None
         self.reset_meta()
+        self.path = path
         self.avg_tb = AverageToolbox(path)
         self.avg_worker = TableDataModel()
         self.avg_jid = 0

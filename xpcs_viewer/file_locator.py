@@ -1,4 +1,3 @@
-# import marisa_trie
 import os
 from .xpcs_file import XpcsFile as xf
 import logging
@@ -14,30 +13,17 @@ def get_suffix(file_name):
     return suffix
 
 
-def create_id(in_list):
-    ret = []
-    for x in in_list:
-        idx_1 = x.find('_')
-        idx_2 = x.rfind('_', 0, len(x))
-        idx_3 = x.rfind('_', 0, idx_2)
-        ret.append(x[0:idx_1] + x[idx_3:idx_2])
-
-    return ret
-
-
 class FileLocator(object):
     def __init__(self, path):
         self.path = path
-        self.cwd = None
-        self.trie = None
         self.source = ListDataModel()
         self.source_search = ListDataModel()
         self.target = ListDataModel()
         self.cache = {}
-    
+
     def set_path(self, path):
         self.path = path
-    
+
     def clear(self):
         self.source.clear()
         self.source_search.clear()
@@ -100,7 +86,7 @@ class FileLocator(object):
             else:
                 # read from file and output as a dictionary
                 try:
-                    temp = xf(fn, self.cwd, label_style=label_style)
+                    temp = xf(fn, self.path, label_style=label_style)
                     self.cache[fn] = temp
                 except Exception as e:
                     logger.error("failed to load file: %s", fn)
@@ -163,6 +149,7 @@ class FileLocator(object):
         elif filter_type == 'substr':
             # split by white space
             filter_str = val.split()
+
             def func(x):
                 for t in filter_str:
                     if t not in x:
@@ -175,20 +162,9 @@ class FileLocator(object):
 
     def build(self, path=None, filter_list=('.hdf', '.h5'),
               sort_method='Filename'):
-        if path is None:
-            path = self.path
-
-        if os.path.isfile(path):
-            with open(path, 'r') as f:
-                flist = [x[:-1] for x in f]
-            self.cwd = os.path.dirname(path)
-        elif os.path.isdir(path):
-            flist = os.listdir(path)
-            self.cwd = path
-        else:
-            return
-
-        flist = [x for x in flist if get_suffix(x) in filter_list]
+        flist = os.listdir(path)
+        self.path = path
+        flist = [x for x in flist if os.path.splitext(x)[1] in filter_list]
 
         # filter configure files
         flist = [x for x in flist if not x.startswith('.')]
@@ -218,12 +194,8 @@ class FileLocator(object):
             flist.reverse()
 
         self.source.replace(flist)
-
         return True
 
-
-def test1():
-    fl = FileLocator(path='./data/files.txt')
 
 
 if __name__ == "__main__":
