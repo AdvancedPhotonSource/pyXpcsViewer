@@ -73,14 +73,11 @@ def plot_twotime_map(xfile,
 def plot_twotime(xfile, hdl, meta, cmap='jet', 
                 vmin=None, vmax=None, show_box=False, correct_diag=False,
                 layout='1x1'):
-
-    if xfile.type != 'Twotime':
-        return None
+    assert "Twotime" in xfile.atype, "Not a twotime file"
     c2_result = xfile.get_twotime_c2()
     if c2_result is None:
         return None
     c2, delta_t = c2_result['c2_all'], c2_result['delta_t']
-
     meta['twotime_ims'] = np.copy(c2)
     # t = meta['twotime_scale'] * np.arange(c2.shape[0])
 
@@ -111,15 +108,15 @@ def plot_twotime_g2(xfile, hdl, dq_bin=0):
         return
     plot_idx = int(dq_bin) - 1
 
-    if xfile.type != 'Twotime':
+    if "Twotime" not in xfile.atype:
         return None
+
     c2_result = xfile.get_twotime_c2()
     if c2_result is None:
         return None
 
     g2_full, g2_partial = c2_result['g2_full'], c2_result['g2_partial']
-    assert plot_idx < g2_full.shape[0]
-
+    plot_idx = min(plot_idx, g2_full.shape[0] - 1)
 
     hdl['c2g2'].clear()
     hdl['c2g2'].setLabel('left', 'g2')
