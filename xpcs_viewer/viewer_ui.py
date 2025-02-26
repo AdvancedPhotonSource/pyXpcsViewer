@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1580, 709)
+        mainWindow.resize(1580, 754)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -666,7 +666,7 @@ class Ui_mainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.g2_scroll_area = QtWidgets.QWidget()
-        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 1077, 424))
+        self.g2_scroll_area.setGeometry(QtCore.QRect(0, 0, 1066, 404))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1476,10 +1476,12 @@ class Ui_mainWindow(object):
         self.tab_9.setObjectName("tab_9")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.tab_9)
         self.gridLayout_7.setObjectName("gridLayout_7")
-        self.hdf_info = QtWidgets.QTextBrowser(self.tab_9)
-        font = QtGui.QFont()
-        font.setFamily("Menlo")
-        self.hdf_info.setFont(font)
+        self.hdf_info = ParameterTree(self.tab_9)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setHeightForWidth(self.hdf_info.sizePolicy().hasHeightForWidth())
+        self.hdf_info.setSizePolicy(sizePolicy)
         self.hdf_info.setObjectName("hdf_info")
         self.gridLayout_7.addWidget(self.hdf_info, 0, 0, 1, 1)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
@@ -1512,7 +1514,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(8)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -1684,8 +1686,7 @@ class Ui_mainWindow(object):
         mainWindow.setTabOrder(self.g2_b2max, self.scrollArea)
         mainWindow.setTabOrder(self.scrollArea, self.g2_marker_size)
         mainWindow.setTabOrder(self.g2_marker_size, self.saxs2d_display)
-        mainWindow.setTabOrder(self.saxs2d_display, self.hdf_info)
-        mainWindow.setTabOrder(self.hdf_info, self.cb_twotime_type)
+        mainWindow.setTabOrder(self.saxs2d_display, self.cb_twotime_type)
         mainWindow.setTabOrder(self.cb_twotime_type, self.cb_twotime_saxs_cmap)
         mainWindow.setTabOrder(self.cb_twotime_saxs_cmap, self.g2_c2fit)
         mainWindow.setTabOrder(self.g2_c2fit, self.g2_fmin)
@@ -1954,4 +1955,5 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_9), _translate("mainWindow", "Metadata"))
 from .plothandler import ImageViewDev, ImageViewPlotItem, MplCanvasBarV, PlotWidgetDev
 from pyqtgraph import DataTreeWidget, GraphicsLayoutWidget
+from pyqtgraph.parametertree import ParameterTree
 from . import icons_rc

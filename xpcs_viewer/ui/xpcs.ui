@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1580</width>
-    <height>709</height>
+    <height>754</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -429,7 +429,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>6</number>
+           <number>8</number>
           </property>
           <widget class="QWidget" name="tab1_1">
            <attribute name="title">
@@ -1496,8 +1496,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1077</width>
-                 <height>424</height>
+                 <width>1066</width>
+                 <height>404</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -3243,11 +3243,12 @@
            </attribute>
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="0" column="0">
-             <widget class="QTextBrowser" name="hdf_info">
-              <property name="font">
-               <font>
-                <family>Menlo</family>
-               </font>
+             <widget class="ParameterTree" name="hdf_info" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
               </property>
              </widget>
             </item>
@@ -3362,6 +3363,12 @@
    <header>.plothandler</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>ParameterTree</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph.parametertree</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>box_auto_update</tabstop>
@@ -3467,7 +3474,6 @@
   <tabstop>scrollArea</tabstop>
   <tabstop>g2_marker_size</tabstop>
   <tabstop>saxs2d_display</tabstop>
-  <tabstop>hdf_info</tabstop>
   <tabstop>cb_twotime_type</tabstop>
   <tabstop>cb_twotime_saxs_cmap</tabstop>
   <tabstop>g2_c2fit</tabstop>
