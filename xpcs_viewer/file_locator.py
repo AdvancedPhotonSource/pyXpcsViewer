@@ -33,7 +33,6 @@ class FileLocator(object):
         self.source = ListDataModel()
         self.source_search = ListDataModel()
         self.target = ListDataModel()
-        self.id_list = None
         self.cache = {}
     
     def set_path(self, path):
@@ -134,20 +133,16 @@ class FileLocator(object):
             for x in alist:
                 if x not in self.target:
                     self.target.append(x)
-
-            self.id_list = create_id(self.target)
         else:
             # if many files are added; then ignore the type check;
             logger.info('type check is disabled. too many files added')
             self.target.extend(alist)
-            self.id_list = alist.copy()
 
         logger.info('length of target = %d' % len(self.target))
         return single_flag
 
     def clear_target(self):
         self.target.clear()
-        self.id_list = None
 
     def remove_target(self, rlist):
         if rlist is None or len(self.target) == 0:
@@ -160,8 +155,6 @@ class FileLocator(object):
 
         if self.target is None or len(self.target) == 0:
             self.clear_target()
-        else:
-            self.id_list = create_id(self.target)
 
     def search(self, val, filter_type='prefix'):
         ans = None

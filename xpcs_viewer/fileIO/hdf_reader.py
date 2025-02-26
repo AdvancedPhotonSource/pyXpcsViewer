@@ -1,25 +1,27 @@
+from .aps_8idi import key as hdf_key
 import h5py
 import os
 import numpy as np
 import logging
-
+import re
 
 logger = logging.getLogger(__name__)
 
-# read the default.json in the home_directory
-home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
-if not os.path.isdir(home_dir):
-    os.mkdir(home_dir)
-key_fname = os.path.join(home_dir, 'default.json')
-
-from .aps_8idi import key as hdf_key
-
-# colors and symbols for plots
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
-symbols = ['o', 's', 't', 'd', '+']
-
 
 def put(save_path, result, ftype='nexus', mode='raw'):
+    """
+    save the result to hdf5 file
+    Parameters
+    ----------
+    save_path: str
+        path to save the result
+    result: dict
+        dictionary to save
+    ftype: str
+        file type, 'nexus' or 'aps_8idi'
+    mode: str
+        'raw' or 'alias'
+    """
     with h5py.File(save_path, 'a') as f:
         for key, val in result.items():
             if mode == 'alias':
@@ -70,7 +72,7 @@ def read_metadat_to_dict(file_path):
                 recursive_read(obj, target_dict[key])
 
     data_dict = {}
-    groups = ['/entry/instrument/', 
+    groups = ['/entry/instrument/',
               '/xpcs/multitau/config', '/xpcs/twotime/config']
     with h5py.File(file_path, 'r') as hdf_file:
         for group in groups:
@@ -144,7 +146,7 @@ def get_analysis_type(fname, ftype='nexus'):
     return tuple(analysis_type)
 
 
-def create_id(fname, label_style=None):
+def create_id(fname, label_style=None, simplify_flag=True):
     if len(fname) < 10:
         return fname
 
@@ -152,16 +154,16 @@ def create_id(fname, label_style=None):
         selection = [0, 1, -1]
     else:
         selection = [int(x) for x in label_style.split(',')]
+    
+    if simplify_flag:
+        # 'a0004_t0600_f008000_r00003' to 'a4_t600_f8000_r3' by removing leading zeros
+        fname = re.sub(r'_(\w)0*(\d+)', r'_\1\2', fname)
 
-    segments = os.path.splitext(fname)[0].split('_')
-    if segments[-1].startswith('r'):
-        try:
-            simplified_repeat = f'{int(segments[-1][1:]):02d}'
-            segments[-1] = simplified_repeat
-        except Exception:
-            pass
-
-    id_str = '_'.join([segments[i] for i in selection])
+    fname = re.sub(r'(_results)?\.hdf$', '', fname)
+    segments = fname.split('_')
+    id_str = '_'.join([segments[i] for i in selection if i < len(segments)])
+    if len(id_str) == 0:
+        id_str = fname
 
     return id_str
 

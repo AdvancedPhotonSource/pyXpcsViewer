@@ -188,7 +188,7 @@ class ViewerKernel(FileLocator):
 
     def plot_intt(self, pg_hdl, max_points=128, rows=None, **kwargs):
         xf_list = self.get_xf_list(max_points, rows=rows)
-        intt.plot(xf_list, pg_hdl, self.id_list, **kwargs)
+        intt.plot(xf_list, pg_hdl, **kwargs)
 
     def plot_stability(self, mp_hdl, plot_id, **kwargs):
         fc = self.cache[self.target[plot_id]]
