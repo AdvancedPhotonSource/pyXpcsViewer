@@ -27,9 +27,11 @@ key = {
     "saxs_2d": "/xpcs/temporal_mean/scattering_2d",
     "saxs_1d": "/xpcs/temporal_mean/scattering_1d",
     "Iqp": "/xpcs/temporal_mean/scattering_1d_segments",
-    "c2_g2_segments": "/xpcs//xpcs/twotime/normalized_g2_segments",
+    "c2_g2_segments": "/xpcs/twotime/normalized_g2_segments",
     "c2_g2": "xpcs/twotime/normalized_g2",
     "c2_delay": "/xpcs/twotime/delay_list",
+    "c2_prefix": "/xpcs/twotime/correlation_map",
+    "c2_processed_bins": "/xpcs/twotime/processed_bins",
 
     "t0": "/entry/instrument/detector_1/frame_time",
     "t1": "/entry/instrument/detector_1/count_time",
