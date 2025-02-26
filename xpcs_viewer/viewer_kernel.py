@@ -172,18 +172,17 @@ class ViewerKernel(FileLocator):
         return twotime.plot_twotime_map(xfile, hdl, **kwargs)
 
     def plot_twotime(self, hdl, current_file_index=0, **kwargs):
-        if self.type != 'Twotime':
-            self.show_message('Analysis type must be twotime.')
-            return None
-
         fname = self.target[current_file_index]
+        xfile = self.cache[fname]
+        if "Twotime" not in xfile.atype:
+            logger.error(f"The selected file [{fname}] doesn't have Twotime data")
+            return
         config = {'fname': fname, **kwargs}
         if self.meta['twotime_kwargs'] == config:
             return
         else:
             self.meta['twotime_kwargs'] = config
 
-        xfile = self.cache[fname]
         ret = twotime.plot_twotime(xfile, hdl, meta=self.meta, **kwargs)
         return ret
 

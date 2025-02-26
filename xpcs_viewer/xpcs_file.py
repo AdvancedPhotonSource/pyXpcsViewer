@@ -1,90 +1,11 @@
 import os
 import numpy as np
-from .fileIO.hdf_reader import get, create_id
+from .fileIO.hdf_reader import get, create_id, get_analysis_type, read_metadat_to_dict
 from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
-from .fileIO.hdf_to_str import get_hdf_info
+import pyqtgraph as pg
 from .fileIO.qmap_utils import get_qmap
-import h5py
-from multiprocessing.pool import Pool
-from functools import lru_cache
-
-
-def get_single_c2(args):
-    full_path, index_str, max_size = args
-    c2_prefix = "/exchange/C2T_all"
-    with h5py.File(full_path, "r") as f:
-        c2_half = f[f"{c2_prefix}/{index_str}"][()]
-        c2 = c2_half + np.transpose(c2_half)
-        diag_idx = np.diag_indices(c2_half.shape[0], ndim=2)
-        c2[diag_idx] /= 2
-        sampling_rate = 1
-        if max_size > 0 and max_size < c2.shape[0]:
-            sampling_rate = (c2.shape[0] + max_size - 1) // max_size
-            c2 = c2[::sampling_rate, ::sampling_rate] 
-    return c2, sampling_rate
-
-
-@lru_cache(maxsize=128)
-def get_twotime_maps(full_path):
-    with h5py.File(full_path, "r") as f:
-        dqmap = f["/qmap/dqmap"][()]
-        saxs = f[f"/exchange/pixelSum"][()]
-        if saxs.ndim == 3:
-            saxs = saxs[0]
-    # some dataset may swap the axis
-    if saxs.shape != dqmap.shape:
-        saxs = saxs.T
-    return dqmap, saxs
-
-
-@lru_cache(maxsize=16)
-def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
-                         max_size=512, num_workers=12):
-    # t0 = time.perf_counter()
-    idx_toload = []
-    c2_prefix = "/exchange/C2T_all"
-    g2_full_key = "/exchange/g2full"            # Dataset {5000, 25}
-    g2_partial_key = "/exchange/g2partials"     # Dataset {1000, 5, 25} 
-    # acquire_period_key = "/entry/instrument/bluesky/metadata/acquire_period"
-    acquire_period_key = "/entry/instrument/bluesky/metadata/t1"
-    with h5py.File(full_path, "r") as f:
-        if c2_prefix not in f:
-            return None
-        idxlist = list(f[c2_prefix])
-        acquire_period = f[acquire_period_key][()]
-        g2_full = f[g2_full_key][()]
-        g2_partial = f[g2_partial_key][()]
-        for idx in idxlist:
-            if dq_selection is not None and int(idx[4:]) not in dq_selection:
-                continue
-            else:
-                idx_toload.append(idx)
-            if max_c2_num > 0 and len(idx_toload) > max_c2_num:
-                break
-    args_list = [(full_path, index, max_size) for index in idx_toload]
-    g2_full = np.swapaxes(g2_full, 0, 1)
-    g2_partial = np.swapaxes(g2_partial, 0, 2)
-
-    if len(args_list) >= 6:
-        with Pool(min(len(args_list), num_workers)) as p:
-            result = p.map(get_single_c2, args_list)
-    else:
-        result = [get_single_c2(args) for args in args_list]
-
-    c2_all = np.array([res[0] for res in result])
-    sampling_rate_all = set([res[1] for res in result])
-    assert len(sampling_rate_all) == 1, f"Sampling rate not consistent {sampling_rate_all}"
-    sampling_rate = list(sampling_rate_all)[0]
-    c2_result = {
-        "c2_all": c2_all,
-        "g2_full": g2_full,
-        "g2_partial": g2_partial,
-        "delta_t": acquire_period * sampling_rate,
-        "acquire_period": acquire_period,
-        "dq_selection": dq_selection,
-    }
-    return c2_result
+from .module.twotime_utils import get_c2_from_hdf_fast
 
 
 def single_exp_all(x, a, b, c, d):
@@ -132,12 +53,10 @@ def power_law(x, a, b):
 
 
 
-
 class XpcsFile(object):
     """
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
-
     def __init__(self, fname, cwd=".", fields=None, label_style=None):
         self.fname = fname
         self.cwd = cwd
@@ -145,11 +64,7 @@ class XpcsFile(object):
         self.qmap = get_qmap(self.full_path)
         # label is a short string to describe the file/filename
         self.label = create_id(fname, label_style=label_style)
-
-        # self.ftype = get_ftype(self.full_path)
-        self.ftype =  "nexus"
-        self.type = "Multitau"
-        
+        self.atype = get_analysis_type(self.full_path)
         payload_dictionary = self.load_data(fields)
         self.__dict__.update(payload_dictionary)
         self.hdf_info = None
@@ -168,7 +83,6 @@ class XpcsFile(object):
             else:
                 val = str(val)
             ans.append(f"   {key.ljust(12)}: {val.ljust(30)}")
-
         return "\n".join(ans)
 
     def __repr__(self):
@@ -185,7 +99,7 @@ class XpcsFile(object):
         """
         # cache the data because it may take long time to generate the str
         if self.hdf_info is None:
-            self.hdf_info = get_hdf_info(self.cwd, self.fname)
+            self.hdf_info = read_metadat_to_dict(self.full_path)
         return self.hdf_info
 
     def load_data(self, extra_fields=None):
@@ -193,12 +107,10 @@ class XpcsFile(object):
         fields = ["saxs_2d", "saxs_1d", "Iqp", "Int_t", "t0", "t1",
                   "stride_frame", "avg_frame"]
 
-        # extra fields for twotime analysis
-        if self.type == "Twotime":
-            fields = fields + ["g2_full", "g2_partials"]
-        # extra fields for multitau analysis
-        else:
+        if "Multitau" in self.atype:
             fields = fields + ["tau", "g2", "g2_err"]
+        if "Twotime" in self.atype:
+            fields = fields + ["c2_g2", "c2_g2_segments", "c2_processed_bins"]
 
         # append other extra fields, eg "G2", "IP", "IF"
         if isinstance(extra_fields, list):
@@ -207,14 +119,14 @@ class XpcsFile(object):
         # avoid duplicated keys
         fields = list(set(fields))
 
-        ret = get(self.full_path, fields, "alias", ftype=self.ftype)
+        ret = get(self.full_path, fields, "alias", ftype='nexus')
         stride_frame = ret.pop("stride_frame")
         avg_frame = ret.pop("avg_frame")
         
         ret['t0'] = ret['t0'] * stride_frame * avg_frame
         ret['t_el'] = ret['tau'] * ret['t0'] 
 
-        if self.type == 'Twotime':
+        if self.atype == 'Twotime':
             ret['g2'] = ret['g2_full']
             ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t1']
         else:
@@ -229,7 +141,6 @@ class XpcsFile(object):
                                                     mode='stability')
 
         ret["abs_cross_section_scale"] = 1.0
-
         return ret
 
     def __getattr__(self, key):
@@ -245,25 +156,12 @@ class XpcsFile(object):
     def get_detector_extent(self):
         return self.qmap.extent
 
-    def read_extra_metadata(self, key, alias, callback_function=None):
-        value = get(self.full_path, [key], ret_type="list", ftype=self.ftype)[0]
-        if callback_function is not None:
-            value = callback_function(value)
-        if alias in self.__dict__:
-            raise KeyError("alias already exist. Choose a different one")
-        else:
-            self.__dict__[alias] = value
-
-    def get_time_scale(self, group="xpcs"):
-        # acquire time scale for twotime analysis
-        return self.t1
-
     def get_twotime_maps(self):
-        dqmap, saxs = get_twotime_maps(self.full_path)
+        dqmap, saxs = self.dqmap, self.saxs_2d
         return dqmap, saxs
 
-    def get_twotime_c2(self, dq_selection=None, max_c2_num=-1,
-                       max_size=512):
+    def get_twotime_c2(self, max_c2_num=-1, max_size=512):
+        dq_selection = tuple(self.c2_processed_bins.tolist())
         kwargs = (dq_selection, max_c2_num, max_size)
         if self.c2_kwargs == kwargs and self.c2_all_data is not None:
             return self.c2_all_data
@@ -544,6 +442,22 @@ class XpcsFile(object):
         for n in range(Iq.shape[0] - 1):
             header += f" Intensity_phi{n + 1 :03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
+    
+    def get_pg_tree(self):
+        data = self.load_data()
+        for key, val in data.items():
+            if isinstance(val, np.ndarray):
+                if val.size > 4096:
+                    data[key] = 'data size is too large'
+                # suqeeze one-element array
+                if val.size == 1:
+                    data[key] = float(val)
+        data['analysis_type'] = self.atype
+        data['label'] = self.label
+        tree = pg.DataTreeWidget(data=data)
+        tree.setWindowTitle(self.fname)
+        tree.resize(600, 800)
+        return tree
             
 
 def test1():

@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtWidgets
 from .viewer_ui import Ui_mainWindow as Ui
 from .viewer_kernel import ViewerKernel
 import pyqtgraph as pg
+from pyqtgraph.parametertree import Parameter
 import os
 import numpy as np
 import sys
@@ -68,6 +69,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
 
         self.vk = None
+        self.hdf_params = None
         # list widget models
         self.source_model = None
         self.target_model = None
@@ -222,9 +224,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'twotime':
             self.init_twotime()
         elif tab_name == 'metadata':
-            # fix me
-            # self.update_hdf_list()
-            pass
+            self.update_hdf_list()
         elif tab_name == 'stability':
             self.update_stab_list()
         elif tab_name == 'average':
@@ -281,9 +281,25 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         fname = self.hdf_list.currentText()
         filter_str = self.hdf_key_filter.text().split()
         msg = self.vk.get_hdf_info(fname, filter_str)
-
-        self.hdf_info.clear()
-        self.hdf_info.setText('\n'.join(msg))
+        def create_param_tree(data_dict):
+            """Convert a dictionary into PyQtGraph's ParameterTree format."""
+            params = []
+            for key, value in data_dict.items():
+                if isinstance(value, dict):  # If value is a nested dictionary
+                    params.append({'name': key, 'type': 'group', 'children': create_param_tree(value)})
+                elif isinstance(value, (int, float, np.number)):  # Numeric types
+                    params.append({'name': key, 'type': 'float', 'value': float(value)})
+                elif isinstance(value, str):  # String types
+                    params.append({'name': key, 'type': 'str', 'value': value})
+                elif isinstance(value, np.ndarray):  # Numpy arrays
+                    params.append({'name': key, 'type': 'text', 'value': str(value.tolist())})
+                else:  # Default fallback
+                    params.append({'name': key, 'type': 'text', 'value': str(value)})
+            return params
+        hdf_info_data = create_param_tree(msg)
+        self.hdf_params = Parameter.create(name="Settings", type="group",
+                                       children=hdf_info_data)
+        self.hdf_info.setParameters(self.hdf_params, showTop=True)
 
     def plot_saxs_2D(self):
         if not self.check_status(show_msg=False):
@@ -432,11 +448,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
 
-        # Multitau tau analysis also has dqmap
-        if self.vk.type != "Twotime":
-            self.statusbar.showMessage("The target files must be twotime " +
-                                       "analysis.", 1000)
-
         kwargs = {
             'scale': self.cb_twotime_type.currentText(),
             'auto_rotate': self.twotime_autorotate.isChecked(),
@@ -457,10 +468,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         :return:  None
         """
         if not self.check_status():
-            return
-        if self.vk.type != "Twotime":
-            self.statusbar.showMessage("The target files must be twotime " +
-                                       "analysis.")
             return
 
         rows = self.get_selected_rows()
@@ -515,14 +522,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
     def plot_tauq_pre(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
-
-        self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
+        pass
+        # if not self.check_status() or self.vk.type != 'Multitau':
+        #     return
+        # self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
     def plot_tauq(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
+        if not self.check_status(): return
 
         tab_id = self.tabWidget.currentIndex()
         if self.plot_state[tab_id] == 0:
@@ -707,8 +713,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         worker.kill()
 
     def show_g2_fit_summary_func(self):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
+        if not self.check_status(): return
         
         rows = self.get_selected_rows()
         self.tree = self.vk.get_fitting_tree(rows)
@@ -724,8 +729,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree.show()
 
     def set_g2_range(self, max_points=3):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
+        if not self.check_status(): return
 
         flag, tel, qd, _, _ = self.vk.get_g2_data(max_points, rows=None)
         if not flag:
@@ -752,8 +756,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.g2_qmin.setValue(np.max(qd) * 1.1)
 
     def plot_g2(self, max_points=3):
-        if not self.check_status() or self.vk.type != 'Multitau':
-            return
+        if not self.check_status(): return
 
         p = self.check_g2_number()
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
@@ -869,8 +872,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.list_view_source.parent().repaint()
         elif mode == 'target':
             self.list_view_target.setModel(file_list)
-            self.box_target.setTitle('Target: %5d \t [Type: %s] ' %
-                                     (len(file_list), self.vk.type))
+            self.box_target.setTitle('Target: %5d' % (len(file_list)))
             # on macos, the target box doesn't seem to update; force it
             file_list.layoutChanged.emit()
             self.box_target.repaint()
