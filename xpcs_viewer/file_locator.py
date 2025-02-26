@@ -1,7 +1,5 @@
 # import marisa_trie
 import os
-from os.path import commonprefix
-from .fileIO.hdf_reader import get_type
 from .xpcs_file import XpcsFile as xf
 import logging
 from .helper.listmodel import ListDataModel
@@ -9,28 +7,6 @@ import traceback
 
 
 logger = logging.getLogger(__name__)
-pjoin = os.path.join
-
-
-# the following functions are copied from:
-# https://stackoverflow.com/questions/2892931
-def long_substr(data):
-    substr = ''
-    if len(data) > 1 and len(data[0]) > 0:
-        for i in range(len(data[0])):
-            for j in range(len(data[0]) - i + 1):
-                if j > len(substr) and is_substr(data[0][i:i + j], data):
-                    substr = data[0][i:i + j]
-    return substr
-
-
-def is_substr(find, data):
-    if len(data) < 1 and len(find) < 1:
-        return False
-    for i in range(len(data)):
-        if find not in data[i]:
-            return False
-    return True
 
 
 def get_suffix(file_name):
@@ -49,45 +25,8 @@ def create_id(in_list):
     return ret
 
 
-def create_id3(in_list, repeat=1, keep_slice=None):
-    out_list = [x[::-1] for x in in_list]
-    prefix = commonprefix(out_list)
-    out_list = [x.replace(prefix, '') for x in out_list]
-    out_list = [x[::-1] for x in out_list]
-    return out_list
-
-
-def create_id2(in_list, repeat=1, keep_slice=None):
-    """
-    :param in_list: input file name list
-    :param repeat: number of repeats to remove common string
-    :param keep_slice: the slice in the original string to keep, if not given,
-        then use the segment before the first underscore.
-    :return: label list with minimal information redundancy
-    """
-    if len(in_list) < 1:
-        return []
-
-    if keep_slice is None:
-        idx = in_list[0].find('_')
-        keep_slice = slice(0, idx + 1)
-
-    keep_str = in_list[0][keep_slice]
-    if keep_str[-1] != '_':
-        keep_str = keep_str + '_'
-
-    for n in range(repeat):
-        substr = long_substr(in_list)
-        in_list = [x.replace(substr, '') for x in in_list]
-
-    in_list = [keep_str + x for x in in_list]
-    return in_list
-
-
 class FileLocator(object):
-    def __init__(self,
-                 path,
-                 max_cache_size=None):
+    def __init__(self, path):
         self.path = path
         self.cwd = None
         self.trie = None
@@ -95,11 +34,7 @@ class FileLocator(object):
         self.source_search = ListDataModel()
         self.target = ListDataModel()
         self.id_list = None
-        self.type = None
         self.cache = {}
-        if max_cache_size is None:
-            # 2G
-            self.max_cache_size = 1024 ** 3 * 2
     
     def set_path(self, path):
         self.path = path
@@ -107,13 +42,6 @@ class FileLocator(object):
     def clear(self):
         self.source.clear()
         self.source_search.clear()
-
-    def get_type(self, fname):
-        # return get_type(pjoin(self.cwd, fname))
-        return 'Multitau'
-
-    # def get(self, fname, fields_raw, **kwargs):
-    #     return get(pjoin(self.cwd, fname), fields_raw, **kwargs)
 
     def get_fn_tuple(self, max_points=128, rows=None):
         # compile the filenames upto max_points to a tuple
@@ -200,24 +128,11 @@ class FileLocator(object):
     def add_target(self, alist, threshold=64):
         if alist in [[], None]:
             return
-        if self.type is None:
-            self.type = self.get_type(alist[0])
 
         single_flag = True
-
         if len(alist) <= threshold:
             for x in alist:
                 if x not in self.target:
-                    t = self.get_type(x)
-                    if t not in ['Multitau', 'Twotime']:
-                        logger.info('Failed to get type for %s', x)
-                        continue
-                    if self.type is None:
-                        self.type = t
-                    elif t != self.type:
-                        logger.info('Mixed analysis type for %s. Discard', x)
-                        single_flag = False
-                        continue
                     self.target.append(x)
 
             self.id_list = create_id(self.target)
@@ -233,7 +148,6 @@ class FileLocator(object):
     def clear_target(self):
         self.target.clear()
         self.id_list = None
-        self.type = None
 
     def remove_target(self, rlist):
         if rlist is None or len(self.target) == 0:
