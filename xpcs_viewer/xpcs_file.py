@@ -104,13 +104,14 @@ class XpcsFile(object):
 
     def load_data(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
-        fields = ["saxs_2d", "saxs_1d", "Iqp", "Int_t", "t0", "t1",
-                  "stride_frame", "avg_frame", "start_time"]
+        fields = ["saxs_2d", "saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
 
         if "Multitau" in self.atype:
-            fields = fields + ["tau", "g2", "g2_err"]
+            fields = fields + ["tau", "g2", "g2_err",
+                               "stride_frame", "avg_frame"]
         if "Twotime" in self.atype:
-            fields = fields + ["c2_g2", "c2_g2_segments", "c2_processed_bins"]
+            fields = fields + ["c2_g2", "c2_g2_segments", "c2_processed_bins",
+                               "c2_stride_frame", "c2_avg_frame"]
 
         # append other extra fields, eg "G2", "IP", "IF"
         if isinstance(extra_fields, list):
@@ -120,18 +121,19 @@ class XpcsFile(object):
         fields = list(set(fields))
 
         ret = get(self.full_path, fields, "alias", ftype='nexus')
-        stride_frame = ret.pop("stride_frame")
-        avg_frame = ret.pop("avg_frame")
-        
-        ret['t0'] = ret['t0'] * stride_frame * avg_frame
-        ret['t_el'] = ret['tau'] * ret['t0'] 
 
-        if self.atype == 'Twotime':
-            ret['g2'] = ret['g2_full']
-            ret['t_el'] = np.arange(ret['g2'].shape[0]) * ret['t1']
-        else:
+        if "Twotime" in self.atype:
+            stride_frame = ret.pop("c2_stride_frame")
+            avg_frame = ret.pop("c2_avg_frame")
+            ret['c2_t0'] = ret['t0'] * stride_frame * avg_frame
+        if "Multitau" in self.atype:
             # correct g2_err to avoid fitting divergence
             ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
+            stride_frame = ret.pop("stride_frame")
+            avg_frame = ret.pop("avg_frame")
+            t0 = ret['t0'] * stride_frame * avg_frame
+            ret['g2_t0'] = t0
+            ret['t_el'] = ret['tau'] * t0
 
         ret['saxs_1d'] = self.qmap.reshape_phi_analysis(ret['saxs_1d'],
                                                         self.label,

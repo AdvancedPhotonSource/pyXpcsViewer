@@ -60,7 +60,7 @@ def switch_line_builder(hdl, lb_type=None):
 
 
 def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
-         max_points=8, title=None, rows=None, qmax=10.0, qmin=0,
+         title=None, rows=None, qmax=10.0, qmin=0,
          loc='best', marker_size=3, sampling=1, all_phi=False, 
          absolute_crosssection=False, subtract_background=False, 
          bkg_file=None, weight=1.0, roi_list=None, show_roi=True,
@@ -94,7 +94,7 @@ def plot(xf_list, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0,
             Iq_bkg *= bkg_file.abs_cross_section_scale
 
     plot_id = 0
-    for n, fi in enumerate(xf_list[slice(0, max_points)]):
+    for n, fi in enumerate(xf_list):
         Iq, q = np.copy(fi.saxs_1d['Iq']), np.copy(fi.saxs_1d['q'])
         # apply sampling
         Iq, q = Iq[:, ::sampling], q[::sampling]

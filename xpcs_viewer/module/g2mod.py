@@ -60,6 +60,10 @@ def create_slice(arr, x_range):
 
 
 def get_data(xf_list, q_range=None, t_range=None):
+    for xf in xf_list:
+        if 'Multitau' not in xf.atype:
+            return False, None, None, None, None
+
     tslice = create_slice(xf_list[0].t_el, t_range)
     qslice = create_slice(xf_list[0].dqlist, q_range)
 

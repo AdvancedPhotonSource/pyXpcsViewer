@@ -231,7 +231,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.update_average_box()
         elif tab_name == 'g2':
             self.set_g2_range()
-            self.plot_g2(10)
+            self.plot_g2()
         # elif tab_name == 'diffusion':
         #     self.plot_tauq_pre()
 
@@ -513,7 +513,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if not self.check_status():
             return
         kwargs = {
-            'max_points': self.sb_intt_max.value(),
+            # 'max_points': self.sb_intt_max.value(),
             'sampling': max(1, self.sb_intt_sampling.value()),
             'window': self.sb_window.value(),
             'rows': self.get_selected_rows(),
@@ -728,12 +728,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree = worker.get_pg_tree()
         self.tree.show()
 
-    def set_g2_range(self, max_points=3):
+    def set_g2_range(self):
         if not self.check_status(): return
-
-        flag, tel, qd, _, _ = self.vk.get_g2_data(max_points, rows=None)
+        flag, tel, qd, _, _ = self.vk.get_g2_data()
         if not flag:
-            self.statusbar.showMessage('g2 data is not consistent. abort', 999)
+            logger.error('g2 data is not consistent or not multitau analysis. abort')
+            return
+
         # tel is a list of arrays, which may have diffent shape;
         t_min = np.min([t[0] for t in tel])
         t_max = np.max([t[-1] for t in tel])
@@ -755,7 +756,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if qmax < np.min(qd) or qmax < self.g2_qmin.value():
             self.g2_qmin.setValue(np.max(qd) * 1.1)
 
-    def plot_g2(self, max_points=3):
+    def plot_g2(self):
         if not self.check_status(): return
 
         p = self.check_g2_number()

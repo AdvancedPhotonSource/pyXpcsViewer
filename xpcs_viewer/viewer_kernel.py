@@ -72,10 +72,13 @@ class ViewerKernel(FileLocator):
         self.meta['saxs1d_bkg_fname'] = f
         self.meta['saxs1d_bkg_xf'] = XpcsFile(fname, path)
 
-    def get_g2_data(self, max_points, rows, **kwargs):
-        xf_list = self.get_xf_list(max_points, rows=rows)
-        flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
-        return flag, tel, qd, g2, g2_err
+    def get_g2_data(self,  rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
+        if not xf_list:
+            return False, None, None, None, None
+        else:
+            flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
+            return flag, tel, qd, g2, g2_err
 
     def get_pg_tree(self, rows):
         if rows in [None, []]:
@@ -83,8 +86,8 @@ class ViewerKernel(FileLocator):
         xfile = self.cache[self.target[rows[0]]]
         return xfile.get_pg_tree()
     
-    def get_fitting_tree(self, rows, max_points=12):
-        xf_list = self.get_xf_list(max_points, rows)
+    def get_fitting_tree(self, rows):
+        xf_list = self.get_xf_list(rows)
         result = {}
         for x in xf_list:
             result[x.label] = x.get_fitting_info(mode='g2_fitting')
@@ -93,22 +96,23 @@ class ViewerKernel(FileLocator):
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2(self, handler, q_range, t_range, y_range, max_points=128,
+    def plot_g2(self, handler, q_range, t_range, y_range,
                 rows=None, **kwargs):
-        xf_list = self.get_xf_list(max_points, rows=rows) 
-        g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
-                      **kwargs)
+        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
+        if xf_list:
+            g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
+                          **kwargs)
         return
 
-    def plot_tauq_pre(self, hdl=None, max_points=128, rows=None):
-        xf_list = self.get_xf_list(max_points, rows=rows)
+    def plot_tauq_pre(self, hdl=None, rows=None):
+        xf_list = self.get_xf_list(rows=rows)
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
 
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
-                  fit_flag=None, offset=None, max_points=128, q_range=None):
+                  fit_flag=None, offset=None, q_range=None):
         
-        xf_list = self.get_xf_list(max_points, rows=rows) 
+        xf_list = self.get_xf_list(rows=rows) 
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
@@ -130,8 +134,8 @@ class ViewerKernel(FileLocator):
                   self.cache[self.target[0]].bcx)
         saxs2d.plot(ans, extent=extent, center=center, *args, **kwargs)
     
-    def add_roi(self, hdl, max_points=128, **kwargs):
-        xf_list = self.get_xf_list(max_points)
+    def add_roi(self, hdl, **kwargs):
+        xf_list = self.get_xf_list()
         cen = (xf_list[0].bcx, xf_list[0].bcy)
         if kwargs['sl_type'] == 'Pie':
             hdl.add_roi(cen=cen, radius=100, **kwargs)
@@ -144,14 +148,14 @@ class ViewerKernel(FileLocator):
             hdl.add_roi(cen=cen, radius=radius, label='RingA', **kwargs)
             hdl.add_roi(cen=cen, radius=0.8*radius, label='RingB', **kwargs)
 
-    def plot_saxs_1d(self, pg_hdl, mp_hdl, max_points=128, **kwargs):
-        xf_list = self.get_xf_list(max_points)
+    def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
+        xf_list = self.get_xf_list()
         roi_list = pg_hdl.get_roi_list()
         saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
-                    max_points=max_points, roi_list=roi_list, **kwargs)
+                    roi_list=roi_list, **kwargs)
 
-    def export_saxs_1d(self, pg_hdl, folder, max_points=128):
-        xf_list = self.get_xf_list(max_points)
+    def export_saxs_1d(self, pg_hdl, folder):
+        xf_list = self.get_xf_list()
         roi_list = pg_hdl.get_roi_list()
         for xf in xf_list:
             xf.export_saxs1d(roi_list, folder)
@@ -187,8 +191,8 @@ class ViewerKernel(FileLocator):
         ret = twotime.plot_twotime(xfile, hdl, meta=self.meta, **kwargs)
         return ret
 
-    def plot_intt(self, pg_hdl, max_points=128, rows=None, **kwargs):
-        xf_list = self.get_xf_list(max_points, rows=rows)
+    def plot_intt(self, pg_hdl, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows=rows)
         intt.plot(xf_list, pg_hdl, **kwargs)
 
     def plot_stability(self, mp_hdl, plot_id, **kwargs):

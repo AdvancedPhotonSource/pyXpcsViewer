@@ -28,42 +28,27 @@ class FileLocator(object):
         self.source.clear()
         self.source_search.clear()
 
-    def get_fn_tuple(self, max_points=128, rows=None):
-        # compile the filenames upto max_points to a tuple
-        if max_points <= 0:
-            max_points = len(self.target)
 
-        ret = []
-        if rows is None or len(rows) == 0:
-            for n in range(min(max_points, len(self.target))):
-                ret.append(self.target[n])
-        else:
-            for n in rows[0:max_points]:
-                ret.append(self.target[n])
-        return tuple(ret)
-
-    def get_xf_list(self, max_points=8, rows=None):
+    def get_xf_list(self, rows=None, filter_atype=None):
         """
         get the cached xpcs_file list;
         :param max_points: maxiaml number of xpcs_files to get
         :param rows: a list of index to select; if None is given, then use
-            max_points;
         :return: list of xpcs_file objects;
         """
-        if max_points <= 0:
-            max_points = len(self.target)
-
-        if rows is None or len(rows) == 0:
-            selected = list(range(min(max_points, len(self.target))))
+        if not rows:
+            selected = list(range(len(self.target)))
         else:
-            # make sure no more than max_points are loaded.
-            selected = rows[0:max_points]
+            selected = rows
 
         ret = []
         for n in selected:
             fn = self.target[n]
-            ret.append(self.cache[fn])
-
+            xf_obj = self.cache[fn]
+            if filter_atype is None:
+                ret.append(xf_obj)
+            elif filter_atype in xf_obj.atype:
+                ret.append(xf_obj)
         return ret
 
     def load(self, file_list=None, max_number=1024, progress_bar=None,
