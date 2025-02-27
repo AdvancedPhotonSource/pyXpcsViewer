@@ -15,6 +15,9 @@ key = {
     "pixel_size": "/xpcs/qmap/pixel_size",
     "static_index_mapping": "/xpcs/qmap/static_index_mapping",
     "dynamic_index_mapping": "/xpcs/qmap/dynamic_index_mapping",
+    "static_num_pts": "/xpcs/qmap/static_num_pts",
+    "dynamic_num_pts": "/xpcs/qmap/dynamic_num_pts",
+    "start_time": "/entry/start_time",
 
     # multitau related
     "Int_t": "/xpcs/spatial_mean/intensity_vs_time",

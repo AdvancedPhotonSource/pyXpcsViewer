@@ -5,7 +5,7 @@ from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 import pyqtgraph as pg
 from .fileIO.qmap_utils import get_qmap
-from .module.twotime_utils import get_c2_from_hdf_fast
+from .module.twotime_utils import get_c2_from_hdf_fast, get_c2_stream
 
 
 def single_exp_all(x, a, b, c, d):
@@ -105,7 +105,7 @@ class XpcsFile(object):
     def load_data(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ["saxs_2d", "saxs_1d", "Iqp", "Int_t", "t0", "t1",
-                  "stride_frame", "avg_frame"]
+                  "stride_frame", "avg_frame", "start_time"]
 
         if "Multitau" in self.atype:
             fields = fields + ["tau", "g2", "g2_err"]
@@ -146,7 +146,7 @@ class XpcsFile(object):
     def __getattr__(self, key):
         if key in ["sqlist", "dqlist", "dqmap", "sqmap", "mask",
                    "bcx", "bcy", "det_dist", "pixel_size", "X_energy", 
-                   "sphilist", "dphilist"]:
+                   "sphilist", "dphilist", "static_num_pts", "dynamic_num_pts"]:
             return self.qmap.__dict__[key]
         elif key in self.__dict__:
             return self.__dict__[key]
@@ -173,6 +173,9 @@ class XpcsFile(object):
                                           max_size=max_size)
             self.c2_all_data = c2_result
             return c2_result 
+    
+    def get_twotime_stream(self, **kwargs):
+        return get_c2_stream(self.full_path, **kwargs)
 
     def get_g2_fitting_line(self, q, tor=1E-6):
         """

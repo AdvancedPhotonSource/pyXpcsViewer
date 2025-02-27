@@ -18,7 +18,8 @@ class QMap:
             for key in ("mask", "dqmap", "sqmap", "dqlist", "sqlist", 
                         "dplist", "splist", "bcx", "bcy", "X_energy",
                         "static_index_mapping", "dynamic_index_mapping",
-                        "pixel_size", "det_dist"):
+                        "pixel_size", "det_dist", "dynamic_num_pts",
+                        "static_num_pts"):
                 path = key_map['nexus'][key]
                 info[key] = f[path][()]
         info['k0'] = 2 * np.pi / (12.398 / info['X_energy'])

@@ -69,3 +69,21 @@ def get_c2_from_hdf_fast(full_path, dq_selection=None, max_c2_num=32,
         "dq_selection": dq_selection,
     }
     return c2_result
+
+
+def get_c2_stream(full_path, max_size=-1):
+    """Returns (idxlist, generator) where the generator yields C2 streams."""
+    c2_prefix = key_map['c2_prefix']
+
+    with h5py.File(full_path, "r") as f:
+        if c2_prefix in f:
+            idxlist = list(f[c2_prefix])  # Extract the list of indices
+        else:
+            idxlist = []  # Return empty list if prefix is missing
+
+    def generator():
+        for idx in idxlist:  # Use idxlist for iteration
+            c2, sampling_rate = get_single_c2((full_path, idx, max_size))
+            yield int(idx[3:]), c2
+
+    return idxlist, generator()
