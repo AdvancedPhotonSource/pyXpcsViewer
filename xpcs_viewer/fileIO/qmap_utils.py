@@ -95,7 +95,7 @@ class QMap:
         compressed_data = compressed_data.reshape(num_samples, -1)
 
         if shape[2] == 1:
-            labels = [self.label]
+            labels = [label]
             avg = compressed_data.reshape(shape[0], -1)
         else:
             full_data = np.full((shape[0], shape[1] * shape[2]), fill_value=np.nan)
