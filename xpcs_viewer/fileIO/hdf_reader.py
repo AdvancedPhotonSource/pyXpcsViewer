@@ -72,8 +72,8 @@ def read_metadat_to_dict(file_path):
                 recursive_read(obj, target_dict[key])
 
     data_dict = {}
-    groups = ['/entry/instrument/',
-              '/xpcs/multitau/config', '/xpcs/twotime/config']
+    groups = ['/entry/instrument', '/xpcs/multitau/config',
+              '/xpcs/twotime/config', '/entry/sample', '/entry/user']
     with h5py.File(file_path, 'r') as hdf_file:
         for group in groups:
             if group in hdf_file:

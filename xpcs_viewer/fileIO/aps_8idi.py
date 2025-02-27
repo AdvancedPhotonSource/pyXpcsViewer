@@ -35,6 +35,8 @@ key = {
     "c2_delay": "/xpcs/twotime/delay_list",
     "c2_prefix": "/xpcs/twotime/correlation_map",
     "c2_processed_bins": "/xpcs/twotime/processed_bins",
+    "c2_stride_frame": "/xpcs/twotime/config/stride_frame",
+    "c2_avg_frame": "/xpcs/twotime/config/avg_frame",
 
     "t0": "/entry/instrument/detector_1/frame_time",
     "t1": "/entry/instrument/detector_1/count_time",
