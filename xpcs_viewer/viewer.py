@@ -522,10 +522,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.plot_intt(self.pg_intt, **kwargs)
 
     def plot_tauq_pre(self):
-        pass
-        # if not self.check_status() or self.vk.type != 'Multitau':
-        #     return
-        # self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
+        self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
     def plot_tauq(self):
         if not self.check_status(): return

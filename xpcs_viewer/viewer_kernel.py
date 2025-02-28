@@ -87,7 +87,7 @@ class ViewerKernel(FileLocator):
         return xfile.get_pg_tree()
     
     def get_fitting_tree(self, rows):
-        xf_list = self.get_xf_list(rows)
+        xf_list = self.get_xf_list(rows, filter_atype='Multitau')
         result = {}
         for x in xf_list:
             result[x.label] = x.get_fitting_info(mode='g2_fitting')
@@ -105,14 +105,14 @@ class ViewerKernel(FileLocator):
         return
 
     def plot_tauq_pre(self, hdl=None, rows=None):
-        xf_list = self.get_xf_list(rows=rows)
+        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
 
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
                   fit_flag=None, offset=None, q_range=None):
         
-        xf_list = self.get_xf_list(rows=rows) 
+        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau') 
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
