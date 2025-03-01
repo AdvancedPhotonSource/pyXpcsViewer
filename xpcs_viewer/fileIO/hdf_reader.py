@@ -43,7 +43,7 @@ def get_abs_cs_scale(fname, ftype='nexus'):
             return float(f[key][()])
 
 
-def read_metadat_to_dict(file_path):
+def read_metadata_to_dict(file_path):
     """
     Reads an HDF5 file and loads its contents into a nested dictionary.
 
@@ -147,19 +147,20 @@ def get_analysis_type(fname, ftype='nexus'):
 
 
 def create_id(fname, label_style=None, simplify_flag=True):
-    if len(fname) < 10:
-        return fname
-
-    if label_style is None:
-        selection = [0, 1, -1]
-    else:
-        selection = [int(x) for x in label_style.split(',')]
-    
     if simplify_flag:
         # 'a0004_t0600_f008000_r00003' to 'a4_t600_f8000_r3' by removing leading zeros
         fname = re.sub(r'_(\w)0*(\d+)', r'_\1\2', fname)
+        fname = re.sub(r'(_results)?\.hdf$', '', fname)
 
-    fname = re.sub(r'(_results)?\.hdf$', '', fname)
+    if len(fname) < 10 or label_style is None:
+        return fname
+
+    try:
+        selection = [int(x) for x in label_style.split(',')]
+        assert len(selection) > 0
+    except Exception:
+        return fname
+
     segments = fname.split('_')
     id_str = '_'.join([segments[i] for i in selection if i < len(segments)])
     if len(id_str) == 0:
