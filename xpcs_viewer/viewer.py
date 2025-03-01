@@ -62,9 +62,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # 10: "None"
         }
 
-        # finite states
-        self.data_state = 0
-        self.plot_state = np.zeros(len(self.tab_dict), dtype=np.int64)
         self.thread_pool = QtCore.QThreadPool()
         logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
 
@@ -81,6 +78,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             # use home directory
             self.start_wd = os.path.expanduser('~')
+
         self.start_wd = os.path.abspath(self.start_wd)
         logger.info('Start up directory is [{}]'.format(self.start_wd))
 
@@ -112,7 +110,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         #     self.update_avg_info)
         self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
-        self.hdf_key_filter.textChanged.connect(self.show_hdf_info)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
         self.load_default_setting()
@@ -175,9 +172,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return selected_row
 
     def update_selection(self):
-        if self.data_state < 3:
-            self.init_tab()
-
         rows = self.get_selected_rows()
         idx = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[idx]
@@ -196,22 +190,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.init_twotime()
 
     def init_tab(self):
-        if self.data_state < 2:
-            return
         new_tab_id = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[new_tab_id]
-        self.statusbar.clearMessage()
 
         # always replot tauq
         if tab_name == 'diffusion':
             self.plot_tauq_pre()
-        # the plots on this tab is already done;
-        if self.plot_state[new_tab_id] > 0:
-            return
 
-        logger.info('switch to tab %d: %s', new_tab_id, tab_name)
         self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
-
         if tab_name == 'saxs_2d':
             self.plot_saxs_2D()
         elif tab_name == 'saxs_1d':
@@ -224,7 +210,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'twotime':
             self.init_twotime()
         elif tab_name == 'metadata':
-            self.update_hdf_list()
+            self.show_metadata()
         elif tab_name == 'stability':
             self.update_stab_list()
         elif tab_name == 'average':
@@ -232,55 +218,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         elif tab_name == 'g2':
             self.set_g2_range()
             self.plot_g2()
-        # elif tab_name == 'diffusion':
-        #     self.plot_tauq_pre()
-
-        self.plot_state[new_tab_id] = 1
-
-    def load_data(self):
-        tab_id = self.tabWidget.currentIndex()
-        tab_name = self.tab_dict[tab_id]
-        if tab_name == 'average':
-            self.statusbar.showMessage(
-                'The average tool reads data from disk directly. skip', 1000)
-            return
-        if self.data_state <= 1:
-            self.statusbar.showMessage('Work directory or target not ready.',
-                                       1000)
-            return
-        elif self.data_state == 3:
-            self.statusbar.showMessage('Files are preloaded already. skip',
-                                       1000)
-            return
-
-        self.statusbar.showMessage('Loading hdf files into RAM ...')
-        logger.info('loading hdf files into RAM')
-
-        # the state must be 2
-        self.vk.load(progress_bar=self.progress_bar,
-                     label_style=self.label_style)
-
-        self.data_state = 3
-        self.plot_state[:] = 0
-        self.statusbar.showMessage('Files loaded.', 1000)
-
-        self.init_tab()
-        self.btn_load_data.setDisabled(True)
-        self.btn_load_data.setText('updated')
-        self.btn_load_data.repaint()
-
-    def update_hdf_list(self):
-        self.hdf_list.clear()
-        self.hdf_list.addItems(self.vk.target)
 
     def update_stab_list(self):
         self.cb_stab.clear()
         self.cb_stab.addItems(self.vk.target)
 
-    def show_hdf_info(self):
-        fname = self.hdf_list.currentText()
+    def show_metadata(self):
+        selected_index = self.list_view_target.selectedIndexes()
+        if len(selected_index) == 0:
+            selected_row = [0]
+        else:
+            selected_row = [selected_index[0].row()]
+
         filter_str = self.hdf_key_filter.text().split()
-        msg = self.vk.get_hdf_info(fname, filter_str)
+        msg = self.vk.get_xf_list(rows=selected_row)[0].get_hdf_info(filter_str)
         def create_param_tree(data_dict):
             """Convert a dictionary into PyQtGraph's ParameterTree format."""
             params = []
@@ -302,9 +253,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.hdf_info.setParameters(self.hdf_params, showTop=True)
 
     def plot_saxs_2D(self):
-        if not self.check_status(show_msg=False):
-            return
-
         kwargs = {
             'plot_type': self.cb_saxs2D_type.currentText(),
             'cmap': self.cb_saxs2D_cmap.currentText(),
@@ -315,6 +263,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'vmax': self.saxs2d_max.value(),
         }
         self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
+        print('printed saxs2d')
     
     def saxs2d_roi_add(self):
         if not self.check_status(show_msg=False):
@@ -332,9 +281,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.add_roi(self.pg_saxs, **kwargs)
 
     def plot_saxs_1D(self):
-        if not self.check_status():
-            return
-
         kwargs = {
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
@@ -362,16 +308,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.switch_saxs1d_line()
 
     def switch_saxs1d_line(self):
-        if not self.check_status():
-            return
         lb_type = self.saxs1d_lb_type.currentIndex()
         lb_type = [None, 'slope', 'hline'][lb_type]
         self.vk.switch_saxs1d_line(self.mp_saxs.hdl, lb_type)
     
     def saxs1d_export(self):
-        if not self.check_status():
-           return
-
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, 
             caption='select a folder to export SAXS profiles')
 
@@ -381,9 +322,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.export_saxs_1d(self.pg_saxs, folder)
     
     def init_twotime_plot_handler(self):
-        if not self.check_status():
-            return
-
         # self.mp_2t.setBackground('w')
         self.mp_2t_hdls = {}
         labels = ['saxs', 'dqmap']
@@ -497,8 +435,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree.show()
 
     def plot_stability_iq(self):
-        if not self.check_status():
-            return
         kwargs = {
             'plot_type': self.cb_stab_type.currentIndex(),
             'plot_offset': self.sb_stab_offset.value(),
@@ -510,8 +446,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.plot_stability(self.mp_stab.hdl, plot_id, **kwargs)
 
     def plot_intt(self):
-        if not self.check_status():
-            return
         kwargs = {
             # 'max_points': self.sb_intt_max.value(),
             'sampling': max(1, self.sb_intt_sampling.value()),
@@ -525,12 +459,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
     def plot_tauq(self):
-        if not self.check_status(): return
-
         tab_id = self.tabWidget.currentIndex()
-        if self.plot_state[tab_id] == 0:
-            self.plot_tauq_pre()
-
         keys = [self.tauq_amin, self.tauq_bmin,
                 self.tauq_amax, self.tauq_bmax]
         bounds = np.array([float(x.text()) for x in keys]).reshape(2, 2)
@@ -591,7 +520,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return
 
     def update_average_box(self):
-
         if len(self.vk.target) > 0:
             save_path = self.avg_save_path.text()
             if save_path == '':
@@ -655,8 +583,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode='target')
-        self.data_state = 1
-        return
 
     def update_avg_info(self):
         index = self.avg_job_table.currentIndex().row()
@@ -726,7 +652,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree.show()
 
     def set_g2_range(self):
-        if not self.check_status(): return
         flag, tel, qd, _, _ = self.vk.get_g2_data()
         if not flag:
             logger.error('g2 data is not consistent or not multitau analysis. abort')
@@ -754,13 +679,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.g2_qmin.setValue(np.max(qd) * 1.1)
 
     def plot_g2(self):
-        if not self.check_status(): return
-
         p = self.check_g2_number()
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
-        if bounds is None:
-            self.statusbar.showMessage('please check fitting bounds.')
-            return
 
         kwargs = {
             'num_col': self.sb_g2_column.value(),
@@ -794,23 +714,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.pushButton_4.setEnabled(True)
         self.pushButton_4.setText('plot')
-        # self.g2_err_msg.clear()
-        # if err_msg is None:
-        #     self.g2_err_msg.insertPlainText('None')
-        # else:
-        #     self.g2_err_msg.insertPlainText('\n'.join(err_msg))
-
-        # reset plot state for the diffusion tab so it will be updated when
-        # switch tabs;
-        self.plot_state[6] = 0
 
     def export_g2(self):
         self.vk.export_g2()
 
     def reload_source(self):
-        if self.data_state <= 0:
-            self.statusbar.showMessage('no path is specified')
-            return
         self.pushButton_11.setText('loading')
         self.pushButton_11.setDisabled(True)
         self.pushButton_11.parent().repaint()
@@ -838,11 +746,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         # either choose a new work_dir or initialize from state=0
         # if f == curr_work_dir; then the state is kept the same;
-        # if f != curr_work_dir or self.data_state == 0:
-        if self.data_state == 0:
-            self.data_state = 1
-            self.plot_state[:] = 0
-
         self.work_dir.setText(f)
 
         if self.vk is None:
@@ -875,68 +778,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return
 
     def add_target(self):
-        if self.data_state == 0:
-            msg = 'path has not been specified.'
-            self.statusbar.showMessage(msg, 1000)
-            return
-
         target = []
         for x in self.list_view_source.selectedIndexes():
             # in some cases, it will return None
             val = x.data()
             if val is not None:
                 target.append(val)
-
-        # only max_display items are displayed; if all are selected; then the
-        # ones not displayed are also used
-        if len(target) == self.source_model.max_display:
-            logger.info('all items are selected in target')
-            target = self.source_model
-
         if target == []:
             return
-
-        self.progress_bar.setValue(0)
-
-        curr_target = tuple(self.vk.target)
-        flag_single = self.vk.add_target(target)
+        self.vk.add_target(target)
         self.list_view_source.clearSelection()
-
-        # no change in self.data_state
-        if curr_target == tuple(self.vk.target):
-            self.progress_bar.setValue(100)
-            return
-
-        # the target list has changed;
-        self.btn_load_data.setText('update')
-        self.btn_load_data.setEnabled(True)
-        self.btn_load_data.repaint()
         self.update_box(self.vk.target, mode='target')
-
-        if self.data_state in [1, 2, 3]:
-            self.data_state = 2
-            self.plot_state[:] = 0
-
-        if not flag_single:
-            msg = 'more than one xpcs analysis type detected'
-            self.statusbar.showMessage(msg, 1000)
-
         tab_id = self.tabWidget.currentIndex()
         if self.tab_dict[tab_id] == 'average':
             self.update_average_box()
-        elif self.box_auto_update.isChecked():
-            if self.tab_dict[tab_id] in ['saxs_1d', 'g2']:
-                self.statusbar.showMessage(
-                    'Auto loading is disabled for saxs_1d and g2', 1000)
-                self.statusbar.repaint()
-                return
-            # avoid pressing enter when auto-load is enabled and lots of
-            # files are added; it'll take long time to process;
-            if len(self.vk.target) > 128:
-                self.statusbar.showMessage(
-                    'More than 128 files selected. Abort auto loading.', 1000)
-            else:
-                self.load_data()
+        elif self.tab_dict[tab_id] == 'saxs2d':
+            self.init_tab()
 
     def reorder_target(self, direction='up'):
         rows = self.get_selected_rows()
@@ -961,15 +818,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return
 
     def remove_target(self):
-        if self.data_state in [0, 1]:
-            self.statusbar.showMessage('Target is not ready.', 1000)
-            return
-
         rmv_list = []
         for x in self.list_view_target.selectedIndexes():
             rmv_list.append(x.data())
 
-        self.progress_bar.setValue(0)
         self.vk.remove_target(rmv_list)
         # clear selection to avoid the bug: when the last one is selected, then
         # the list will out of bounds
@@ -978,17 +830,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # if all files are removed; then go to state 1
         if self.vk.target in [[], None] or len(self.vk.target) == 0:
             self.reset_gui()
-        else:
-            self.data_state = 2
-        self.plot_state[:] = 0
 
         self.update_box(self.vk.target, mode='target')
-        if self.box_auto_update.isChecked():
-            self.load_data()
 
     def reset_gui(self):
-        self.data_state = 1
-        self.plot_state[:] = 0
         self.vk.reset_kernel()
         for x in [self.pg_saxs, self.pg_intt, self.mp_tauq, 
                   self.mp_g2, self.mp_saxs, self.mp_stab]:
@@ -1043,7 +888,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def check_g2_fitting_number(self):
         fit_func = ['single', 'double'][self.g2_fitting_function.currentIndex()]
-
         keys = (self.g2_amin, self.g2_amax, self.g2_bmin, self.g2_bmax,
                 self.g2_cmin, self.g2_cmax, self.g2_dmin, self.g2_dmax,
                 self.g2_b2min, self.g2_b2max, self.g2_c2min, self.g2_c2max,
@@ -1072,30 +916,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if fit_func == 'single':
             fit_flag = fit_flag[0:4]
             bounds = bounds[:, 0:4]
-
         return bounds, fit_flag, fit_func
 
     def check_status(self, show_msg=True, min_state=2):
-        flag = False
-        if self.data_state == 0:
-            msg = "The working directory hasn't be specified."
-        elif self.data_state == 1:
-            msg = "No target files have been selected."
-        elif self.data_state == 2:
-            msg = "Target files haven't been loaded."
-        else:
-            msg = "%d file(s) is selected" % len(self.vk.target)
-            flag = True
-
-        if show_msg and not flag:
-            # error_dialog = QtWidgets.QErrorMessage(self)
-            # error_dialog.showMessage(msg, 1000)
-            self.statusbar.showMessage(msg, 1000)
-            logger.error(msg)
-
-        self.statusbar.showMessage(msg, 1000)
-
-        return flag
+        pass
 
     def update_saxs2d_range(self, flag=True):
         if not flag:
