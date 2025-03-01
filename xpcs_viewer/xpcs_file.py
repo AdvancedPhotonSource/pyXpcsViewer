@@ -1,9 +1,10 @@
 import os
+import re
 import numpy as np
-from .fileIO.hdf_reader import get, create_id, get_analysis_type, read_metadata_to_dict
+import pyqtgraph as pg
+from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
-import pyqtgraph as pg
 from .fileIO.qmap_utils import get_qmap
 from .module.twotime_utils import get_c2_from_hdf_fast, get_c2_stream
 
@@ -51,6 +52,29 @@ def power_law(x, a, b):
     """
     return a * x ** b
 
+
+def create_id(fname, label_style=None, simplify_flag=True):
+    fname = os.path.basename(fname)
+    if simplify_flag:
+        # 'a0004_t0600_f008000_r00003' to 'a4_t600_f8000_r3' by removing leading zeros
+        fname = re.sub(r'_(\w)0*(\d+)', r'_\1\2', fname)
+        fname = re.sub(r'(_results)?\.hdf$', '', fname)
+
+    if len(fname) < 10 or label_style is None:
+        return fname
+
+    try:
+        selection = [int(x) for x in label_style.split(',')]
+        assert len(selection) > 0
+    except Exception:
+        return fname
+
+    segments = fname.split('_')
+    id_str = '_'.join([segments[i] for i in selection if i < len(segments)])
+    if len(id_str) == 0:
+        id_str = fname
+
+    return id_str
 
 
 class XpcsFile(object):

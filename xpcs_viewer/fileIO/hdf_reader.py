@@ -146,27 +146,6 @@ def get_analysis_type(fname, ftype='nexus'):
     return tuple(analysis_type)
 
 
-def create_id(fname, label_style=None, simplify_flag=True):
-    if simplify_flag:
-        # 'a0004_t0600_f008000_r00003' to 'a4_t600_f8000_r3' by removing leading zeros
-        fname = re.sub(r'_(\w)0*(\d+)', r'_\1\2', fname)
-        fname = re.sub(r'(_results)?\.hdf$', '', fname)
-
-    if len(fname) < 10 or label_style is None:
-        return fname
-
-    try:
-        selection = [int(x) for x in label_style.split(',')]
-        assert len(selection) > 0
-    except Exception:
-        return fname
-
-    segments = fname.split('_')
-    id_str = '_'.join([segments[i] for i in selection if i < len(segments)])
-    if len(id_str) == 0:
-        id_str = fname
-
-    return id_str
 
 
 if __name__ == '__main__':
