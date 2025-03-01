@@ -230,8 +230,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             selected_row = [selected_index[0].row()]
 
-        filter_str = self.hdf_key_filter.text().split()
-        msg = self.vk.get_xf_list(rows=selected_row)[0].get_hdf_info(filter_str)
+        msg = self.vk.get_xf_list(rows=selected_row)[0].get_hdf_info()
         def create_param_tree(data_dict):
             """Convert a dictionary into PyQtGraph's ParameterTree format."""
             params = []
@@ -729,7 +728,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_11.parent().repaint()
 
         self.update_box(self.vk.source, mode='source')
-        self.trie_search()
+        self.apply_filter_to_source()
 
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
@@ -840,7 +839,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             x.clear()
         self.le_bkg_fname.clear()
 
-    def trie_search(self):
+    def apply_filter_to_source(self):
         min_length = 1
         val = self.filter_str.text()
         if len(val) == 0:
