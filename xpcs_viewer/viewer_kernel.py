@@ -72,7 +72,7 @@ class ViewerKernel(FileLocator):
         self.meta['saxs1d_bkg_fname'] = f
         self.meta['saxs1d_bkg_xf'] = XpcsFile(fname, path)
 
-    def get_g2_data(self,  rows=None, **kwargs):
+    def get_g2_data(self, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
         if not xf_list:
             return False, None, None, None, None
@@ -127,12 +127,8 @@ class ViewerKernel(FileLocator):
         return result
 
     def plot_saxs_2d(self, *args, **kwargs):
-        ans = [self.cache[fn].saxs_2d for fn in self.target]
-        # extents = extent = (qy_min, qy_max, qx_min, qx_max)
-        extent = self.cache[self.target[0]].get_detector_extent()
-        center = (self.cache[self.target[0]].bcy,
-                  self.cache[self.target[0]].bcx)
-        saxs2d.plot(ans, extent=extent, center=center, *args, **kwargs)
+        xf_list = self.get_xf_list()
+        saxs2d.plot(xf_list, *args, **kwargs)
     
     def add_roi(self, hdl, **kwargs):
         xf_list = self.get_xf_list()
@@ -196,8 +192,8 @@ class ViewerKernel(FileLocator):
         intt.plot(xf_list, pg_hdl, **kwargs)
 
     def plot_stability(self, mp_hdl, plot_id, **kwargs):
-        fc = self.cache[self.target[plot_id]]
-        stability.plot(fc, mp_hdl, **kwargs)
+        xf_obj = self.get_xf_list(rows=[plot_id])[0]
+        stability.plot(xf_obj, mp_hdl, **kwargs)
 
     def submit_job(self, *args, **kwargs):
         if len(self.target) <= 0:
