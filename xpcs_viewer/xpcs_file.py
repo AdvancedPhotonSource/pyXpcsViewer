@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from .fileIO.hdf_reader import get, create_id, get_analysis_type, read_metadat_to_dict
+from .fileIO.hdf_reader import get, create_id, get_analysis_type, read_metadata_to_dict
 from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 import pyqtgraph as pg
@@ -57,26 +57,30 @@ class XpcsFile(object):
     """
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
-    def __init__(self, fname, cwd=".", fields=None, label_style=None):
+    def __init__(self, fname, fields=None, label_style=None):
         self.fname = fname
-        self.cwd = cwd
-        self.full_path = os.path.join(cwd, fname)
-        self.qmap = get_qmap(self.full_path)
-        # label is a short string to describe the file/filename
-        self.label = create_id(fname, label_style=label_style)
-        self.atype = get_analysis_type(self.full_path)
+        self.qmap = get_qmap(self.fname)
+        self.atype = get_analysis_type(self.fname)
+        self.label = self.update_label(label_style)
         payload_dictionary = self.load_data(fields)
         self.__dict__.update(payload_dictionary)
         self.hdf_info = None
         self.fit_summary = None
         self.c2_all_data = None
         self.c2_kwargs = None
+        # label is a short string to describe the file/filename
+        # place holder for self.saxs_2d; 
+        self.saxs_2d_data = None
+    
+    def update_label(self, label_style):
+        self.label = create_id(self.fname, label_style=label_style)
+        return self.label
 
     def __str__(self):
-        ans = ["File:" + str(self.full_path)]
+        ans = ["File:" + str(self.fname)]
         for key, val in self.__dict__.items():
             # omit those to avoid lengthy output
-            if key in ["hdf_key", "hdf_info"]:
+            if key == "hdf_info":
                 continue
             elif isinstance(val, np.ndarray) and val.size > 1:
                 val = str(val.shape)
@@ -99,12 +103,12 @@ class XpcsFile(object):
         """
         # cache the data because it may take long time to generate the str
         if self.hdf_info is None:
-            self.hdf_info = read_metadat_to_dict(self.full_path)
+            self.hdf_info = read_metadata_to_dict(self.fname)
         return self.hdf_info
 
     def load_data(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
-        fields = ["saxs_2d", "saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
+        fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
 
         if "Multitau" in self.atype:
             fields = fields + ["tau", "g2", "g2_err",
@@ -120,7 +124,7 @@ class XpcsFile(object):
         # avoid duplicated keys
         fields = list(set(fields))
 
-        ret = get(self.full_path, fields, "alias", ftype='nexus')
+        ret = get(self.fname, fields, "alias", ftype='nexus')
 
         if "Twotime" in self.atype:
             stride_frame = ret.pop("c2_stride_frame")
@@ -146,10 +150,17 @@ class XpcsFile(object):
         return ret
 
     def __getattr__(self, key):
+        # keys from qmap
         if key in ["sqlist", "dqlist", "dqmap", "sqmap", "mask",
                    "bcx", "bcy", "det_dist", "pixel_size", "X_energy", 
                    "sphilist", "dphilist", "static_num_pts", "dynamic_num_pts"]:
             return self.qmap.__dict__[key]
+        # delayed loading of saxs_2d due to its large size
+        elif key == 'saxs_2d':
+            if self.saxs_2d_data is None:
+                ret = get(self.fname, ['saxs_2d'], "alias", ftype='nexus')
+                self.saxs_2d_data = ret['saxs_2d']
+            return self.saxs_2d_data
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
@@ -169,15 +180,15 @@ class XpcsFile(object):
             return self.c2_all_data
         else:
             self.c2_kwargs = kwargs
-            c2_result = get_c2_from_hdf_fast(self.full_path,
-                                          dq_selection=dq_selection, 
-                                          max_c2_num=max_c2_num,
-                                          max_size=max_size)
+            c2_result = get_c2_from_hdf_fast(self.fname,
+                                             dq_selection=dq_selection, 
+                                             max_c2_num=max_c2_num,
+                                             max_size=max_size)
             self.c2_all_data = c2_result
             return c2_result 
     
     def get_twotime_stream(self, **kwargs):
-        return get_c2_stream(self.full_path, **kwargs)
+        return get_c2_stream(self.fname, **kwargs)
 
     def get_g2_fitting_line(self, q, tor=1E-6):
         """
