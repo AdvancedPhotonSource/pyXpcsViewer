@@ -31,10 +31,13 @@ def list_to_numpy(ans, rotate=True):
     return ret, rotate
 
 
-def plot(ans, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
-         epsilon=None, display=None, extent=None, autorange=True, vmin=None,
-         vmax=None, center=None):
-    ans, rotate = list_to_numpy(ans, rotate)
+def plot(xf_list, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
+         epsilon=None, display=None, autorange=True, vmin=None, vmax=None):
+    extent = xf_list[0].get_detector_extent()
+    center = (xf_list[0].bcy, xf_list[0].bcx)
+    saxs_2d_list = [xf.saxs_2d for xf in xf_list]
+
+    ans, rotate = list_to_numpy(saxs_2d_list, rotate)
     if plot_type == 'log':
         if epsilon is None or epsilon < 0:
             temp = ans.ravel()
