@@ -1,4 +1,11 @@
-recursive-include xpcs_viewer/ui/resources *.png
-include requirements.txt
-include README.md
-include LICENSE.txt
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include HISTORY.rst
+include LICENSE
+include README.rst
+
+recursive-include tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
