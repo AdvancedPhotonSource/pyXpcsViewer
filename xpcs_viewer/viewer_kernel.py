@@ -126,8 +126,8 @@ class ViewerKernel(FileLocator):
 
         return result
 
-    def plot_saxs_2d(self, *args, **kwargs):
-        xf_list = self.get_xf_list()
+    def plot_saxs_2d(self, *args, rows=None,**kwargs):
+        xf_list = self.get_xf_list(rows)
         saxs2d.plot(xf_list, *args, **kwargs)
     
     def add_roi(self, hdl, **kwargs):

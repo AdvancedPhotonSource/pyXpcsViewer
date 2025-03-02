@@ -4,6 +4,7 @@ import logging
 from .helper.listmodel import ListDataModel
 import traceback
 from functools import lru_cache
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class FileLocator(object):
         self.source_search = ListDataModel()
         self.target = ListDataModel()
         self.cache = {}
+        self.timestamp = None
 
     def set_path(self, path):
         self.path = path
@@ -47,7 +49,8 @@ class FileLocator(object):
         if not rows:
             selected = list(range(len(self.target)))
         else:
-            selected = rows
+            selected, timestamp = rows
+            assert timestamp == self.timestamp, 'timestamp does not match'
 
         ret = []
         for n in selected:
@@ -73,6 +76,8 @@ class FileLocator(object):
         return xf_obj.get_hdf_info(filter_str)
 
     def add_target(self, alist, threshold=256, preload=True):
+        if not alist:
+            return
         if preload and len(alist) <= threshold:
             for fn in alist:
                 if fn in self.target:
@@ -86,6 +91,7 @@ class FileLocator(object):
             logger.info('type check is disabled. too many files added')
             self.target.extend(alist)
         logger.info('length of target = %d' % len(self.target))
+        self.timestamp = datetime.datetime.now() 
         return
 
     def clear_target(self):
@@ -99,6 +105,21 @@ class FileLocator(object):
             self.cache.pop(os.path.join(self.path, x), None)
         if not self.target:
             self.clear_target()
+        self.timestamp = datetime.datetime.now()
+
+    def reorder_target(self, row, direction='up'):
+        size = len(self.target)
+        assert 0 <= row < size, 'check row value'
+        if (direction == 'up' and row == 0) or \
+           (direction == 'down' and row == size - 1):
+            return -1
+
+        item = self.target.pop(row)
+        pos = row - 1 if direction == 'up' else row + 1
+        self.target.insert(pos, item)
+        idx = self.target.index(pos)
+        self.timestamp = datetime.datetime.now()
+        return idx
 
     def search(self, val, filter_type='prefix'):
         assert filter_type in ['prefix', 'substr'], 'filter_type must be prefix or substr'

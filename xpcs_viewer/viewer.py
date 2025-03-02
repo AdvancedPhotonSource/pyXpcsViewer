@@ -61,6 +61,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             9: "log",
             # 10: "None"
         }
+        self.plot_kwargs_record = {}
+        for _, v in self.tab_dict.items():
+            self.plot_kwargs_record[v] = {}
 
         self.thread_pool = QtCore.QThreadPool()
         logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
@@ -85,7 +88,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.init_tab)
-        # self.list_view_target.indexesMoved.connect(self.reorder_target)
         self.list_view_target.clicked.connect(self.update_selection)
 
         self.mp_2t_hdls = None
@@ -169,61 +171,33 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         selected_row = [x.row() for x in selected_index]
         # the selected index is ordered;
         selected_row.sort()
-        return selected_row
+        return (selected_row, self.vk.target.timestamp)
 
     def update_selection(self):
-        rows = self.get_selected_rows()
         idx = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[idx]
-
-        if tab_name == 'saxs_2d':
-            if rows == [] or len(self.vk.target) <= 1:
-                return
-            self.pg_saxs.setCurrentIndex(rows[0])
-        elif tab_name == 'saxs_1d':
-            self.plot_saxs_1D()
-        elif tab_name == 'intensity_t':
-            self.plot_intt()
-        elif tab_name == 'g2':
-            self.plot_g2()
-        elif tab_name == 'twotime':
-            self.init_twotime()
+        func = getattr(self, 'plot_' + tab_name)
+        try:
+            kwargs = func(dryrun=True)
+            if self.plot_kwargs_record[tab_name] != kwargs:
+                func(dryrun=False, **kwargs)
+                self.plot_kwargs_record[tab_name] = kwargs
+        except Exception as e:
+            logger.error(f'update selection in [{tab_name}] failed')
+            logger.error(e)
 
     def init_tab(self):
         new_tab_id = self.tabWidget.currentIndex()
         tab_name = self.tab_dict[new_tab_id]
+        if tab_name in ['diffusion', 'twotime', 'average', 'g2']:
+            function = getattr(self, 'init_' + tab_name)
+            try:
+                function()
+            except Exception as e:
+                logger.error('init %s failed', tab_name)
+                logger.error(e)
 
-        # always replot tauq
-        if tab_name == 'diffusion':
-            self.plot_tauq_pre()
-
-        self.statusbar.showMessage('visualize {}'.format(tab_name), 500)
-        if tab_name == 'saxs_2d':
-            self.plot_saxs_2D()
-        elif tab_name == 'saxs_1d':
-            self.plot_saxs_1D()
-        elif tab_name == 'stability':
-            self.update_stab_list()
-            self.plot_stability_iq()
-        elif tab_name == 'intensity_t':
-            self.plot_intt()
-        elif tab_name == 'twotime':
-            self.init_twotime()
-        elif tab_name == 'metadata':
-            self.show_metadata()
-        elif tab_name == 'stability':
-            self.update_stab_list()
-        elif tab_name == 'average':
-            self.update_average_box()
-        elif tab_name == 'g2':
-            self.set_g2_range()
-            self.plot_g2()
-
-    def update_stab_list(self):
-        self.cb_stab.clear()
-        self.cb_stab.addItems(self.vk.target)
-
-    def show_metadata(self):
+    def plot_metadata(self):
         selected_index = self.list_view_target.selectedIndexes()
         if len(selected_index) == 0:
             selected_row = [0]
@@ -251,8 +225,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                                        children=hdf_info_data)
         self.hdf_info.setParameters(self.hdf_params, showTop=True)
 
-    def plot_saxs_2D(self):
+    def plot_saxs_2d(self, dryrun=False):
         kwargs = {
+            'rows': self.get_selected_rows(),
             'plot_type': self.cb_saxs2D_type.currentText(),
             'cmap': self.cb_saxs2D_cmap.currentText(),
             'rotate': self.saxs2d_rotate.isChecked(),
@@ -261,8 +236,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'vmin': self.saxs2d_min.value(),
             'vmax': self.saxs2d_max.value(),
         }
-        self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
-        print('printed saxs2d')
+        if dryrun:
+            return kwargs
+        else:
+            self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
     
     def saxs2d_roi_add(self):
         if not self.check_status(show_msg=False):
@@ -279,7 +256,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         self.vk.add_roi(self.pg_saxs, **kwargs)
 
-    def plot_saxs_1D(self):
+    def plot_saxs_1d(self):
         kwargs = {
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
@@ -301,10 +278,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('check qmin and qmax')
             return
 
-        self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs.hdl, **kwargs)
-        self.mp_saxs.repaint()
-        # adjust the line behavior
-        self.switch_saxs1d_line()
+        if kwargs != self.plot_kwargs_record['saxs_1d']:
+            self.plot_kwargs_record['saxs_1d'] = kwargs
+            self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs.hdl, **kwargs)
+            self.mp_saxs.repaint()
+            # adjust the line behavior
+            self.switch_saxs1d_line()
 
     def switch_saxs1d_line(self):
         lb_type = self.saxs1d_lb_type.currentIndex()
@@ -439,12 +418,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'plot_offset': self.sb_stab_offset.value(),
             'plot_norm': self.cb_stab_norm.currentIndex()
         }
-        plot_id = self.cb_stab.currentIndex()
-        if plot_id < 0:
-            return
         self.vk.plot_stability(self.mp_stab.hdl, plot_id, **kwargs)
 
-    def plot_intt(self):
+    def plot_intensity_t(self):
         kwargs = {
             # 'max_points': self.sb_intt_max.value(),
             'sampling': max(1, self.sb_intt_sampling.value()),
@@ -452,9 +428,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'rows': self.get_selected_rows(),
             'xlabel': self.intt_xlabel.currentText()
         }
-        self.vk.plot_intt(self.pg_intt, **kwargs)
+        if kwargs != self.plot_kwargs_record['intt']:
+            self.vk.plot_intt(self.pg_intt, **kwargs)
 
-    def plot_tauq_pre(self):
+    def init_diffusion(self):
         self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
     def plot_tauq(self):
@@ -518,7 +495,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.avg_save_name.setText(os.path.basename(save_name[0]))
         return
 
-    def update_average_box(self):
+    def init_average(self):
         if len(self.vk.target) > 0:
             save_path = self.avg_save_path.text()
             if save_path == '':
@@ -650,7 +627,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree = worker.get_pg_tree()
         self.tree.show()
 
-    def set_g2_range(self):
+    def init_g2(self):
         flag, tel, qd, _, _ = self.vk.get_g2_data()
         if not flag:
             logger.error('g2 data is not consistent or not multitau analysis. abort')
@@ -790,7 +767,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.vk.target, mode='target')
         tab_id = self.tabWidget.currentIndex()
         if self.tab_dict[tab_id] == 'average':
-            self.update_average_box()
+            self.init_average()
         elif self.tab_dict[tab_id] == 'saxs2d':
             self.init_tab()
 
@@ -798,22 +775,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         rows = self.get_selected_rows()
         if len(rows) != 1 or len(self.vk.target) <= 1:
             return
-        row = rows[0]
-
-        if direction == 'up' and row == 0:
-            self.statusbar.showMessage('alread on the top', 1000)
-            return
-        elif direction == 'down' and row == len(self.vk.target) - 1:
-            self.statusbar.showMessage('alread on the buttom', 1000)
-            return
-
-        item = self.vk.target.pop(row)
-        pos = row - 1 if direction == 'up' else row + 1
-        self.vk.target.insert(pos, item)
-        idx = self.vk.target.index(pos)
+        self.vk.reorder_target(row[0], direction)
         self.list_view_target.setCurrentIndex(idx)
         self.list_view_target.repaint()
-
         return
 
     def remove_target(self):
