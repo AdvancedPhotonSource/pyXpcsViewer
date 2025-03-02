@@ -1,11 +1,10 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
 import random
 import time
 

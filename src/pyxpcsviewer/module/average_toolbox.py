@@ -1,6 +1,7 @@
 import os
-from PyQt5 import QtCore
-from PyQt5.QtCore import QObject, pyqtSlot
+from PySide6 import QtCore
+from PySide6.QtCore import QObject, Slot
+
 import logging
 import uuid
 import time
@@ -50,9 +51,9 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
 
 
 class WorkerSignal(QObject):
-    progress = QtCore.pyqtSignal(tuple)
-    values = QtCore.pyqtSignal(tuple)
-    status = QtCore.pyqtSignal(tuple)
+    progress = QtCore.Signal(tuple)
+    values = QtCore.Signal(tuple)
+    status = QtCore.Signal(tuple)
 
 
 class AverageToolbox(QtCore.QRunnable):
@@ -104,7 +105,7 @@ class AverageToolbox(QtCore.QRunnable):
         #     new_fname += '.hdf'
         return new_fname
 
-    @pyqtSlot()
+    @Slot()
     def run(self):
         self.do_average(*self.args, **self.kwargs)
 

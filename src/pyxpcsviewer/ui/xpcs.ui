@@ -3582,22 +3582,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_7</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_stability_iq()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1183</x>
-     <y>938</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1081</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>saxs2d_rotate</sender>
    <signal>stateChanged(int)</signal>
    <receiver>pushButton_5</receiver>
@@ -3689,54 +3673,6 @@
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_5</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_saxs_2D()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1485</x>
-     <y>858</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>401</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_10</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_saxs_1D()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1512</x>
-     <y>932</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>456</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_intt</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_intt()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>761</x>
-     <y>941</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1874</x>
      <y>854</y>
     </hint>
    </hints>
