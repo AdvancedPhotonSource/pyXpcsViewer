@@ -364,7 +364,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -429,6 +429,25 @@
             <string>SAXS 2D Plot Setting</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_40">
+            <item row="0" column="8">
+             <widget class="QDoubleSpinBox" name="saxs2d_max">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="decimals">
+               <number>4</number>
+              </property>
+              <property name="minimum">
+               <double>-99.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>99999.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>1.000000000000000</double>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="1">
              <widget class="QComboBox" name="cb_saxs2D_cmap">
               <item>
@@ -463,6 +482,26 @@
               </item>
              </widget>
             </item>
+            <item row="0" column="5">
+             <widget class="QLabel" name="label_50">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>min-max:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>cmap:</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="3">
              <widget class="QComboBox" name="cb_saxs2D_type">
               <item>
@@ -475,63 +514,6 @@
                 <string>linear</string>
                </property>
               </item>
-             </widget>
-            </item>
-            <item row="0" column="7">
-             <widget class="QLabel" name="label_51">
-              <property name="text">
-               <string>max:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="5">
-             <widget class="QLabel" name="label_50">
-              <property name="text">
-               <string>min:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="8">
-             <widget class="QDoubleSpinBox" name="saxs2d_max">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="decimals">
-               <number>4</number>
-              </property>
-              <property name="minimum">
-               <double>-99.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>99999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>cmap:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="label_12">
-              <property name="text">
-               <string>type:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
-             <widget class="QCheckBox" name="saxs2d_rotate">
-              <property name="text">
-               <string>rotate</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
              </widget>
             </item>
             <item row="0" column="6">
@@ -550,6 +532,19 @@
               </property>
              </widget>
             </item>
+            <item row="0" column="11">
+             <widget class="QPushButton" name="pushButton_plot_saxs2d">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Plot 2D SAXS</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="9">
              <widget class="QCheckBox" name="saxs2d_autorange">
               <property name="text">
@@ -560,16 +555,20 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="10">
-             <widget class="QPushButton" name="pushButton_plot_saxs_2d">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_12">
               <property name="text">
-               <string>Plot 2D SAXS</string>
+               <string>type:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="10">
+             <widget class="QCheckBox" name="saxs2d_rotate">
+              <property name="text">
+               <string>rotate</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -675,7 +674,7 @@
              </widget>
             </item>
             <item row="0" column="6">
-             <widget class="QPushButton" name="btn_saxs2d_roi_add">
+             <widget class="QPushButton" name="pushButton_6">
               <property name="text">
                <string>Add</string>
               </property>
@@ -1077,7 +1076,7 @@
              </widget>
             </item>
             <item row="1" column="2" rowspan="2">
-             <widget class="QPushButton" name="pushButton_10">
+             <widget class="QPushButton" name="pushButton_plot_saxs1d">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1126,134 +1125,101 @@
            <property name="title">
             <string>Stability Plot Setting</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_20">
+           <layout class="QGridLayout" name="gridLayout_17">
             <item row="0" column="0">
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>type:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
             <item row="0" column="1">
-             <layout class="QGridLayout" name="gridLayout_17">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>type:</string>
-                </property>
-               </widget>
+             <widget class="QComboBox" name="cb_stab_type">
+              <property name="currentIndex">
+               <number>3</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>I - q</string>
+               </property>
               </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="cb_stab_type">
-                <property name="currentIndex">
-                 <number>3</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>I - q</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I - log(q)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>log(I) - q</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>log(I) - log(q)</string>
-                 </property>
-                </item>
-               </widget>
+              <item>
+               <property name="text">
+                <string>I - log(q)</string>
+               </property>
               </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_24">
-                <property name="text">
-                 <string>offset:</string>
-                </property>
-               </widget>
+              <item>
+               <property name="text">
+                <string>log(I) - q</string>
+               </property>
               </item>
-              <item row="0" column="3">
-               <widget class="QDoubleSpinBox" name="sb_stab_offset">
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="singleStep">
-                 <double>0.050000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.000000000000000</double>
-                </property>
-               </widget>
+              <item>
+               <property name="text">
+                <string>log(I) - log(q)</string>
+               </property>
               </item>
-              <item row="0" column="4" colspan="2">
-               <widget class="QLabel" name="label_16">
-                <property name="text">
-                 <string>normalization:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="6">
-               <widget class="QPushButton" name="pushButton_7">
-                <property name="text">
-                 <string>Plot Iq Stability Data</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="6">
-               <widget class="QComboBox" name="cb_stab"/>
-              </item>
-              <item row="0" column="6">
-               <widget class="QComboBox" name="cb_stab_norm">
-                <property name="currentIndex">
-                 <number>0</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>none</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I' = Iq2</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I' = Iq4</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>I' = I/Io</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
+             </widget>
             </item>
             <item row="0" column="2">
-             <spacer name="horizontalSpacer_9">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+             <widget class="QLabel" name="label_24">
+              <property name="text">
+               <string>offset:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QDoubleSpinBox" name="sb_stab_offset">
+              <property name="decimals">
+               <number>4</number>
               </property>
-             </spacer>
+              <property name="singleStep">
+               <double>0.050000000000000</double>
+              </property>
+              <property name="value">
+               <double>0.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>normalization:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QComboBox" name="cb_stab_norm">
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>none</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>I' = Iq2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>I' = Iq4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>I' = I/Io</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <widget class="QPushButton" name="pushButton_plot_stability">
+              <property name="text">
+               <string>Plot Stability Data</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -1286,112 +1252,82 @@
            <property name="title">
             <string>Intensity-Time Plot Setting</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_23">
+           <layout class="QGridLayout" name="gridLayout_18">
             <item row="0" column="0">
-             <spacer name="horizontalSpacer_12">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>max datasets:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>344</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
             <item row="0" column="1">
-             <layout class="QGridLayout" name="gridLayout_18">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>max datasets:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QSpinBox" name="sb_intt_max">
-                <property name="value">
-                 <number>10</number>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_31">
-                <property name="text">
-                 <string>moving average:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="QSpinBox" name="sb_window">
-                <property name="maximum">
-                 <number>999</number>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <widget class="QLabel" name="label_11">
-                <property name="text">
-                 <string>sampling:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="5">
-               <widget class="QSpinBox" name="sb_intt_sampling">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="6">
-               <widget class="QLabel" name="label_34">
-                <property name="text">
-                 <string>xlabel:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="7">
-               <widget class="QComboBox" name="intt_xlabel">
-                <item>
-                 <property name="text">
-                  <string>Time (second)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Frame Index</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="8">
-               <widget class="QPushButton" name="btn_intt">
-                <property name="text">
-                 <string>plot Intensity-T</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QSpinBox" name="sb_intt_max">
+              <property name="value">
+               <number>10</number>
+              </property>
+             </widget>
             </item>
             <item row="0" column="2">
-             <spacer name="horizontalSpacer_11">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+             <widget class="QLabel" name="label_31">
+              <property name="text">
+               <string>moving average:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>343</width>
-                <height>20</height>
-               </size>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QSpinBox" name="sb_window">
+              <property name="maximum">
+               <number>999</number>
               </property>
-             </spacer>
+              <property name="value">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>sampling:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QSpinBox" name="sb_intt_sampling">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="value">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <widget class="QLabel" name="label_34">
+              <property name="text">
+               <string>xlabel:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="7">
+             <widget class="QComboBox" name="intt_xlabel">
+              <item>
+               <property name="text">
+                <string>Time (second)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Frame Index</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="8">
+             <widget class="QPushButton" name="pushButton_plot_intt">
+              <property name="text">
+               <string>plot Intensity-T</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -1431,8 +1367,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>34</height>
+              <width>1122</width>
+              <height>717</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -2490,23 +2426,42 @@
          <string>Two Time</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_33">
-         <item row="1" column="0">
-          <widget class="ImageViewPlotItem" name="mp_2t" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>2</verstretch>
-            </sizepolicy>
+         <item row="0" column="0">
+          <widget class="QSplitter" name="splitter_4">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
-           <property name="minimumSize">
-            <size>
-             <width>300</width>
-             <height>200</height>
-            </size>
-           </property>
+           <widget class="GraphicsLayoutWidget" name="mp_2t_map" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>300</height>
+             </size>
+            </property>
+           </widget>
+           <widget class="ImageViewPlotItem" name="mp_2t" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>2</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>300</height>
+             </size>
+            </property>
+           </widget>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_11">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -2545,96 +2500,7 @@
             </item>
             <item row="0" column="1">
              <layout class="QGridLayout" name="gridLayout_2">
-              <item row="1" column="11">
-               <widget class="QDoubleSpinBox" name="c2_min">
-                <property name="minimum">
-                 <double>-1.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.800000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="12">
-               <widget class="QDoubleSpinBox" name="c2_max">
-                <property name="minimum">
-                 <double>-1.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>2.200000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3" colspan="2">
-               <widget class="QLabel" name="label_35">
-                <property name="text">
-                 <string>sax2d_cmap:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_36">
-                <property name="text">
-                 <string>type:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1" colspan="2">
-               <widget class="QComboBox" name="cb_twotime_type">
-                <item>
-                 <property name="text">
-                  <string>log</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>linear</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="3" colspan="2">
-               <widget class="QLabel" name="label_28">
-                <property name="text">
-                 <string>twotime_cmap:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="13" colspan="2">
-               <widget class="QPushButton" name="pushButton_12">
-                <property name="text">
-                 <string>Plot</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="14">
-               <widget class="QCheckBox" name="twotime_autocrop">
-                <property name="text">
-                 <string>auto-crop</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="13">
-               <widget class="QCheckBox" name="twotime_autorotate">
-                <property name="text">
-                 <string>auto-rotate</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="3">
-               <widget class="QCheckBox" name="twotime_showbox">
-                <property name="text">
-                 <string>show-partial-box</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="5" colspan="3">
+              <item row="0" column="2" colspan="3">
                <widget class="QComboBox" name="cb_twotime_saxs_cmap">
                 <item>
                  <property name="text">
@@ -2668,7 +2534,38 @@
                 </item>
                </widget>
               </item>
-              <item row="1" column="5" colspan="3">
+              <item row="1" column="9" colspan="3">
+               <widget class="QPushButton" name="pushButton_12">
+                <property name="text">
+                 <string>Plot</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" colspan="2">
+               <widget class="QLabel" name="label_35">
+                <property name="text">
+                 <string>sax2d_cmap:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" colspan="2">
+               <widget class="QLabel" name="label_28">
+                <property name="text">
+                 <string>twotime_cmap:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="8">
+               <widget class="QCheckBox" name="twotime_autocrop">
+                <property name="text">
+                 <string>auto-crop</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2" colspan="3">
                <widget class="QComboBox" name="cb_twotime_cmap">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -2714,14 +2611,34 @@
                 </item>
                </widget>
               </item>
-              <item row="0" column="8" colspan="3">
+              <item row="1" column="7">
+               <widget class="QDoubleSpinBox" name="c2_min">
+                <property name="minimum">
+                 <double>-1.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.800000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="9" colspan="3">
                <widget class="QCheckBox" name="twotime_correct_diag">
                 <property name="text">
                  <string>correct-diag</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="8" colspan="3">
+              <item row="1" column="8">
+               <widget class="QDoubleSpinBox" name="c2_max">
+                <property name="minimum">
+                 <double>-1.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>2.200000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="5" colspan="2">
                <widget class="QLabel" name="label_57">
                 <property name="text">
                  <string>min-max:</string>
@@ -2746,21 +2663,41 @@
            </layout>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="GraphicsLayoutWidget" name="mp_2t_map" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>300</width>
-             <height>100</height>
-            </size>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>QMap</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_9">
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox_qmap_target">
+           <item>
+            <property name="text">
+             <string>dynamic_roi_map</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>static_roi_map</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>scattering</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_27">
+           <property name="text">
+            <string>Target</string>
            </property>
           </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="ImageView" name="pg_qmap" native="true"/>
          </item>
         </layout>
        </widget>
@@ -3239,6 +3176,12 @@
    <header>pyqtgraph.parametertree</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>ImageView</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>cb_saxs2D_cmap</tabstop>
@@ -3276,8 +3219,7 @@
   <tabstop>btn_up</tabstop>
   <tabstop>btn_down</tabstop>
   <tabstop>cb_saxs2D_type</tabstop>
-  <tabstop>saxs2d_rotate</tabstop>
-  <tabstop>pushButton_plot_saxs_2d</tabstop>
+  <tabstop>pushButton_plot_saxs2d</tabstop>
   <tabstop>cb_saxs_type</tabstop>
   <tabstop>saxs1d_sampling</tabstop>
   <tabstop>sb_saxs_offset</tabstop>
@@ -3291,13 +3233,10 @@
   <tabstop>cb_stab_type</tabstop>
   <tabstop>sb_stab_offset</tabstop>
   <tabstop>cb_stab_norm</tabstop>
-  <tabstop>cb_stab</tabstop>
-  <tabstop>pushButton_7</tabstop>
   <tabstop>sb_intt_max</tabstop>
   <tabstop>sb_window</tabstop>
   <tabstop>sb_intt_sampling</tabstop>
   <tabstop>intt_xlabel</tabstop>
-  <tabstop>btn_intt</tabstop>
   <tabstop>pushButton_4</tabstop>
   <tabstop>g2_plot_type</tabstop>
   <tabstop>g2_qmin</tabstop>
@@ -3340,7 +3279,6 @@
   <tabstop>scrollArea</tabstop>
   <tabstop>g2_marker_size</tabstop>
   <tabstop>saxs2d_display</tabstop>
-  <tabstop>cb_twotime_type</tabstop>
   <tabstop>cb_twotime_saxs_cmap</tabstop>
   <tabstop>g2_c2fit</tabstop>
   <tabstop>g2_fmin</tabstop>
@@ -3376,7 +3314,7 @@
   <connection>
    <sender>sb_window</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>btn_intt</receiver>
+   <receiver>pushButton_plot_intt</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3392,7 +3330,7 @@
   <connection>
    <sender>sb_intt_sampling</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>btn_intt</receiver>
+   <receiver>pushButton_plot_intt</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3408,7 +3346,7 @@
   <connection>
    <sender>sb_stab_offset</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>pushButton_7</receiver>
+   <receiver>pushButton_plot_stability</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3438,25 +3376,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>cb_stab</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_7</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>777</x>
-     <y>937</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1183</x>
-     <y>938</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>cb_saxs2D_type</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_plot_saxs_2d</receiver>
+   <receiver>pushButton_plot_saxs2d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3472,7 +3394,7 @@
   <connection>
    <sender>cb_stab_type</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_7</receiver>
+   <receiver>pushButton_plot_stability</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3488,7 +3410,7 @@
   <connection>
    <sender>sb_saxs_offset</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3520,7 +3442,7 @@
   <connection>
    <sender>cb_saxs2D_cmap</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_plot_saxs_2d</receiver>
+   <receiver>pushButton_plot_saxs2d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3552,7 +3474,7 @@
   <connection>
    <sender>cb_saxs_norm</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3568,7 +3490,7 @@
   <connection>
    <sender>saxs2d_rotate</sender>
    <signal>stateChanged(int)</signal>
-   <receiver>pushButton_plot_saxs_2d</receiver>
+   <receiver>pushButton_plot_saxs2d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3584,7 +3506,7 @@
   <connection>
    <sender>intt_xlabel</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>btn_intt</receiver>
+   <receiver>pushButton_plot_intt</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3616,7 +3538,7 @@
   <connection>
    <sender>cb_saxs_type</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3632,7 +3554,7 @@
   <connection>
    <sender>cb_stab_norm</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_7</receiver>
+   <receiver>pushButton_plot_stability</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3652,8 +3574,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1252</x>
-     <y>938</y>
+     <x>1209</x>
+     <y>932</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -3664,7 +3586,7 @@
   <connection>
    <sender>sb_intt_max</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>btn_intt</receiver>
+   <receiver>pushButton_plot_intt</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3684,8 +3606,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>908</x>
-     <y>937</y>
+     <x>890</x>
+     <y>931</y>
     </hint>
     <hint type="destinationlabel">
      <x>1126</x>
@@ -3856,7 +3778,7 @@
   <connection>
    <sender>saxs1d_qmin</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3872,7 +3794,7 @@
   <connection>
    <sender>saxs1d_qmax</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3920,7 +3842,7 @@
   <connection>
    <sender>saxs1d_legend_loc</sender>
    <signal>currentIndexChanged(QString)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3952,7 +3874,7 @@
   <connection>
    <sender>sb_saxs_marker_size</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3968,7 +3890,7 @@
   <connection>
    <sender>saxs1d_sampling</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -4096,7 +4018,7 @@
   <connection>
    <sender>box_all_phi</sender>
    <signal>stateChanged(int)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -4112,7 +4034,7 @@
   <connection>
    <sender>saxs1d_lb_type</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_10</receiver>
+   <receiver>pushButton_plot_saxs1d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">

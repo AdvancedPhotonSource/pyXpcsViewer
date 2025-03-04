@@ -143,11 +143,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_up.clicked.connect(lambda: self.reorder_target('up'))
         self.btn_down.clicked.connect(lambda: self.reorder_target('down'))
 
-        # saxs1d export profiles
         self.btn_export_saxs1d.clicked.connect(self.saxs1d_export)
 
-        # saxs2d roi
-        # self.btn_saxs2d_roi_add.clicked.connect(self.saxs2d_roi_add)
         self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
         self.update_g2_fitting_function()
 
