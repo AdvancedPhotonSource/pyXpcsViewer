@@ -1,9 +1,11 @@
-# from xpcs_viwer.viewer_kernel import Viewer_Kernel
-from .xpcs_file import XpcsFile
-from .xpcs_viewer import main_gui
+from importlib.metadata import version, PackageNotFoundError
+from pyxpcsviewer.xpcs_file import XpcsFile
 
+# Version handling
+try:
+    __version__ = version("pyxpcsviewer")
+except PackageNotFoundError:
+    __version__ = "0.1.0"  # Fallback if package is not installed
 
-__all__ = [XpcsFile, main_gui]
-__version__ = '0.1.0'
 __author__ = 'Miaoqi Chu'
 __credits__ = 'Argonne National Laboratory'

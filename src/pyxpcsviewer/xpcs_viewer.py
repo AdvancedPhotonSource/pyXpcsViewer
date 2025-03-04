@@ -15,16 +15,12 @@ import traceback
 
 
 format = logging.Formatter('%(asctime)s %(message)s')
-home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+home_dir = os.path.join(os.path.expanduser('~'), '.pyxpcsviewer')
 if not os.path.isdir(home_dir):
     os.mkdir(home_dir)
-log_filename = os.path.join(home_dir, 'viewer.log')
+
 logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(name)-24s: %(message)s',
-                    handlers=[
-                        logging.FileHandler(log_filename, mode='a'),
-                        logging.StreamHandler()
-                    ])
+                    format='%(asctime)s %(name)-24s: %(message)s')
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +29,8 @@ def exception_hook(exc_type, exc_value, exc_traceback):
     logger.error("Uncaught exception",
                  exc_info=(exc_type, exc_value, exc_traceback))
 
-
 sys.excepthook = exception_hook
 
-# sys.stdout = LoggerWriter(logger.debug)
-# sys.stderr = LoggerWriter(logger.warning)
 
 tab_mapping = {
     0: "saxs_2d",
@@ -74,12 +67,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None, label_style=None):
         super(XpcsViewer, self).__init__()
         self.setupUi(self)
-        self.tab_id = 0
         self.home_dir = home_dir
         self.label_style = label_style
 
-        self.tabWidget.setCurrentIndex(self.tab_id)
-
+        self.tabWidget.setCurrentIndex(0)   # show scattering 2d
         self.plot_kwargs_record = {}
         for _, v in tab_mapping.items():
             self.plot_kwargs_record[v] = {}
@@ -88,7 +79,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         logger.info('Maximal threads: %d', self.thread_pool.maxThreadCount())
 
         self.vk = None
-        self.hdf_params = None
         # list widget models
         self.source_model = None
         self.target_model = None
@@ -115,7 +105,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.mp_2t_hdls = None
         self.init_twotime_plot_handler()
-        self.twotime_kwargs = None
 
         self.avg_job_pop.clicked.connect(self.remove_avg_job)
         self.btn_submit_job.clicked.connect(self.submit_job)
@@ -126,15 +115,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.set_average_save_name)
         self.btn_avg_kill.clicked.connect(self.avg_kill_job)
         self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
-        # self.avg_job_table.selectionModel().selectionChanged.connect(
-        #     self.update_avg_info)
         self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
         self.btn_deselect.clicked.connect(self.clear_target_selection)
-        self.list_view_target.doubleClicked.connect(self.edit_label)
-
+        self.list_view_target.doubleClicked.connect(self.show_dataset)
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
 
         self.g2_fitting_function.currentIndexChanged.connect(
@@ -203,17 +189,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             logger.error(e)
             traceback.print_exc()
 
-    def init_tab(self):
-        new_tab_id = self.tabWidget.currentIndex()
-        tab_name = tab_mapping[new_tab_id]
-        if tab_name in ['twotime', 'average']:
-            function = getattr(self, 'init_' + tab_name)
-            try:
-                function()
-            except Exception as e:
-                logger.error('init %s failed', tab_name)
-                logger.error(e)
-
     def plot_metadata(self, dryrun=False):
         kwargs = {
             'rows': self.get_selected_rows()
@@ -223,9 +198,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         msg = self.vk.get_xf_list(**kwargs)[0].get_hdf_info()
         hdf_info_data = create_param_tree(msg)
-        self.hdf_params = Parameter.create(name="Settings", type="group",
+        hdf_params = Parameter.create(name="Settings", type="group",
                                        children=hdf_info_data)
-        self.hdf_info.setParameters(self.hdf_params, showTop=True)
+        self.hdf_info.setParameters(hdf_params, showTop=True)
 
     def plot_saxs_2d(self, dryrun=False):
         kwargs = {
@@ -242,12 +217,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return kwargs
         else:
             self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
-    
+
     def saxs2d_roi_add(self):
-        if not self.check_status(show_msg=False):
-            return
-        #         sl_type='Pie', width=3, sl_mode='exclusive',
-        #         second_point=None, label=Non
         sl_type_idx = self.cb_saxs2D_roi_type.currentIndex()
         color = ('g', 'y', 'b', 'r', 'c', 'm', 'k', 'w')[
             self.cb_saxs2D_roi_color.currentIndex()]
@@ -292,16 +263,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         lb_type = self.saxs1d_lb_type.currentIndex()
         lb_type = [None, 'slope', 'hline'][lb_type]
         self.vk.switch_saxs1d_line(self.mp_saxs.hdl, lb_type)
-    
+
     def saxs1d_export(self):
-        folder = QtWidgets.QFileDialog.getExistingDirectory(self, 
+        folder = QtWidgets.QFileDialog.getExistingDirectory(self,
             caption='select a folder to export SAXS profiles')
 
         if folder in [None, '']:
             return
 
         self.vk.export_saxs_1d(self.pg_saxs, folder)
-    
+
     def init_twotime_plot_handler(self):
         # self.mp_2t.setBackground('w')
         self.mp_2t_hdls = {}
@@ -350,7 +321,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.mp_2t.sigTimeChanged.connect(
             lambda x: self.plot_twotime_map(highlight_dqbin=x+1))
-    
+
     def pick_twotime_index(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.pos()
@@ -369,7 +340,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         self.vk.plot_qmap(self.pg_qmap, **kwargs)
-    
+
     def plot_twotime(self, dryrun=False):
         kwargs = {'rows': self.get_selected_rows()}
         if dryrun:
@@ -377,7 +348,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.plot_twotime_map()
         self.plot_twotime_correlation()
 
-    def plot_twotime_map(self, dryrun=False, highlight_xy=None, 
+    def plot_twotime_map(self, dryrun=False, highlight_xy=None,
                          highlight_dqbin=None):
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
@@ -402,9 +373,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun: return kwargs
         self.vk.plot_twotime_correlation(self.mp_2t_hdls, **kwargs)
 
-    def edit_label(self):
-        if not self.check_status():
-            return
+    def show_dataset(self):
         rows = self.get_selected_rows()
         self.tree = self.vk.get_pg_tree(rows)
         self.tree.show()
@@ -423,7 +392,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def plot_intensity_t(self, dryrun=False):
         kwargs = {
-            # 'max_points': self.sb_intt_max.value(),
             'sampling': max(1, self.sb_intt_sampling.value()),
             'window': self.sb_window.value(),
             'rows': self.get_selected_rows(),
@@ -467,10 +435,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.tauq_msg.clear()
             self.tauq_msg.setData(msg)
             self.tauq_msg.parent().repaint()
-    
+
     def select_bkgfile(self):
         path = self.work_dir.text()
-        f = QtWidgets.QFileDialog.getOpenFileName(self, 
+        f = QtWidgets.QFileDialog.getOpenFileName(self,
             caption='select the file for background subtraction',
             directory=path)[0]
         if os.path.isfile(f):
@@ -511,9 +479,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
-        # if not self.check_status(): #  or self.vk.type != 'Multitau':
-        #     self.statusbar.showMessage('average files not ready')
-        #     return
         if len(self.vk.target) < 2:
             self.statusbar.showMessage(
                 'select at least 2 files for averaging', 1000)
@@ -615,8 +580,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         worker.kill()
 
     def show_g2_fit_summary_func(self):
-        if not self.check_status(): return
-        
         rows = self.get_selected_rows()
         self.tree = self.vk.get_fitting_tree(rows)
         self.tree.show()
@@ -716,24 +679,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def load_path(self, path=None, debug=False):
         if path in [None, False]:
             # DontUseNativeDialog is used so files are shown along with dirs;
-            f = QtWidgets.QFileDialog.getExistingDirectory(
+            folder = QtWidgets.QFileDialog.getExistingDirectory(
                 self, 'Open directory', self.start_wd,
                 QtWidgets.QFileDialog.DontUseNativeDialog)
         else:
-            f = path
+            folder = path
 
-        if not os.path.isdir(f):
-            self.statusbar.showMessage('{} is not a folder.'.format(f), 1000)
-            f = self.start_wd
+        if not os.path.isdir(folder):
+            self.statusbar.showMessage('{} is not a folder.'.format(folder))
+            folder = self.start_wd
 
-        # either choose a new work_dir or initialize from state=0
-        # if f == curr_work_dir; then the state is kept the same;
-        self.work_dir.setText(f)
+        self.work_dir.setText(folder)
 
         if self.vk is None:
-            self.vk = ViewerKernel(f, self.statusbar)
+            self.vk = ViewerKernel(folder, self.statusbar)
         else:
-            self.vk.set_path(f)
+            self.vk.set_path(folder)
             self.vk.clear()
 
         self.reload_source()
@@ -804,7 +765,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def reset_gui(self):
         self.vk.reset_kernel()
-        for x in [self.pg_saxs, self.pg_intt, self.mp_tauq, 
+        for x in [self.pg_saxs, self.pg_intt, self.mp_tauq,
                   self.mp_g2, self.mp_saxs, self.mp_stab]:
             x.clear()
         self.le_bkg_fname.clear()
@@ -888,9 +849,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         bounds = bounds.tolist()
         return bounds, fit_flag, fit_func
 
-    def check_status(self, show_msg=True, min_state=2):
-        pass
-
     def update_saxs2d_range(self, flag=True):
         if not flag:
             vmin = self.pg_saxs.levelMin
@@ -909,7 +867,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def clear_target_selection(self):
         self.list_view_target.clearSelection()
-        # self.list_view_target.repaint()
 
     def update_g2_fitting_function(self):
         idx = self.g2_fitting_function.currentIndex()
@@ -954,29 +911,14 @@ def setup_windows_icon():
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
 
-def main_gui():
+def main_gui(path=None, label_style=None):
     if os.name == 'nt':
         setup_windows_icon()
     QtWidgets.QApplication.setAttribute(
         QtCore.Qt.AA_EnableHighDpiScaling, True)
-    
-    argparser = argparse.ArgumentParser(
-        description='pyXpcsViewer: a GUI tool for XPCS data analysis')
-    argparser.add_argument('--path', type=str, help='path to the result folder',
-                          default='./')
-    # Positional argument
-    argparser.add_argument("positional_path", nargs="?", default=None,
-                        help="positional path to the result folder")
-    # Determine the directory to monitor
-    argparser.add_argument('--label_style', type=str, help='label style',
-                          default=None)
 
-    args = argparser.parse_args()
-    if args.positional_path is not None:
-        args.path = args.positional_path
-    
     app = QtWidgets.QApplication([])
-    window = XpcsViewer(path=args.path, label_style=args.label_style)
+    window = XpcsViewer(path=path, label_style=label_style)
     app.exec_()
 
 
