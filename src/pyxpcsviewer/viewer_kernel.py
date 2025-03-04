@@ -99,6 +99,18 @@ class ViewerKernel(FileLocator):
         else:
             return False, None, None
 
+    def plot_qmap(self, hdl, rows=None, target=None):
+        xf_list = self.get_xf_list(rows=rows)
+        if xf_list:
+            if target == 'scattering':
+                value = np.log10(xf_list[0].saxs_2d + 1)
+                vmin, vmax = np.percentile(value, (2, 98))
+                hdl.setImage(value, levels=(vmin, vmax))
+            elif target == 'dynamic_roi_map':
+                hdl.setImage(xf_list[0].dqmap)
+            elif target == 'static_roi_map':
+                hdl.setImage(xf_list[0].sqmap)
+
     def plot_tauq_pre(self, hdl=None, rows=None):
         xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
@@ -158,30 +170,19 @@ class ViewerKernel(FileLocator):
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         saxs1d.switch_line_builder(mp_hdl, lb_type)
 
-    def plot_twotime_map(self, hdl, fname=None, **kwargs):
-        if fname is None:
-            fname = self.target[0]
-        config = {'fname': fname, **kwargs} 
-        if self.meta['twotime_map_kwargs'] == config:
-            return
-        else:
-            self.meta['twotime_map_kwargs'] = config
-
-        xfile = self.cache[fname]
-        return twotime.plot_twotime_map(xfile, hdl, **kwargs)
-
-    def plot_twotime(self, hdl, rows=None, **kwargs):
+    def plot_twotime_map(self, hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows, filter_atype='Twotime')
         if len(xf_list) == 0:
             return
-
         xfile = xf_list[0] 
-        config = {'fname': xfile.fname, **kwargs}
-        if self.meta['twotime_kwargs'] == config:
+        return twotime.plot_twotime_map(xfile, hdl, **kwargs)
+
+    def plot_twotime_correlation(self, hdl, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows, filter_atype='Twotime')
+        if len(xf_list) == 0:
             return
-        else:
-            self.meta['twotime_kwargs'] = config
-            return twotime.plot_twotime(xfile, hdl, meta=self.meta, **kwargs)
+        xfile = xf_list[0] 
+        return twotime.plot_twotime_correlation(xfile, hdl, **kwargs)
 
     def plot_intt(self, pg_hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows=rows)
