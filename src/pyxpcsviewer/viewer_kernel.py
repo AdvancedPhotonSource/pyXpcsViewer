@@ -72,14 +72,6 @@ class ViewerKernel(FileLocator):
         self.meta['saxs1d_bkg_fname'] = f
         self.meta['saxs1d_bkg_xf'] = XpcsFile(fname, path)
 
-    def get_g2_data(self, rows=None, **kwargs):
-        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
-        if not xf_list:
-            return False, None, None, None, None
-        else:
-            flag, tel, qd, g2, g2_err = g2mod.get_data(xf_list, **kwargs)
-            return flag, tel, qd, g2, g2_err
-
     def get_pg_tree(self, rows):
         if rows in [None, []]:
             rows = [0]
@@ -102,7 +94,10 @@ class ViewerKernel(FileLocator):
         if xf_list:
             g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
                           **kwargs)
-        return
+            flag, tel, qd, _, _ = g2mod.get_data(xf_list)
+            return flag, tel, qd
+        else:
+            return False, None, None
 
     def plot_tauq_pre(self, hdl=None, rows=None):
         xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
@@ -111,8 +106,8 @@ class ViewerKernel(FileLocator):
 
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
                   fit_flag=None, offset=None, q_range=None):
-        
-        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau') 
+        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau',
+                                   filter_fitted=True) 
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
@@ -120,15 +115,17 @@ class ViewerKernel(FileLocator):
             else:
                 x.fit_tauq(q_range, bounds, fit_flag)
                 result[x.label] = x.get_fitting_info(mode='tauq_fitting')
-        
-        tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset,
-                  plot_type=plot_type)
+
+        if len(result) > 0:
+            tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset,
+                      plot_type=plot_type)
 
         return result
 
     def plot_saxs_2d(self, *args, rows=None,**kwargs):
         xf_list = self.get_xf_list(rows)
-        saxs2d.plot(xf_list, *args, **kwargs)
+        if xf_list:
+            saxs2d.plot(xf_list, *args, **kwargs)
     
     def add_roi(self, hdl, **kwargs):
         xf_list = self.get_xf_list()
@@ -146,9 +143,10 @@ class ViewerKernel(FileLocator):
 
     def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
         xf_list = self.get_xf_list()
-        roi_list = pg_hdl.get_roi_list()
-        saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
-                    roi_list=roi_list, **kwargs)
+        if xf_list:
+            roi_list = pg_hdl.get_roi_list()
+            saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
+                        roi_list=roi_list, **kwargs)
 
     def export_saxs_1d(self, pg_hdl, folder):
         xf_list = self.get_xf_list()
@@ -172,27 +170,25 @@ class ViewerKernel(FileLocator):
         xfile = self.cache[fname]
         return twotime.plot_twotime_map(xfile, hdl, **kwargs)
 
-    def plot_twotime(self, hdl, current_file_index=0, **kwargs):
-        fname = self.target[current_file_index]
-        xfile = self.cache[fname]
-        if "Twotime" not in xfile.atype:
-            logger.error(f"The selected file [{fname}] doesn't have Twotime data")
+    def plot_twotime(self, hdl, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows, filter_atype='Twotime')
+        if len(xf_list) == 0:
             return
-        config = {'fname': fname, **kwargs}
+
+        xfile = xf_list[0] 
+        config = {'fname': xfile.fname, **kwargs}
         if self.meta['twotime_kwargs'] == config:
             return
         else:
             self.meta['twotime_kwargs'] = config
-
-        ret = twotime.plot_twotime(xfile, hdl, meta=self.meta, **kwargs)
-        return ret
+            return twotime.plot_twotime(xfile, hdl, meta=self.meta, **kwargs)
 
     def plot_intt(self, pg_hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows=rows)
         intt.plot(xf_list, pg_hdl, **kwargs)
 
-    def plot_stability(self, mp_hdl, plot_id, **kwargs):
-        xf_obj = self.get_xf_list(rows=[plot_id])[0]
+    def plot_stability(self, mp_hdl, rows=None, **kwargs):
+        xf_obj = self.get_xf_list(rows)[0]
         stability.plot(xf_obj, mp_hdl, **kwargs)
 
     def submit_job(self, *args, **kwargs):

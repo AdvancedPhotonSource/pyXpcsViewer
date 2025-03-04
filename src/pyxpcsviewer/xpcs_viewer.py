@@ -11,6 +11,7 @@ import shutil
 import logging
 from pyqtgraph.Qt import QtCore
 import argparse
+import traceback
 
 
 format = logging.Formatter('%(asctime)s %(message)s')
@@ -52,6 +53,23 @@ tab_mapping = {
 }
 
 
+def create_param_tree(data_dict):
+         """Convert a dictionary into PyQtGraph's ParameterTree format."""
+         params = []
+         for key, value in data_dict.items():
+             if isinstance(value, dict):  # If value is a nested dictionary
+                 params.append({'name': key, 'type': 'group', 'children': create_param_tree(value)})
+             elif isinstance(value, (int, float, np.number)):  # Numeric types
+                 params.append({'name': key, 'type': 'float', 'value': float(value)})
+             elif isinstance(value, str):  # String types
+                 params.append({'name': key, 'type': 'str', 'value': value})
+             elif isinstance(value, np.ndarray):  # Numpy arrays
+                 params.append({'name': key, 'type': 'text', 'value': str(value.tolist())})
+             else:  # Default fallback
+                 params.append({'name': key, 'type': 'text', 'value': str(value)})
+         return params
+
+
 class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def __init__(self, path=None, label_style=None):
         super(XpcsViewer, self).__init__()
@@ -63,7 +81,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tabWidget.setCurrentIndex(self.tab_id)
 
         self.plot_kwargs_record = {}
-        for _, v in self.tab_mapping.items():
+        for _, v in tab_mapping.items():
             self.plot_kwargs_record[v] = {}
 
         self.thread_pool = QtCore.QThreadPool()
@@ -86,10 +104,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.start_wd = os.path.abspath(self.start_wd)
         logger.info('Start up directory is [{}]'.format(self.start_wd))
 
+        self.pushButton_plot_saxs_2d.clicked.connect(self.plot_saxs_2d)
         self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
-        self.tabWidget.currentChanged.connect(self.init_tab)
-        self.list_view_target.clicked.connect(self.update_selection)
+        self.tabWidget.currentChanged.connect(self.update_plot)
+        self.list_view_target.clicked.connect(self.update_plot)
 
         self.mp_2t_hdls = None
         self.init_twotime_plot_handler()
@@ -172,25 +191,27 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         selected_row = [x.row() for x in selected_index]
         # the selected index is ordered;
         selected_row.sort()
-        return (selected_row, self.vk.target.timestamp)
+        return selected_row
 
-    def update_selection(self):
+    def update_plot(self):
         idx = self.tabWidget.currentIndex()
-        tab_name = self.tab_mapping[idx]
+        tab_name = tab_mapping[idx]
         func = getattr(self, 'plot_' + tab_name)
         try:
             kwargs = func(dryrun=True)
+            kwargs['target_timestamp'] = self.vk.timestamp
             if self.plot_kwargs_record[tab_name] != kwargs:
-                func(dryrun=False, **kwargs)
+                func(dryrun=False)
                 self.plot_kwargs_record[tab_name] = kwargs
         except Exception as e:
             logger.error(f'update selection in [{tab_name}] failed')
             logger.error(e)
+            traceback.print_exc()
 
     def init_tab(self):
         new_tab_id = self.tabWidget.currentIndex()
-        tab_name = self.tab_mapping[new_tab_id]
-        if tab_name in ['diffusion', 'twotime', 'average', 'g2']:
+        tab_name = tab_mapping[new_tab_id]
+        if tab_name in ['twotime', 'average']:
             function = getattr(self, 'init_' + tab_name)
             try:
                 function()
@@ -198,29 +219,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 logger.error('init %s failed', tab_name)
                 logger.error(e)
 
-    def plot_metadata(self):
-        selected_index = self.list_view_target.selectedIndexes()
-        if len(selected_index) == 0:
-            selected_row = [0]
-        else:
-            selected_row = [selected_index[0].row()]
+    def plot_metadata(self, dryrun=False):
+        kwargs = {
+            'rows': self.get_selected_rows()
+        }
+        if dryrun:
+            return kwargs
 
-        msg = self.vk.get_xf_list(rows=selected_row)[0].get_hdf_info()
-        def create_param_tree(data_dict):
-            """Convert a dictionary into PyQtGraph's ParameterTree format."""
-            params = []
-            for key, value in data_dict.items():
-                if isinstance(value, dict):  # If value is a nested dictionary
-                    params.append({'name': key, 'type': 'group', 'children': create_param_tree(value)})
-                elif isinstance(value, (int, float, np.number)):  # Numeric types
-                    params.append({'name': key, 'type': 'float', 'value': float(value)})
-                elif isinstance(value, str):  # String types
-                    params.append({'name': key, 'type': 'str', 'value': value})
-                elif isinstance(value, np.ndarray):  # Numpy arrays
-                    params.append({'name': key, 'type': 'text', 'value': str(value.tolist())})
-                else:  # Default fallback
-                    params.append({'name': key, 'type': 'text', 'value': str(value)})
-            return params
+        msg = self.vk.get_xf_list(**kwargs)[0].get_hdf_info()
         hdf_info_data = create_param_tree(msg)
         self.hdf_params = Parameter.create(name="Settings", type="group",
                                        children=hdf_info_data)
@@ -257,7 +263,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         self.vk.add_roi(self.pg_saxs, **kwargs)
 
-    def plot_saxs_1d(self):
+    def plot_saxs_1d(self, dryrun=False):
         kwargs = {
             'plot_type': self.cb_saxs_type.currentIndex(),
             'plot_offset': self.sb_saxs_offset.value(),
@@ -279,8 +285,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('check qmin and qmax')
             return
 
-        if kwargs != self.plot_kwargs_record['saxs_1d']:
-            self.plot_kwargs_record['saxs_1d'] = kwargs
+        if dryrun:
+            return kwargs
+        else:
             self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs.hdl, **kwargs)
             self.mp_saxs.repaint()
             # adjust the line behavior
@@ -347,24 +354,21 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_2t.view.setLabel('bottom', 't1', units='s')
 
         self.mp_2t.sigTimeChanged.connect(
-            lambda x: self.init_twotime(map_only=True, highlight_dqbin=x+1))
+            lambda x: self.init_twotime(highlight_dqbin=x+1))
     
     def pick_twotime_index(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.pos()
             x, y = int(pos.x()), int(pos.y())
-            dq_bin = self.init_twotime(map_only=True, highlight_xy=(x, y))
+            dq_bin = self.init_twotime(highlight_xy=(x, y))
             if dq_bin is not None and dq_bin != np.nan:
                 if self.mp_2t_hdls['tt'].image is not None:
                     self.mp_2t_hdls['tt'].setCurrentIndex(int(dq_bin) - 1)
         event.accept()  # Mark the event as handled
 
-    def init_twotime(self, map_only=False, highlight_xy=None, highlight_dqbin=None):
-        if not self.check_status():
-            return
+    def init_twotime(self, highlight_xy=None, highlight_dqbin=None):
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
-
         kwargs = {
             'scale': self.cb_twotime_type.currentText(),
             'auto_rotate': self.twotime_autorotate.isChecked(),
@@ -372,38 +376,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'highlight_xy': highlight_xy,
             'highlight_dqbin': highlight_dqbin
         }
+        self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
+        return
 
-        dq_bin = self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
-        if not map_only:
-            self.plot_twotime()
-        return dq_bin
-
-    def plot_twotime(self):
-        """
-        plot_twotime reads the parameters from the gui and plot the
-        corresponding twotime;
-        :return:  None
-        """
-        if not self.check_status():
-            return
-
-        rows = self.get_selected_rows()
-        file_index = 0
-        if len(rows) > 0:
-            file_index = rows[0]
-
+    def plot_twotime(self, dryrun=False):
         kwargs = {
-            # if nothing is selected, currentRow = -1; then plot 0th row;
-            # the model base listwidget doesn't have currentRow method
-            # 'current_file_index': max(0, self.list_view_target.currentRow()),
-            'current_file_index': file_index,
-            # 'plot_index': self.twotime_q_index.value(),
+            'rows': self.get_selected_rows(),
             'cmap': self.cb_twotime_cmap.currentText(),
             'vmin': self.c2_min.value(),
             'vmax': self.c2_max.value(),
             'show_box': self.twotime_showbox.isChecked(),
             'correct_diag': self.twotime_correct_diag.isChecked(),
         }
+        if dryrun: return kwargs
+        self.init_twotime()
         self.vk.plot_twotime(self.mp_2t_hdls, **kwargs)
 
     def edit_label(self):
@@ -413,15 +399,19 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree = self.vk.get_pg_tree(rows)
         self.tree.show()
 
-    def plot_stability_iq(self):
+    def plot_stability(self, dryrun=False):
         kwargs = {
             'plot_type': self.cb_stab_type.currentIndex(),
             'plot_offset': self.sb_stab_offset.value(),
-            'plot_norm': self.cb_stab_norm.currentIndex()
+            'plot_norm': self.cb_stab_norm.currentIndex(),
+            'rows': self.get_selected_rows()
         }
-        self.vk.plot_stability(self.mp_stab.hdl, plot_id, **kwargs)
+        if dryrun:
+            return kwargs
+        else:
+            self.vk.plot_stability(self.mp_stab.hdl, **kwargs)
 
-    def plot_intensity_t(self):
+    def plot_intensity_t(self, dryrun=False):
         kwargs = {
             # 'max_points': self.sb_intt_max.value(),
             'sampling': max(1, self.sb_intt_sampling.value()),
@@ -429,14 +419,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             'rows': self.get_selected_rows(),
             'xlabel': self.intt_xlabel.currentText()
         }
-        if kwargs != self.plot_kwargs_record['intt']:
+        if dryrun:
+            return kwargs
+        else:
             self.vk.plot_intt(self.pg_intt, **kwargs)
 
     def init_diffusion(self):
         self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
-    def plot_tauq(self):
-        tab_id = self.tabWidget.currentIndex()
+    def plot_diffusion(self, dryrun=False):
         keys = [self.tauq_amin, self.tauq_bmin,
                 self.tauq_amax, self.tauq_bmax]
         bounds = np.array([float(x.text()) for x in keys]).reshape(2, 2)
@@ -451,20 +442,21 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         q_range = [float(x.text()) for x in tauq]
 
         kwargs = {
-            'bounds': bounds,
+            'bounds': bounds.tolist(),
             'fit_flag': fit_flag,
             'offset': self.sb_tauq_offset.value(),
             'rows': self.get_selected_rows(),
             'q_range': q_range,
             'plot_type': self.cb_tauq_type.currentIndex()
         }
-
-        msg = self.vk.plot_tauq(hdl=self.mp_tauq.hdl, **kwargs)
-        self.mp_tauq.parent().repaint()
-
-        self.tauq_msg.clear()
-        self.tauq_msg.setData(msg)
-        self.tauq_msg.parent().repaint()
+        if dryrun:
+            return kwargs
+        else:
+            msg = self.vk.plot_tauq(hdl=self.mp_tauq.hdl, **kwargs)
+            self.mp_tauq.parent().repaint()
+            self.tauq_msg.clear()
+            self.tauq_msg.setData(msg)
+            self.tauq_msg.parent().repaint()
     
     def select_bkgfile(self):
         path = self.work_dir.text()
@@ -628,8 +620,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree = worker.get_pg_tree()
         self.tree.show()
 
-    def init_g2(self):
-        flag, tel, qd, _, _ = self.vk.get_g2_data()
+    def init_g2(self, flag, tel, qd):
         if not flag:
             logger.error('g2 data is not consistent or not multitau analysis. abort')
             return
@@ -655,7 +646,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if qmax < np.min(qd) or qmax < self.g2_qmin.value():
             self.g2_qmin.setValue(np.max(qd) * 1.1)
 
-    def plot_g2(self):
+    def plot_g2(self, dryrun=False):
         p = self.check_g2_number()
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
 
@@ -681,16 +672,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage('nothing to fit, really?', 1000)
             return
 
-        self.pushButton_4.setDisabled(True)
-        self.pushButton_4.setText('plotting')
-
-        try:
-            self.vk.plot_g2(handler=self.mp_g2, **kwargs)
-        except ZeroDivisionError:
-            self.statusbar.showMessage('check range', 1000)
-
-        self.pushButton_4.setEnabled(True)
-        self.pushButton_4.setText('plot')
+        if dryrun:
+            return kwargs
+        else:
+            self.pushButton_4.setDisabled(True)
+            self.pushButton_4.setText('plotting')
+            try:
+                flag, tel, qd = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+                self.init_g2(flag, tel, qd)
+            except ZeroDivisionError:
+                self.statusbar.showMessage('check range', 1000)
+            self.pushButton_4.setEnabled(True)
+            self.pushButton_4.setText('plot')
+            if kwargs['show_fit']:
+                self.init_diffusion()
 
     def export_g2(self):
         self.vk.export_g2()
@@ -767,18 +762,19 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.list_view_source.clearSelection()
         self.update_box(self.vk.target, mode='target')
         tab_id = self.tabWidget.currentIndex()
-        if self.tab_mapping[tab_id] == 'average':
+        if tab_mapping[tab_id] == 'average':
             self.init_average()
-        elif self.tab_mapping[tab_id] == 'saxs2d':
-            self.init_tab()
+        else:
+            self.update_plot()
 
     def reorder_target(self, direction='up'):
         rows = self.get_selected_rows()
         if len(rows) != 1 or len(self.vk.target) <= 1:
             return
-        self.vk.reorder_target(row[0], direction)
+        idx = self.vk.reorder_target(rows[0], direction)
         self.list_view_target.setCurrentIndex(idx)
         self.list_view_target.repaint()
+        self.update_plot()
         return
 
     def remove_target(self):
@@ -794,7 +790,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # if all files are removed; then go to state 1
         if self.vk.target in [[], None] or len(self.vk.target) == 0:
             self.reset_gui()
-
         self.update_box(self.vk.target, mode='target')
 
     def reset_gui(self):
@@ -880,6 +875,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if fit_func == 'single':
             fit_flag = fit_flag[0:4]
             bounds = bounds[:, 0:4]
+        bounds = bounds.tolist()
         return bounds, fit_flag, fit_func
 
     def check_status(self, show_msg=True, min_state=2):

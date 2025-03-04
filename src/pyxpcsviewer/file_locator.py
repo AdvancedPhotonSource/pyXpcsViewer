@@ -40,7 +40,7 @@ class FileLocator(object):
         self.source.clear()
         self.source_search.clear()
 
-    def get_xf_list(self, rows=None, filter_atype=None):
+    def get_xf_list(self, rows=None, filter_atype=None, filter_fitted=False):
         """
         get the cached xpcs_file list;
         :param rows: a list of index to select; if None is given, then use
@@ -49,8 +49,7 @@ class FileLocator(object):
         if not rows:
             selected = list(range(len(self.target)))
         else:
-            selected, timestamp = rows
-            assert timestamp == self.timestamp, 'timestamp does not match'
+            selected = rows
 
         ret = []
         for n in selected:
@@ -59,6 +58,8 @@ class FileLocator(object):
                 xf_obj = create_xpcs_dataset(full_fname)
                 self.cache[full_fname] = xf_obj
             xf_obj = self.cache[full_fname]
+            if xf_obj.fit_summary is None and filter_fitted:
+                continue
             if filter_atype is None:
                 ret.append(xf_obj)
             elif filter_atype in xf_obj.atype:
@@ -91,7 +92,7 @@ class FileLocator(object):
             logger.info('type check is disabled. too many files added')
             self.target.extend(alist)
         logger.info('length of target = %d' % len(self.target))
-        self.timestamp = datetime.datetime.now() 
+        self.timestamp = str(datetime.datetime.now())
         return
 
     def clear_target(self):
@@ -105,7 +106,7 @@ class FileLocator(object):
             self.cache.pop(os.path.join(self.path, x), None)
         if not self.target:
             self.clear_target()
-        self.timestamp = datetime.datetime.now()
+        self.timestamp = str(datetime.datetime.now())
 
     def reorder_target(self, row, direction='up'):
         size = len(self.target)
@@ -118,7 +119,7 @@ class FileLocator(object):
         pos = row - 1 if direction == 'up' else row + 1
         self.target.insert(pos, item)
         idx = self.target.index(pos)
-        self.timestamp = datetime.datetime.now()
+        self.timestamp = str(datetime.datetime.now())
         return idx
 
     def search(self, val, filter_type='prefix'):

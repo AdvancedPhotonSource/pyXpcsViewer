@@ -364,7 +364,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -561,7 +561,7 @@
              </widget>
             </item>
             <item row="0" column="10">
-             <widget class="QPushButton" name="pushButton_5">
+             <widget class="QPushButton" name="pushButton_plot_saxs_2d">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1431,8 +1431,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1122</width>
-              <height>717</height>
+              <width>98</width>
+              <height>34</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -3277,7 +3277,7 @@
   <tabstop>btn_down</tabstop>
   <tabstop>cb_saxs2D_type</tabstop>
   <tabstop>saxs2d_rotate</tabstop>
-  <tabstop>pushButton_5</tabstop>
+  <tabstop>pushButton_plot_saxs_2d</tabstop>
   <tabstop>cb_saxs_type</tabstop>
   <tabstop>saxs1d_sampling</tabstop>
   <tabstop>sb_saxs_offset</tabstop>
@@ -3456,7 +3456,7 @@
   <connection>
    <sender>cb_saxs2D_type</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_5</receiver>
+   <receiver>pushButton_plot_saxs_2d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3466,22 +3466,6 @@
     <hint type="destinationlabel">
      <x>1485</x>
      <y>858</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_8</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_tauq()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>523</x>
-     <y>943</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>446</x>
-     <y>854</y>
     </hint>
    </hints>
   </connection>
@@ -3536,7 +3520,7 @@
   <connection>
    <sender>cb_saxs2D_cmap</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>pushButton_5</receiver>
+   <receiver>pushButton_plot_saxs_2d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3584,7 +3568,7 @@
   <connection>
    <sender>saxs2d_rotate</sender>
    <signal>stateChanged(int)</signal>
-   <receiver>pushButton_5</receiver>
+   <receiver>pushButton_plot_saxs_2d</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
