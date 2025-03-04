@@ -30,21 +30,11 @@ class ViewerKernel(FileLocator):
             'saxs1d_bkg_fname': None,
             'saxs1d_bkg_xf': None,
 
-            # twotime
-            'twotime_fname': None,
-            'twotime_dqmap': None,
-            'twotime_ready': False,
-            'twotime_map_kwargs': None,
-            'twotime_kwargs': None,
             # avg
             'avg_file_list': None,
             'avg_intt_minmax': None,
             'avg_g2_avg': None,
             # g2
-            'g2_num_points': None,
-            'g2_data': None,
-            'g2_plot_condition': tuple([None, None, None]),
-            'g2_fit_val': {},
         }
         return
 
@@ -52,20 +42,6 @@ class ViewerKernel(FileLocator):
         self.clear_target()
         self.reset_meta()
 
-    def show_message(self, msg):
-        if msg in [None, [None]]:
-            return
-
-        if isinstance(msg, list):
-            for t in msg:
-                logger.info(t)
-            msg = '\n'.join(msg)
-        else:
-            logger.info(msg)
-
-        if self.statusbar is not None:
-            self.statusbar.showMessage(msg, 1500)
-    
     def select_bkgfile(self, f):
         fname = os.path.basename(f)
         path = os.path.dirname(f)
@@ -77,7 +53,7 @@ class ViewerKernel(FileLocator):
             rows = [0]
         xfile = self.cache[self.target[rows[0]]]
         return xfile.get_pg_tree()
-    
+
     def get_fitting_tree(self, rows):
         xf_list = self.get_xf_list(rows, filter_atype='Multitau')
         result = {}
@@ -119,7 +95,7 @@ class ViewerKernel(FileLocator):
     def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
                   fit_flag=None, offset=None, q_range=None):
         xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau',
-                                   filter_fitted=True) 
+                                   filter_fitted=True)
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
@@ -138,7 +114,7 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(rows)
         if xf_list:
             saxs2d.plot(xf_list, *args, **kwargs)
-    
+
     def add_roi(self, hdl, **kwargs):
         xf_list = self.get_xf_list()
         cen = (xf_list[0].bcx, xf_list[0].bcy)
@@ -166,7 +142,7 @@ class ViewerKernel(FileLocator):
         for xf in xf_list:
             xf.export_saxs1d(roi_list, folder)
         return
-    
+
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         saxs1d.switch_line_builder(mp_hdl, lb_type)
 
@@ -174,14 +150,14 @@ class ViewerKernel(FileLocator):
         xf_list = self.get_xf_list(rows, filter_atype='Twotime')
         if len(xf_list) == 0:
             return
-        xfile = xf_list[0] 
+        xfile = xf_list[0]
         return twotime.plot_twotime_map(xfile, hdl, **kwargs)
 
     def plot_twotime_correlation(self, hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows, filter_atype='Twotime')
         if len(xf_list) == 0:
             return
-        xfile = xf_list[0] 
+        xfile = xf_list[0]
         return twotime.plot_twotime_correlation(xfile, hdl, **kwargs)
 
     def plot_intt(self, pg_hdl, rows=None, **kwargs):
@@ -229,9 +205,9 @@ class ViewerKernel(FileLocator):
         record[0] += 1
 
         return
-    
+
     def export_g2(self):
-       pass 
+       pass
 
 
 if __name__ == "__main__":
