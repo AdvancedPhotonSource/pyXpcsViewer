@@ -42,11 +42,10 @@ class ViewerKernel(FileLocator):
         self.clear_target()
         self.reset_meta()
 
-    def select_bkgfile(self, f):
-        fname = os.path.basename(f)
-        path = os.path.dirname(f)
-        self.meta['saxs1d_bkg_fname'] = f
-        self.meta['saxs1d_bkg_xf'] = XpcsFile(fname, path)
+    def select_bkgfile(self, fname):
+        base_fname = os.path.basename(fname)
+        self.meta['saxs1d_bkg_fname'] = base_fname
+        self.meta['saxs1d_bkg_xf'] = XpcsFile(fname)
 
     def get_pg_tree(self, rows):
         if rows in [None, []]:
@@ -179,7 +178,6 @@ class ViewerKernel(FileLocator):
         self.avg_worker.append(worker)
         logger.info('create average job, ID = %s', worker.jid)
         self.avg_jid += 1
-
         self.target.clear()
         return
 

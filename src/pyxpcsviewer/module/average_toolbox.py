@@ -165,7 +165,7 @@ class AverageToolbox(QtCore.QRunnable):
 
                 fname = self.model[m]
                 try:
-                    xf = XF(fname, cwd=self.work_dir, fields=fields)
+                    xf = XF(os.path.join(self.work_dir, fname), fields=fields)
                     flag, val = validate_g2_baseline(xf.g2, avg_qindex)
                     self.baseline[self.ptr] = val
                     self.ptr += 1
@@ -306,7 +306,7 @@ def do_average(flist, work_dir=None, save_path=None, avg_window=3,
     for m in trange(tot_num):
         fname = flist[m]
         try:
-            xf = XF(fname, cwd=work_dir, fields=fields)
+            xf = XF(os.path.join(work_dir, fname), fields=fields)
             flag, val = validate_g2_baseline(xf.g2, avg_qindex)
             baseline[m] = val
         except Exception as ec:
