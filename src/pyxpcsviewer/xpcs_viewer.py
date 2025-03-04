@@ -47,9 +47,9 @@ tab_mapping = {
     4: "g2",
     5: "diffusion",
     6: "twotime",
-    7: "average",
-    8: "metadata",
-    9: "log",
+    7: "qmap",
+    8: "average",
+    9: "metadata",
 }
 
 
@@ -104,8 +104,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.start_wd = os.path.abspath(self.start_wd)
         logger.info('Start up directory is [{}]'.format(self.start_wd))
 
-        self.pushButton_plot_saxs_2d.clicked.connect(self.plot_saxs_2d)
-        self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
+        self.pushButton_plot_saxs2d.clicked.connect(self.plot_saxs_2d)
+        self.pushButton_plot_saxs1d.clicked.connect(self.plot_saxs_1d)
+        self.pushButton_plot_stability.clicked.connect(self.plot_stability)
+        self.pushButton_plot_intt.clicked.connect(self.plot_intensity_t)
+        # self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.update_plot)
         self.list_view_target.clicked.connect(self.update_plot)
@@ -114,11 +117,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.init_twotime_plot_handler()
         self.twotime_kwargs = None
 
-        self.cb_twotime_type.currentIndexChanged.connect(self.init_twotime)
-        self.cb_twotime_saxs_cmap.currentIndexChanged.connect(
-            self.init_twotime)
-        self.twotime_autorotate.stateChanged.connect(self.init_twotime)
-        self.twotime_autocrop.stateChanged.connect(self.init_twotime)
         self.avg_job_pop.clicked.connect(self.remove_avg_job)
         self.btn_submit_job.clicked.connect(self.submit_job)
         self.btn_start_avg_job.clicked.connect(self.start_avg_job)
@@ -134,7 +132,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
-        self.load_default_setting()
         self.btn_deselect.clicked.connect(self.clear_target_selection)
         self.list_view_target.doubleClicked.connect(self.edit_label)
 
@@ -143,9 +140,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
         )
-        # self.btn_g2_export.clicked.connect(self.export_g2)
-        # disable browse function; it freezes on linux workstation;
-        # self.pushButton.setEnabled(False)
         self.btn_up.clicked.connect(lambda: self.reorder_target('up'))
         self.btn_down.clicked.connect(lambda: self.reorder_target('down'))
 
@@ -153,9 +147,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_export_saxs1d.clicked.connect(self.saxs1d_export)
 
         # saxs2d roi
-        self.btn_saxs2d_roi_add.clicked.connect(self.saxs2d_roi_add)
-
+        # self.btn_saxs2d_roi_add.clicked.connect(self.saxs2d_roi_add)
+        self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
         self.update_g2_fitting_function()
+
+        self.load_default_setting()
         self.show()
 
     def load_default_setting(self):
@@ -196,6 +192,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def update_plot(self):
         idx = self.tabWidget.currentIndex()
         tab_name = tab_mapping[idx]
+        if tab_name == 'average':
+            return
         func = getattr(self, 'plot_' + tab_name)
         try:
             kwargs = func(dryrun=True)
@@ -354,43 +352,58 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_2t.view.setLabel('bottom', 't1', units='s')
 
         self.mp_2t.sigTimeChanged.connect(
-            lambda x: self.init_twotime(highlight_dqbin=x+1))
+            lambda x: self.plot_twotime_map(highlight_dqbin=x+1))
     
     def pick_twotime_index(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.pos()
             x, y = int(pos.x()), int(pos.y())
-            dq_bin = self.init_twotime(highlight_xy=(x, y))
+            dq_bin = self.plot_twotime_map(highlight_xy=(x, y))
             if dq_bin is not None and dq_bin != np.nan:
                 if self.mp_2t_hdls['tt'].image is not None:
                     self.mp_2t_hdls['tt'].setCurrentIndex(int(dq_bin) - 1)
         event.accept()  # Mark the event as handled
 
-    def init_twotime(self, highlight_xy=None, highlight_dqbin=None):
+    def plot_qmap(self, dryrun=False):
+        kwargs = {
+            'rows': self.get_selected_rows(),
+            'target': self.comboBox_qmap_target.currentText()
+        }
+        if dryrun:
+            return kwargs
+        self.vk.plot_qmap(self.pg_qmap, **kwargs)
+    
+    def plot_twotime(self, dryrun=False):
+        kwargs = {'rows': self.get_selected_rows()}
+        if dryrun:
+            return kwargs
+        self.plot_twotime_map()
+        self.plot_twotime_correlation()
+
+    def plot_twotime_map(self, dryrun=False, highlight_xy=None, 
+                         highlight_dqbin=None):
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
         kwargs = {
-            'scale': self.cb_twotime_type.currentText(),
-            'auto_rotate': self.twotime_autorotate.isChecked(),
             'auto_crop': self.twotime_autocrop.isChecked(),
             'highlight_xy': highlight_xy,
-            'highlight_dqbin': highlight_dqbin
+            'highlight_dqbin': highlight_dqbin,
+            'rows': self.get_selected_rows(),
         }
-        self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
-        return
+        if dryrun:
+            return kwargs
+        return self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
 
-    def plot_twotime(self, dryrun=False):
+    def plot_twotime_correlation(self, dryrun=False):
         kwargs = {
             'rows': self.get_selected_rows(),
             'cmap': self.cb_twotime_cmap.currentText(),
             'vmin': self.c2_min.value(),
             'vmax': self.c2_max.value(),
-            'show_box': self.twotime_showbox.isChecked(),
             'correct_diag': self.twotime_correct_diag.isChecked(),
         }
         if dryrun: return kwargs
-        self.init_twotime()
-        self.vk.plot_twotime(self.mp_2t_hdls, **kwargs)
+        self.vk.plot_twotime_correlation(self.mp_2t_hdls, **kwargs)
 
     def edit_label(self):
         if not self.check_status():
