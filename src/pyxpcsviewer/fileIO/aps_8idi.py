@@ -18,6 +18,8 @@ key = {
     "static_num_pts": "/xpcs/qmap/static_num_pts",
     "dynamic_num_pts": "/xpcs/qmap/dynamic_num_pts",
     "start_time": "/entry/start_time",
+    "map_names": "/xpcs/qmap/map_names",
+    "map_units": "/xpcs/qmap/map_units",
 
     # multitau related
     "Int_t": "/xpcs/spatial_mean/intensity_vs_time",
