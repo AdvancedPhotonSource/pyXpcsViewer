@@ -11,6 +11,7 @@ class QMap:
         self.load_dataset()
         self.extent = self.get_detector_extent()
         self.qmap, self.qmap_units = self.compute_qmap()
+        self.qbin_labels = self.create_qbin_labels()
     
     def load_dataset(self):
         info = {}
@@ -19,10 +20,12 @@ class QMap:
                         "dplist", "splist", "bcx", "bcy", "X_energy",
                         "static_index_mapping", "dynamic_index_mapping",
                         "pixel_size", "det_dist", "dynamic_num_pts",
-                        "static_num_pts"):
+                        "static_num_pts", "map_names", "map_units"):
                 path = key_map['nexus'][key]
                 info[key] = f[path][()]
         info['k0'] = 2 * np.pi / (12.398 / info['X_energy'])
+        info["map_names"] = [item.decode("utf-8") for item in info["map_names"]]
+        info["map_units"] = [item.decode("utf-8") for item in info["map_units"]]
         self.__dict__.update(info)
         self.is_loaded = True
         return info
@@ -43,7 +46,49 @@ class QMap:
 
         extent = (qx_min, qx_max, qy_min, qy_max)
         return extent
+    
+    def create_qbin_labels(self):
+        if self.map_names == ['q', 'phi']:
+            label_0 = [f"q={x:.5f} {self.map_units[0]}" for x in self.dqlist]
+            label_1 = [f"φ={y:.1f} {self.map_units[1]}" for y in self.dplist]
+        elif self.map_names == ['x', 'y']:
+            label_0 = [f"x={x:.1f} {self.map_units[0]}" for x in self.dqlist]
+            label_1 = [f"x={y:.1f} {self.map_units[1]}" for y in self.dplist]
 
+        if self.dynamic_num_pts[1] == 1:
+            return label_0
+        else:
+            combined_list = []
+            for item_a in label_0:
+                for item_b in label_1:
+                    combined_list.append(f"{item_a}, {item_b}")
+            return combined_list
+    
+    def get_qbin_label(self, qbin: int):
+        qbin_absolute = self.dynamic_index_mapping[qbin - 1]
+        if qbin_absolute < 0 or qbin_absolute > len(self.qbin_labels):
+            return 'invalid qbin'
+        else:
+            return self.qbin_labels[qbin_absolute]
+    
+    def get_qbin_in_qrange(self, qrange, zero_based=True):
+        assert self.map_names == ['q', 'phi'], "only q-phi map is supported"
+        qlist = np.tile(self.dqlist[:, np.newaxis], self.dynamic_num_pts[1])
+        if qrange is None:
+            qselected = np.ones_like(qlist, dtype=bool)
+        else:
+            qselected = (qlist >= qrange[0]) * (qlist <= qrange[1])
+        qselected = qselected.flatten()
+
+        qbin_valid = []
+        for qbin in self.dynamic_index_mapping:
+            if qselected[qbin]:
+                qbin_valid.append(qbin + 1)
+        qbin_valid = np.array(qbin_valid)
+        if zero_based:
+            qbin_valid -= 1
+        return qbin_valid
+    
     def compute_qmap(self):
         shape = self.mask.shape
         v = np.arange(shape[0], dtype=np.uint32) - self.bcy
