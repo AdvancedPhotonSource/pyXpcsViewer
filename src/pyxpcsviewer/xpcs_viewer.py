@@ -376,7 +376,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def show_dataset(self):
         rows = self.get_selected_rows()
         self.tree = self.vk.get_pg_tree(rows)
-        self.tree.show()
+        if self.tree:
+            self.tree.show()
 
     def plot_stability(self, dryrun=False):
         kwargs = {

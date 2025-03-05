@@ -48,10 +48,11 @@ class ViewerKernel(FileLocator):
         self.meta['saxs1d_bkg_xf'] = XpcsFile(fname)
 
     def get_pg_tree(self, rows):
-        if rows in [None, []]:
-            rows = [0]
-        xfile = self.cache[self.target[rows[0]]]
-        return xfile.get_pg_tree()
+        xf_list = self.get_xf_list(rows)
+        if xf_list:
+            return xf_list[0].get_pg_tree()
+        else:
+            return None
 
     def get_fitting_tree(self, rows):
         xf_list = self.get_xf_list(rows, filter_atype='Multitau')
