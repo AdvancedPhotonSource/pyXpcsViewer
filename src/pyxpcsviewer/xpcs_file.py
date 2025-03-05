@@ -156,7 +156,8 @@ class XpcsFile(object):
             ret['c2_t0'] = ret['t0'] * stride_frame * avg_frame
         if "Multitau" in self.atype:
             # correct g2_err to avoid fitting divergence
-            ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
+            # ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
+            ret['g2_err'] = self.correct_g2_err(ret['g2_err'])
             stride_frame = ret.pop("stride_frame")
             avg_frame = ret.pop("avg_frame")
             t0 = ret['t0'] * stride_frame * avg_frame
@@ -177,7 +178,8 @@ class XpcsFile(object):
         # keys from qmap
         if key in ["sqlist", "dqlist", "dqmap", "sqmap", "mask",
                    "bcx", "bcy", "det_dist", "pixel_size", "X_energy", 
-                   "sphilist", "dphilist", "static_num_pts", "dynamic_num_pts"]:
+                   "splist", "dplist", "static_num_pts", "dynamic_num_pts",
+                   "map_names", "map_units", "get_qbin_label"]:
             return self.qmap.__dict__[key]
         # delayed loading of saxs_2d due to its large size
         elif key == 'saxs_2d':
@@ -192,6 +194,31 @@ class XpcsFile(object):
         
     def get_detector_extent(self):
         return self.qmap.extent
+    
+    def get_qbin_label(self, qbin: int):
+        return self.qmap.get_qbin_label(qbin)
+
+    def get_g2_data(self, qrange=None, trange=None):
+        assert 'Multitau' in self.atype, "only multitau is supported"
+        g2, g2_err = self.g2, self.g2_err
+        # qrange can be None
+        qindex_selected = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
+        g2 = g2[:, qindex_selected]
+        g2_err = g2_err[:, qindex_selected]
+        dq_val = self.dqlist
+        labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
+
+        t_el = self.t_el
+        if trange is not None:
+            t_roi = (t_el >= trange[0]) * (t_el <= trange[1])
+            g2 = g2[t_roi]
+            g2_err = g2_err[t_roi]
+            t_el = t_el[t_roi]
+        if qrange is not None:
+            q_roi = (dq_val >= qrange[0]) * (dq_val <= qrange[1])
+            dq_val = dq_val[q_roi]
+
+        return t_el, dq_val, g2, g2_err, labels
 
     def get_twotime_maps(self):
         dqmap, saxs = self.dqmap, self.saxs_2d
@@ -302,7 +329,7 @@ class XpcsFile(object):
         t_el = self.t_el[t_slice]
         q = self.dqlist[q_slice]
         g2 = self.g2[t_slice, q_slice]
-        sigma = self.g2_err_mod[t_slice, q_slice]
+        sigma = self.g2_err[t_slice, q_slice]
 
         # set the initial guess
         p0 = np.array(bounds).mean(axis=0)

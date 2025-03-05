@@ -64,25 +64,17 @@ def get_data(xf_list, q_range=None, t_range=None):
         if 'Multitau' not in xf.atype:
             return False, None, None, None, None
 
-    tslice = create_slice(xf_list[0].t_el, t_range)
-    qslice = create_slice(xf_list[0].dqlist, q_range)
-
     flag = True
-    tel, qd, g2, g2_err = [], [], [], []
+    tel, g2, dq, g2_err, labels = [], [], [], [], []
     for fc in xf_list:
-        tel.append(fc.t_el[tslice])
-        qd.append(fc.dqlist[qslice])
-        g2.append(fc.g2[tslice, qslice])
-        g2_err.append(fc.g2_err[tslice, qslice])
+        _tel, _dq, _g2, _g2_err, _labels = fc.get_g2_data(qrange=q_range, trange=t_range)
+        tel.append(_tel)
+        dq.append(_dq)
+        g2.append(_g2)
+        g2_err.append(_g2_err)
+        labels.append(_labels)
 
-    t_shape = set([t.shape for t in tel])
-    q_shape = set([q.shape for q in qd])
-    # if len(t_shape) != 1 or len(q_shape) != 1:
-    if len(q_shape) != 1:
-        logger.error('the data files are not consistent in tau or q')
-        flag = False
-
-    return flag, tel, qd, g2, g2_err
+    return flag, tel, dq, g2, g2_err, labels
 
 
 def compute_geometry(g2, plot_type):
@@ -107,70 +99,14 @@ def compute_geometry(g2, plot_type):
     return num_figs, num_lines
 
 
-def matplot_plot(xf_list, mp_hdl=None, q_range=None, t_range=None, num_col=4,
-                 show_label=False, plot_type='multiple', marker_size=3):
-
-    flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
-                                         t_range=t_range)
-
-    num_figs, num_lines = compute_geometry(g2, plot_type)
-
-    if num_figs < num_col:
-        num_col = num_figs
-    num_row = (num_figs + num_col - 1) // num_col
-
-    if mp_hdl is not None:
-        mp_hdl.fig.clear()
-        axes = mp_hdl.subplots(num_row, num_col)
-    else:
-        fig, axes = plt.subplots(num_row, num_col, figsize=(8, 6))
-
-    axes = np.array(axes).ravel()
-
-    for n in range(num_figs):
-        ax = axes[n]
-        for m in range(num_lines):
-            x = tel[m]
-            y = g2[m][:, n]
-            yerr = g2_err[m][:, n]
-            ax.errorbar(x, y, yerr=yerr, fmt='o', markersize=3,
-                        markerfacecolor='none')
-
-            # plot the fitting line if g2 fitting is available
-            q = qd[0][n]
-            fit_x, fit_y = xf_list[m].get_g2_fitting_line(q)
-            if fit_x is not None:
-                ax.plot(fit_x, fit_y)
-
-            # last image
-            if m == num_lines - 1:
-                ax.set_title('Q = %5.4f $\AA^{-1}$' % q)
-                ax.set_xscale('log')
-                ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-                # if there's only one point, do not add title; the title
-                # will be too long.
-                if show_label and n == num_figs - 1:
-                    # if idx >= 1 and num_points < 10:
-                    ax.legend(fontsize=8)
-
-    if mp_hdl is not None:
-        mp_hdl.fig.tight_layout()
-        mp_hdl.draw()
-    else:
-        plt.tight_layout()
-        plt.show()
-
-    return
-
-
 def pg_plot(hdl, xf_list, q_range, t_range, y_range,
             y_auto=False, num_col=4, rows=None,
             offset=0, show_fit=False, show_label=False, bounds=None,
             fit_flag=None, plot_type='multiple', subtract_baseline=True,
             marker_size=5, label_size=4, fit_func='single'):
-    flag, tel, qd, g2, g2_err = get_data(xf_list, q_range=q_range,
-                                         t_range=t_range)
 
+    flag, tel, dq, g2, g2_err, labels = get_data(xf_list, q_range=q_range,
+                                         t_range=t_range)
     num_figs, num_lines = compute_geometry(g2, plot_type)
 
     num_data, num_qval = len(g2), g2[0].shape[1]
@@ -214,7 +150,7 @@ def pg_plot(hdl, xf_list, q_range, t_range, y_range,
             label = None
             if plot_type == 'multiple':
                 ax = axes[n]
-                title = 'q=%.5f Å⁻¹' % qd[0][n]
+                title = labels[m][n] 
                 label = xf_list[m].label
                 if m == 0:
                     ax.setTitle(title)
@@ -223,11 +159,11 @@ def pg_plot(hdl, xf_list, q_range, t_range, y_range,
                 # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
                 title = xf_list[m].label
-                label = 'q=%.5f Å⁻¹' % qd[0][n]
+                # label = labels[m][n] 
                 ax.setTitle(title)
             elif plot_type == 'single-combined':
                 ax = axes[0]
-                label = xf_list[m].label + ' q=%.5f Å⁻¹' % qd[0][n]
+                label = xf_list[m].label + labels[m][n]
 
             ax.setLabel('bottom', 'tau (s)')
             ax.setLabel('left', 'g2')
