@@ -70,7 +70,7 @@ class ViewerKernel(FileLocator):
         if xf_list:
             g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
                           **kwargs)
-            flag, tel, qd, _, _ = g2mod.get_data(xf_list)
+            flag, tel, qd, *unused = g2mod.get_data(xf_list)
             return flag, tel, qd
         else:
             return False, None, None
