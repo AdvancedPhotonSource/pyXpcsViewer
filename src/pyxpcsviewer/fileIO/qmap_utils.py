@@ -89,6 +89,18 @@ class QMap:
             qbin_valid -= 1
         return qbin_valid
     
+    def get_qbinlist_at_qindex(self, qindex, zero_based=True):
+        # qindex is zero based; index of dyanmic_map_dim0
+        assert self.map_names == ['q', 'phi'], "only q-phi map is supported"
+        qp_idx = np.ones(self.dynamic_num_pts, dtype=int).flatten() * (-1)
+        qp_idx[self.dynamic_index_mapping] = np.arange(len(self.dynamic_index_mapping))
+        qp_column_at_qindex = qp_idx.reshape(self.dynamic_num_pts)[qindex]
+        qbin_list = [int(idx) for idx in qp_column_at_qindex if idx != -1]
+        # if zero_based; it returns the numpy array index in g2[:, xx]
+        if not zero_based:
+            qbin_list = [idx + 1 for idx in qbin_list]
+        return qbin_list
+    
     def compute_qmap(self):
         shape = self.mask.shape
         v = np.arange(shape[0], dtype=np.uint32) - self.bcy

@@ -197,6 +197,9 @@ class XpcsFile(object):
     
     def get_qbin_label(self, qbin: int):
         return self.qmap.get_qbin_label(qbin)
+    
+    def get_qbinlist_at_qindex(self, qindex, zero_based=True):
+        return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
     def get_g2_data(self, qrange=None, trange=None):
         assert 'Multitau' in self.atype, "only multitau is supported"
