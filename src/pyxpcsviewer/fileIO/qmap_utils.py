@@ -138,7 +138,7 @@ class QMap:
         }
         return qmap, qmap_unit
     
-    def reshape_phi_analysis(self, compressed_data, label, mode='saxs_1d'):
+    def reshape_phi_analysis(self, compressed_data_raw, label, mode='saxs_1d'):
         """
         the saxs1d and stability data are compressed. the values of the empty 
         static bins are not saved. this function reshapes the array and fills
@@ -146,10 +146,10 @@ class QMap:
         results;
         """
         assert mode in ('saxs_1d', 'stability')
-        num_samples = compressed_data.size // self.static_index_mapping.size
-        assert num_samples * self.static_index_mapping.size == compressed_data.size
+        num_samples = compressed_data_raw.size // self.static_index_mapping.size
+        assert num_samples * self.static_index_mapping.size == compressed_data_raw.size
         shape = (num_samples, len(self.sqlist), len(self.splist))
-        compressed_data = compressed_data.reshape(num_samples, -1)
+        compressed_data = compressed_data_raw.reshape(num_samples, -1)
 
         if shape[2] == 1:
             labels = [label]
@@ -176,7 +176,8 @@ class QMap:
                 "Iq": saxs1d,
                 "phi": self.splist,
                 "num_lines": shape[2],
-                "labels": labels}
+                "labels": labels,
+                "data_raw": compressed_data_raw}
             return saxs1d_info
 
         elif mode == 'stability':   # saxs1d_segments
