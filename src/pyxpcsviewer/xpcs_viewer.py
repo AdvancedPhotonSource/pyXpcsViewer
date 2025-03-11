@@ -10,7 +10,6 @@ import json
 import shutil
 import logging
 from pyqtgraph.Qt import QtCore
-import argparse
 import traceback
 
 
@@ -138,7 +137,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show()
 
     def load_default_setting(self):
-        # home_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
         if not os.path.isdir(self.home_dir):
             os.mkdir(self.home_dir)
 
@@ -157,9 +155,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 logger.info('set mainwindow to size %s', new_size)
                 self.resize(*new_size)
 
-        # remove joblib cache
-        cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer',
-                                 'joblib/xpcs_viewer')
+        cache_dir = os.path.join(os.path.expanduser('~'), '.pyxpcsviewer',
+                                 'joblib/pyxpcsviewer')
         if os.path.isdir(cache_dir):
             shutil.rmtree(cache_dir)
 

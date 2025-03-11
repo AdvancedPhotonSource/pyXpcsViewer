@@ -9,7 +9,7 @@ from joblib import Memory
 
 
 logger = logging.getLogger(__name__)
-cache_dir = os.path.join(os.path.expanduser('~'), '.xpcs_viewer')
+cache_dir = os.path.join(os.path.expanduser('~'), '.pyxpcsviewer')
 
 memory = Memory(cache_dir, verbose=0)
 @memory.cache
