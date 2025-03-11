@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyxpcsviewer"
+name = "xpcs-viewer"  # Match the PyPI package name
 dynamic = ["version"]
-description = "A python-based interactive tool to visualizate and model XPCS dataset"
+description = "pyXPCSViewer: A python-based interactive tool to visualize and model XPCS dataset"
 readme = "README.rst"
 authors = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
 maintainers = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
