@@ -47,6 +47,7 @@ dependencies = [
 
 [project.scripts]
 pyxpcsviewer = "pyxpcsviewer.cli:main"
+run_viewer = "pyxpcsviewer.cli:main"
 
 [project.optional-dependencies]
 dev = [
