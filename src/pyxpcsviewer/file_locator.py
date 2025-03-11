@@ -89,7 +89,7 @@ class FileLocator(object):
                     self.target.append(fn)
                     self.cache[full_fname] = xf_obj
         else:
-            logger.info('type check is disabled. too many files added')
+            logger.info('preload disabled or too many files added')
             self.target.extend(alist)
         logger.info('length of target = %d' % len(self.target))
         self.timestamp = str(datetime.datetime.now())

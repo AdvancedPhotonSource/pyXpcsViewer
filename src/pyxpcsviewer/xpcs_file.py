@@ -227,7 +227,7 @@ class XpcsFile(object):
         dqmap, saxs = self.dqmap, self.saxs_2d
         return dqmap, saxs
 
-    def get_twotime_c2(self, max_c2_num=-1, max_size=512):
+    def get_twotime_c2(self, max_c2_num=-1, max_size=16384):
         dq_selection = tuple(self.c2_processed_bins.tolist())
         kwargs = (dq_selection, max_c2_num, max_size)
         if self.c2_kwargs == kwargs and self.c2_all_data is not None:

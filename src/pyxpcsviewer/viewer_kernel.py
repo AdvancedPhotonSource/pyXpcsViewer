@@ -172,7 +172,7 @@ class ViewerKernel(FileLocator):
         if len(self.target) <= 0:
             logger.error('no average target is selected')
             return
-        worker = AverageToolbox(work_dir=self.cwd,
+        worker = AverageToolbox(self.path,
                                 flist=self.target,
                                 jid=self.avg_jid)
         worker.setup(*args, **kwargs)

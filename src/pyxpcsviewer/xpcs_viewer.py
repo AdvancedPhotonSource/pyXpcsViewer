@@ -730,11 +730,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 target.append(val)
         if target == []:
             return
-        self.vk.add_target(target)
+
+        tab_id = self.tabWidget.currentIndex()
+        tab_name = tab_mapping[tab_id]
+        preload = tab_name != 'average'
+        self.vk.add_target(target, preload=preload)
         self.list_view_source.clearSelection()
         self.update_box(self.vk.target, mode='target')
-        tab_id = self.tabWidget.currentIndex()
-        if tab_mapping[tab_id] == 'average':
+
+        if tab_name == 'average':
             self.init_average()
         else:
             self.update_plot()

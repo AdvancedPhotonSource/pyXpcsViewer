@@ -57,7 +57,6 @@ class WorkerSignal(QObject):
 
 
 class AverageToolbox(QtCore.QRunnable):
-
     def __init__(self, work_dir=None, flist=['hello'], jid=None) -> None:
         super().__init__()
         self.file_list = flist.copy()
@@ -177,9 +176,9 @@ class AverageToolbox(QtCore.QRunnable):
                 if flag:
                     for key in fields:
                         if key != 'saxs_1d':
-                            data = xf.at(key)
+                            data = xf.__getattr__(key)
                         else:
-                            data = xf.at('saxs_1d')['data_raw']
+                            data = xf.__getattr__('saxs_1d')['data_raw']
                         if result[key] is None:
                             result[key] = data
                             mask[m] = 1
@@ -203,6 +202,12 @@ class AverageToolbox(QtCore.QRunnable):
                     result[key] /= np.sum(mask)
                 if key == 'g2_err':
                     result[key] /= np.sqrt(np.sum(mask))
+                if key == 'saxs_2d':
+                    # saxs_2d needs to be (1, height, width)
+                    saxs_2d = result[key]
+                    if saxs_2d.ndim == 2:
+                        saxs_2d = np.expand_dims(saxs_2d, axis=0)
+                    result[key] = saxs_2d
 
             logger.info('the valid dataset number is %d / %d' % (
                 np.sum(mask), tot_num))
