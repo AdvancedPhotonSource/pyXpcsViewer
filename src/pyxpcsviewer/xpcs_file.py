@@ -7,6 +7,9 @@ from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
 from .module.twotime_utils import get_c2_from_hdf_fast, get_c2_stream
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def single_exp_all(x, a, b, c, d):
@@ -50,27 +53,27 @@ def power_law(x, a, b):
     :param b:
     :return:
     """
-    return a * x ** b
+    return a * x**b
 
 
 def create_id(fname, label_style=None, simplify_flag=True):
     fname = os.path.basename(fname)
     if simplify_flag:
         # 'a0004_t0600_f008000_r00003' to 'a4_t600_f8000_r3' by removing leading zeros
-        fname = re.sub(r'_(\w)0*(\d+)', r'_\1\2', fname)
-        fname = re.sub(r'(_results)?\.hdf$', '', fname)
+        fname = re.sub(r"_(\w)0*(\d+)", r"_\1\2", fname)
+        fname = re.sub(r"(_results)?\.hdf$", "", fname)
 
     if len(fname) < 10 or label_style is None:
         return fname
 
     try:
-        selection = [int(x) for x in label_style.split(',')]
+        selection = [int(x) for x in label_style.split(",")]
         assert len(selection) > 0
     except Exception:
         return fname
 
-    segments = fname.split('_')
-    id_str = '_'.join([segments[i] for i in selection if i < len(segments)])
+    segments = fname.split("_")
+    id_str = "_".join([segments[i] for i in selection if i < len(segments)])
     if len(id_str) == 0:
         id_str = fname
 
@@ -81,9 +84,13 @@ class XpcsFile(object):
     """
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
-    def __init__(self, fname, fields=None, label_style=None):
+
+    def __init__(self, fname, fields=None, label_style=None, qmap_manager=None):
         self.fname = fname
-        self.qmap = get_qmap(self.fname)
+        if qmap_manager is None:
+            self.qmap = get_qmap(self.fname)
+        else:
+            self.qmap = qmap_manager.get_qmap(self.fname)
         self.atype = get_analysis_type(self.fname)
         self.label = self.update_label(label_style)
         payload_dictionary = self.load_data(fields)
@@ -93,9 +100,9 @@ class XpcsFile(object):
         self.c2_all_data = None
         self.c2_kwargs = None
         # label is a short string to describe the file/filename
-        # place holder for self.saxs_2d; 
+        # place holder for self.saxs_2d;
         self.saxs_2d_data = None
-    
+
     def update_label(self, label_style):
         self.label = create_id(self.fname, label_style=label_style)
         return self.label
@@ -135,11 +142,15 @@ class XpcsFile(object):
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
 
         if "Multitau" in self.atype:
-            fields = fields + ["tau", "g2", "g2_err",
-                               "stride_frame", "avg_frame"]
+            fields = fields + ["tau", "g2", "g2_err", "stride_frame", "avg_frame"]
         if "Twotime" in self.atype:
-            fields = fields + ["c2_g2", "c2_g2_segments", "c2_processed_bins",
-                               "c2_stride_frame", "c2_avg_frame"]
+            fields = fields + [
+                "c2_g2",
+                "c2_g2_segments",
+                "c2_processed_bins",
+                "c2_stride_frame",
+                "c2_avg_frame",
+            ]
 
         # append other extra fields, eg "G2", "IP", "IF"
         if isinstance(extra_fields, list):
@@ -148,61 +159,77 @@ class XpcsFile(object):
         # avoid duplicated keys
         fields = list(set(fields))
 
-        ret = get(self.fname, fields, "alias", ftype='nexus')
+        ret = get(self.fname, fields, "alias", ftype="nexus")
 
         if "Twotime" in self.atype:
             stride_frame = ret.pop("c2_stride_frame")
             avg_frame = ret.pop("c2_avg_frame")
-            ret['c2_t0'] = ret['t0'] * stride_frame * avg_frame
+            ret["c2_t0"] = ret["t0"] * stride_frame * avg_frame
         if "Multitau" in self.atype:
             # correct g2_err to avoid fitting divergence
             # ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
-            ret['g2_err'] = self.correct_g2_err(ret['g2_err'])
+            ret["g2_err"] = self.correct_g2_err(ret["g2_err"])
             stride_frame = ret.pop("stride_frame")
             avg_frame = ret.pop("avg_frame")
-            t0 = ret['t0'] * stride_frame * avg_frame
-            ret['g2_t0'] = t0
-            ret['t_el'] = ret['tau'] * t0
+            t0 = ret["t0"] * stride_frame * avg_frame
+            ret["g2_t0"] = t0
+            ret["t_el"] = ret["tau"] * t0
 
-        ret['saxs_1d'] = self.qmap.reshape_phi_analysis(ret['saxs_1d'],
-                                                        self.label,
-                                                        mode='saxs_1d')
-        ret['Iqp'] = self.qmap.reshape_phi_analysis(ret['Iqp'], 
-                                                    self.label,
-                                                    mode='stability')
+        ret["saxs_1d"] = self.qmap.reshape_phi_analysis(
+            ret["saxs_1d"], self.label, mode="saxs_1d"
+        )
+        ret["Iqp"] = self.qmap.reshape_phi_analysis(
+            ret["Iqp"], self.label, mode="stability"
+        )
 
         ret["abs_cross_section_scale"] = 1.0
         return ret
 
     def __getattr__(self, key):
         # keys from qmap
-        if key in ["sqlist", "dqlist", "dqmap", "sqmap", "mask",
-                   "bcx", "bcy", "det_dist", "pixel_size", "X_energy", 
-                   "splist", "dplist", "static_num_pts", "dynamic_num_pts",
-                   "map_names", "map_units", "get_qbin_label"]:
+        if key in [
+            "sqlist",
+            "dqlist",
+            "dqmap",
+            "sqmap",
+            "mask",
+            "bcx",
+            "bcy",
+            "det_dist",
+            "pixel_size",
+            "X_energy",
+            "splist",
+            "dplist",
+            "static_num_pts",
+            "dynamic_num_pts",
+            "map_names",
+            "map_units",
+            "get_qbin_label",
+        ]:
             return self.qmap.__dict__[key]
         # delayed loading of saxs_2d due to its large size
-        elif key == 'saxs_2d':
+        elif key == "saxs_2d":
             if self.saxs_2d_data is None:
-                ret = get(self.fname, ['saxs_2d'], "alias", ftype='nexus')
-                self.saxs_2d_data = ret['saxs_2d']
+                ret = get(self.fname, ["saxs_2d"], "alias", ftype="nexus")
+                self.saxs_2d_data = ret["saxs_2d"]
+                print("load saxs2d", self.fname)
             return self.saxs_2d_data
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
             raise KeyError(f"key [{key}] not found")
-        
+
     def get_detector_extent(self):
         return self.qmap.extent
-    
+
     def get_qbin_label(self, qbin: int):
         return self.qmap.get_qbin_label(qbin)
-    
+
     def get_qbinlist_at_qindex(self, qindex, zero_based=True):
         return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
     def get_g2_data(self, qrange=None, trange=None):
-        assert 'Multitau' in self.atype, "only multitau is supported"
+        assert "Multitau" in self.atype, "only multitau is supported"
         g2, g2_err = self.g2, self.g2_err
         # qrange can be None
         qindex_selected = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
@@ -234,17 +261,19 @@ class XpcsFile(object):
             return self.c2_all_data
         else:
             self.c2_kwargs = kwargs
-            c2_result = get_c2_from_hdf_fast(self.fname,
-                                             dq_selection=dq_selection, 
-                                             max_c2_num=max_c2_num,
-                                             max_size=max_size)
+            c2_result = get_c2_from_hdf_fast(
+                self.fname,
+                dq_selection=dq_selection,
+                max_c2_num=max_c2_num,
+                max_size=max_size,
+            )
             self.c2_all_data = c2_result
-            return c2_result 
-    
+            return c2_result
+
     def get_twotime_stream(self, **kwargs):
         return get_c2_stream(self.fname, **kwargs)
 
-    def get_g2_fitting_line(self, q, tor=1E-6):
+    def get_g2_fitting_line(self, q, tor=1e-6):
         """
         get the fitting line for q, within tor
         """
@@ -276,8 +305,9 @@ class XpcsFile(object):
             for n in range(val.shape[0]):
                 temp = []
                 for m in range(len(prefix)):
-                    temp.append("%s = %f ± %f" % (
-                        prefix[m], val[n, 0, m], val[n, 1, m]))
+                    temp.append(
+                        "%s = %f ± %f" % (prefix[m], val[n, 0, m], val[n, 1, m])
+                    )
                 msg.append(", ".join(temp))
             result["fit_val"] = np.array(msg)
 
@@ -286,15 +316,20 @@ class XpcsFile(object):
                 result = "tauq fitting is not available"
             else:
                 v = self.fit_summary["tauq_fit_val"]
-                result = "a = %e ± %e; b = %f ± %f" % (v[0, 0], v[1, 0],
-                                                       v[0, 1], v[1, 1])
+                result = "a = %e ± %e; b = %f ± %f" % (
+                    v[0, 0],
+                    v[1, 0],
+                    v[0, 1],
+                    v[1, 1],
+                )
         else:
             raise ValueError("mode not supported.")
 
         return result
 
-    def fit_g2(self, q_range=None, t_range=None, bounds=None,
-               fit_flag=None, fit_func="single"):
+    def fit_g2(
+        self, q_range=None, t_range=None, bounds=None, fit_flag=None, fit_func="single"
+    ):
         """
         fit the g2 values using single exponential decay function
         :param q_range: a tuple of q lower bound and upper bound
@@ -307,14 +342,16 @@ class XpcsFile(object):
         """
         assert len(bounds) == 2
         if fit_func == "single":
-            assert len(bounds[0]) == 4, \
-                "for single exp, the shape of bounds must be (2, 4)"
+            assert (
+                len(bounds[0]) == 4
+            ), "for single exp, the shape of bounds must be (2, 4)"
             if fit_flag is None:
                 fit_flag = [True for _ in range(4)]
             func = single_exp_all
         else:
-            assert len(bounds[0]) == 7, \
-                "for single exp, the shape of bounds must be (2, 4)"
+            assert (
+                len(bounds[0]) == 7
+            ), "for single exp, the shape of bounds must be (2, 4)"
             if fit_flag is None:
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
@@ -341,11 +378,13 @@ class XpcsFile(object):
         if fit_func == "double":
             p0[4] = np.sqrt(bounds[0][4] * bounds[1][4])
 
-        fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5,
-                            np.log10(np.max(t_el)) + 0.5, 128)
+        fit_x = np.logspace(
+            np.log10(np.min(t_el)) - 0.5, np.log10(np.max(t_el)) + 0.5, 128
+        )
 
-        fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma,
-                                           bounds, fit_flag, fit_x, p0=p0)
+        fit_line, fit_val = fit_with_fixed(
+            func, t_el, g2, sigma, bounds, fit_flag, fit_x, p0=p0
+        )
 
         self.fit_summary = {
             "fit_func": fit_func,
@@ -356,13 +395,13 @@ class XpcsFile(object):
             "t_range": str(t_range),
             "bounds": bounds,
             "fit_flag": str(fit_flag),
-            "fit_line": fit_line
+            "fit_line": fit_line,
         }
 
         return self.fit_summary
 
     @staticmethod
-    def correct_g2_err(g2_err=None, threshold=1E-6):
+    def correct_g2_err(g2_err=None, threshold=1e-6):
         # correct the err for some data points with really small error, which
         # may cause the fitting to blowup
 
@@ -391,7 +430,7 @@ class XpcsFile(object):
         sigma = self.fit_summary["fit_val"][q_slice, 1, 1]
 
         # filter out those invalid fittings; failed g2 fitting has -1 err
-        valid_idx = (sigma > 0)
+        valid_idx = sigma > 0
 
         if np.sum(valid_idx) == 0:
             self.fit_summary["tauq_success"] = False
@@ -407,11 +446,11 @@ class XpcsFile(object):
 
         # the initial value for typical gel systems
         p0 = [1.0e-7, -2.0]
-        fit_x = np.logspace(np.log10(np.min(x) / 1.1),
-                            np.log10(np.max(x) * 1.1), 128)
+        fit_x = np.logspace(np.log10(np.min(x) / 1.1), np.log10(np.max(x) * 1.1), 128)
 
-        fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds,
-                                           fit_flag, fit_x, p0=p0)
+        fit_line, fit_val = fit_with_fixed(
+            power_law, x, y, sigma, bounds, fit_flag, fit_x, p0=p0
+        )
 
         # fit_line and fit_val are lists with just one element;
         self.fit_summary["tauq_success"] = fit_line[0]["success"]
@@ -422,7 +461,7 @@ class XpcsFile(object):
         self.fit_summary["tauq_fit_val"] = fit_val[0]
 
         return self.fit_summary
-    
+
     def get_roi_data(self, roi_parameter, phi_num=180):
         qmap_all = self.compute_qmap()
         qmap = qmap_all["q"]
@@ -430,7 +469,7 @@ class XpcsFile(object):
         rmap = qmap_all["r_pixel"]
 
         if roi_parameter["sl_type"] == "Pie":
-            pmin, pmax = roi_parameter["angle_range"] 
+            pmin, pmax = roi_parameter["angle_range"]
             if pmax < pmin:
                 pmax += 360.0
                 pmap[pmap < pmin] += 360.0
@@ -441,15 +480,14 @@ class XpcsFile(object):
             index = 1
             qsize = len(self.sqspan) - 1
             for n in range(qsize):
-                q0, q1 = self.sqspan[n: n + 2]
+                q0, q1 = self.sqspan[n : n + 2]
                 select = (qmap >= q0) * (qmap < q1)
                 qmap_idx[select] = index
                 index += 1
             qmap_idx = (qmap_idx * proi).ravel()
 
-            saxs_roi = np.bincount(qmap_idx, self.saxs_2d.ravel(),
-                                   minlength=qsize+1)
-            saxs_nor = np.bincount(qmap_idx, minlength=qsize+1)
+            saxs_roi = np.bincount(qmap_idx, self.saxs_2d.ravel(), minlength=qsize + 1)
+            saxs_nor = np.bincount(qmap_idx, minlength=qsize + 1)
             saxs_nor[saxs_nor == 0] = 1.0
             saxs_roi = saxs_roi * 1.0 / saxs_nor
 
@@ -462,7 +500,7 @@ class XpcsFile(object):
             wlength = 12.398 / self.X_energy
             qmax = dist * self.pix_dim_x / self.det_dist * 2 * np.pi / wlength
             saxs_roi[self.sqlist >= qmax] = 0
-            saxs_roi[saxs_roi <=0] = np.nan
+            saxs_roi[saxs_roi <= 0] = np.nan
             return self.sqlist, saxs_roi
 
         elif roi_parameter["sl_type"] == "Ring":
@@ -481,22 +519,22 @@ class XpcsFile(object):
             # q_avg = qmap[rroi].mean()
             index = (index * rroi).ravel()
 
-            saxs_roi = np.bincount(index, self.saxs_2d.ravel(),
-                                   minlength=phi_num+1)
-            saxs_nor = np.bincount(index, minlength=phi_num+1)
+            saxs_roi = np.bincount(index, self.saxs_2d.ravel(), minlength=phi_num + 1)
+            saxs_nor = np.bincount(index, minlength=phi_num + 1)
             saxs_nor[saxs_nor == 0] = 1.0
             saxs_roi = saxs_roi * 1.0 / saxs_nor
 
             # remove the 0th term
             saxs_roi = saxs_roi[1:]
             return x, saxs_roi
-    
+
     def export_saxs1d(self, roi_list, folder):
         # export ROI
         idx = 0
         for roi in roi_list:
-            fname = os.path.join(folder,
-                self.label + "_" + roi["sl_type"] + f"_{idx:03d}.txt")
+            fname = os.path.join(
+                folder, self.label + "_" + roi["sl_type"] + f"_{idx:03d}.txt"
+            )
             idx += 1
             x, y = self.get_roi_data(roi)
             if roi["sl_type"] == "Ring":
@@ -505,30 +543,30 @@ class XpcsFile(object):
                 header = "q(1/Angstron) Intensity"
             np.savetxt(fname, np.vstack([x, y]).T, header=header)
 
-        # export all saxs1d 
+        # export all saxs1d
         fname = os.path.join(folder, self.label + "_" + "saxs1d.txt")
         Iq, q = self.saxs_1d["Iq"], self.saxs_1d["q"]
         header = "q(1/Angstron) Intensity"
         for n in range(Iq.shape[0] - 1):
             header += f" Intensity_phi{n + 1 :03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
-    
+
     def get_pg_tree(self):
         data = self.load_data()
         for key, val in data.items():
             if isinstance(val, np.ndarray):
                 if val.size > 4096:
-                    data[key] = 'data size is too large'
+                    data[key] = "data size is too large"
                 # suqeeze one-element array
                 if val.size == 1:
                     data[key] = float(val)
-        data['analysis_type'] = self.atype
-        data['label'] = self.label
+        data["analysis_type"] = self.atype
+        data["label"] = self.label
         tree = pg.DataTreeWidget(data=data)
         tree.setWindowTitle(self.fname)
         tree.resize(600, 800)
         return tree
-            
+
 
 def test1():
     cwd = "../../../xpcs_data"

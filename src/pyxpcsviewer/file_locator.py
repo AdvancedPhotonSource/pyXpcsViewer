@@ -1,22 +1,23 @@
 import os
-from .xpcs_file import XpcsFile as XF 
+from .xpcs_file import XpcsFile as XF
 import logging
 from .helper.listmodel import ListDataModel
+from .fileIO.qmap_utils import QMapManager
+
 import traceback
-from functools import lru_cache
 import datetime
+import time
 
 
 logger = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=256)
-def create_xpcs_dataset(fname):
+def create_xpcs_dataset(fname, **kwargs):
     """
     create a xpcs_file objects from a given path
     """
     try:
-        temp = XF(fname)
+        temp = XF(fname, **kwargs)
     except Exception as e:
         logger.error("failed to load file: %s", fname)
         logger.error(traceback.format_exc())
@@ -30,6 +31,7 @@ class FileLocator(object):
         self.source = ListDataModel()
         self.source_search = ListDataModel()
         self.target = ListDataModel()
+        self.qmap_manager = QMapManager()
         self.cache = {}
         self.timestamp = None
 
@@ -55,7 +57,7 @@ class FileLocator(object):
         for n in selected:
             full_fname = os.path.join(self.path, self.target[n])
             if full_fname not in self.cache:
-                xf_obj = create_xpcs_dataset(full_fname)
+                xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
                 self.cache[full_fname] = xf_obj
             xf_obj = self.cache[full_fname]
             if xf_obj.fit_summary is None and filter_fitted:
@@ -73,25 +75,29 @@ class FileLocator(object):
         :param fstr: list of filter string;
         :return: list of strings that contains the hdf information;
         """
-        xf_obj = create_xpcs_dataset(os.path.join(self.path, fname))
+        xf_obj = create_xpcs_dataset(
+            os.path.join(self.path, fname), qmap_manager=self.qmap_manager
+        )
         return xf_obj.get_hdf_info(filter_str)
 
     def add_target(self, alist, threshold=256, preload=True):
         if not alist:
             return
         if preload and len(alist) <= threshold:
+            t0 = time.perf_counter()
             for fn in alist:
                 if fn in self.target:
                     continue
                 full_fname = os.path.join(self.path, fn)
-                xf_obj = create_xpcs_dataset(full_fname)
+                xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
                 if xf_obj is not None:
                     self.target.append(fn)
                     self.cache[full_fname] = xf_obj
+            t1 = time.perf_counter()
+            logger.info(f"Load {len(alist)}  files in {t1-t0:.3f} seconds")
         else:
-            logger.info('preload disabled or too many files added')
+            logger.info("preload disabled or too many files added")
             self.target.extend(alist)
-        logger.info('length of target = %d' % len(self.target))
         self.timestamp = str(datetime.datetime.now())
         return
 
@@ -108,46 +114,51 @@ class FileLocator(object):
             self.clear_target()
         self.timestamp = str(datetime.datetime.now())
 
-    def reorder_target(self, row, direction='up'):
+    def reorder_target(self, row, direction="up"):
         size = len(self.target)
-        assert 0 <= row < size, 'check row value'
-        if (direction == 'up' and row == 0) or \
-           (direction == 'down' and row == size - 1):
+        assert 0 <= row < size, "check row value"
+        if (direction == "up" and row == 0) or (
+            direction == "down" and row == size - 1
+        ):
             return -1
 
         item = self.target.pop(row)
-        pos = row - 1 if direction == 'up' else row + 1
+        pos = row - 1 if direction == "up" else row + 1
         self.target.insert(pos, item)
         idx = self.target.index(pos)
         self.timestamp = str(datetime.datetime.now())
         return idx
 
-    def search(self, val, filter_type='prefix'):
-        assert filter_type in ['prefix', 'substr'], 'filter_type must be prefix or substr'
-        if filter_type == 'prefix':
+    def search(self, val, filter_type="prefix"):
+        assert filter_type in [
+            "prefix",
+            "substr",
+        ], "filter_type must be prefix or substr"
+        if filter_type == "prefix":
             selected = [x for x in self.source if x.startswith(val)]
-        elif filter_type == 'substr':
+        elif filter_type == "substr":
             filter_words = val.split()  # Split search query by whitespace
             selected = [x for x in self.source if all(t in x for t in filter_words)]
         self.source_search.replace(selected)
         return
 
-    def build(self, path=None, filter_list=('.hdf', '.h5'),
-              sort_method='Filename'):
+    def build(self, path=None, filter_list=(".hdf", ".h5"), sort_method="Filename"):
         self.path = path
         flist = [
-            entry.name for entry in os.scandir(path) if entry.is_file() 
-            and entry.name.lower().endswith(filter_list) 
-            and not entry.name.startswith('.')
+            entry.name
+            for entry in os.scandir(path)
+            if entry.is_file()
+            and entry.name.lower().endswith(filter_list)
+            and not entry.name.startswith(".")
         ]
-        if sort_method.startswith('Filename'):
+        if sort_method.startswith("Filename"):
             flist.sort()
-        elif sort_method.startswith('Time'):
+        elif sort_method.startswith("Time"):
             flist.sort(key=lambda x: os.path.getmtime(os.path.join(path, x)))
-        elif sort_method.startswith('Index'):
+        elif sort_method.startswith("Index"):
             pass
 
-        if sort_method.endswith('-reverse'):
+        if sort_method.endswith("-reverse"):
             flist.reverse()
         self.source.replace(flist)
         return True
@@ -155,4 +166,4 @@ class FileLocator(object):
 
 if __name__ == "__main__":
     # test1()
-    fl = FileLocator(path='./data/files.txt')
+    fl = FileLocator(path="./data/files.txt")
