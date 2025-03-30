@@ -252,15 +252,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs.hdl, **kwargs)
-            self.mp_saxs.repaint()
+            self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs, **kwargs)
             # adjust the line behavior
             self.switch_saxs1d_line()
 
     def switch_saxs1d_line(self):
         lb_type = self.saxs1d_lb_type.currentIndex()
         lb_type = [None, "slope", "hline"][lb_type]
-        self.vk.switch_saxs1d_line(self.mp_saxs.hdl, lb_type)
+        self.vk.switch_saxs1d_line(self.mp_saxs, lb_type)
 
     def saxs1d_export(self):
         folder = QtWidgets.QFileDialog.getExistingDirectory(

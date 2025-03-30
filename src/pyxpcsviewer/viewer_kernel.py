@@ -27,13 +27,12 @@ class ViewerKernel(FileLocator):
     def reset_meta(self):
         self.meta = {
             # saxs 1d:
-            'saxs1d_bkg_fname': None,
-            'saxs1d_bkg_xf': None,
-
+            "saxs1d_bkg_fname": None,
+            "saxs1d_bkg_xf": None,
             # avg
-            'avg_file_list': None,
-            'avg_intt_minmax': None,
-            'avg_g2_avg': None,
+            "avg_file_list": None,
+            "avg_intt_minmax": None,
+            "avg_g2_avg": None,
             # g2
         }
         return
@@ -44,8 +43,8 @@ class ViewerKernel(FileLocator):
 
     def select_bkgfile(self, fname):
         base_fname = os.path.basename(fname)
-        self.meta['saxs1d_bkg_fname'] = base_fname
-        self.meta['saxs1d_bkg_xf'] = XpcsFile(fname)
+        self.meta["saxs1d_bkg_fname"] = base_fname
+        self.meta["saxs1d_bkg_xf"] = XpcsFile(fname)
 
     def get_pg_tree(self, rows):
         xf_list = self.get_xf_list(rows)
@@ -55,21 +54,21 @@ class ViewerKernel(FileLocator):
             return None
 
     def get_fitting_tree(self, rows):
-        xf_list = self.get_xf_list(rows, filter_atype='Multitau')
+        xf_list = self.get_xf_list(rows, filter_atype="Multitau")
         result = {}
         for x in xf_list:
-            result[x.label] = x.get_fitting_info(mode='g2_fitting')
+            result[x.label] = x.get_fitting_info(mode="g2_fitting")
         tree = pg.DataTreeWidget(data=result)
-        tree.setWindowTitle('fitting summary')
+        tree.setWindowTitle("fitting summary")
         tree.resize(1024, 800)
         return tree
 
-    def plot_g2(self, handler, q_range, t_range, y_range,
-                rows=None, **kwargs):
-        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
+    def plot_g2(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
         if xf_list:
-            g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows,
-                          **kwargs)
+            g2mod.pg_plot(
+                handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs
+            )
             flag, tel, qd, *unused = g2mod.get_data(xf_list)
             return flag, tel, qd
         else:
@@ -78,63 +77,78 @@ class ViewerKernel(FileLocator):
     def plot_qmap(self, hdl, rows=None, target=None):
         xf_list = self.get_xf_list(rows=rows)
         if xf_list:
-            if target == 'scattering':
+            if target == "scattering":
                 value = np.log10(xf_list[0].saxs_2d + 1)
                 vmin, vmax = np.percentile(value, (2, 98))
                 hdl.setImage(value, levels=(vmin, vmax))
-            elif target == 'dynamic_roi_map':
+            elif target == "dynamic_roi_map":
                 hdl.setImage(xf_list[0].dqmap)
-            elif target == 'static_roi_map':
+            elif target == "static_roi_map":
                 hdl.setImage(xf_list[0].sqmap)
 
     def plot_tauq_pre(self, hdl=None, rows=None):
-        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau')
+        xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
 
-    def plot_tauq(self, hdl=None, bounds=None, rows=[], plot_type=3,
-                  fit_flag=None, offset=None, q_range=None):
-        xf_list = self.get_xf_list(rows=rows, filter_atype='Multitau',
-                                   filter_fitted=True)
+    def plot_tauq(
+        self,
+        hdl=None,
+        bounds=None,
+        rows=[],
+        plot_type=3,
+        fit_flag=None,
+        offset=None,
+        q_range=None,
+    ):
+        xf_list = self.get_xf_list(
+            rows=rows, filter_atype="Multitau", filter_fitted=True
+        )
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
-                logger.info('g2 fitting is not available for %s', x.fname)
+                logger.info("g2 fitting is not available for %s", x.fname)
             else:
                 x.fit_tauq(q_range, bounds, fit_flag)
-                result[x.label] = x.get_fitting_info(mode='tauq_fitting')
+                result[x.label] = x.get_fitting_info(mode="tauq_fitting")
 
         if len(result) > 0:
-            tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset,
-                      plot_type=plot_type)
+            tauq.plot(
+                xf_list, hdl=hdl, q_range=q_range, offset=offset, plot_type=plot_type
+            )
 
         return result
 
-    def plot_saxs_2d(self, *args, rows=None,**kwargs):
-        xf_list = self.get_xf_list(rows)
+    def plot_saxs_2d(self, *args, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows)[0:1]
         if xf_list:
             saxs2d.plot(xf_list, *args, **kwargs)
 
     def add_roi(self, hdl, **kwargs):
         xf_list = self.get_xf_list()
         cen = (xf_list[0].bcx, xf_list[0].bcy)
-        if kwargs['sl_type'] == 'Pie':
+        if kwargs["sl_type"] == "Pie":
             hdl.add_roi(cen=cen, radius=100, **kwargs)
-        elif kwargs['sl_type'] == 'Circle':
+        elif kwargs["sl_type"] == "Circle":
 
             radius_v = min(xf_list[0].mask.shape[0] - cen[1], cen[1])
             radius_h = min(xf_list[0].mask.shape[1] - cen[0], cen[0])
             radius = min(radius_h, radius_v) * 0.8
 
-            hdl.add_roi(cen=cen, radius=radius, label='RingA', **kwargs)
-            hdl.add_roi(cen=cen, radius=0.8*radius, label='RingB', **kwargs)
+            hdl.add_roi(cen=cen, radius=radius, label="RingA", **kwargs)
+            hdl.add_roi(cen=cen, radius=0.8 * radius, label="RingB", **kwargs)
 
     def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
         xf_list = self.get_xf_list()
         if xf_list:
             roi_list = pg_hdl.get_roi_list()
-            saxs1d.plot(xf_list, mp_hdl, bkg_file=self.meta['saxs1d_bkg_xf'],
-                        roi_list=roi_list, **kwargs)
+            saxs1d.pg_plot(
+                xf_list,
+                mp_hdl,
+                bkg_file=self.meta["saxs1d_bkg_xf"],
+                roi_list=roi_list,
+                **kwargs
+            )
 
     def export_saxs_1d(self, pg_hdl, folder):
         xf_list = self.get_xf_list()
@@ -144,17 +158,18 @@ class ViewerKernel(FileLocator):
         return
 
     def switch_saxs1d_line(self, mp_hdl, lb_type):
-        saxs1d.switch_line_builder(mp_hdl, lb_type)
+        pass
+        # saxs1d.switch_line_builder(mp_hdl, lb_type)
 
     def plot_twotime_map(self, hdl, rows=None, **kwargs):
-        xf_list = self.get_xf_list(rows, filter_atype='Twotime')
+        xf_list = self.get_xf_list(rows, filter_atype="Twotime")
         if len(xf_list) == 0:
             return
         xfile = xf_list[0]
         return twotime.plot_twotime_map(xfile, hdl, **kwargs)
 
     def plot_twotime_correlation(self, hdl, rows=None, **kwargs):
-        xf_list = self.get_xf_list(rows, filter_atype='Twotime')
+        xf_list = self.get_xf_list(rows, filter_atype="Twotime")
         if len(xf_list) == 0:
             return
         xfile = xf_list[0]
@@ -170,14 +185,12 @@ class ViewerKernel(FileLocator):
 
     def submit_job(self, *args, **kwargs):
         if len(self.target) <= 0:
-            logger.error('no average target is selected')
+            logger.error("no average target is selected")
             return
-        worker = AverageToolbox(self.path,
-                                flist=self.target,
-                                jid=self.avg_jid)
+        worker = AverageToolbox(self.path, flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
         self.avg_worker.append(worker)
-        logger.info('create average job, ID = %s', worker.jid)
+        logger.info("create average job, ID = %s", worker.jid)
         self.avg_jid += 1
         self.target.clear()
         return
@@ -198,7 +211,7 @@ class ViewerKernel(FileLocator):
         record = self.avg_worker_active[key]
         if record[0] == record[1].size:
             new_g2 = np.zeros(record[1].size * 2, dtype=np.float32)
-            new_g2[0:record[0]] = record[1]
+            new_g2[0 : record[0]] = record[1]
             record[1] = new_g2
         record[1][record[0]] = val
         record[0] += 1
@@ -206,9 +219,9 @@ class ViewerKernel(FileLocator):
         return
 
     def export_g2(self):
-       pass
+        pass
 
 
 if __name__ == "__main__":
-    flist = os.listdir('./data')
-    dv = ViewerKernel('./data', flist)
+    flist = os.listdir("./data")
+    dv = ViewerKernel("./data", flist)
