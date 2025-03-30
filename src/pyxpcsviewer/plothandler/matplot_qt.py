@@ -16,14 +16,27 @@ import time
 # matplotlib.pyplot.style.use(['science', 'no-latex'])
 
 # https://matplotlib.org/stable/api/markers_api.html
-markers = ['o', 'v', '^', '>', '<', 's', 'p', 'h', '*', '+', 'd', 'x']
+markers = ["o", "v", "^", ">", "<", "s", "p", "h", "*", "+", "d", "x"]
+pg_markers = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
+colors = (
+    "#1f77b4",
+    "#ff7f0e",
+    "#2ca02c",
+    "#d62728",
+    "#9467bd",
+    "#8c564b",
+    "#e377c2",
+    "#7f7f7f",
+    "#bcbd22",
+    "#17becf",
+)
 
-colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
 
-
-def get_color_marker(n):
-    mk = markers[n % len(markers)]
+def get_color_marker(n, backend="matplotlib"):
+    if backend == "matplotlib":
+        mk = markers[n % len(markers)]
+    elif backend == "pyqtgraph":
+        mk = pg_markers[n % len(pg_markers)]
     cl = colors[n % len(colors)]
     return (cl, mk)
 
@@ -107,17 +120,18 @@ class MplCanvas(FigureCanvasQTAgg):
     def link_line_builder(self, lb_type=None):
         if lb_type is None:
             self.unlink_line_builder()
-        
-        if self.line_builder is not None and \
-            self.line_builder.lb_type != lb_type:
+
+        if self.line_builder is not None and self.line_builder.lb_type != lb_type:
             self.unlink_line_builder()
 
         if self.line_builder is None and self.shape == (1, 1):
             self.line_builder = LineBuilder(self.fig, self.axes, lb_type)
-            cid1 = self.fig.canvas.mpl_connect('button_press_event',
-                                               self.line_builder.mouse_click)
-            cid2 = self.fig.canvas.mpl_connect('motion_notify_event',
-                                               self.line_builder.mouse_move)
+            cid1 = self.fig.canvas.mpl_connect(
+                "button_press_event", self.line_builder.mouse_click
+            )
+            cid2 = self.fig.canvas.mpl_connect(
+                "motion_notify_event", self.line_builder.mouse_move
+            )
             self.cids = [cid1, cid2]
 
     def unlink_line_builder(self):
@@ -180,7 +194,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def update_lin(self, loc, x, y, visible=True):
         if self.obj is None:
             return
-        lin_obj, = self.obj['lin'][loc]
+        (lin_obj,) = self.obj["lin"][loc]
         lin_obj.set_data(x, y)
         lin_obj.set_visible(visible)
         return
@@ -188,38 +202,42 @@ class MplCanvas(FigureCanvasQTAgg):
     def update_err(self, loc, x, y, y_error):
         if self.obj is None:
             return
-        err_obj = self.obj['err'][loc]
+        err_obj = self.obj["err"][loc]
         adjust_yerr(err_obj, x, y, y_error)
         return
 
-    def show_image(self,
-                   data,
-                   vmin=None,
-                   vmax=None,
-                   extent=None,
-                   cmap='seismic',
-                   xlabel=None,
-                   ylabel=None,
-                   title=None,
-                   id_list=None,
-                   vline_freq=-1):
+    def show_image(
+        self,
+        data,
+        vmin=None,
+        vmax=None,
+        extent=None,
+        cmap="seismic",
+        xlabel=None,
+        ylabel=None,
+        title=None,
+        id_list=None,
+        vline_freq=-1,
+    ):
         def add_vline(ax, stop, vline_freq):
             if vline_freq < 0:
                 return
             for x in np.arange(vline_freq, stop - 1, vline_freq):
                 # for x in np.arange(1, stop // vline_freq - 1):
-                ax.axvline(x - 0.5, ls='--', lw=0.5, color='black', alpha=0.5)
+                ax.axvline(x - 0.5, ls="--", lw=0.5, color="black", alpha=0.5)
 
         if self.axes is None:
             ax = self.subplots(1, 1)
             add_vline(ax, data.shape[1], vline_freq)
-            im0 = ax.imshow(data,
-                            aspect='auto',
-                            cmap=plt.get_cmap(cmap),
-                            vmin=vmin,
-                            vmax=vmax,
-                            extent=extent,
-                            interpolation=None)
+            im0 = ax.imshow(
+                data,
+                aspect="auto",
+                cmap=plt.get_cmap(cmap),
+                vmin=vmin,
+                vmax=vmax,
+                extent=extent,
+                interpolation=None,
+            )
             self.fig.colorbar(im0, ax=ax)
 
             ax.set_title(title)
@@ -243,16 +261,17 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
         return
 
-    def show_lines(self,
-                   data,
-                   xlabel=None,
-                   ylabel=None,
-                   title=None,
-                   legend=None,
-                   loc='best',
-                   rows=None,
-                   marker_size=3,
-                   ):
+    def show_lines(
+        self,
+        data,
+        xlabel=None,
+        ylabel=None,
+        title=None,
+        legend=None,
+        loc="best",
+        rows=None,
+        marker_size=3,
+    ):
 
         if legend in [None, False]:
             legend = np.arange(len(data))
@@ -277,20 +296,27 @@ class MplCanvas(FigureCanvasQTAgg):
             line_obj = []
             for n in range(len(data)):
                 cl, mk = get_color_marker(n)
-                line = ax.plot(data[n][0], data[n][1], mk + '-',
-                               ms=marker_size, alpha=alpha[n], label=legend[n],
-                               color=cl, mfc='none')
+                line = ax.plot(
+                    data[n][0],
+                    data[n][1],
+                    mk + "-",
+                    ms=marker_size,
+                    alpha=alpha[n],
+                    label=legend[n],
+                    color=cl,
+                    mfc="none",
+                )
                 line_obj.append(line)
             self.obj = line_obj
 
-            if legend is not None and loc != 'outside':
+            if legend is not None and loc != "outside":
                 ax.legend(loc=loc)
-            elif loc == 'outside':
-                ax.legend(bbox_to_anchor=(1.03, 1.0), loc='upper left')
+            elif loc == "outside":
+                ax.legend(bbox_to_anchor=(1.03, 1.0), loc="upper left")
 
         else:
             for n in range(len(data)):
-                line, = self.obj[n]
+                (line,) = self.obj[n]
                 line.set_data(data[n][0], data[n][1])
                 if legend is not None:
                     line.set_label(legend[n])
@@ -303,17 +329,19 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
         return
 
-    def show_scatter(self,
-                     data,
-                     color=None,
-                     xlabel=None,
-                     ylabel=None,
-                     title=None,
-                     legend=None,
-                     loc='best',
-                     alpha=0.85):
+    def show_scatter(
+        self,
+        data,
+        color=None,
+        xlabel=None,
+        ylabel=None,
+        title=None,
+        legend=None,
+        loc="best",
+        alpha=0.85,
+    ):
         if data.ndim != 2 or data.shape[0] != 2:
-            raise ValueError('input data shape not supported')
+            raise ValueError("input data shape not supported")
         x, y = data[0], data[1]
         if color is None:
             color = np.arange(x.size)
@@ -339,7 +367,7 @@ class MplCanvas(FigureCanvasQTAgg):
 def adjust_yerr(err_obj, x, y, y_error):
     # not using error top / bot bar;
     # ln, (err_top, err_bot), (bars, ) = err_obj
-    ln, _, (bars, ) = err_obj
+    ln, _, (bars,) = err_obj
     ln.set_data(x, y)
 
     yerr_top = y + y_error
@@ -349,8 +377,7 @@ def adjust_yerr(err_obj, x, y, y_error):
     # err_bot.set_ydata(yerr_bot)
 
     new_segments = [
-        np.array([[x, yt], [x, yb]])
-        for x, yt, yb in zip(x, yerr_top, yerr_bot)
+        np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x, yerr_top, yerr_bot)
     ]
 
     bars.set_segments(new_segments)
@@ -371,13 +398,14 @@ MplToolbar = NavigationToolbar2QT
 
 
 class LineBuilder(object):
-    '''
+    """
         code copied from
         http://chuanshuoge2.blogspot.com/2019/12/matplotlib-mouse-click-event\
             -draw-line.html
 
-    '''
-    def __init__(self, fig, ax, lb_type='hline'):
+    """
+
+    def __init__(self, fig, ax, lb_type="hline"):
         self.xs = []
         self.ys = []
         self.ax = ax
@@ -400,34 +428,34 @@ class LineBuilder(object):
             label = self.labels.pop()
             label.remove()
         self.fig.canvas.draw()
-    
+
     def plot_line(self):
-        if self.lb_type == 'slope':
+        if self.lb_type == "slope":
             xa, xb = self.xs[-2], self.xs[-1]
             ya, yb = self.ys[-2], self.ys[-1]
             dn_term = np.log(xa / xb)
             if dn_term == 0:
-                dn_term = 1E-8
+                dn_term = 1e-8
             slope = np.log(ya / yb) / dn_term
-            txt = '$q^{%.2f}$' % slope 
+            txt = "$q^{%.2f}$" % slope
 
-            # compute position to add label, notice the plot should be 
+            # compute position to add label, notice the plot should be
             # logx-logy; slightly offset cen_x to make the label more clear
             cen_x = np.sqrt(xa * xb * 1.2)
             cen_y = np.sqrt(ya * yb * 1.2)
 
-        elif self.lb_type == 'hline':
+        elif self.lb_type == "hline":
             xa, xb = self.xs[-2], self.xs[-1]
             ya, yb = self.ys[-1], self.ys[-1]
             delta_x = 2 * np.pi / abs(xa - xb)
-            txt = '$\\Delta_x={%.1f}\\AA$' % delta_x 
+            txt = "$\\Delta_x={%.1f}\\AA$" % delta_x
 
             cen_x = np.sqrt(xa * xa)
             cen_y = np.sqrt(ya * yb * 0.3)
         else:
             return
 
-        line, = self.ax.plot([xa, xb], [ya, yb], self.color)
+        (line,) = self.ax.plot([xa, xb], [ya, yb], self.color)
         label = self.ax.annotate(txt, (cen_x, cen_y), color=self.color)
         self.labels.append(label)
 
@@ -435,7 +463,7 @@ class LineBuilder(object):
         self.num_lines += 1
         self.color_hist.append(self.color)
         self.color = random.choice(colors)
-    
+
     def mouse_click(self, event):
         if not event.inaxes:
             return
@@ -445,8 +473,8 @@ class LineBuilder(object):
             self.xs.append(event.xdata)
             self.ys.append(event.ydata)
 
-            if self.lb_type == 'hline':
-                line = self.ax.axvline(event.xdata, color=self.color, ls=':')
+            if self.lb_type == "hline":
+                line = self.ax.axvline(event.xdata, color=self.color, ls=":")
                 line.figure.canvas.draw()
 
             # add a line to plot if it has 2 points
@@ -460,12 +488,11 @@ class LineBuilder(object):
             else:
                 self.xs.pop()
                 self.ys.pop()
-                if self.lb_type == 'hline':
+                if self.lb_type == "hline":
                     self.ax.lines.pop()
             # delete last line drawn if the line is missing a point,
             # never delete the original stock plot
-            if len(self.xs) % 2 == 1 and \
-                len(self.ax.lines) > self.reserve_lines:
+            if len(self.xs) % 2 == 1 and len(self.ax.lines) > self.reserve_lines:
                 self.ax.lines.pop()
                 self.num_lines -= 1
                 self.color = self.color_hist.pop()
@@ -484,11 +511,13 @@ class LineBuilder(object):
 
         self.curr_time = time.perf_counter()
         if len(self.xs) % 2 == 1:
-            if self.lb_type == 'slope':
-                line, = self.ax.plot([self.xs[-1], event.xdata],
-                                     [self.ys[-1], event.ydata], self.color)
+            if self.lb_type == "slope":
+                (line,) = self.ax.plot(
+                    [self.xs[-1], event.xdata], [self.ys[-1], event.ydata], self.color
+                )
             else:
-                line, = self.ax.plot([self.xs[-1], event.xdata],
-                                     [event.ydata, event.ydata], self.color)
+                (line,) = self.ax.plot(
+                    [self.xs[-1], event.xdata], [event.ydata, event.ydata], self.color
+                )
             line.figure.canvas.draw()
             self.ax.lines.pop()

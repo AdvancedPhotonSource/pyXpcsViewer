@@ -364,7 +364,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -691,7 +691,7 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_25">
          <item row="0" column="0">
-          <widget class="MplCanvasBarV" name="mp_saxs" native="true">
+          <widget class="PlotWidget" name="mp_saxs" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -1367,8 +1367,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1122</width>
-              <height>717</height>
+              <width>1134</width>
+              <height>741</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -3178,6 +3178,12 @@
   </customwidget>
   <customwidget>
    <class>ImageView</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlotWidget</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
    <container>1</container>
