@@ -171,9 +171,9 @@ class XpcsFile(object):
             ret["g2_err"] = self.correct_g2_err(ret["g2_err"])
             stride_frame = ret.pop("stride_frame")
             avg_frame = ret.pop("avg_frame")
-            t0 = ret["t0"] * stride_frame * avg_frame
-            ret["g2_t0"] = t0
-            ret["t_el"] = ret["tau"] * t0
+            ret["t0"] = ret["t0"] * stride_frame * avg_frame
+            ret["t_el"] = ret["tau"] * ret["t0"]
+            ret["g2_t0"] = ret["t0"]
 
         ret["saxs_1d"] = self.qmap.reshape_phi_analysis(
             ret["saxs_1d"], self.label, mode="saxs_1d"
@@ -267,6 +267,8 @@ class XpcsFile(object):
                 max_c2_num=max_c2_num,
                 max_size=max_size,
             )
+            c2_result["delta_t"] *= self.t0
+            c2_result["acquire_period"] *= self.t0
             self.c2_all_data = c2_result
             return c2_result
 
