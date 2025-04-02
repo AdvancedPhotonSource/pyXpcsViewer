@@ -1,32 +1,47 @@
-from .saxs1d import offset_intensity, norm_saxs_data
-import os
+from .saxs1d import get_pyqtgraph_anchor_params, plot_line_with_marker
+import numpy as np
 
 
-def plot(fc, mp_hdl, plot_type=2, plot_norm=0, plot_offset=0, legend=None, 
-         title=None, **kwargs):
+def plot(
+    fc,
+    pg_hdl,
+    plot_type=2,
+    plot_norm=0,
+    legend=None,
+    title=None,
+    loc="upper right",
+    **kwargs,
+):
 
-    xscale = ['linear', 'log'][plot_type % 2]
-    yscale = ['linear', 'log'][plot_type // 2]
+    pg_hdl.clear()
+    plot_item = pg_hdl.getPlotItem()
 
-    q = fc.sqlist
-    Iqp = fc.Iqp
+    plot_item.setTitle(fc.label)
+    legend = plot_item.addLegend()
+    anchor_param = get_pyqtgraph_anchor_params(loc, padding=15)
+    legend.anchor(**anchor_param)
 
-    if Iqp.ndim == 1:
-        Iqp = Iqp.reshape(1, -1) 
-    sl = slice(0, min(q.size, Iqp.shape[1]))
-    q = q[sl]
-    Iqp = Iqp[:, sl]
+    norm_method = [None, "q2", "q4", "I0"][plot_norm]
+    log_x = (False, True)[plot_type % 2]
+    log_y = (False, True)[plot_type // 2]
+    plot_item.setLogMode(x=log_x, y=log_y)
 
-    data = []
+    q, Iqp, xlabel, ylabel = fc.get_saxs1d_data(
+        target="saxs1d_partial", norm_method=norm_method
+    )
     for n in range(Iqp.shape[0]):
-        Iq, q = Iqp[n], q
-        Iq, q, xlabel, ylabel = norm_saxs_data(Iq, q, plot_norm)
-        Iq = offset_intensity(Iq, n, plot_offset, yscale)
-        data.append([q, Iq])
+        plot_line_with_marker(
+            plot_item,
+            q,
+            Iqp[n],
+            n,
+            f"p{n}",  # label
+            1.0,  # alpha
+            marker_size=6,
+            log_x=log_x,
+            log_y=log_y,
+        )
 
-    mp_hdl.clear()
-    mp_hdl.show_lines(data, xlabel=xlabel, ylabel=ylabel, legend=legend)
-    
-    mp_hdl.axes.set_title(fc.label)
-    mp_hdl.auto_scale(xscale=xscale, yscale=yscale)
-    mp_hdl.draw()
+    plot_item.setLabel("bottom", xlabel)
+    plot_item.setLabel("left", ylabel)
+    plot_item.showGrid(x=True, y=True, alpha=0.3)
