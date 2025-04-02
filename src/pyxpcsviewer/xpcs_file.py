@@ -212,7 +212,6 @@ class XpcsFile(object):
             if self.saxs_2d_data is None:
                 ret = get(self.fname, ["saxs_2d"], "alias", ftype="nexus")
                 self.saxs_2d_data = ret["saxs_2d"]
-                print("load saxs2d", self.fname)
             return self.saxs_2d_data
         elif key in self.__dict__:
             return self.__dict__[key]
@@ -230,29 +229,88 @@ class XpcsFile(object):
 
     def get_g2_data(self, qrange=None, trange=None):
         assert "Multitau" in self.atype, "only multitau is supported"
-        g2, g2_err = self.g2, self.g2_err
         # qrange can be None
         qindex_selected = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
-        g2 = g2[:, qindex_selected]
-        g2_err = g2_err[:, qindex_selected]
-        dq_val = self.dqlist
+        if len(qindex_selected) == 0:
+            logger.warning("no qbins in the specified range. use all qbins instead")
+            qindex_selected = np.arange(self.g2.shape[1])
+
+        g2 = self.g2[:, qindex_selected]
+        g2_err = self.g2_err[:, qindex_selected]
+        dq_val = self.dqlist[qindex_selected]
         labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
-        t_el = self.t_el
         if trange is not None:
-            t_roi = (t_el >= trange[0]) * (t_el <= trange[1])
+            t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
             g2 = g2[t_roi]
             g2_err = g2_err[t_roi]
-            t_el = t_el[t_roi]
-        if qrange is not None:
-            q_roi = (dq_val >= qrange[0]) * (dq_val <= qrange[1])
-            dq_val = dq_val[q_roi]
+            t_el = self.t_el[t_roi]
+        else:
+            t_el = self.t_el
 
         return t_el, dq_val, g2, g2_err, labels
 
     def get_twotime_maps(self):
         dqmap, saxs = self.dqmap, self.saxs_2d
         return dqmap, saxs
+
+    def get_saxs1d_data(
+        self,
+        bkg_xf=None,
+        bkg_weight=1.0,
+        qrange=None,
+        sampling=1,
+        use_absolute_crosssection=False,
+        norm_method=None,
+        target="saxs1d",
+    ):
+        assert target in ["saxs1d", "saxs1d_partial"]
+        if target == "saxs1d":
+            q, Iq = self.saxs_1d["q"], self.saxs_1d["Iq"]
+        else:
+            q, Iq = self.saxs_1d["q"], self.Iqp
+        if bkg_xf is not None:
+            if np.all_close(q, bkg_xf.q):
+                Iq = Iq - bkg_weight * bkg_xf.saxs_1d
+                Iq[Iq < 0] = np.nan
+            else:
+                logger.warning(
+                    "background subtraction is not applied because q is not matched"
+                )
+        if qrange is not None:
+            q_roi = (q >= qrange[0]) * (q <= qrange[1])
+            if q_roi.sum() > 0:
+                q = q[q_roi]
+                Iq = Iq[:, q_roi]
+            else:
+                logger.warning("qrange is not applied because it is out of range")
+        if use_absolute_crosssection and self.abs_cross_section_scale is not None:
+            Iq *= self.abs_cross_section_scale
+
+        # apply sampling
+        if sampling > 1:
+            q, Iq = q[::sampling], Iq[::sampling]
+        # apply normalization
+        q, Iq, xlabel, ylabel = self.norm_saxs_data(q, Iq, norm_method=norm_method)
+        return q, Iq, xlabel, ylabel
+
+    def norm_saxs_data(self, q, Iq, norm_method=None):
+        assert norm_method in (None, "q2", "q4", "I0")
+        if norm_method is None:
+            return q, Iq, "q (Å⁻¹)", "Intensity"
+        ylabel = "Intensity"
+        if norm_method == "q2":
+            Iq = Iq * np.square(q)
+            ylabel = ylabel + " * q^2"
+        elif norm_method == "q4":
+            Iq = Iq * np.square(np.square(q))
+            ylabel = ylabel + " * q^4"
+        elif norm_method == "I0":
+            baseline = Iq[0]
+            Iq = Iq / baseline
+            ylabel = ylabel + " / I_0"
+        xlabel = "q (Å⁻¹)"
+        return q, Iq, xlabel, ylabel
 
     def get_twotime_c2(self, max_c2_num=-1, max_size=16384):
         dq_selection = tuple(self.c2_processed_bins.tolist())
