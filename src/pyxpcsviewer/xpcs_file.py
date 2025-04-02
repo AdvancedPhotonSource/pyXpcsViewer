@@ -3,7 +3,8 @@ import re
 import numpy as np
 import pyqtgraph as pg
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
-from .module.g2mod import create_slice
+
+# from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
 from .module.twotime_utils import get_c2_from_hdf_fast, get_c2_stream
@@ -416,20 +417,7 @@ class XpcsFile(object):
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
 
-        if q_range is None:
-            q_range = [np.min(self.dqlist) * 0.95, np.max(self.dqlist) * 1.05]
-
-        if t_range is None:
-            q_range = [np.min(self.t_el) * 0.95, np.max(self.t_el) * 1.05]
-
-        # create a data slice for the given range;
-        t_slice = create_slice(self.t_el, t_range)
-        q_slice = create_slice(self.dqlist, q_range)
-
-        t_el = self.t_el[t_slice]
-        q = self.dqlist[q_slice]
-        g2 = self.g2[t_slice, q_slice]
-        sigma = self.g2_err[t_slice, q_slice]
+        t_el, q, g2, sigma, labels = self.get_g2_data(qrange=q_range, trange=t_range)
 
         # set the initial guess
         p0 = np.array(bounds).mean(axis=0)
@@ -483,7 +471,7 @@ class XpcsFile(object):
             return
 
         x = self.fit_summary["q_val"]
-        q_slice = create_slice(x, q_range)
+        q_slice = (x >= q_range[0]) * (x <= q_range[1])
         x = x[q_slice]
 
         y = self.fit_summary["fit_val"][q_slice, 0, 1]
