@@ -381,14 +381,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def plot_stability(self, dryrun=False):
         kwargs = {
             "plot_type": self.cb_stab_type.currentIndex(),
-            "plot_offset": self.sb_stab_offset.value(),
             "plot_norm": self.cb_stab_norm.currentIndex(),
             "rows": self.get_selected_rows(),
+            "loc": self.stab_legend_loc.currentText(),
         }
         if dryrun:
             return kwargs
         else:
-            self.vk.plot_stability(self.mp_stab.hdl, **kwargs)
+            self.vk.plot_stability(self.mp_stab, **kwargs)
 
     def plot_intensity_t(self, dryrun=False):
         kwargs = {
