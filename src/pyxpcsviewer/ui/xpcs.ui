@@ -1005,52 +1005,7 @@
                 <widget class="QComboBox" name="saxs1d_legend_loc">
                  <item>
                   <property name="text">
-                   <string>best</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>outside</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
                    <string>upper right</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>upper left</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>lower left</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>lower right</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>right</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>center left</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>center right</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>lower center</string>
                   </property>
                  </item>
                  <item>
@@ -1060,7 +1015,37 @@
                  </item>
                  <item>
                   <property name="text">
+                   <string>upper left</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>center right</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
                    <string>center</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>center left</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>lower right</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>lower center</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>lower left</string>
                   </property>
                  </item>
                 </widget>
@@ -3135,6 +3120,18 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ImageView</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GraphicsLayoutWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>MplCanvasBarV</class>
    <extends>QWidget</extends>
    <header location="global">.plothandler</header>
@@ -3159,12 +3156,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>GraphicsLayoutWidget</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ImageViewPlotItem</class>
    <extends>QWidget</extends>
    <header>.plothandler</header>
@@ -3174,12 +3165,6 @@
    <class>ParameterTree</class>
    <extends>QWidget</extends>
    <header>pyqtgraph.parametertree</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ImageView</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
    <container>1</container>
   </customwidget>
   <customwidget>

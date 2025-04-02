@@ -6,6 +6,102 @@ import pyqtgraph as pg
 pg.setConfigOption("background", "w")
 
 
+# Mapping from integer codes to string codes (based on Matplotlib docs)
+_MPL_LOC_INT_TO_STR = {
+    1: "upper right",
+    2: "upper left",
+    3: "lower left",
+    4: "lower right",
+    5: "right",  # Often equivalent to center right in placement
+    6: "center left",
+    7: "center right",
+    8: "lower center",
+    9: "upper center",
+    10: "center",
+}
+
+
+def get_pyqtgraph_anchor_params(loc, padding=10):
+    """
+    Converts a Matplotlib loc string or code to pyqtgraph anchor parameters.
+
+    Calculates the 'itemPos', 'parentPos', and 'offset' needed to position
+    a pyqtgraph LegendItem similarly to how Matplotlib places legends
+    using the 'loc' parameter.
+
+    Args:
+        loc (str or int): Matplotlib location code. Accepts standard strings
+                          ('upper left', 'center', etc.) or integer codes (0-10).
+        padding (int): Pixel padding to use for the offset from the anchor point.
+                       Positive values generally push the legend inwards from
+                       the edge/corner. Defaults to 10.
+
+    Returns:
+        dict or None: A dictionary with keys 'itemPos', 'parentPos', and 'offset'
+                      suitable for unpacking into LegendItem.anchor(**params),
+                      or None if loc='best' (code 0) as it's not directly
+                      supported by pyqtgraph's deterministic anchoring.
+
+    Raises:
+        ValueError: If the loc code or type is invalid.
+
+    Example Usage:
+        plot_item = pg.PlotItem()
+        legend = plot_item.addLegend()
+        # ... plot data ...
+        try:
+            anchor_params = get_pyqtgraph_anchor_params('lower left', padding=15)
+            if anchor_params:
+                legend.anchor(**anchor_params)
+            else:
+                print("Using default legend position for 'best'.") # Handle 'best'
+        except ValueError as e:
+            print(f"Error setting legend position: {e}")
+
+    """
+    if isinstance(loc, int):
+        if loc in _MPL_LOC_INT_TO_STR:
+            loc_str = _MPL_LOC_INT_TO_STR[loc]
+        else:
+            raise ValueError(f"Invalid Matplotlib integer location code: {loc}")
+    elif isinstance(loc, str):
+        loc_str = (
+            loc.lower().replace(" ", "").replace("_", "")
+        )  # Normalize input string
+    else:
+        raise ValueError(f"Invalid loc type: {type(loc)}. Must be str or int.")
+
+    # --- Define anchor points and offset multipliers ---
+    # Map: loc_string -> (itemPos, parentPos, offset_multipliers)
+    # Offset multipliers (mult_x, mult_y) determine offset direction based on padding
+    _ANCHOR_MAP = {
+        # Corners
+        "upperleft": ((0.0, 0.0), (0.0, 0.0), (1, 1)),  # Offset moves down-right
+        "upperright": ((1.0, 0.0), (1.0, 0.0), (-1, 1)),  # Offset moves down-left
+        "lowerleft": ((0.0, 1.0), (0.0, 1.0), (1, -1)),  # Offset moves up-right
+        "lowerright": ((1.0, 1.0), (1.0, 1.0), (-1, -1)),  # Offset moves up-left
+        # Centers
+        "center": ((0.5, 0.5), (0.5, 0.5), (0, 0)),  # No offset needed usually
+        "lowercenter": ((0.5, 1.0), (0.5, 1.0), (0, -1)),  # Offset moves up
+        "uppercenter": ((0.5, 0.0), (0.5, 0.0), (0, 1)),  # Offset moves down
+        # Sides (center align on edge)
+        "centerleft": ((0.0, 0.5), (0.0, 0.5), (1, 0)),  # Offset moves right
+        "centerright": ((1.0, 0.5), (1.0, 0.5), (-1, 0)),  # Offset moves left
+        "right": (
+            (1.0, 0.5),
+            (1.0, 0.5),
+            (-1, 0),
+        ),  # Treat 'right' same as 'centerright'
+    }
+
+    if loc_str in _ANCHOR_MAP:
+        itemPos, parentPos, offset_mult = _ANCHOR_MAP[loc_str]
+        offset = (padding * offset_mult[0], padding * offset_mult[1])
+        return {"itemPos": itemPos, "parentPos": parentPos, "offset": offset}
+    else:
+        raise ValueError(f"Invalid or unsupported Matplotlib location string: '{loc}'")
+
+
 def offset_intensity(Iq, n, plot_offset=None, yscale=None):
     """
     offset the intensity accordingly in both linear and log scale
@@ -116,7 +212,9 @@ def pg_plot(
     pg_hdl.clear()
     plot_item = pg_hdl.getPlotItem()
     plot_item.setTitle(title)
-    plot_item.addLegend()
+    legend = plot_item.addLegend()
+    anchor_param = get_pyqtgraph_anchor_params(loc, padding=15)
+    legend.anchor(**anchor_param)
 
     if rows in [None, []]:
         alpha = np.ones(len(xf_list)) * 0.85
