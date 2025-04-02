@@ -640,7 +640,7 @@ class Ui_mainWindow(object):
         self.tab_3.setObjectName(u"tab_3")
         self.gridLayout_6 = QGridLayout(self.tab_3)
         self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.mp_stab = MplCanvasBarV(self.tab_3)
+        self.mp_stab = PlotWidget(self.tab_3)
         self.mp_stab.setObjectName(u"mp_stab")
         sizePolicy1.setHeightForWidth(self.mp_stab.sizePolicy().hasHeightForWidth())
         self.mp_stab.setSizePolicy(sizePolicy1)
@@ -654,11 +654,6 @@ class Ui_mainWindow(object):
         self.groupBox_4.setMinimumSize(QSize(0, 0))
         self.gridLayout_17 = QGridLayout(self.groupBox_4)
         self.gridLayout_17.setObjectName(u"gridLayout_17")
-        self.label_14 = QLabel(self.groupBox_4)
-        self.label_14.setObjectName(u"label_14")
-
-        self.gridLayout_17.addWidget(self.label_14, 0, 0, 1, 1)
-
         self.cb_stab_type = QComboBox(self.groupBox_4)
         self.cb_stab_type.addItem("")
         self.cb_stab_type.addItem("")
@@ -668,23 +663,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_17.addWidget(self.cb_stab_type, 0, 1, 1, 1)
 
-        self.label_24 = QLabel(self.groupBox_4)
-        self.label_24.setObjectName(u"label_24")
+        self.label_68 = QLabel(self.groupBox_4)
+        self.label_68.setObjectName(u"label_68")
 
-        self.gridLayout_17.addWidget(self.label_24, 0, 2, 1, 1)
-
-        self.sb_stab_offset = QDoubleSpinBox(self.groupBox_4)
-        self.sb_stab_offset.setObjectName(u"sb_stab_offset")
-        self.sb_stab_offset.setDecimals(4)
-        self.sb_stab_offset.setSingleStep(0.050000000000000)
-        self.sb_stab_offset.setValue(0.000000000000000)
-
-        self.gridLayout_17.addWidget(self.sb_stab_offset, 0, 3, 1, 1)
-
-        self.label_16 = QLabel(self.groupBox_4)
-        self.label_16.setObjectName(u"label_16")
-
-        self.gridLayout_17.addWidget(self.label_16, 0, 4, 1, 1)
+        self.gridLayout_17.addWidget(self.label_68, 0, 4, 1, 1)
 
         self.cb_stab_norm = QComboBox(self.groupBox_4)
         self.cb_stab_norm.addItem("")
@@ -693,7 +675,31 @@ class Ui_mainWindow(object):
         self.cb_stab_norm.addItem("")
         self.cb_stab_norm.setObjectName(u"cb_stab_norm")
 
-        self.gridLayout_17.addWidget(self.cb_stab_norm, 0, 5, 1, 1)
+        self.gridLayout_17.addWidget(self.cb_stab_norm, 0, 3, 1, 1)
+
+        self.stab_legend_loc = QComboBox(self.groupBox_4)
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.addItem("")
+        self.stab_legend_loc.setObjectName(u"stab_legend_loc")
+
+        self.gridLayout_17.addWidget(self.stab_legend_loc, 0, 5, 1, 1)
+
+        self.label_14 = QLabel(self.groupBox_4)
+        self.label_14.setObjectName(u"label_14")
+
+        self.gridLayout_17.addWidget(self.label_14, 0, 0, 1, 1)
+
+        self.label_16 = QLabel(self.groupBox_4)
+        self.label_16.setObjectName(u"label_16")
+
+        self.gridLayout_17.addWidget(self.label_16, 0, 2, 1, 1)
 
         self.pushButton_plot_stability = QPushButton(self.groupBox_4)
         self.pushButton_plot_stability.setObjectName(u"pushButton_plot_stability")
@@ -1868,8 +1874,7 @@ class Ui_mainWindow(object):
         QWidget.setTabOrder(self.saxs1d_qmax, self.sb_saxs_marker_size)
         QWidget.setTabOrder(self.sb_saxs_marker_size, self.saxs1d_legend_loc)
         QWidget.setTabOrder(self.saxs1d_legend_loc, self.cb_stab_type)
-        QWidget.setTabOrder(self.cb_stab_type, self.sb_stab_offset)
-        QWidget.setTabOrder(self.sb_stab_offset, self.cb_stab_norm)
+        QWidget.setTabOrder(self.cb_stab_type, self.cb_stab_norm)
         QWidget.setTabOrder(self.cb_stab_norm, self.sb_intt_max)
         QWidget.setTabOrder(self.sb_intt_max, self.sb_window)
         QWidget.setTabOrder(self.sb_window, self.sb_intt_sampling)
@@ -1932,7 +1937,6 @@ class Ui_mainWindow(object):
         self.pushButton_4.clicked.connect(mainWindow.plot_g2)
         self.sb_window.valueChanged.connect(self.pushButton_plot_intt.click)
         self.sb_intt_sampling.valueChanged.connect(self.pushButton_plot_intt.click)
-        self.sb_stab_offset.valueChanged.connect(self.pushButton_plot_stability.click)
         self.pushButton_3.clicked.connect(mainWindow.remove_target)
         self.cb_saxs2D_type.currentIndexChanged.connect(self.pushButton_plot_saxs2d.click)
         self.cb_stab_type.currentIndexChanged.connect(self.pushButton_plot_stability.click)
@@ -1983,7 +1987,7 @@ class Ui_mainWindow(object):
         self.box_show_phi_roi.toggled.connect(self.box_all_phi.setDisabled)
         self.filter_str.textChanged.connect(mainWindow.apply_filter_to_source)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -2103,19 +2107,29 @@ class Ui_mainWindow(object):
         self.pushButton_plot_saxs1d.setText(QCoreApplication.translate("mainWindow", u"Plot", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("mainWindow", u"SAXS-1D", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("mainWindow", u"Stability Plot Setting", None))
-        self.label_14.setText(QCoreApplication.translate("mainWindow", u"type:", None))
         self.cb_stab_type.setItemText(0, QCoreApplication.translate("mainWindow", u"I - q", None))
         self.cb_stab_type.setItemText(1, QCoreApplication.translate("mainWindow", u"I - log(q)", None))
         self.cb_stab_type.setItemText(2, QCoreApplication.translate("mainWindow", u"log(I) - q", None))
         self.cb_stab_type.setItemText(3, QCoreApplication.translate("mainWindow", u"log(I) - log(q)", None))
 
-        self.label_24.setText(QCoreApplication.translate("mainWindow", u"offset:", None))
-        self.label_16.setText(QCoreApplication.translate("mainWindow", u"normalization:", None))
+        self.label_68.setText(QCoreApplication.translate("mainWindow", u"legend loc:", None))
         self.cb_stab_norm.setItemText(0, QCoreApplication.translate("mainWindow", u"none", None))
         self.cb_stab_norm.setItemText(1, QCoreApplication.translate("mainWindow", u"I' = Iq2", None))
         self.cb_stab_norm.setItemText(2, QCoreApplication.translate("mainWindow", u"I' = Iq4", None))
         self.cb_stab_norm.setItemText(3, QCoreApplication.translate("mainWindow", u"I' = I/Io", None))
 
+        self.stab_legend_loc.setItemText(0, QCoreApplication.translate("mainWindow", u"upper right", None))
+        self.stab_legend_loc.setItemText(1, QCoreApplication.translate("mainWindow", u"upper center", None))
+        self.stab_legend_loc.setItemText(2, QCoreApplication.translate("mainWindow", u"upper left", None))
+        self.stab_legend_loc.setItemText(3, QCoreApplication.translate("mainWindow", u"center right", None))
+        self.stab_legend_loc.setItemText(4, QCoreApplication.translate("mainWindow", u"center", None))
+        self.stab_legend_loc.setItemText(5, QCoreApplication.translate("mainWindow", u"center left", None))
+        self.stab_legend_loc.setItemText(6, QCoreApplication.translate("mainWindow", u"lower right", None))
+        self.stab_legend_loc.setItemText(7, QCoreApplication.translate("mainWindow", u"lower center", None))
+        self.stab_legend_loc.setItemText(8, QCoreApplication.translate("mainWindow", u"lower left", None))
+
+        self.label_14.setText(QCoreApplication.translate("mainWindow", u"type:", None))
+        self.label_16.setText(QCoreApplication.translate("mainWindow", u"normalization:", None))
         self.pushButton_plot_stability.setText(QCoreApplication.translate("mainWindow", u"Plot Stability Data", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("mainWindow", u"Stability", None))
         self.groupBox_7.setTitle(QCoreApplication.translate("mainWindow", u"Intensity-Time Plot Setting", None))

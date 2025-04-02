@@ -364,7 +364,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -1084,7 +1084,7 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_6">
          <item row="0" column="0">
-          <widget class="MplCanvasBarV" name="mp_stab" native="true">
+          <widget class="PlotWidget" name="mp_stab" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -1111,13 +1111,6 @@
             <string>Stability Plot Setting</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_17">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>type:</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QComboBox" name="cb_stab_type">
               <property name="currentIndex">
@@ -1145,34 +1138,14 @@
               </item>
              </widget>
             </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="label_24">
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_68">
               <property name="text">
-               <string>offset:</string>
+               <string>legend loc:</string>
               </property>
              </widget>
             </item>
             <item row="0" column="3">
-             <widget class="QDoubleSpinBox" name="sb_stab_offset">
-              <property name="decimals">
-               <number>4</number>
-              </property>
-              <property name="singleStep">
-               <double>0.050000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
-             <widget class="QLabel" name="label_16">
-              <property name="text">
-               <string>normalization:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="5">
              <widget class="QComboBox" name="cb_stab_norm">
               <property name="currentIndex">
                <number>0</number>
@@ -1197,6 +1170,69 @@
                 <string>I' = I/Io</string>
                </property>
               </item>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QComboBox" name="stab_legend_loc">
+              <item>
+               <property name="text">
+                <string>upper right</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>upper center</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>upper left</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>center right</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>center</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>center left</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>lower right</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>lower center</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>lower left</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>type:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>normalization:</string>
+              </property>
              </widget>
             </item>
             <item row="0" column="6">
@@ -3222,7 +3258,6 @@
   <tabstop>sb_saxs_marker_size</tabstop>
   <tabstop>saxs1d_legend_loc</tabstop>
   <tabstop>cb_stab_type</tabstop>
-  <tabstop>sb_stab_offset</tabstop>
   <tabstop>cb_stab_norm</tabstop>
   <tabstop>sb_intt_max</tabstop>
   <tabstop>sb_window</tabstop>
@@ -3331,22 +3366,6 @@
     <hint type="destinationlabel">
      <x>761</x>
      <y>941</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>sb_stab_offset</sender>
-   <signal>valueChanged(double)</signal>
-   <receiver>pushButton_plot_stability</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>974</x>
-     <y>892</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1183</x>
-     <y>938</y>
     </hint>
    </hints>
   </connection>
