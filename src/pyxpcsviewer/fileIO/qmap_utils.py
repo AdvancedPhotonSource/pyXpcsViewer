@@ -79,7 +79,7 @@ class QMap:
             label_1 = [f"φ={y:.1f} {self.map_units[1]}" for y in self.dplist]
         elif self.map_names == ["x", "y"]:
             label_0 = [f"x={x:.1f} {self.map_units[0]}" for x in self.dqlist]
-            label_1 = [f"x={y:.1f} {self.map_units[1]}" for y in self.dplist]
+            label_1 = [f"y={y:.1f} {self.map_units[1]}" for y in self.dplist]
 
         if self.dynamic_num_pts[1] == 1:
             return label_0
