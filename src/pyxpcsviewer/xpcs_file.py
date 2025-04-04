@@ -238,7 +238,6 @@ class XpcsFile(object):
 
         g2 = self.g2[:, qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-        dq_val = self.dqlist[qindex_selected]
         labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
         if trange is not None:
@@ -249,7 +248,7 @@ class XpcsFile(object):
         else:
             t_el = self.t_el
 
-        return t_el, dq_val, g2, g2_err, labels
+        return t_el, g2, g2_err, labels
 
     def get_twotime_maps(self):
         dqmap, saxs = self.dqmap, self.saxs_2d
