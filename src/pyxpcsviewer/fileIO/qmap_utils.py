@@ -98,6 +98,14 @@ class QMap:
             return self.qbin_labels[qbin_absolute]
 
     def get_qbin_in_qrange(self, qrange, zero_based=True):
+        if self.map_names == ["q", "phi"]:
+            return self.get_qbin_in_qrange_qphi(qrange, zero_based)
+        elif self.map_names == ["x", "y"]:
+            return self.get_qbin_in_qrange_xy(qrange, zero_based)
+        else:
+            raise ValueError("unsupported qmap_names")
+
+    def get_qbin_in_qrange_qphi(self, qrange, zero_based=True):
         assert self.map_names == ["q", "phi"], "only q-phi map is supported"
         qlist = np.tile(self.dqlist[:, np.newaxis], self.dynamic_num_pts[1])
         if qrange is None:
@@ -105,6 +113,20 @@ class QMap:
         else:
             qselected = (qlist >= qrange[0]) * (qlist <= qrange[1])
         qselected = qselected.flatten()
+
+        qbin_valid = []
+        for qbin in self.dynamic_index_mapping:
+            if qselected[qbin]:
+                qbin_valid.append(qbin + 1)
+        qbin_valid = np.array(qbin_valid)
+        if zero_based:
+            qbin_valid -= 1
+        return qbin_valid
+
+    def get_qbin_in_qrange_xy(self, qrange, zero_based=True):
+        assert self.map_names == ["x", "y"], "only q-phi map is supported"
+        qlist = np.tile(self.dqlist[:, np.newaxis], self.dynamic_num_pts[1])
+        qselected = np.ones_like(qlist, dtype=bool).flatten()
 
         qbin_valid = []
         for qbin in self.dynamic_index_mapping:
