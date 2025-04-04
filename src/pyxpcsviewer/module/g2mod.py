@@ -39,19 +39,15 @@ def get_data(xf_list, q_range=None, t_range=None):
         if "Multitau" not in xf.atype:
             return False, None, None, None, None
 
-    flag = True
-    tel, g2, dq, g2_err, labels = [], [], [], [], []
+    tel, g2, g2_err, labels = [], [], [], []
     for fc in xf_list:
-        _tel, _dq, _g2, _g2_err, _labels = fc.get_g2_data(
-            qrange=q_range, trange=t_range
-        )
+        _tel, _g2, _g2_err, _labels = fc.get_g2_data(qrange=q_range, trange=t_range)
         tel.append(_tel)
-        dq.append(_dq)
         g2.append(_g2)
         g2_err.append(_g2_err)
         labels.append(_labels)
 
-    return flag, tel, dq, g2, g2_err, labels
+    return tel, g2, g2_err, labels
 
 
 def compute_geometry(g2, plot_type):
@@ -97,9 +93,7 @@ def pg_plot(
     fit_func="single",
 ):
 
-    flag, tel, dq, g2, g2_err, labels = get_data(
-        xf_list, q_range=q_range, t_range=t_range
-    )
+    tel, g2, g2_err, labels = get_data(xf_list, q_range=q_range, t_range=t_range)
     num_figs, num_lines = compute_geometry(g2, plot_type)
 
     num_data, num_qval = len(g2), g2[0].shape[1]
@@ -113,7 +107,8 @@ def pg_plot(
     hdl.adjust_canvas_size(num_col=col, num_row=row)
     hdl.clear()
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
-    t0_range = np.log10(t_range)
+    if t_range is not None:
+        t0_range = np.log10(t_range)
 
     axes = []
     for n in range(num_figs):
@@ -178,11 +173,10 @@ def pg_plot(
                 symbol=symbol,
                 symbol_size=marker_size,
             )
-
-            ax.setRange(xRange=t0_range)
-
+            # if t_range is not None:
             if not y_auto:
                 ax.setRange(yRange=y_range)
+                ax.setRange(xRange=t0_range)
 
             if show_fit and fit_summary is not None:
                 if fit_summary["fit_line"][n].get("success", False):

@@ -646,6 +646,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.pushButton_4.setDisabled(True)
             self.pushButton_4.setText("plotting")
+            if kwargs["y_auto"]:
+                kwargs["t_range"] = None
             try:
                 flag, tel, qd = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
                 self.init_g2(flag, tel, qd)
