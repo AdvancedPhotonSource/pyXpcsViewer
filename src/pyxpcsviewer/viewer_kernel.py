@@ -119,6 +119,12 @@ class ViewerKernel(FileLocator):
 
         return result
 
+    def get_info_at_mouse(self, rows, x, y):
+        xf = self.get_xf_list(rows)
+        if xf:
+            info = xf[0].get_info_at_position(x, y)
+            return info
+
     def plot_saxs_2d(self, *args, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows)[0:1]
         if xf_list:

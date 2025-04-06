@@ -132,6 +132,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
         self.update_g2_fitting_function()
 
+        self.pg_saxs.getView().scene().sigMouseMoved.connect(self.saxs2d_mouseMoved)
+
         self.load_default_setting()
         self.show()
 
@@ -199,13 +201,21 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         )
         self.hdf_info.setParameters(hdf_params, showTop=True)
 
+    def saxs2d_mouseMoved(self, pos):
+        if self.pg_saxs.view.sceneBoundingRect().contains(pos):
+            mouse_point = self.pg_saxs.getView().mapSceneToView(pos)
+            x, y = int(mouse_point.x()), int(mouse_point.y())
+            rows = self.get_selected_rows()
+            payload = self.vk.get_info_at_mouse(rows, x, y)
+            if payload:
+                self.saxs2d_display.setText(payload)
+
     def plot_saxs_2d(self, dryrun=False):
         kwargs = {
             "rows": self.get_selected_rows(),
             "plot_type": self.cb_saxs2D_type.currentText(),
             "cmap": self.cb_saxs2D_cmap.currentText(),
             "rotate": self.saxs2d_rotate.isChecked(),
-            "display": self.saxs2d_display,
             "autorange": self.saxs2d_autorange.isChecked(),
             "vmin": self.saxs2d_min.value(),
             "vmax": self.saxs2d_max.value(),
@@ -771,7 +781,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def reset_gui(self):
         self.vk.reset_kernel()
         for x in [
-            self.pg_saxs,
+            # self.pg_saxs,
             self.pg_intt,
             self.mp_tauq,
             self.mp_g2,

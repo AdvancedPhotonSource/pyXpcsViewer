@@ -219,6 +219,16 @@ class XpcsFile(object):
         else:
             raise KeyError(f"key [{key}] not found")
 
+    def get_info_at_position(self, x, y):
+        x, y = int(x), int(y)
+        shape = self.saxs_2d.shape
+        if x < 0 or x >= shape[1] or y < 0 or y >= shape[0]:
+            return None
+        else:
+            scat_intensity = self.saxs_2d[y, x]
+            qmap_info = self.qmap.get_qmap_at_pos(x, y)
+            return f"{qmap_info}, I={scat_intensity:.2f}"
+
     def get_detector_extent(self):
         return self.qmap.extent
 
