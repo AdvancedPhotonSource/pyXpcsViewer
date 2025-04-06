@@ -190,8 +190,8 @@ class QMap:
         }
 
         qmap_unit = {
-            "phi": "deg",
-            "alpha": "deg",
+            "phi": "°",
+            "alpha": "°",
             "q": "Å⁻¹",
             "qx": "Å⁻¹",
             "qy": "Å⁻¹",

@@ -227,7 +227,7 @@ class XpcsFile(object):
         else:
             scat_intensity = self.saxs_2d[y, x]
             qmap_info = self.qmap.get_qmap_at_pos(x, y)
-            return f"{qmap_info}, I={scat_intensity:.2f}"
+            return f"I={scat_intensity:.4e} {qmap_info}"
 
     def get_detector_extent(self):
         return self.qmap.extent
