@@ -3,8 +3,10 @@ import numpy as np
 
 def fill_center(input, out):
     v, h = input.shape
-    out[out.shape[0] // 2 - v // 2: out.shape[0] // 2 - v // 2 + v,
-        out.shape[1] // 2 - h // 2: out.shape[1] // 2 - h // 2 + h] = input
+    out[
+        out.shape[0] // 2 - v // 2 : out.shape[0] // 2 - v // 2 + v,
+        out.shape[1] // 2 - h // 2 : out.shape[1] // 2 - h // 2 + h,
+    ] = input
     return
 
 
@@ -31,14 +33,23 @@ def list_to_numpy(ans, rotate=True):
     return ret, rotate
 
 
-def plot(xf_list, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
-         epsilon=None, display=None, autorange=True, vmin=None, vmax=None):
+def plot(
+    xf_list,
+    pg_hdl=None,
+    plot_type="log",
+    cmap="jet",
+    rotate=False,
+    epsilon=None,
+    autorange=True,
+    vmin=None,
+    vmax=None,
+):
     extent = xf_list[0].get_detector_extent()
-    center = (xf_list[0].bcy, xf_list[0].bcx)
+    center = (xf_list[0].bcx, xf_list[0].bcy)
     saxs_2d_list = [xf.saxs_2d for xf in xf_list]
 
     ans, rotate = list_to_numpy(saxs_2d_list, rotate)
-    if plot_type == 'log':
+    if plot_type == "log":
         if epsilon is None or epsilon < 0:
             temp = ans.ravel()
             try:
@@ -60,16 +71,14 @@ def plot(xf_list, pg_hdl=None, plot_type='log', cmap='jet', rotate=False,
         pg_hdl.setImage(ans, xvals=xvals)
     else:
         pg_hdl.setImage(ans[0])
-    
+
     if not autorange:
         if vmin is not None and vmax is not None:
             pg_hdl.setLevels(vmin, vmax)
 
     pg_hdl.adjust_viewbox()
-    if extent is not None:
-        pg_hdl.add_readback(display=display, extent=extent)
 
     if center is not None:
-        pg_hdl.add_roi(sl_type='Center', center=center, label='Center')
+        pg_hdl.add_roi(sl_type="Center", center=center, label="Center")
 
-    return rotate # , pg_hdl.levelMin, pg_hdl.levelMax
+    return rotate
