@@ -4,8 +4,7 @@ from pyqtgraph import QtGui, QtCore
 import numpy as np
 
 
-pg.setConfigOptions(imageAxisOrder='row-major')
-
+pg.setConfigOptions(imageAxisOrder="row-major")
 
 
 class ImageViewPlotItem(ImageView):
@@ -26,12 +25,14 @@ class ImageViewDev(ImageView):
         xMin, xMax = vb.viewRange()[0]
         yMin, yMax = vb.viewRange()[1]
 
-        vb.setLimits(xMin=xMin,
-                     xMax=xMax,
-                     yMin=yMin,
-                     yMax=yMax,
-                     minXRange=(xMax - xMin) / 50,
-                     minYRange=(yMax - yMin) / 50)
+        vb.setLimits(
+            xMin=xMin,
+            xMax=xMax,
+            yMin=yMin,
+            yMax=yMax,
+            minXRange=(xMax - xMin) / 50,
+            minYRange=(yMax - yMin) / 50,
+        )
         vb.setMouseMode(vb.RectMode)
         vb.setAspectLocked(1.0)
 
@@ -39,72 +40,16 @@ class ImageViewDev(ImageView):
         """
         reset the viewbox's limits so updating image won't break the layout;
         """
-        self.view.state['limits'] = {'xLimits': [None, None],
-                                     'yLimits': [None, None],
-                                     'xRange': [None, None],
-                                     'yRange': [None, None]
-                                     }
+        self.view.state["limits"] = {
+            "xLimits": [None, None],
+            "yLimits": [None, None],
+            "xRange": [None, None],
+            "yRange": [None, None],
+        }
 
     def set_colormap(self, cmap):
         pg_cmap = pg.colormap.getFromMatplotlib(cmap)
         self.setColorMap(pg_cmap)
-
-    def add_readback(self, display=None, extent=None, type='log'):
-        # vLine = pg.InfiniteLine(angle=90, movable=False)
-        # hLine = pg.InfiniteLine(angle=0, movable=False)
-        # self.view.addItem(vLine, ignoreBounds=True)
-        # self.view.addItem(hLine, ignoreBounds=True)
-
-        # def print_roi_shape(evt):
-        #     print(self.roi.boundingRect())
-
-        # self.roi.sigRegionChanged.connect(print_roi_shape)
-
-        def compute_qxy(col, row):
-            s = self.image.shape[-2:]
-            # qx
-            a1, a2 = col, s[1] - col
-            qx = (extent[0] * a2 + extent[1] * a1) / s[1]
-
-            # qy
-            b1, b2 = row, s[0] - row
-            qy = (extent[2] * b2 + extent[3] * b1) / s[0]
-
-            return qx, qy
-
-        def mouse_moved(pos):
-            shape = self.image.shape
-            if self.scene.itemsBoundingRect().contains(pos):
-                mouse_point = self.getView().mapSceneToView(pos)
-                # vLine.setPos(mouse_point.x())
-                # hLine.setPos(mouse_point.y())
-                col = int(mouse_point.x())
-                row = int(mouse_point.y())
-
-                if col < 0 or col >= shape[-1]:
-                    return
-                if row < 0 or row >= shape[-2]:
-                    return
-
-                if len(shape) == 3:
-                    pixel_val = self.image[self.currentIndex, row, col]
-                elif len(shape) == 2:
-                    pixel_val = self.image[row, col]
-                else:
-                    raise ValueError('Check array dimension')
-
-                if type == 'log':
-                    pixel_val = 10 ** pixel_val
-                qx, qy = compute_qxy(col, row)
-
-                if display is None:
-                    print(pixel_val)
-                else:
-                    display.clear()
-                    display.setText(
-                        '%d: [x=%4d, y=%4d, qx=%fÅ⁻¹, qy=%fÅ⁻¹, c:%.3f]' % (
-                            self.currentIndex, col, row, qx, qy, pixel_val))
-        self.scene.sigMouseMoved.connect(mouse_moved)
 
     def clear(self):
         super(ImageViewDev, self).clear()
@@ -116,52 +61,59 @@ class ImageViewDev(ImageView):
             self.scene.sigMouseMoved.disconnect()
         except:
             pass
-    
-    def add_roi(self, cen=None, num_edges=None, radius=60, color='r',
-                sl_type='Pie', width=3, sl_mode='exclusive',
-                second_point=None, label=None, center=None):
+
+    def add_roi(
+        self,
+        cen=None,
+        num_edges=None,
+        radius=60,
+        color="r",
+        sl_type="Pie",
+        width=3,
+        sl_mode="exclusive",
+        second_point=None,
+        label=None,
+        center=None,
+    ):
         # label: label of roi; default is None, which is for roi-draw
 
         if label is not None and label in self.roi_record:
             self.remove_roi(label)
 
-        if sl_mode == 'inclusive':
+        if sl_mode == "inclusive":
             pen = pg.mkPen(color=color, width=width, style=QtCore.Qt.DotLine)
         else:
             pen = pg.mkPen(color=color, width=width)
 
-        kwargs = {
-            'pen': pen,
-            'removable': True,
-            'hoverPen': pen,
-            'handlePen': pen
-        }
+        kwargs = {"pen": pen, "removable": True, "hoverPen": pen, "handlePen": pen}
 
-        if sl_type == 'Circle':
+        if sl_type == "Circle":
             if second_point is not None:
-                radius = np.sqrt((second_point[1] - cen[1]) ** 2 + 
-                                 (second_point[0] - cen[0]) ** 2)
-            new_roi = pg.CircleROI(pos=[cen[0] - radius, cen[1] - radius],
-                                   radius=radius, movable=False,
-                                   **kwargs)
+                radius = np.sqrt(
+                    (second_point[1] - cen[1]) ** 2 + (second_point[0] - cen[0]) ** 2
+                )
+            new_roi = pg.CircleROI(
+                pos=[cen[0] - radius, cen[1] - radius],
+                radius=radius,
+                movable=False,
+                **kwargs,
+            )
 
-        elif sl_type == 'Line':
+        elif sl_type == "Line":
             if second_point is None:
                 return
-            width = kwargs.pop('width', 1)
-            new_roi = pg.LineROI(cen, second_point, width,
-                              **kwargs)
-        elif sl_type == 'Pie':
-            width = kwargs.pop('width', 1)
+            width = kwargs.pop("width", 1)
+            new_roi = pg.LineROI(cen, second_point, width, **kwargs)
+        elif sl_type == "Pie":
+            width = kwargs.pop("width", 1)
             new_roi = PieROI(cen, radius, movable=False, **kwargs)
-        elif sl_type == 'Center':
+        elif sl_type == "Center":
             if center is None:
                 return
             new_roi = pg.ScatterPlotItem()
-            new_roi.addPoints(x=[center[0]], y=[center[1]], symbol='+', 
-                              size=15)
+            new_roi.addPoints(x=[center[0]], y=[center[1]], symbol="+", size=15)
         else:
-            raise TypeError('type not implemented. %s' % sl_type)
+            raise TypeError("type not implemented. %s" % sl_type)
 
         new_roi.sl_mode = sl_mode
 
@@ -170,10 +122,10 @@ class ImageViewDev(ImageView):
             self.roi_idx += 1
         self.roi_record[label] = new_roi
         self.addItem(new_roi)
-        if sl_type != 'Center':
+        if sl_type != "Center":
             new_roi.sigRemoveRequested.connect(lambda: self.remove_roi(label))
-        return label 
-    
+        return label
+
     def remove_rois(self, filter_str=None):
         # if filter_str is None; then remove all rois
         keys = list(self.roi_record.keys()).copy()
@@ -181,7 +133,7 @@ class ImageViewDev(ImageView):
             keys = list(filter(lambda x: x.startswith(filter_str), keys))
         for key in keys:
             self.remove_roi(key)
-    
+
     def remove_roi(self, roi_key):
         t = self.roi_record.pop(roi_key, None)
         if t is not None:
@@ -190,15 +142,18 @@ class ImageViewDev(ImageView):
     def get_roi_list(self):
         parameter = []
         for key, roi in self.roi_record.items():
-            if key == 'Center':
+            if key == "Center":
                 continue
-            elif key.startswith('RingB'):
+            elif key.startswith("RingB"):
                 temp = {
-                    'sl_type': 'Ring',
-                    'radius': (roi.getState()['size'][1] / 2.0,
-                        self.roi_record['RingA'].getState()['size'][1] / 2.0)}
+                    "sl_type": "Ring",
+                    "radius": (
+                        roi.getState()["size"][1] / 2.0,
+                        self.roi_record["RingA"].getState()["size"][1] / 2.0,
+                    ),
+                }
                 parameter.append(temp)
-            elif key.startswith('roi'):
+            elif key.startswith("roi"):
                 temp = roi.get_parameter()
                 parameter.append(temp)
         return parameter
@@ -207,7 +162,7 @@ class ImageViewDev(ImageView):
 class PlotWidgetDev(GraphicsLayoutWidget):
     def __init__(self, *args, **kwargs) -> None:
         super(PlotWidgetDev, self).__init__(*args, **kwargs)
-        self.setBackground('w')
+        self.setBackground("w")
 
     def adjust_canvas_size(self, num_col, num_row):
         t = self.parent().parent().parent()
@@ -262,20 +217,20 @@ class PieROI(pg.ROI):
             poly.append(QtCore.QPointF(*pt))
         self.poly = None
         self.poly = poly
-    
+
     def get_parameter(self):
         state = self.getState()
-        angle_range = np.array([-1, 1]) * self.half_angle + state['angle'] 
+        angle_range = np.array([-1, 1]) * self.half_angle + state["angle"]
         # shift angle_range's origin to 6 clock
         angle_range = angle_range - 90
         angle_range = angle_range - np.floor(angle_range / 360.0) * 360.0
-        size = state['size']
+        size = state["size"]
         dist = np.hypot(size[0], size[1] / 2.0)
         ret = {
-            'sl_type': 'Pie',
-            'dist': dist,
-            'angle_range': angle_range,
-            'pos': tuple(self.pos())
+            "sl_type": "Pie",
+            "dist": dist,
+            "angle_range": angle_range,
+            "pos": tuple(self.pos()),
         }
         return ret
 
