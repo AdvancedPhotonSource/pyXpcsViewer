@@ -73,6 +73,20 @@ class QMap:
         extent = (qx_min, qx_max, qy_min, qy_max)
         return extent
 
+    def get_qmap_at_pos(self, x, y):
+        shape = self.mask.shape
+        if x < 0 or x >= shape[1] or y < 0 or y >= shape[0]:
+            return None
+        else:
+            qmap, qmap_units = self.qmap, self.qmap_units
+            result = ""
+            for key in self.qmap.keys():
+                if key in ["q", "qx", "qy", "phi", "alpha"]:
+                    result += f" {key}={qmap[key][y, x]:.3f} {qmap_units[key]},"
+                else:
+                    result += f" {key}={qmap[key][y, x]} {qmap_units[key]},"
+            return result[:-1]
+
     def create_qbin_labels(self):
         if self.map_names == ["q", "phi"]:
             label_0 = [f"q={x:.5f} {self.map_units[0]}" for x in self.dqlist]
@@ -155,10 +169,10 @@ class QMap:
         h = np.arange(shape[1], dtype=np.uint32) - self.bcx
         vg, hg = np.meshgrid(v, h, indexing="ij")
 
-        r = np.hypot(vg * self.pixel_size, hg * self.pixel_size)
-        phi = np.arctan2(hg, vg)
-
+        r = np.hypot(vg, hg) * self.pixel_size
+        phi = np.arctan2(vg, hg) * (-1)
         alpha = np.arctan(r / self.det_dist)
+
         qr = np.sin(alpha) * self.k0
         qx = qr * np.cos(phi)
         qy = qr * np.sin(phi)
@@ -178,9 +192,9 @@ class QMap:
         qmap_unit = {
             "phi": "deg",
             "alpha": "deg",
-            "q": "1/Å",
-            "qx": "1/Å",
-            "qy": "1/Å",
+            "q": "Å⁻¹",
+            "qx": "Å⁻¹",
+            "qy": "Å⁻¹",
             "x": "pixel",
             "y": "pixel",
         }
