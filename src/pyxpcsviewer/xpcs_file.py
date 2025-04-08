@@ -247,7 +247,9 @@ class XpcsFile(object):
             qindex_selected = np.arange(self.g2.shape[1])
 
         g2 = self.g2[:, qindex_selected]
+        q_selected = self.dqlist[qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
+
         labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
         if trange is not None:
@@ -258,7 +260,7 @@ class XpcsFile(object):
         else:
             t_el = self.t_el
 
-        return t_el, g2, g2_err, labels
+        return q_selected, t_el, g2, g2_err, labels
 
     def get_twotime_maps(self):
         dqmap, saxs = self.dqmap, self.saxs_2d
@@ -343,19 +345,19 @@ class XpcsFile(object):
     def get_twotime_stream(self, **kwargs):
         return get_c2_stream(self.fname, **kwargs)
 
-    def get_g2_fitting_line(self, q, tor=1e-6):
-        """
-        get the fitting line for q, within tor
-        """
-        if self.fit_summary is None:
-            return None, None
-        idx = np.argmin(np.abs(self.fit_summary["q_val"] - q))
-        if abs(self.fit_summary["q_val"][idx] - q) > tor:
-            return None, None
+    # def get_g2_fitting_line(self, q, tor=1e-6):
+    #     """
+    #     get the fitting line for q, within tor
+    #     """
+    #     if self.fit_summary is None:
+    #         return None, None
+    #     idx = np.argmin(np.abs(self.fit_summary["q_val"] - q))
+    #     if abs(self.fit_summary["q_val"][idx] - q) > tor:
+    #         return None, None
 
-        fit_x = self.fit_summary["fit_line"][idx]["fit_x"]
-        fit_y = self.fit_summary["fit_line"][idx]["fit_y"]
-        return fit_x, fit_y
+    #     fit_x = self.fit_summary["fit_line"][idx]["fit_x"]
+    #     fit_y = self.fit_summary["fit_line"][idx]["fit_y"]
+    #     return fit_x, fit_y
 
     def get_fitting_info(self, mode="g2_fitting"):
         if self.fit_summary is None:
@@ -426,7 +428,7 @@ class XpcsFile(object):
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
 
-        t_el, q, g2, sigma, labels = self.get_g2_data(qrange=q_range, trange=t_range)
+        q_val, t_el, g2, sigma, label = self.get_g2_data(qrange=q_range, trange=t_range)
 
         # set the initial guess
         p0 = np.array(bounds).mean(axis=0)
@@ -447,12 +449,13 @@ class XpcsFile(object):
             "fit_func": fit_func,
             "fit_val": fit_val,
             "t_el": t_el,
-            "q_val": q,
+            "q_val": q_val,
             "q_range": str(q_range),
             "t_range": str(t_range),
             "bounds": bounds,
             "fit_flag": str(fit_flag),
             "fit_line": fit_line,
+            "label": label,
         }
 
         return self.fit_summary

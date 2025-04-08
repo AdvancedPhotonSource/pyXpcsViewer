@@ -69,10 +69,10 @@ class ViewerKernel(FileLocator):
             g2mod.pg_plot(
                 handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs
             )
-            flag, tel, qd, *unused = g2mod.get_data(xf_list)
-            return flag, tel, qd
+            q, tel, *unused = g2mod.get_data(xf_list)
+            return q, tel
         else:
-            return False, None, None
+            return None, None
 
     def plot_qmap(self, hdl, rows=None, target=None):
         xf_list = self.get_xf_list(rows=rows)
