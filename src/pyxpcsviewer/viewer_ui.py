@@ -32,7 +32,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1555, 1013)
+        mainWindow.resize(1555, 952)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -799,7 +799,7 @@ class Ui_mainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.g2_scroll_area = QWidget()
         self.g2_scroll_area.setObjectName(u"g2_scroll_area")
-        self.g2_scroll_area.setGeometry(QRect(0, 0, 1134, 741))
+        self.g2_scroll_area.setGeometry(QRect(0, 0, 1134, 680))
         sizePolicy1.setHeightForWidth(self.g2_scroll_area.sizePolicy().hasHeightForWidth())
         self.g2_scroll_area.setSizePolicy(sizePolicy1)
         self.gridLayout_10 = QGridLayout(self.g2_scroll_area)
@@ -847,6 +847,7 @@ class Ui_mainWindow(object):
 
         self.g2_qmin = QDoubleSpinBox(self.groupBox)
         self.g2_qmin.setObjectName(u"g2_qmin")
+        self.g2_qmin.setEnabled(False)
         sizePolicy9 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         sizePolicy9.setHorizontalStretch(0)
         sizePolicy9.setVerticalStretch(0)
@@ -859,6 +860,7 @@ class Ui_mainWindow(object):
 
         self.g2_qmax = QDoubleSpinBox(self.groupBox)
         self.g2_qmax.setObjectName(u"g2_qmax")
+        self.g2_qmax.setEnabled(False)
         sizePolicy9.setHeightForWidth(self.g2_qmax.sizePolicy().hasHeightForWidth())
         self.g2_qmax.setSizePolicy(sizePolicy9)
         self.g2_qmax.setDecimals(4)
@@ -891,6 +893,7 @@ class Ui_mainWindow(object):
 
         self.g2_tmin = QLineEdit(self.groupBox)
         self.g2_tmin.setObjectName(u"g2_tmin")
+        self.g2_tmin.setEnabled(False)
         sizePolicy9.setHeightForWidth(self.g2_tmin.sizePolicy().hasHeightForWidth())
         self.g2_tmin.setSizePolicy(sizePolicy9)
 
@@ -898,6 +901,7 @@ class Ui_mainWindow(object):
 
         self.g2_tmax = QLineEdit(self.groupBox)
         self.g2_tmax.setObjectName(u"g2_tmax")
+        self.g2_tmax.setEnabled(False)
         sizePolicy9.setHeightForWidth(self.g2_tmax.sizePolicy().hasHeightForWidth())
         self.g2_tmax.setSizePolicy(sizePolicy9)
 
@@ -909,6 +913,18 @@ class Ui_mainWindow(object):
         self.g2_yauto.setSizePolicy(sizePolicy9)
 
         self.gridLayout_11.addWidget(self.g2_yauto, 2, 3, 1, 1)
+
+        self.g2_tauto = QCheckBox(self.groupBox)
+        self.g2_tauto.setObjectName(u"g2_tauto")
+        self.g2_tauto.setChecked(True)
+
+        self.gridLayout_11.addWidget(self.g2_tauto, 1, 3, 1, 1)
+
+        self.g2_qauto = QCheckBox(self.groupBox)
+        self.g2_qauto.setObjectName(u"g2_qauto")
+        self.g2_qauto.setChecked(True)
+
+        self.gridLayout_11.addWidget(self.g2_qauto, 0, 3, 1, 1)
 
 
         self.gridLayout_13.addLayout(self.gridLayout_11, 0, 1, 1, 1)
@@ -1986,8 +2002,12 @@ class Ui_mainWindow(object):
         self.box_show_phi_roi.toggled.connect(self.box_show_roi.setDisabled)
         self.box_show_phi_roi.toggled.connect(self.box_all_phi.setDisabled)
         self.filter_str.textChanged.connect(mainWindow.apply_filter_to_source)
+        self.g2_qauto.toggled.connect(self.g2_qmin.setDisabled)
+        self.g2_qauto.toggled.connect(self.g2_qmax.setDisabled)
+        self.g2_tauto.toggled.connect(self.g2_tmin.setDisabled)
+        self.g2_tauto.toggled.connect(self.g2_tmax.setDisabled)
 
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(4)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -2143,12 +2163,14 @@ class Ui_mainWindow(object):
         self.pushButton_plot_intt.setText(QCoreApplication.translate("mainWindow", u"plot Intensity-T", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Intensity-Time", None))
         self.groupBox.setTitle(QCoreApplication.translate("mainWindow", u"Data Selection:", None))
-        self.label_4.setText(QCoreApplication.translate("mainWindow", u"t range (s):", None))
-        self.label_3.setText(QCoreApplication.translate("mainWindow", u"q (1/\u00c5):", None))
-        self.label_7.setText(QCoreApplication.translate("mainWindow", u"y range", None))
+        self.label_4.setText(QCoreApplication.translate("mainWindow", u"t  (s)", None))
+        self.label_3.setText(QCoreApplication.translate("mainWindow", u"q (\u00c5\u207b\u00b9)", None))
+        self.label_7.setText(QCoreApplication.translate("mainWindow", u"y ", None))
         self.g2_tmin.setText(QCoreApplication.translate("mainWindow", u"1e-6", None))
         self.g2_tmax.setText(QCoreApplication.translate("mainWindow", u"100.0", None))
         self.g2_yauto.setText(QCoreApplication.translate("mainWindow", u"auto", None))
+        self.g2_tauto.setText(QCoreApplication.translate("mainWindow", u"auto", None))
+        self.g2_qauto.setText(QCoreApplication.translate("mainWindow", u"auto", None))
         self.pushButton_4.setText(QCoreApplication.translate("mainWindow", u"plot", None))
         self.label.setText(QCoreApplication.translate("mainWindow", u"offset:", None))
         self.label_53.setText(QCoreApplication.translate("mainWindow", u"marker size:", None))
