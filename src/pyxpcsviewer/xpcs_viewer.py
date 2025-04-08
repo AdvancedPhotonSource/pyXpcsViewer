@@ -599,10 +599,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.tree = worker.get_pg_tree()
         self.tree.show()
 
-    def init_g2(self, flag, tel, qd):
-        if not flag:
-            logger.error("g2 data is not consistent or not multitau analysis. abort")
-            return
+    def init_g2(self, qd, tel):
+        if qd is None or tel is None:
+            return None
+
+        q_auto = self.g2_qauto.isChecked()
+        t_auto = self.g2_tauto.isChecked()
 
         # tel is a list of arrays, which may have diffent shape;
         t_min = np.min([t[0] for t in tel])
@@ -615,15 +617,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.g2_bmax.setText(to_e(t_max * 10))
         self.g2_bmax.setValue(t_max * 10)
 
-        self.g2_tmin.setText(to_e(t_min / 1.1))
-        self.g2_tmax.setText(to_e(t_max * 1.1))
+        if t_auto:
+            self.g2_tmin.setText(to_e(t_min / 1.1))
+            self.g2_tmax.setText(to_e(t_max * 1.1))
 
-        if self.g2_qmin.value() > np.max(qd):
-            self.g2_qmin.setValue(np.min(qd) * 0.9)
-
-        qmax = self.g2_qmax.value()
-        if qmax < np.min(qd) or qmax < self.g2_qmin.value():
-            self.g2_qmin.setValue(np.max(qd) * 1.1)
+        if q_auto:
+            self.g2_qmin.setValue(np.min(qd) / 1.1)
+            self.g2_qmax.setValue(np.max(qd) * 1.1)
 
     def plot_g2(self, dryrun=False):
         p = self.check_g2_number()
@@ -639,6 +639,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "t_range": (p[2], p[3]),
             "y_range": (p[4], p[5]),
             "y_auto": self.g2_yauto.isChecked(),
+            "q_auto": self.g2_qauto.isChecked(),
+            "t_auto": self.g2_tauto.isChecked(),
             "rows": self.get_selected_rows(),
             "bounds": bounds,
             "fit_flag": fit_flag,
@@ -656,17 +658,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.pushButton_4.setDisabled(True)
             self.pushButton_4.setText("plotting")
-            if kwargs["y_auto"]:
-                kwargs["t_range"] = None
             try:
-                flag, tel, qd = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
-                self.init_g2(flag, tel, qd)
-            except ZeroDivisionError:
-                self.statusbar.showMessage("check range", 1000)
-            self.pushButton_4.setEnabled(True)
-            self.pushButton_4.setText("plot")
-            if kwargs["show_fit"]:
-                self.init_diffusion()
+                qd, tel = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+                self.init_g2(qd, tel)
+                if kwargs["show_fit"]:
+                    self.init_diffusion()
+            except Exception as e:
+                traceback.print_exc()
+            finally:
+                self.pushButton_4.setEnabled(True)
+                self.pushButton_4.setText("plot")
 
     def export_g2(self):
         self.vk.export_g2()
