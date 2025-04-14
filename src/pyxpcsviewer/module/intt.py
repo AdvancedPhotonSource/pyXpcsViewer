@@ -92,7 +92,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
         t.plot(
             data[n][0],
             data[n][1],
-            pen=pg.mkPen(colors[n], width=1),
+            pen=pg.mkPen(colors[n % len(colors)], width=1),
             name=xf_list[n].label,
         )
     t.setTitle("Intensity vs %s" % xlabel)
@@ -116,13 +116,15 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
         # get ride of zero frequency;
         y[0] = 0
 
-        tf.plot(x, y, pen=pg.mkPen(colors[n], width=1), name=xf_list[n].label)
+        tf.plot(
+            x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label
+        )
 
     for n in range(len(data)):
         tz.plot(
             data[n][0],
             data[n][1],
-            pen=pg.mkPen(colors[n], width=1),
+            pen=pg.mkPen(colors[n % len(colors)], width=1),
             name=xf_list[n].label,
         )
 
