@@ -324,7 +324,7 @@ class XpcsFile(object):
         xlabel = "q (Å⁻¹)"
         return q, Iq, xlabel, ylabel
 
-    def get_twotime_c2(self, max_c2_num=-1, max_size=16384):
+    def get_twotime_c2(self, max_c2_num=-1, max_size=32768):
         dq_selection = tuple(self.c2_processed_bins.tolist())
         kwargs = (dq_selection, max_c2_num, max_size)
         if self.c2_kwargs == kwargs and self.c2_all_data is not None:
