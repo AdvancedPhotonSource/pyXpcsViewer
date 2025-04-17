@@ -282,8 +282,8 @@ class XpcsFile(object):
         else:
             q, Iq = self.saxs_1d["q"], self.Iqp
         if bkg_xf is not None:
-            if np.all_close(q, bkg_xf.q):
-                Iq = Iq - bkg_weight * bkg_xf.saxs_1d
+            if np.allclose(q, bkg_xf.saxs_1d["q"]):
+                Iq = Iq - bkg_weight * bkg_xf.saxs_1d["Iq"]
                 Iq[Iq < 0] = np.nan
             else:
                 logger.warning(
