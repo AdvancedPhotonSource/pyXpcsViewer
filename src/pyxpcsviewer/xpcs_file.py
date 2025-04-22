@@ -241,15 +241,9 @@ class XpcsFile(object):
     def get_g2_data(self, qrange=None, trange=None):
         assert "Multitau" in self.atype, "only multitau is supported"
         # qrange can be None
-        qindex_selected = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
-        if len(qindex_selected) == 0:
-            logger.warning("no qbins in the specified range. use all qbins instead")
-            qindex_selected = np.arange(self.g2.shape[1])
-
+        qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2[:, qindex_selected]
-        q_selected = self.dqlist[qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-
         labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
 
         if trange is not None:
@@ -260,7 +254,7 @@ class XpcsFile(object):
         else:
             t_el = self.t_el
 
-        return q_selected, t_el, g2, g2_err, labels
+        return qvalues, t_el, g2, g2_err, labels
 
     def get_twotime_maps(self):
         dqmap, saxs = self.dqmap, self.saxs_2d
