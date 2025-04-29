@@ -176,8 +176,8 @@ def pg_plot(
     legend.anchor(**anchor_param)
 
     alpha = np.ones(len(xf_list)) * 1.0
-    if not rows:
-        alpha *= 0.85
+    if rows:
+        alpha *= 0.35
         for t in rows:
             alpha[t] = 1.0
 
