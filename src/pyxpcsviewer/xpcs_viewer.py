@@ -120,6 +120,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_deselect.clicked.connect(self.clear_target_selection)
         self.list_view_target.doubleClicked.connect(self.show_dataset)
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
+        self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -210,9 +211,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             if payload:
                 self.saxs2d_display.setText(payload)
 
-    def plot_saxs_2d(self, dryrun=False):
+    def plot_saxs_2d_selection(self):
+        selection = self.spinBox_saxs2d_selection.value()
+        self.plot_saxs_2d(selection=selection)
+
+    def plot_saxs_2d(self, selection=None, dryrun=False):
         kwargs = {
-            "rows": self.get_selected_rows(),
             "plot_type": self.cb_saxs2D_type.currentText(),
             "cmap": self.cb_saxs2D_cmap.currentText(),
             "rotate": self.saxs2d_rotate.isChecked(),
@@ -220,6 +224,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "vmin": self.saxs2d_min.value(),
             "vmax": self.saxs2d_max.value(),
         }
+        if selection:
+            kwargs["rows"] = [selection]
+        else:
+            kwargs["rows"] = self.get_selected_rows()
+
         if dryrun:
             return kwargs
         else:
@@ -729,6 +738,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             file_list.layoutChanged.emit()
             self.box_target.repaint()
             self.list_view_target.repaint()
+            max_size = len(file_list) - 1
+            self.horizontalSlider_saxs2d_selection.setMaximum(max_size)
+            self.spinBox_saxs2d_selection.setMaximum(max_size)
         self.statusbar.showMessage("Target file list updated.", 1000)
         return
 
