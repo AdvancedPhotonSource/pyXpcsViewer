@@ -20,22 +20,6 @@ class ImageViewDev(ImageView):
         self.roi_record = {}
         self.roi_idx = 0
 
-    def adjust_viewbox(self):
-        vb = self.getView()
-        xMin, xMax = vb.viewRange()[0]
-        yMin, yMax = vb.viewRange()[1]
-
-        vb.setLimits(
-            xMin=xMin,
-            xMax=xMax,
-            yMin=yMin,
-            yMax=yMax,
-            minXRange=(xMax - xMin) / 50,
-            minYRange=(yMax - yMin) / 50,
-        )
-        vb.setMouseMode(vb.RectMode)
-        vb.setAspectLocked(1.0)
-
     def reset_limits(self):
         """
         reset the viewbox's limits so updating image won't break the layout;
