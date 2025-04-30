@@ -116,7 +116,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
-        self.saxs2d_autorange.stateChanged.connect(self.update_saxs2d_range)
+        self.saxs2d_autolevel.stateChanged.connect(self.update_saxs2d_level)
         self.btn_deselect.clicked.connect(self.clear_target_selection)
         self.list_view_target.doubleClicked.connect(self.show_dataset)
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
@@ -183,8 +183,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             kwargs = func(dryrun=True)
             kwargs["target_timestamp"] = self.vk.timestamp
             if self.plot_kwargs_record[tab_name] != kwargs:
-                func(dryrun=False)
                 self.plot_kwargs_record[tab_name] = kwargs
+                func(dryrun=False)
         except Exception as e:
             logger.error(f"update selection in [{tab_name}] failed")
             logger.error(e)
@@ -220,11 +220,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "plot_type": self.cb_saxs2D_type.currentText(),
             "cmap": self.cb_saxs2D_cmap.currentText(),
             "rotate": self.saxs2d_rotate.isChecked(),
-            "autorange": self.saxs2d_autorange.isChecked(),
+            "autolevel": self.saxs2d_autolevel.isChecked(),
             "vmin": self.saxs2d_min.value(),
             "vmax": self.saxs2d_max.value(),
         }
-        if selection:
+        if selection and selection >= 0:
             kwargs["rows"] = [selection]
         else:
             kwargs["rows"] = self.get_selected_rows()
@@ -740,7 +740,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.list_view_target.repaint()
             max_size = len(file_list) - 1
             self.horizontalSlider_saxs2d_selection.setMaximum(max_size)
+            self.horizontalSlider_saxs2d_selection.setValue(0)
             self.spinBox_saxs2d_selection.setMaximum(max_size)
+            self.spinBox_saxs2d_selection.setValue(0)
         self.statusbar.showMessage("Target file list updated.", 1000)
         return
 
@@ -909,7 +911,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         bounds = bounds.tolist()
         return bounds, fit_flag, fit_func
 
-    def update_saxs2d_range(self, flag=True):
+    def update_saxs2d_level(self, flag=True):
         if not flag:
             vmin = self.pg_saxs.levelMin
             vmax = self.pg_saxs.levelMax

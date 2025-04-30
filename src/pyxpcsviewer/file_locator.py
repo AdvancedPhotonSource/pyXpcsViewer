@@ -55,6 +55,8 @@ class FileLocator(object):
 
         ret = []
         for n in selected:
+            if n < 0 or n >= len(self.target):
+                continue
             full_fname = os.path.join(self.path, self.target[n])
             if full_fname not in self.cache:
                 xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)

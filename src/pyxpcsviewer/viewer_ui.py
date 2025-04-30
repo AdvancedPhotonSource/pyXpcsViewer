@@ -19,9 +19,9 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
     QComboBox, QDoubleSpinBox, QGridLayout, QGroupBox,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QListView, QMainWindow, QPushButton, QScrollArea,
-    QSizePolicy, QSlider, QSpacerItem, QSpinBox,
-    QSplitter, QStatusBar, QTabWidget, QTableView,
-    QVBoxLayout, QWidget)
+    QSizePolicy, QSlider, QSpinBox, QSplitter,
+    QStatusBar, QTabWidget, QTableView, QVBoxLayout,
+    QWidget)
 
 from .plothandler import (ImageViewDev, ImageViewPlotItem, MplCanvasBarV, PlotWidgetDev)
 from pyqtgraph import (DataTreeWidget, GraphicsLayoutWidget, ImageView, PlotWidget)
@@ -306,6 +306,12 @@ class Ui_mainWindow(object):
 
         self.gridLayout_40.addWidget(self.saxs2d_min, 1, 6, 1, 1)
 
+        self.saxs2d_autolevel = QCheckBox(self.groupBox_3)
+        self.saxs2d_autolevel.setObjectName(u"saxs2d_autolevel")
+        self.saxs2d_autolevel.setChecked(True)
+
+        self.gridLayout_40.addWidget(self.saxs2d_autolevel, 1, 9, 1, 1)
+
         self.saxs2d_max = QDoubleSpinBox(self.groupBox_3)
         self.saxs2d_max.setObjectName(u"saxs2d_max")
         self.saxs2d_max.setEnabled(False)
@@ -316,10 +322,21 @@ class Ui_mainWindow(object):
 
         self.gridLayout_40.addWidget(self.saxs2d_max, 1, 8, 1, 1)
 
+        self.label_24 = QLabel(self.groupBox_3)
+        self.label_24.setObjectName(u"label_24")
+
+        self.gridLayout_40.addWidget(self.label_24, 0, 0, 1, 1)
+
         self.label_12 = QLabel(self.groupBox_3)
         self.label_12.setObjectName(u"label_12")
 
         self.gridLayout_40.addWidget(self.label_12, 1, 2, 1, 1)
+
+        self.pushButton_plot_saxs2d = QPushButton(self.groupBox_3)
+        self.pushButton_plot_saxs2d.setObjectName(u"pushButton_plot_saxs2d")
+        self.pushButton_plot_saxs2d.setMinimumSize(QSize(0, 0))
+
+        self.gridLayout_40.addWidget(self.pushButton_plot_saxs2d, 1, 11, 1, 1)
 
         self.label_50 = QLabel(self.groupBox_3)
         self.label_50.setObjectName(u"label_50")
@@ -333,40 +350,23 @@ class Ui_mainWindow(object):
 
         self.gridLayout_40.addWidget(self.label_13, 1, 0, 1, 1)
 
-        self.label_24 = QLabel(self.groupBox_3)
-        self.label_24.setObjectName(u"label_24")
+        self.saxs2d_rotate = QCheckBox(self.groupBox_3)
+        self.saxs2d_rotate.setObjectName(u"saxs2d_rotate")
+        self.saxs2d_rotate.setChecked(False)
 
-        self.gridLayout_40.addWidget(self.label_24, 0, 0, 1, 1)
-
-        self.horizontalSlider_saxs2d_selection = QSlider(self.groupBox_3)
-        self.horizontalSlider_saxs2d_selection.setObjectName(u"horizontalSlider_saxs2d_selection")
-        self.horizontalSlider_saxs2d_selection.setOrientation(Qt.Orientation.Horizontal)
-
-        self.gridLayout_40.addWidget(self.horizontalSlider_saxs2d_selection, 0, 1, 1, 5)
+        self.gridLayout_40.addWidget(self.saxs2d_rotate, 1, 10, 1, 1)
 
         self.spinBox_saxs2d_selection = QSpinBox(self.groupBox_3)
         self.spinBox_saxs2d_selection.setObjectName(u"spinBox_saxs2d_selection")
         self.spinBox_saxs2d_selection.setMaximum(99999)
 
-        self.gridLayout_40.addWidget(self.spinBox_saxs2d_selection, 0, 6, 1, 1)
+        self.gridLayout_40.addWidget(self.spinBox_saxs2d_selection, 0, 11, 1, 1)
 
-        self.saxs2d_autorange = QCheckBox(self.groupBox_3)
-        self.saxs2d_autorange.setObjectName(u"saxs2d_autorange")
-        self.saxs2d_autorange.setChecked(True)
+        self.horizontalSlider_saxs2d_selection = QSlider(self.groupBox_3)
+        self.horizontalSlider_saxs2d_selection.setObjectName(u"horizontalSlider_saxs2d_selection")
+        self.horizontalSlider_saxs2d_selection.setOrientation(Qt.Orientation.Horizontal)
 
-        self.gridLayout_40.addWidget(self.saxs2d_autorange, 0, 8, 1, 1)
-
-        self.saxs2d_rotate = QCheckBox(self.groupBox_3)
-        self.saxs2d_rotate.setObjectName(u"saxs2d_rotate")
-        self.saxs2d_rotate.setChecked(False)
-
-        self.gridLayout_40.addWidget(self.saxs2d_rotate, 0, 9, 1, 1)
-
-        self.pushButton_plot_saxs2d = QPushButton(self.groupBox_3)
-        self.pushButton_plot_saxs2d.setObjectName(u"pushButton_plot_saxs2d")
-        self.pushButton_plot_saxs2d.setMinimumSize(QSize(0, 0))
-
-        self.gridLayout_40.addWidget(self.pushButton_plot_saxs2d, 1, 9, 1, 1)
+        self.gridLayout_40.addWidget(self.horizontalSlider_saxs2d_selection, 0, 1, 1, 10)
 
 
         self.gridLayout_26.addWidget(self.groupBox_3, 2, 0, 1, 1)
@@ -1483,45 +1483,13 @@ class Ui_mainWindow(object):
         self.groupBox_11.setSizePolicy(sizePolicy5)
         self.groupBox_11.setMinimumSize(QSize(0, 0))
         self.groupBox_11.setMaximumSize(QSize(16777215, 65536))
-        self.gridLayout_37 = QGridLayout(self.groupBox_11)
-        self.gridLayout_37.setObjectName(u"gridLayout_37")
-        self.horizontalSpacer_5 = QSpacerItem(279, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout_37.addItem(self.horizontalSpacer_5, 0, 0, 1, 1)
-
-        self.gridLayout_2 = QGridLayout()
+        self.gridLayout_2 = QGridLayout(self.groupBox_11)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.cb_twotime_saxs_cmap = QComboBox(self.groupBox_11)
-        self.cb_twotime_saxs_cmap.addItem("")
-        self.cb_twotime_saxs_cmap.addItem("")
-        self.cb_twotime_saxs_cmap.addItem("")
-        self.cb_twotime_saxs_cmap.addItem("")
-        self.cb_twotime_saxs_cmap.addItem("")
-        self.cb_twotime_saxs_cmap.addItem("")
-        self.cb_twotime_saxs_cmap.setObjectName(u"cb_twotime_saxs_cmap")
-
-        self.gridLayout_2.addWidget(self.cb_twotime_saxs_cmap, 0, 2, 1, 3)
-
-        self.pushButton_12 = QPushButton(self.groupBox_11)
-        self.pushButton_12.setObjectName(u"pushButton_12")
-
-        self.gridLayout_2.addWidget(self.pushButton_12, 1, 9, 1, 3)
-
-        self.label_35 = QLabel(self.groupBox_11)
-        self.label_35.setObjectName(u"label_35")
-
-        self.gridLayout_2.addWidget(self.label_35, 0, 0, 1, 2)
-
+        self.gridLayout_2.setContentsMargins(2, 2, 2, 2)
         self.label_28 = QLabel(self.groupBox_11)
         self.label_28.setObjectName(u"label_28")
 
-        self.gridLayout_2.addWidget(self.label_28, 1, 0, 1, 2)
-
-        self.twotime_autocrop = QCheckBox(self.groupBox_11)
-        self.twotime_autocrop.setObjectName(u"twotime_autocrop")
-        self.twotime_autocrop.setChecked(True)
-
-        self.gridLayout_2.addWidget(self.twotime_autocrop, 0, 8, 1, 1)
+        self.gridLayout_2.addWidget(self.label_28, 1, 0, 1, 1)
 
         self.cb_twotime_cmap = QComboBox(self.groupBox_11)
         self.cb_twotime_cmap.addItem("")
@@ -1535,38 +1503,75 @@ class Ui_mainWindow(object):
         self.cb_twotime_cmap.setSizePolicy(sizePolicy9)
         self.cb_twotime_cmap.setMinimumSize(QSize(0, 0))
 
-        self.gridLayout_2.addWidget(self.cb_twotime_cmap, 1, 2, 1, 3)
+        self.gridLayout_2.addWidget(self.cb_twotime_cmap, 1, 1, 1, 1)
 
-        self.c2_min = QDoubleSpinBox(self.groupBox_11)
-        self.c2_min.setObjectName(u"c2_min")
-        self.c2_min.setMinimum(-1.000000000000000)
-        self.c2_min.setValue(0.800000000000000)
+        self.spinBox_twotime_selection = QSpinBox(self.groupBox_11)
+        self.spinBox_twotime_selection.setObjectName(u"spinBox_twotime_selection")
+        self.spinBox_twotime_selection.setMaximum(99999)
 
-        self.gridLayout_2.addWidget(self.c2_min, 1, 7, 1, 1)
+        self.gridLayout_2.addWidget(self.spinBox_twotime_selection, 0, 6, 1, 1)
 
-        self.twotime_correct_diag = QCheckBox(self.groupBox_11)
-        self.twotime_correct_diag.setObjectName(u"twotime_correct_diag")
+        self.pushButton_12 = QPushButton(self.groupBox_11)
+        self.pushButton_12.setObjectName(u"pushButton_12")
 
-        self.gridLayout_2.addWidget(self.twotime_correct_diag, 0, 9, 1, 3)
+        self.gridLayout_2.addWidget(self.pushButton_12, 1, 8, 1, 1)
 
         self.c2_max = QDoubleSpinBox(self.groupBox_11)
         self.c2_max.setObjectName(u"c2_max")
         self.c2_max.setMinimum(-1.000000000000000)
         self.c2_max.setValue(2.200000000000000)
 
-        self.gridLayout_2.addWidget(self.c2_max, 1, 8, 1, 1)
+        self.gridLayout_2.addWidget(self.c2_max, 1, 7, 1, 1)
+
+        self.c2_min = QDoubleSpinBox(self.groupBox_11)
+        self.c2_min.setObjectName(u"c2_min")
+        self.c2_min.setMinimum(-1.000000000000000)
+        self.c2_min.setValue(0.800000000000000)
+
+        self.gridLayout_2.addWidget(self.c2_min, 1, 6, 1, 1)
+
+        self.cb_twotime_saxs_cmap = QComboBox(self.groupBox_11)
+        self.cb_twotime_saxs_cmap.addItem("")
+        self.cb_twotime_saxs_cmap.addItem("")
+        self.cb_twotime_saxs_cmap.addItem("")
+        self.cb_twotime_saxs_cmap.addItem("")
+        self.cb_twotime_saxs_cmap.addItem("")
+        self.cb_twotime_saxs_cmap.addItem("")
+        self.cb_twotime_saxs_cmap.setObjectName(u"cb_twotime_saxs_cmap")
+
+        self.gridLayout_2.addWidget(self.cb_twotime_saxs_cmap, 1, 3, 1, 1)
+
+        self.label_29 = QLabel(self.groupBox_11)
+        self.label_29.setObjectName(u"label_29")
+
+        self.gridLayout_2.addWidget(self.label_29, 0, 0, 1, 1)
+
+        self.twotime_correct_diag = QCheckBox(self.groupBox_11)
+        self.twotime_correct_diag.setObjectName(u"twotime_correct_diag")
+
+        self.gridLayout_2.addWidget(self.twotime_correct_diag, 0, 8, 1, 1)
+
+        self.label_35 = QLabel(self.groupBox_11)
+        self.label_35.setObjectName(u"label_35")
+
+        self.gridLayout_2.addWidget(self.label_35, 1, 2, 1, 1)
 
         self.label_57 = QLabel(self.groupBox_11)
         self.label_57.setObjectName(u"label_57")
 
-        self.gridLayout_2.addWidget(self.label_57, 1, 5, 1, 2)
+        self.gridLayout_2.addWidget(self.label_57, 1, 5, 1, 1)
 
+        self.twotime_autocrop = QCheckBox(self.groupBox_11)
+        self.twotime_autocrop.setObjectName(u"twotime_autocrop")
+        self.twotime_autocrop.setChecked(True)
 
-        self.gridLayout_37.addLayout(self.gridLayout_2, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.twotime_autocrop, 0, 7, 1, 1)
 
-        self.horizontalSpacer_10 = QSpacerItem(278, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSlider_twotime_selection = QSlider(self.groupBox_11)
+        self.horizontalSlider_twotime_selection.setObjectName(u"horizontalSlider_twotime_selection")
+        self.horizontalSlider_twotime_selection.setOrientation(Qt.Orientation.Horizontal)
 
-        self.gridLayout_37.addItem(self.horizontalSpacer_10, 0, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.horizontalSlider_twotime_selection, 0, 1, 1, 5)
 
 
         self.gridLayout_33.addWidget(self.groupBox_11, 1, 0, 1, 1)
@@ -1953,8 +1958,7 @@ class Ui_mainWindow(object):
         QWidget.setTabOrder(self.g2_b2max, self.scrollArea)
         QWidget.setTabOrder(self.scrollArea, self.g2_marker_size)
         QWidget.setTabOrder(self.g2_marker_size, self.saxs2d_display)
-        QWidget.setTabOrder(self.saxs2d_display, self.cb_twotime_saxs_cmap)
-        QWidget.setTabOrder(self.cb_twotime_saxs_cmap, self.g2_c2fit)
+        QWidget.setTabOrder(self.saxs2d_display, self.g2_c2fit)
         QWidget.setTabOrder(self.g2_c2fit, self.g2_fmin)
         QWidget.setTabOrder(self.g2_fmin, self.g2_fmax)
         QWidget.setTabOrder(self.g2_fmax, self.g2_ffit)
@@ -2024,6 +2028,8 @@ class Ui_mainWindow(object):
         self.g2_tauto.toggled.connect(self.g2_tmax.setDisabled)
         self.horizontalSlider_saxs2d_selection.valueChanged.connect(self.spinBox_saxs2d_selection.setValue)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.horizontalSlider_saxs2d_selection.setValue)
+        self.horizontalSlider_twotime_selection.valueChanged.connect(self.spinBox_twotime_selection.setValue)
+        self.spinBox_twotime_selection.valueChanged.connect(self.horizontalSlider_twotime_selection.setValue)
 
         self.tabWidget.setCurrentIndex(0)
         self.cb_saxs_type.setCurrentIndex(3)
@@ -2072,13 +2078,13 @@ class Ui_mainWindow(object):
         self.cb_saxs2D_cmap.setItemText(4, QCoreApplication.translate("mainWindow", u"magma", None))
         self.cb_saxs2D_cmap.setItemText(5, QCoreApplication.translate("mainWindow", u"gray", None))
 
+        self.saxs2d_autolevel.setText(QCoreApplication.translate("mainWindow", u"autolevel", None))
+        self.label_24.setText(QCoreApplication.translate("mainWindow", u"Selection", None))
         self.label_12.setText(QCoreApplication.translate("mainWindow", u"type:", None))
+        self.pushButton_plot_saxs2d.setText(QCoreApplication.translate("mainWindow", u"Plot 2D SAXS", None))
         self.label_50.setText(QCoreApplication.translate("mainWindow", u"min-max:", None))
         self.label_13.setText(QCoreApplication.translate("mainWindow", u"cmap:", None))
-        self.label_24.setText(QCoreApplication.translate("mainWindow", u"Selection", None))
-        self.saxs2d_autorange.setText(QCoreApplication.translate("mainWindow", u"auto-range", None))
         self.saxs2d_rotate.setText(QCoreApplication.translate("mainWindow", u"rotate", None))
-        self.pushButton_plot_saxs2d.setText(QCoreApplication.translate("mainWindow", u"Plot 2D SAXS", None))
         self.groupBox_16.setTitle(QCoreApplication.translate("mainWindow", u"ROI", None))
         self.label_58.setText(QCoreApplication.translate("mainWindow", u"type:", None))
         self.cb_saxs2D_roi_type.setItemText(0, QCoreApplication.translate("mainWindow", u"Q-Wedge", None))
@@ -2258,17 +2264,7 @@ class Ui_mainWindow(object):
         self.pushButton_8.setText(QCoreApplication.translate("mainWindow", u"fit plot", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), QCoreApplication.translate("mainWindow", u"Diffusion", None))
         self.groupBox_11.setTitle(QCoreApplication.translate("mainWindow", u"Twotime Visualization Setting", None))
-        self.cb_twotime_saxs_cmap.setItemText(0, QCoreApplication.translate("mainWindow", u"jet", None))
-        self.cb_twotime_saxs_cmap.setItemText(1, QCoreApplication.translate("mainWindow", u"hot", None))
-        self.cb_twotime_saxs_cmap.setItemText(2, QCoreApplication.translate("mainWindow", u"plasma", None))
-        self.cb_twotime_saxs_cmap.setItemText(3, QCoreApplication.translate("mainWindow", u"viridis", None))
-        self.cb_twotime_saxs_cmap.setItemText(4, QCoreApplication.translate("mainWindow", u"magma", None))
-        self.cb_twotime_saxs_cmap.setItemText(5, QCoreApplication.translate("mainWindow", u"gray", None))
-
-        self.pushButton_12.setText(QCoreApplication.translate("mainWindow", u"Plot", None))
-        self.label_35.setText(QCoreApplication.translate("mainWindow", u"sax2d_cmap:", None))
         self.label_28.setText(QCoreApplication.translate("mainWindow", u"twotime_cmap:", None))
-        self.twotime_autocrop.setText(QCoreApplication.translate("mainWindow", u"auto-crop", None))
         self.cb_twotime_cmap.setItemText(0, QCoreApplication.translate("mainWindow", u"jet", None))
         self.cb_twotime_cmap.setItemText(1, QCoreApplication.translate("mainWindow", u"hot", None))
         self.cb_twotime_cmap.setItemText(2, QCoreApplication.translate("mainWindow", u"plasma", None))
@@ -2276,8 +2272,19 @@ class Ui_mainWindow(object):
         self.cb_twotime_cmap.setItemText(4, QCoreApplication.translate("mainWindow", u"magma", None))
         self.cb_twotime_cmap.setItemText(5, QCoreApplication.translate("mainWindow", u"gray", None))
 
+        self.pushButton_12.setText(QCoreApplication.translate("mainWindow", u"Plot", None))
+        self.cb_twotime_saxs_cmap.setItemText(0, QCoreApplication.translate("mainWindow", u"jet", None))
+        self.cb_twotime_saxs_cmap.setItemText(1, QCoreApplication.translate("mainWindow", u"hot", None))
+        self.cb_twotime_saxs_cmap.setItemText(2, QCoreApplication.translate("mainWindow", u"plasma", None))
+        self.cb_twotime_saxs_cmap.setItemText(3, QCoreApplication.translate("mainWindow", u"viridis", None))
+        self.cb_twotime_saxs_cmap.setItemText(4, QCoreApplication.translate("mainWindow", u"magma", None))
+        self.cb_twotime_saxs_cmap.setItemText(5, QCoreApplication.translate("mainWindow", u"gray", None))
+
+        self.label_29.setText(QCoreApplication.translate("mainWindow", u"Selection", None))
         self.twotime_correct_diag.setText(QCoreApplication.translate("mainWindow", u"correct-diag", None))
+        self.label_35.setText(QCoreApplication.translate("mainWindow", u"sax2d_cmap:", None))
         self.label_57.setText(QCoreApplication.translate("mainWindow", u"min-max:", None))
+        self.twotime_autocrop.setText(QCoreApplication.translate("mainWindow", u"auto-crop", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_8), QCoreApplication.translate("mainWindow", u"Two Time", None))
         self.comboBox_qmap_target.setItemText(0, QCoreApplication.translate("mainWindow", u"dynamic_roi_map", None))
         self.comboBox_qmap_target.setItemText(1, QCoreApplication.translate("mainWindow", u"static_roi_map", None))

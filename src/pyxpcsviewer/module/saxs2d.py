@@ -40,11 +40,11 @@ def plot(
     cmap="jet",
     rotate=False,
     epsilon=None,
-    autorange=True,
+    autolevel=False,
+    autorange=False,
     vmin=None,
     vmax=None,
 ):
-    extent = xf_list[0].get_detector_extent()
     center = (xf_list[0].bcx, xf_list[0].bcy)
     saxs_2d_list = [xf.saxs_2d for xf in xf_list]
 
@@ -59,24 +59,33 @@ def plot(
         ans = np.log10(ans + epsilon)
     ans = ans.astype(np.float32)
 
-    if rotate and extent is not None:
-        extent = (*extent[2:4], *extent[0:2])
-
     if cmap is not None:
         pg_hdl.set_colormap(cmap)
 
-    pg_hdl.reset_limits()
-    if ans.shape[0] > 1:
-        xvals = np.arange(ans.shape[0])
-        pg_hdl.setImage(ans, xvals=xvals)
-    else:
-        pg_hdl.setImage(ans[0])
+    img = ans[0]
+    prev_img = pg_hdl.image
+    shape_changed = prev_img is None or prev_img.shape != img.shape
+    do_autorange = autorange or shape_changed
 
-    if not autorange:
+    # Save view range if keeping it
+    if not do_autorange:
+        view_range = pg_hdl.view.viewRange()
+
+    # Set new image
+    pg_hdl.setImage(img, autoLevels=autolevel, autoRange=do_autorange)
+
+    # Restore view range if we skipped auto-ranging
+    if not do_autorange:
+        pg_hdl.view.setRange(xRange=view_range[0], yRange=view_range[1], padding=0)
+
+    # Restore levels if needed
+    if not autolevel and vmin is not None and vmax is not None:
+        pg_hdl.setLevels(vmin, vmax)
+
+    # Restore intensity levels (if needed)
+    if not autolevel:
         if vmin is not None and vmax is not None:
             pg_hdl.setLevels(vmin, vmax)
-
-    pg_hdl.adjust_viewbox()
 
     if center is not None:
         pg_hdl.add_roi(sl_type="Center", center=center, label="Center")
