@@ -7,7 +7,7 @@ from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 # from .module.g2mod import create_slice
 from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
-from .module.twotime_utils import get_c2_from_hdf_fast, get_c2_stream
+from .module.twotime_utils import get_c2_stream, get_single_c2_from_hdf
 import logging
 
 logger = logging.getLogger(__name__)
@@ -103,6 +103,7 @@ class XpcsFile(object):
         # label is a short string to describe the file/filename
         # place holder for self.saxs_2d;
         self.saxs_2d_data = None
+        self.saxs_2d_log_data = None
 
     def update_label(self, label_style):
         self.label = create_id(self.fname, label_style=label_style)
@@ -214,6 +215,15 @@ class XpcsFile(object):
                 ret = get(self.fname, ["saxs_2d"], "alias", ftype="nexus")
                 self.saxs_2d_data = ret["saxs_2d"]
             return self.saxs_2d_data
+        elif key == "saxs_2d_log":
+            if self.saxs_2d_log_data is None:
+                saxs = np.copy(self.saxs_2d)
+                saxs[saxs <= 0] = np.nan
+                if np.sum(np.isnan(saxs)) == saxs.size:
+                    self.saxs_2d_log_data = np.zeros_like(saxs)
+                else:
+                    self.saxs_2d_log_data = np.log10(saxs).astype(np.float32)
+            return self.saxs_2d_log_data
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
@@ -232,8 +242,8 @@ class XpcsFile(object):
     def get_detector_extent(self):
         return self.qmap.extent
 
-    def get_qbin_label(self, qbin: int):
-        return self.qmap.get_qbin_label(qbin)
+    def get_qbin_label(self, qbin: int, append_qbin: bool = False):
+        return self.qmap.get_qbin_label(qbin, append_qbin=append_qbin)
 
     def get_qbinlist_at_qindex(self, qindex, zero_based=True):
         return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
@@ -255,10 +265,6 @@ class XpcsFile(object):
             t_el = self.t_el
 
         return qvalues, t_el, g2, g2_err, labels
-
-    def get_twotime_maps(self):
-        dqmap, saxs = self.dqmap, self.saxs_2d
-        return dqmap, saxs
 
     def get_saxs1d_data(
         self,
@@ -318,23 +324,71 @@ class XpcsFile(object):
         xlabel = "q (Å⁻¹)"
         return q, Iq, xlabel, ylabel
 
-    def get_twotime_c2(self, max_c2_num=-1, max_size=32768):
-        dq_selection = tuple(self.c2_processed_bins.tolist())
-        kwargs = (dq_selection, max_c2_num, max_size)
-        if self.c2_kwargs == kwargs and self.c2_all_data is not None:
+    def get_twotime_qbin_labels(self):
+        qbin_labels = []
+        for qbin in self.c2_processed_bins.tolist():
+            qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
+        return qbin_labels
+
+    def get_twotime_maps(
+        self, scale="log", auto_crop=True, highlight_xy=None, selection=None
+    ):
+        # emphasize the beamstop region which has qindex = 0;
+        dqmap = np.copy(self.dqmap)
+        if scale == "log":
+            saxs = self.saxs_2d_log
+        else:
+            saxs = self.saxs_2d
+
+        if auto_crop:
+            idx = np.nonzero(dqmap >= 1)
+            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
+            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
+            dqmap = dqmap[sl_v, sl_h]
+            saxs = saxs[sl_v, sl_h]
+
+        qindex_max = np.max(dqmap)
+        dqlist = np.unique(dqmap)[1:]
+        dqmap = dqmap.astype(np.float32)
+        dqmap[dqmap == 0] = np.nan
+
+        dqmap_disp = np.flipud(np.copy(dqmap))
+
+        dq_bin = None
+        if highlight_xy is not None:
+            x, y = highlight_xy
+            if x >= 0 and y >= 0 and x < dqmap.shape[1] and y < dqmap.shape[0]:
+                dq_bin = dqmap_disp[y, x]
+        elif selection is not None:
+            dq_bin = dqlist[selection]
+
+        if dq_bin is not None and dq_bin != np.nan and dq_bin > 0:
+            # highlight the selected qbin if it's valid
+            dqmap_disp[dqmap_disp == dq_bin] = qindex_max + 1
+            selection = np.where(dqlist == dq_bin)[0][0]
+        else:
+            selection = None
+        return dqmap_disp, saxs, selection
+
+    def get_twotime_c2(self, selection=0, correct_diag=True, max_size=32678):
+        dq_processed = tuple(self.c2_processed_bins.tolist())
+        assert selection >= 0 and selection < len(
+            dq_processed
+        ), f"selection {selection} out of range {dq_processed}"  # noqa: E501
+        config = (selection, correct_diag, max_size)
+        if self.c2_kwargs == config:
             return self.c2_all_data
         else:
-            self.c2_kwargs = kwargs
-            c2_result = get_c2_from_hdf_fast(
+            c2_result = get_single_c2_from_hdf(
                 self.fname,
-                dq_selection=dq_selection,
-                max_c2_num=max_c2_num,
+                selection=selection,
                 max_size=max_size,
+                t0=self.t0,
+                correct_diag=correct_diag,
             )
-            c2_result["delta_t"] *= self.t0
-            c2_result["acquire_period"] *= self.t0
             self.c2_all_data = c2_result
-            return c2_result
+            self.c2_kwargs = config
+        return c2_result
 
     def get_twotime_stream(self, **kwargs):
         return get_c2_stream(self.fname, **kwargs)

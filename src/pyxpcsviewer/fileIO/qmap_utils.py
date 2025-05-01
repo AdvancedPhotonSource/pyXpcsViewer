@@ -111,12 +111,15 @@ class QMap:
                     combined_list.append(f"{item_a}, {item_b}")
             return combined_list
 
-    def get_qbin_label(self, qbin: int):
+    def get_qbin_label(self, qbin: int, append_qbin=False):
         qbin_absolute = self.dynamic_index_mapping[qbin - 1]
         if qbin_absolute < 0 or qbin_absolute > len(self.qbin_labels):
             return "invalid qbin"
         else:
-            return self.qbin_labels[qbin_absolute]
+            label = self.qbin_labels[qbin_absolute]
+            if append_qbin:
+               label = f"qbin={qbin}, {label}"
+            return label
 
     def get_qbin_in_qrange(self, qrange, zero_based=True):
         if self.map_names[0] != "q":
