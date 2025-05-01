@@ -2,9 +2,9 @@ import os
 import re
 import numpy as np
 import pyqtgraph as pg
-from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
+import warnings
 
-# from .module.g2mod import create_slice
+from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
 from .module.twotime_utils import get_c2_stream, get_single_c2_from_hdf
@@ -15,31 +15,56 @@ logger = logging.getLogger(__name__)
 
 def single_exp_all(x, a, b, c, d):
     """
-    single exponential fitting for xpcs-multitau analysis
-    :param x: delay in seconds
-    :param a: contrast
-    :param b: tau
-    :param c: restriction factor
-    :param d: baseline
-    :return:
+    Single exponential fitting for XPCS-multitau analysis.
+
+    Parameters
+    ----------
+    x : float or ndarray
+        Delay in seconds.
+    a : float
+        Contrast.
+    b : float
+        Characteristic time (tau).
+    c : float
+        Restriction factor.
+    d : float
+        Baseline offset.
+
+    Returns
+    -------
+    float or ndarray
+        Computed value of the single exponential model.
     """
     return a * np.exp(-2 * (x / b) ** c) + d
 
 
 def double_exp_all(x, a, b1, c1, d, b2, c2, f):
     """
-    double exponential fitting for xpcs-multitau analysis
-    Args:
-        x: delay in seconds, float or 1d-numpy.ndarray
-        a: contrast
-        f: fraction for the 1st exp function; the 2nd has (1-f) weight
-        b1: tau for 1st exp function
-        c1: restriction factor for the 1st exp function
-        b2: tau for 2nd exp function
-        c2: restriction factor for the 2nd exp function
-        d: baseline
-    Return:
-        function value
+    Double exponential fitting for XPCS-multitau analysis.
+
+    Parameters
+    ----------
+    x : float or ndarray
+        Delay in seconds.
+    a : float
+        Contrast.
+    b1 : float
+        Characteristic time (tau) of the first exponential component.
+    c1 : float
+        Restriction factor for the first component.
+    d : float
+        Baseline offset.
+    b2 : float
+        Characteristic time (tau) of the second exponential component.
+    c2 : float
+        Restriction factor for the second component.
+    f : float
+        Fractional contribution of the first exponential component (0 ≤ f ≤ 1).
+
+    Returns
+    -------
+    float or ndarray
+        Computed value of the double exponential model.
     """
     t1 = np.exp(-1 * (x / b1) ** c1) * f
     t2 = np.exp(-1 * (x / b2) ** c2) * (1 - f)
@@ -48,37 +73,76 @@ def double_exp_all(x, a, b1, c1, d, b2, c2, f):
 
 def power_law(x, a, b):
     """
-    power law for fitting the diffusion factor
-    :param x: tau
-    :param a:
-    :param b:
-    :return:
+    Power-law fitting for diffusion behavior.
+
+    Parameters
+    ----------
+    x : float or ndarray
+        Independent variable, typically time delay (tau).
+    a : float
+        Scaling factor.
+    b : float
+        Power exponent.
+
+    Returns
+    -------
+    float or ndarray
+        Computed value based on the power-law model.
     """
     return a * x**b
 
 
 def create_id(fname, label_style=None, simplify_flag=True):
-    fname = os.path.basename(fname)
-    if simplify_flag:
-        # 'a0004_t0600_f008000_r00003' to 'a4_t600_f8000_r3' by removing leading zeros
-        fname = re.sub(r"_(\w)0*(\d+)", r"_\1\2", fname)
-        fname = re.sub(r"(_results)?\.hdf$", "", fname)
+    """
+    Generate a simplified or customized ID string from a filename.
 
-    if len(fname) < 10 or label_style is None:
+    Parameters
+    ----------
+    fname : str
+        Input file name, possibly with path and extension.
+    label_style : str or None, optional
+        Comma-separated string of indices to extract specific components from the file name.
+    simplify_flag : bool, optional
+        Whether to simplify the file name by removing leading zeros and stripping suffixes.
+
+    Returns
+    -------
+    str
+        A simplified or customized ID string derived from the input filename.
+    """
+    fname = os.path.basename(fname)
+
+    if simplify_flag:
+        # Remove leading zeros from structured parts like '_t0600' → '_t600'
+        fname = re.sub(r"_(\w)0+(\d+)", r"_\1\2", fname)
+        # Remove trailing _results and file extension
+        fname = re.sub(r"(_results)?\.hdf$", "", fname, flags=re.IGNORECASE)
+
+    if len(fname) < 10 or not label_style:
         return fname
 
     try:
-        selection = [int(x) for x in label_style.split(",")]
-        assert len(selection) > 0
-    except Exception:
+        selection = [int(x.strip()) for x in label_style.split(",")]
+        if not selection:
+            warnings.warn("Empty label_style selection. Returning simplified filename.")
+            return fname
+    except ValueError:
+        warnings.warn("Invalid label_style format. Must be comma-separated integers.")
         return fname
 
     segments = fname.split("_")
-    id_str = "_".join([segments[i] for i in selection if i < len(segments)])
-    if len(id_str) == 0:
-        id_str = fname
+    selected_segments = []
 
-    return id_str
+    for i in selection:
+        if i < len(segments):
+            selected_segments.append(segments[i])
+        else:
+            warnings.warn(f"Index {i} out of range for segments {segments}")
+
+    if not selected_segments:
+        return fname  # fallback if nothing valid was selected
+
+    return "_".join(selected_segments)
 
 
 class XpcsFile(object):
@@ -226,6 +290,13 @@ class XpcsFile(object):
                     saxs[~roi] = min_val
                     self.saxs_2d_log_data = np.log10(saxs).astype(np.float32)
             return self.saxs_2d_log_data
+        elif key == "Int_t_fft":
+            y = np.abs(np.fft.fft(self.Int_t[1]))
+            x = np.arange(y.size) / (y.size * self.t0)
+            x = x[0 : y.size // 2]
+            y = y[0 : y.size // 2]
+            y[0] = 0
+            return np.stack((x, y), axis=1).astype(np.float32).T
         elif key in self.__dict__:
             return self.__dict__[key]
         else:

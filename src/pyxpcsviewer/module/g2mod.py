@@ -9,8 +9,6 @@ pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 # pg.setConfigOption("background", 'w')
 logger = logging.getLogger(__name__)
 
-fn_tuple = None
-
 # colors converted from
 # https://matplotlib.org/stable/tutorials/colors/colors.html
 # colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',

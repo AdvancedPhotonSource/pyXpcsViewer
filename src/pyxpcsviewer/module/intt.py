@@ -38,24 +38,6 @@ def smooth_data(fc, window=1, sampling=1):
     return x, y
 
 
-def matplot_plot(xf_list, pg_hdl, legend, rows=None, **kwargs):
-    data = []
-    for fc in xf_list:
-        x, y = smooth_data(fc, **kwargs)
-        data.append([x, y])
-
-    pg_hdl.clear()
-    pg_hdl.show_lines(
-        data,
-        xlabel="Frame Index",
-        ylabel="Intensity (ph/pixel)",
-        loc="lower right",
-        legend=legend,
-        rows=rows,
-    )
-    pg_hdl.draw()
-
-
 def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
     """
     :param xf_list: list of xf objects
@@ -109,13 +91,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
     t.setLabel("left", "Intensity (cts / pixel)")
 
     for n in range(len(data)):
-        y = np.abs(np.fft.fft(data[n][1]))
-
-        x = np.arange(y.size // 2) / (y.size * xf_list[n].t1 * kwargs["sampling"])
-        y = y[slice(0, y.size // 2)]
-        # get ride of zero frequency;
-        y[0] = 0
-
+        x, y = xf_list[n].Int_t_fft
         tf.plot(
             x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label
         )
