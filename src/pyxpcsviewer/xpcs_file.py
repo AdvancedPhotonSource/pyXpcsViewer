@@ -218,10 +218,12 @@ class XpcsFile(object):
         elif key == "saxs_2d_log":
             if self.saxs_2d_log_data is None:
                 saxs = np.copy(self.saxs_2d)
-                saxs[saxs <= 0] = np.nan
-                if np.sum(np.isnan(saxs)) == saxs.size:
-                    self.saxs_2d_log_data = np.zeros_like(saxs)
+                roi = saxs > 0
+                if np.sum(roi) == 0:
+                    self.saxs_2d_log_data = np.zeros_like(saxs, dtype=np.uint8)
                 else:
+                    min_val = np.min(saxs[roi])
+                    saxs[~roi] = min_val
                     self.saxs_2d_log_data = np.log10(saxs).astype(np.float32)
             return self.saxs_2d_log_data
         elif key in self.__dict__:
