@@ -23,6 +23,7 @@ class ViewerKernel(FileLocator):
         self.avg_worker = TableDataModel()
         self.avg_jid = 0
         self.avg_worker_active = {}
+        self.current_dset = None
 
     def reset_meta(self):
         self.meta = {
@@ -167,19 +168,17 @@ class ViewerKernel(FileLocator):
         pass
         # saxs1d.switch_line_builder(mp_hdl, lb_type)
 
-    def plot_twotime_map(self, hdl, rows=None, **kwargs):
+    def plot_twotime(self, hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows, filter_atype="Twotime")
         if len(xf_list) == 0:
-            return
+            return None
         xfile = xf_list[0]
-        return twotime.plot_twotime_map(xfile, hdl, **kwargs)
-
-    def plot_twotime_correlation(self, hdl, rows=None, **kwargs):
-        xf_list = self.get_xf_list(rows, filter_atype="Twotime")
-        if len(xf_list) == 0:
-            return
-        xfile = xf_list[0]
-        return twotime.plot_twotime_correlation(xfile, hdl, **kwargs)
+        new_qbin_labels = None
+        if self.current_dset is None or self.current_dset.fname != xfile.fname:
+            self.current_dset = xfile
+            new_qbin_labels = xfile.get_twotime_qbin_labels()
+        twotime.plot_twotime(xfile, hdl, **kwargs)
+        return new_qbin_labels
 
     def plot_intt(self, pg_hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows=rows)

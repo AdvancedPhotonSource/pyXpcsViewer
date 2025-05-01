@@ -121,6 +121,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.list_view_target.doubleClicked.connect(self.show_dataset)
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
+        self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -336,18 +337,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_2t.view.setLabel("left", "t2", units="s")
         self.mp_2t.view.setLabel("bottom", "t1", units="s")
 
-        self.mp_2t.sigTimeChanged.connect(
-            lambda x: self.plot_twotime_map(highlight_dqbin=x + 1)
-        )
-
     def pick_twotime_index(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.pos()
             x, y = int(pos.x()), int(pos.y())
-            dq_bin = self.plot_twotime_map(highlight_xy=(x, y))
-            if dq_bin is not None and dq_bin != np.nan:
-                if self.mp_2t_hdls["tt"].image is not None:
-                    self.mp_2t_hdls["tt"].setCurrentIndex(int(dq_bin) - 1)
+            self.plot_twotime(highlight_xy=(x, y))
         event.accept()  # Mark the event as handled
 
     def plot_qmap(self, dryrun=False):
@@ -359,37 +353,28 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return kwargs
         self.vk.plot_qmap(self.pg_qmap, **kwargs)
 
-    def plot_twotime(self, dryrun=False):
-        kwargs = {"rows": self.get_selected_rows()}
-        if dryrun:
-            return kwargs
-        self.plot_twotime_map()
-        self.plot_twotime_correlation()
-
-    def plot_twotime_map(self, dryrun=False, highlight_xy=None, highlight_dqbin=None):
-        if self.mp_2t_hdls is None:
-            self.init_twotime_plot_handler()
+    def plot_twotime(self, dryrun=False, highlight_xy=None):
         kwargs = {
+            "rows": self.get_selected_rows(),
             "auto_crop": self.twotime_autocrop.isChecked(),
             "highlight_xy": highlight_xy,
-            "highlight_dqbin": highlight_dqbin,
-            "rows": self.get_selected_rows(),
-        }
-        if dryrun:
-            return kwargs
-        return self.vk.plot_twotime_map(self.mp_2t_hdls, **kwargs)
-
-    def plot_twotime_correlation(self, dryrun=False):
-        kwargs = {
-            "rows": self.get_selected_rows(),
             "cmap": self.cb_twotime_cmap.currentText(),
             "vmin": self.c2_min.value(),
             "vmax": self.c2_max.value(),
             "correct_diag": self.twotime_correct_diag.isChecked(),
+            "autolevel": self.checkBox_twotime_autolevel.isChecked(),
+            "selection": max(0, self.comboBox_twotime_selection.currentIndex()),
         }
         if dryrun:
             return kwargs
-        self.vk.plot_twotime_correlation(self.mp_2t_hdls, **kwargs)
+
+        if self.mp_2t_hdls is None:
+            self.init_twotime_plot_handler()
+        new_labels = self.vk.plot_twotime(self.mp_2t_hdls, **kwargs)
+        if new_labels is not None:
+            self.comboBox_twotime_selection.clear()
+            self.comboBox_twotime_selection.addItems(new_labels)
+            self.horizontalSlider_twotime_selection.setMaximum(len(new_labels) - 1)
 
     def show_dataset(self):
         rows = self.get_selected_rows()
