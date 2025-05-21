@@ -1,3 +1,4 @@
+import hdf5plugin
 import h5py
 import numpy as np
 from .aps_8idi import key as key_map
@@ -118,7 +119,7 @@ class QMap:
         else:
             label = self.qbin_labels[qbin_absolute]
             if append_qbin:
-               label = f"qbin={qbin}, {label}"
+                label = f"qbin={qbin}, {label}"
             return label
 
     def get_qbin_in_qrange(self, qrange, zero_based=True):
