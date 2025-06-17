@@ -148,13 +148,8 @@ class ViewerKernel(FileLocator):
     def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
         xf_list = self.get_xf_list()
         if xf_list:
-            roi_list = pg_hdl.get_roi_list()
             saxs1d.pg_plot(
-                xf_list,
-                mp_hdl,
-                bkg_file=self.meta["saxs1d_bkg_xf"],
-                roi_list=roi_list,
-                **kwargs
+                xf_list, mp_hdl, bkg_file=self.meta["saxs1d_bkg_xf"], **kwargs
             )
 
     def export_saxs_1d(self, pg_hdl, folder):

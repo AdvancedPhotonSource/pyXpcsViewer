@@ -163,7 +163,6 @@ def pg_plot(
     subtract_background=False,
     bkg_file=None,
     weight=1.0,
-    roi_list=None,
     show_roi=True,
     show_phi_roi=True,
 ):
