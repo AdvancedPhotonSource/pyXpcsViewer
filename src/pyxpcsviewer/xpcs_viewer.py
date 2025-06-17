@@ -1,17 +1,19 @@
-from PySide6 import QtCore, QtWidgets
-from .viewer_ui import Ui_mainWindow as Ui
-from .viewer_kernel import ViewerKernel
-import pyqtgraph as pg
-from pyqtgraph.parametertree import Parameter
-import os
-import numpy as np
-import sys
 import json
-import shutil
 import logging
-from pyqtgraph.Qt import QtCore
+import os
+import shutil
+import sys
 import traceback
 
+import numpy as np
+import pyqtgraph as pg
+from pyqtgraph.parametertree import Parameter
+from pyqtgraph.Qt import QtCore
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import qInstallMessageHandler
+
+from .viewer_kernel import ViewerKernel
+from .viewer_ui import Ui_mainWindow as Ui
 
 format = logging.Formatter("%(asctime)s %(message)s")
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -960,13 +962,40 @@ def setup_windows_icon():
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
 
+def qt_message_handler(mode, context, message):
+    """
+    A custom message handler that intercepts Qt messages and prints a traceback
+    for specific warnings.
+    """
+    # Check if the message contains the text of the warnings we're interested in
+    if "QGraphicsItem::itemTransform: null pointer passed" in message:
+        print("--- Caught 'null pointer' warning. Traceback: ---")
+        traceback.print_stack()
+        print("-------------------------------------------------")
+
+    if "unique connections require a pointer" in message:
+        print("--- Caught 'unique connections' warning. Traceback: ---")
+        traceback.print_stack()
+        print("-----------------------------------------------------")
+
+    # Use the default handler to still print the original message
+    # You might need to find the original handler if you want to be perfectly clean,
+    # but for debugging, printing the message here is fine.
+    print(
+        f"Qt Message: {message} (type: {mode}, context: {context.file}:{context.line})"
+    )
+
+
 def main_gui(path=None, label_style=None):
+    qInstallMessageHandler(qt_message_handler)
+
     if os.name == "nt":
         setup_windows_icon()
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
     app = QtWidgets.QApplication([])
     window = XpcsViewer(path=path, label_style=label_style)
+    window.show()
     app.exec_()
 
 

@@ -731,7 +731,7 @@ class Ui_mainWindow(object):
         self.tab_4.setObjectName(u"tab_4")
         self.gridLayout_27 = QGridLayout(self.tab_4)
         self.gridLayout_27.setObjectName(u"gridLayout_27")
-        self.pg_intt = PlotWidgetDev(self.tab_4)
+        self.pg_intt = GraphicsLayoutWidget(self.tab_4)
         self.pg_intt.setObjectName(u"pg_intt")
         sizePolicy6.setHeightForWidth(self.pg_intt.sizePolicy().hasHeightForWidth())
         self.pg_intt.setSizePolicy(sizePolicy6)
@@ -2033,7 +2033,7 @@ class Ui_mainWindow(object):
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_min.setDisabled)
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_max.setDisabled)
 
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(0)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
