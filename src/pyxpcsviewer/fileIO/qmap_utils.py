@@ -232,9 +232,10 @@ class QMap:
             else:
                 saxs1d = avg.reshape(1, -1)  # shape: (1, num_q)
                 labels = [label]
+            max_size = min(self.sqlist.size, saxs1d.shape[1])
             saxs1d_info = {
-                "q": self.sqlist,
-                "Iq": saxs1d,
+                "q": self.sqlist[0:max_size],
+                "Iq": saxs1d[:, 0:max_size],
                 "phi": self.splist,
                 "num_lines": shape[2],
                 "labels": labels,
