@@ -141,7 +141,7 @@ def get_c2_stream(full_path, max_size=-1):
 
     def generator():
         for idx in idxlist:  # Use idxlist for iteration
-            c2, sampling_rate = read_single_c2((full_path, idx, max_size))
+            c2, sampling_rate = read_single_c2((full_path, idx, max_size, True))
             yield int(idx[3:]), c2
 
     return idxlist, generator()
