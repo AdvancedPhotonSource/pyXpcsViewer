@@ -514,7 +514,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         kwargs = {
             "save_path": os.path.join(save_path, save_name),
-            "chunk_size": int(self.cb_avg_chunk_size.currentText()),
+            # "chunk_size": int(self.cb_avg_chunk_size.currentText()),
             "avg_blmin": self.avg_blmin.value(),
             "avg_blmax": self.avg_blmax.value(),
             "avg_qindex": self.avg_qindex.value(),
