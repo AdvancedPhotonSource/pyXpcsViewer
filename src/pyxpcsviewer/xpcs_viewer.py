@@ -502,7 +502,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         avg_fields = []
         if self.bx_avg_G2IPIF.isChecked():
-            avg_fields.extend(["G2", "IP", "IF"])
+            avg_fields.extend(["G2"])
         if self.bx_avg_g2g2err.isChecked():
             avg_fields.extend(["g2", "g2_err"])
         if self.bx_avg_saxs.isChecked():
