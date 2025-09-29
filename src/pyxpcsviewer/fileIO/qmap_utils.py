@@ -152,7 +152,7 @@ class QMap:
 
     def get_qbinlist_at_qindex(self, qindex, zero_based=True):
         # qindex is zero based; index of dyanmic_map_dim0
-        assert self.map_names == ["q", "phi"], "only q-phi map is supported"
+        # assert self.map_names == ["q", "phi"], "only q-phi map is supported"
         qp_idx = np.ones(self.dynamic_num_pts, dtype=int).flatten() * (-1)
         qp_idx[self.dynamic_index_mapping] = np.arange(len(self.dynamic_index_mapping))
         qp_column_at_qindex = qp_idx.reshape(self.dynamic_num_pts)[qindex]
