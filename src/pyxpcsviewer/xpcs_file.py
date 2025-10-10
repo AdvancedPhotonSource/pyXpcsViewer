@@ -327,7 +327,7 @@ class XpcsFile(object):
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2[:, qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-        labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
+        labels = [f"qbin={qbin+1}, {self.qmap.get_qbin_label(qbin + 1)}" for qbin in qindex_selected]
 
         if trange is not None:
             t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
