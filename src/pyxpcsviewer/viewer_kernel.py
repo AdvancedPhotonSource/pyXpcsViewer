@@ -75,6 +75,40 @@ class ViewerKernel(FileLocator):
         else:
             return None, None
 
+    def plot_g2map(self, g2map_hdl, qmap_hdl, g2_hdl, rows=None, qbin=0):
+        xf_obj = self.get_xf_list(rows=rows)[0]
+        print(f"{qbin=}")
+        if xf_obj:
+            g2map_hdl.setImage(xf_obj.get_offseted_g2().T)
+            qmap_hdl.setImage(xf_obj.get_cropped_qmap("dqmap"))
+
+            g2_hdl.clear()
+            color = (0, 128, 255)
+            pen = pg.mkPen(color=color, width=2)
+
+            x = xf_obj.t_el
+            y = xf_obj.g2[:, qbin]
+            dy = xf_obj.g2_err[:, qbin]
+
+            line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
+            pen = pg.mkPen(color=color, width=1)
+            g2_hdl.plot(
+                x,
+                y,
+                pen=None,
+                symbol="o",
+                name=f"{qbin=}",
+                symbolSize=3,
+                symbolPen=pen,
+                symbolBrush=pg.mkBrush(color=(*color, 0)),
+            )
+
+            g2_hdl.setLogMode(x=True, y=None)
+            g2_hdl.addItem(line)
+            g2_hdl.setLabel("bottom", "tau", units="s")
+            g2_hdl.setLabel("left", "g2")
+            return
+
     def plot_qmap(self, hdl, rows=None, target=None):
         xf_list = self.get_xf_list(rows=rows)
         if xf_list:
@@ -137,7 +171,6 @@ class ViewerKernel(FileLocator):
         if kwargs["sl_type"] == "Pie":
             hdl.add_roi(cen=cen, radius=100, **kwargs)
         elif kwargs["sl_type"] == "Circle":
-
             radius_v = min(xf_list[0].mask.shape[0] - cen[1], cen[1])
             radius_h = min(xf_list[0].mask.shape[1] - cen[0], cen[0])
             radius = min(radius_h, radius_v) * 0.8

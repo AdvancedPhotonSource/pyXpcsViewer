@@ -402,23 +402,33 @@ class XpcsFile(object):
         for qbin in self.c2_processed_bins.tolist():
             qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
         return qbin_labels
+    
+    def get_cropped_qmap(self, target="dqmap", enabled=True):
+        assert target in ["dqmap", "sqmap"]
+        obj = getattr(self, target).copy()
+        if enabled:
+            idx = np.nonzero(obj >= 1)
+            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
+            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
+            obj = obj[sl_v, sl_h]
+        return obj
+    
+    def get_offseted_g2(self):
+        g2 = self.g2.copy()
+        g2_baseline = g2[-1]
+        g2 = g2 - g2_baseline + 1.0
+        return g2
 
     def get_twotime_maps(
         self, scale="log", auto_crop=True, highlight_xy=None, selection=None
     ):
         # emphasize the beamstop region which has qindex = 0;
-        dqmap = np.copy(self.dqmap)
         if scale == "log":
             saxs = self.saxs_2d_log
         else:
             saxs = self.saxs_2d
 
-        if auto_crop:
-            idx = np.nonzero(dqmap >= 1)
-            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
-            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
-            dqmap = dqmap[sl_v, sl_h]
-            saxs = saxs[sl_v, sl_h]
+        dqmap = self.get_cropped_qmap(target="dqmap", enabled=auto_crop)
 
         qindex_max = np.max(dqmap)
         dqlist = np.unique(dqmap)[1:]

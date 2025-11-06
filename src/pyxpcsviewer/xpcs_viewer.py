@@ -43,6 +43,7 @@ tab_mapping = {
     7: "qmap",
     8: "average",
     9: "metadata",
+    10: "g2map",
 }
 
 
@@ -107,6 +108,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.mp_2t_hdls = None
         self.init_twotime_plot_handler()
+        self.init_g2map_handler()
+        self.pushButton_plot_g2map.clicked.connect(self.plot_g2map)
 
         self.avg_job_pop.clicked.connect(self.remove_avg_job)
         self.btn_submit_job.clicked.connect(self.submit_job)
@@ -192,6 +195,43 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             logger.error(f"update selection in [{tab_name}] failed")
             logger.error(e)
             traceback.print_exc()
+
+    def init_g2map_handler(self):
+        self.widget_g2map_profile_plot = self.widget_g2map_profile.addPlot()
+        cmap = pg.colormap.getFromMatplotlib("tab20b")  # from matplotlib.cm.tab20b
+        self.widget_g2map_qmap.setColorMap(cmap)
+
+        plot = self.widget_g2map_all.addPlot(row=0, col=0)
+        plot.setLabel("bottom", "tau index")
+        plot.setLabel("left", "qbin index")
+        # Optional: grid and aspect ratio
+        plot.showGrid(x=True, y=True)
+        plot.getViewBox().setAspectLocked(False)
+
+        # --- Add the ImageItem ---
+        self.g2map_all_img = pg.ImageItem()
+        plot.addItem(self.g2map_all_img)
+        # Example image data
+
+        # Optional: colorbar
+        hist = pg.HistogramLUTItem()
+        hist.setImageItem(self.g2map_all_img)
+        self.widget_g2map_all.addItem(hist, row=0, col=1)
+        # Optional: apply a matplotlib colormap
+        cmap = pg.colormap.getFromMatplotlib("viridis")
+        self.g2map_all_img.setLookupTable(cmap.getLookupTable())
+        hist.gradient.setColorMap(cmap)
+
+    def plot_g2map(self, dryrun=False):
+        kwargs = {"rows": self.get_selected_rows(), "qbin": self.spinBox_qbin.value()}
+        if dryrun:
+            return kwargs
+        self.vk.plot_g2map(
+            self.g2map_all_img,
+            self.widget_g2map_qmap,
+            self.widget_g2map_profile_plot,
+            **kwargs,
+        )
 
     def plot_metadata(self, dryrun=False):
         kwargs = {"rows": self.get_selected_rows()}

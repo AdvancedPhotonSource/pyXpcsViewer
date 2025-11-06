@@ -1858,6 +1858,86 @@ class Ui_mainWindow(object):
         self.gridLayout_7.addWidget(self.hdf_info, 0, 0, 1, 1)
 
         self.tabWidget.addTab(self.tab_9, "")
+        self.tab_10 = QWidget()
+        self.tab_10.setObjectName(u"tab_10")
+        self.gridLayout_42 = QGridLayout(self.tab_10)
+        self.gridLayout_42.setObjectName(u"gridLayout_42")
+        self.splitter_6 = QSplitter(self.tab_10)
+        self.splitter_6.setObjectName(u"splitter_6")
+        self.splitter_6.setOrientation(Qt.Orientation.Vertical)
+        self.splitter_5 = QSplitter(self.splitter_6)
+        self.splitter_5.setObjectName(u"splitter_5")
+        self.splitter_5.setOrientation(Qt.Orientation.Horizontal)
+        self.groupBox_18 = QGroupBox(self.splitter_5)
+        self.groupBox_18.setObjectName(u"groupBox_18")
+        self.gridLayout_23 = QGridLayout(self.groupBox_18)
+        self.gridLayout_23.setObjectName(u"gridLayout_23")
+        self.gridLayout_23.setContentsMargins(0, 0, 0, 0)
+        self.widget_g2map_all = GraphicsLayoutWidget(self.groupBox_18)
+        self.widget_g2map_all.setObjectName(u"widget_g2map_all")
+        sizePolicy14 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy14.setHorizontalStretch(0)
+        sizePolicy14.setVerticalStretch(1)
+        sizePolicy14.setHeightForWidth(self.widget_g2map_all.sizePolicy().hasHeightForWidth())
+        self.widget_g2map_all.setSizePolicy(sizePolicy14)
+
+        self.gridLayout_23.addWidget(self.widget_g2map_all, 0, 0, 1, 1)
+
+        self.splitter_5.addWidget(self.groupBox_18)
+        self.groupBox_19 = QGroupBox(self.splitter_5)
+        self.groupBox_19.setObjectName(u"groupBox_19")
+        self.gridLayout_37 = QGridLayout(self.groupBox_19)
+        self.gridLayout_37.setObjectName(u"gridLayout_37")
+        self.gridLayout_37.setContentsMargins(0, 0, 0, 0)
+        self.widget_g2map_qmap = ImageView(self.groupBox_19)
+        self.widget_g2map_qmap.setObjectName(u"widget_g2map_qmap")
+        sizePolicy14.setHeightForWidth(self.widget_g2map_qmap.sizePolicy().hasHeightForWidth())
+        self.widget_g2map_qmap.setSizePolicy(sizePolicy14)
+
+        self.gridLayout_37.addWidget(self.widget_g2map_qmap, 0, 0, 1, 1)
+
+        self.splitter_5.addWidget(self.groupBox_19)
+        self.splitter_6.addWidget(self.splitter_5)
+        self.groupBox_20 = QGroupBox(self.splitter_6)
+        self.groupBox_20.setObjectName(u"groupBox_20")
+        self.gridLayout_41 = QGridLayout(self.groupBox_20)
+        self.gridLayout_41.setObjectName(u"gridLayout_41")
+        self.gridLayout_41.setContentsMargins(0, 0, 0, 0)
+        self.widget_g2map_profile = GraphicsLayoutWidget(self.groupBox_20)
+        self.widget_g2map_profile.setObjectName(u"widget_g2map_profile")
+        sizePolicy14.setHeightForWidth(self.widget_g2map_profile.sizePolicy().hasHeightForWidth())
+        self.widget_g2map_profile.setSizePolicy(sizePolicy14)
+
+        self.gridLayout_41.addWidget(self.widget_g2map_profile, 0, 0, 1, 1)
+
+        self.splitter_6.addWidget(self.groupBox_20)
+
+        self.gridLayout_42.addWidget(self.splitter_6, 0, 0, 1, 2)
+
+        self.groupBox_17 = QGroupBox(self.tab_10)
+        self.groupBox_17.setObjectName(u"groupBox_17")
+        self.gridLayout_20 = QGridLayout(self.groupBox_17)
+        self.gridLayout_20.setObjectName(u"gridLayout_20")
+        self.pushButton_plot_g2map = QPushButton(self.groupBox_17)
+        self.pushButton_plot_g2map.setObjectName(u"pushButton_plot_g2map")
+
+        self.gridLayout_20.addWidget(self.pushButton_plot_g2map, 0, 2, 1, 1)
+
+        self.label_30 = QLabel(self.groupBox_17)
+        self.label_30.setObjectName(u"label_30")
+
+        self.gridLayout_20.addWidget(self.label_30, 0, 0, 1, 1)
+
+        self.spinBox_qbin = QSpinBox(self.groupBox_17)
+        self.spinBox_qbin.setObjectName(u"spinBox_qbin")
+        self.spinBox_qbin.setMaximum(9999)
+
+        self.gridLayout_20.addWidget(self.spinBox_qbin, 0, 1, 1, 1)
+
+
+        self.gridLayout_42.addWidget(self.groupBox_17, 1, 0, 1, 2)
+
+        self.tabWidget.addTab(self.tab_10, "")
         self.splitter_3.addWidget(self.tabWidget)
 
         self.gridLayout.addWidget(self.splitter_3, 0, 0, 1, 1)
@@ -2033,7 +2113,7 @@ class Ui_mainWindow(object):
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_min.setDisabled)
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_max.setDisabled)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(10)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -2326,5 +2406,12 @@ class Ui_mainWindow(object):
         self.groupBox_9.setTitle(QCoreApplication.translate("mainWindow", u"Averaging Job List", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Average", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Metadata", None))
+        self.groupBox_18.setTitle(QCoreApplication.translate("mainWindow", u"g2map", None))
+        self.groupBox_19.setTitle(QCoreApplication.translate("mainWindow", u"qmap", None))
+        self.groupBox_20.setTitle(QCoreApplication.translate("mainWindow", u"g2 profile", None))
+        self.groupBox_17.setTitle(QCoreApplication.translate("mainWindow", u"Settings", None))
+        self.pushButton_plot_g2map.setText(QCoreApplication.translate("mainWindow", u"Plot", None))
+        self.label_30.setText(QCoreApplication.translate("mainWindow", u"qbin", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"g2_map", None))
     # retranslateUi
 
