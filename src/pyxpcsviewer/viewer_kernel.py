@@ -70,7 +70,20 @@ class ViewerKernel(FileLocator):
             g2mod.pg_plot(
                 handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs
             )
-            q, tel, *unused = g2mod.get_data(xf_list)
+            q, tel, *unused = g2mod.get_g2_data(xf_list)
+            return q, tel
+        else:
+            return None, None
+
+    def plot_g2_stability(
+        self, handler, q_range, t_range, y_range, rows=None, **kwargs
+    ):
+        xf_obj = self.get_xf_list(rows=rows, filter_atype="Multitau")[0]
+        if xf_obj:
+            g2mod.pg_plot_stability(
+                handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs
+            )
+            q, tel, *unused = g2mod.get_g2_data([xf_obj])
             return q, tel
         else:
             return None, None

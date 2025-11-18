@@ -3551,7 +3551,7 @@
               <x>0</x>
               <y>0</y>
               <width>1152</width>
-              <height>716</height>
+              <height>717</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -3562,7 +3562,7 @@
             </property>
             <layout class="QGridLayout" name="gridLayout_48">
              <item row="1" column="0">
-              <widget class="PlotWidgetDev" name="mp_g2_2" native="true">
+              <widget class="PlotWidgetDev" name="mp_g2_stability" native="true">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -3801,60 +3801,68 @@
              </item>
              <item row="0" column="0">
               <layout class="QGridLayout" name="gridLayout_45">
-               <item row="0" column="0" colspan="2">
-                <widget class="QPushButton" name="pushButton_5">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>plot</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_57">
-                 <property name="text">
-                  <string>offset:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QSpinBox" name="sb_g2_column_2">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>8</number>
-                 </property>
-                 <property name="singleStep">
-                  <number>1</number>
-                 </property>
-                 <property name="value">
-                  <number>4</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_69">
-                 <property name="text">
-                  <string>marker size:</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_70">
                  <property name="text">
                   <string>column:</string>
                  </property>
+                </widget>
+               </item>
+               <item row="1" column="2" colspan="2">
+                <widget class="QCheckBox" name="g2_show_label_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>show labels</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2" colspan="2">
+                <widget class="QCheckBox" name="g2_sub_baseline_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>subtract baseline</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2" colspan="2">
+                <widget class="QComboBox" name="g2_plot_type_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>multiple</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>single</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>single-combined</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
                <item row="2" column="1">
@@ -3886,529 +3894,52 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="2" colspan="3">
-                <widget class="QCheckBox" name="g2_sub_baseline_2">
+               <item row="0" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_5">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <property name="text">
-                  <string>subtract baseline</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2" colspan="3">
-                <widget class="QCheckBox" name="g2_show_fit_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
                  </property>
                  <property name="text">
-                  <string>do fitting</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2" colspan="3">
-                <widget class="QCheckBox" name="g2_show_label_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>show labels</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2" colspan="3">
-                <widget class="QComboBox" name="g2_plot_type_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>multiple</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>single</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>single-combined</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QGroupBox" name="groupBox_22">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>65536</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>g2 fitting</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_46">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item row="0" column="0" rowspan="3">
-              <layout class="QGridLayout" name="gridLayout_47">
-               <item row="3" column="7">
-                <widget class="QDoubleSpinBox" name="g2_fmin_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="minimum">
-                  <double>0.501000000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>1.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="8">
-                <widget class="QDoubleSpinBox" name="g2_fmax_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="minimum">
-                  <double>0.501000000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>1.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>1.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="7">
-                <widget class="QDoubleSpinBox" name="g2_c2min_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="value">
-                  <double>0.500000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="8">
-                <widget class="QDoubleSpinBox" name="g2_c2max_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="value">
-                  <double>2.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="8">
-                <widget class="QDoubleSpinBox" name="g2_b2max_2">
-                 <property name="decimals">
-                  <number>5</number>
-                 </property>
-                 <property name="maximum">
-                  <double>9999.999900000000707</double>
-                 </property>
-                 <property name="value">
-                  <double>1.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="7">
-                <widget class="QDoubleSpinBox" name="g2_b2min_2">
-                 <property name="decimals">
-                  <number>5</number>
-                 </property>
-                 <property name="minimum">
-                  <double>0.000010000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>999.999000000000024</double>
-                 </property>
-                 <property name="value">
-                  <double>0.000010000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="6">
-                <widget class="QLabel" name="label_71">
-                 <property name="text">
-                  <string>c2</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_72">
-                 <property name="text">
-                  <string>baseline:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="9">
-                <widget class="QCheckBox" name="g2_c2fit_2">
-                 <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLabel" name="label_73">
-                 <property name="text">
-                  <string>d</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="4">
-                <widget class="QCheckBox" name="g2_dfit_2">
-                 <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="5">
-                <widget class="QLabel" name="label_74">
-                 <property name="text">
-                  <string>ratio:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="9">
-                <widget class="QCheckBox" name="g2_ffit_2">
-                 <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="5" colspan="5">
-                <widget class="QComboBox" name="g2_fitting_function_2">
-                 <item>
-                  <property name="text">
-                   <string>Single Exponential</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Double Exponential</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="3" column="6">
-                <widget class="QLabel" name="label_75">
-                 <property name="text">
-                  <string>f</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QDoubleSpinBox" name="g2_amin_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999.999000000000024</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.010000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.040000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="3">
-                <widget class="QDoubleSpinBox" name="g2_amax_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999.999000000000024</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.010000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.800000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="2">
-                <widget class="QDoubleSpinBox" name="g2_dmin_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.010000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.950000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="3">
-                <widget class="QDoubleSpinBox" name="g2_dmax_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.050000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>1.050000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2">
-                <widget class="QDoubleSpinBox" name="g2_cmin_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.010000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.500000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="3">
-                <widget class="QDoubleSpinBox" name="g2_cmax_2">
-                 <property name="decimals">
-                  <number>3</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.010000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>2.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="QDoubleSpinBox" name="g2_bmin_2">
-                 <property name="decimals">
-                  <number>5</number>
-                 </property>
-                 <property name="minimum">
-                  <double>0.000010000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>999.999900000000025</double>
-                 </property>
-                 <property name="value">
-                  <double>0.000010000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="3">
-                <widget class="QDoubleSpinBox" name="g2_bmax_2">
-                 <property name="decimals">
-                  <number>5</number>
-                 </property>
-                 <property name="maximum">
-                  <double>9999.999900000000707</double>
-                 </property>
-                 <property name="value">
-                  <double>100.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_76">
-                 <property name="text">
-                  <string>contrast:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLabel" name="label_77">
-                 <property name="text">
-                  <string>a</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="4">
-                <widget class="QCheckBox" name="g2_afit_2">
-                 <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_78">
-                 <property name="text">
-                  <string>tau (s):</string>
+                  <string>plot</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLabel" name="label_79">
-                 <property name="text">
-                  <string>b</string>
+                <widget class="QSpinBox" name="sb_g2_column_2">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>8</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>1</number>
+                 </property>
+                 <property name="value">
+                  <number>4</number>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="4">
-                <widget class="QCheckBox" name="g2_bfit_2">
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_69">
                  <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="5">
-                <widget class="QLabel" name="label_80">
-                 <property name="text">
-                  <string>tau2 (s):</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="6">
-                <widget class="QLabel" name="label_81">
-                 <property name="text">
-                  <string>b2</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="9">
-                <widget class="QCheckBox" name="g2_b2fit_2">
-                 <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
+                  <string>marker size:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_82">
+                <widget class="QLabel" name="label_57">
                  <property name="text">
-                  <string>stretch:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLabel" name="label_83">
-                 <property name="text">
-                  <string>c</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="4">
-                <widget class="QCheckBox" name="g2_cfit_2">
-                 <property name="text">
-                  <string>fit</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="5">
-                <widget class="QLabel" name="label_84">
-                 <property name="text">
-                  <string>stretch2:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="10">
-                <widget class="QPushButton" name="show_g2_fit_summary_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>values</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="10">
-                <widget class="QPushButton" name="btn_g2_export_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>export</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="10" rowspan="2">
-                <widget class="QPushButton" name="btn_g2_refit_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>refit</string>
+                  <string>offset:</string>
                  </property>
                 </widget>
                </item>

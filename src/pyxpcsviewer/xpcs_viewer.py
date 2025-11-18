@@ -44,6 +44,7 @@ tab_mapping = {
     8: "average",
     9: "metadata",
     10: "g2map",
+    11: "g2_stability",
 }
 
 
@@ -127,6 +128,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
         self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
+        self.pushButton_5.clicked.connect(self.plot_g2_stability)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -667,7 +669,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.g2_qmax.setValue(np.max(qd) * 1.1)
 
     def plot_g2(self, dryrun=False):
-        p = self.check_g2_number()
+        p = self.check_g2_number(tab="g2")
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
 
         kwargs = {
@@ -709,6 +711,42 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             finally:
                 self.pushButton_4.setEnabled(True)
                 self.pushButton_4.setText("plot")
+
+    def plot_g2_stability(self, dryrun=False):
+        p = self.check_g2_number(tab="g2_stability")
+
+        kwargs = {
+            "num_col": self.sb_g2_column_2.value(),
+            "offset": self.sb_g2_offset_2.value(),
+            "show_label": self.g2_show_label_2.isChecked(),
+            "plot_type": self.g2_plot_type_2.currentText(),
+            "q_range": (p[0], p[1]),
+            "t_range": (p[2], p[3]),
+            "y_range": (p[4], p[5]),
+            "y_auto": self.g2_yauto_2.isChecked(),
+            "q_auto": self.g2_qauto_2.isChecked(),
+            "t_auto": self.g2_tauto_2.isChecked(),
+            "rows": self.get_selected_rows(),
+            "marker_size": self.g2_marker_size_2.value(),
+            "subtract_baseline": self.g2_sub_baseline_2.isChecked(),
+        }
+        if dryrun:
+            return kwargs
+        else:
+            self.pushButton_5.setDisabled(True)
+            self.pushButton_5.setText("plotting")
+            try:
+                qd, tel = self.vk.plot_g2_stability(
+                    handler=self.mp_g2_stability, **kwargs
+                )
+                self.init_g2(qd, tel)
+                # if kwargs["show_fit"]:
+                #     self.init_diffusion()
+            except Exception as e:
+                traceback.print_exc()
+            finally:
+                self.pushButton_5.setEnabled(True)
+                self.pushButton_5.setText("plot")
 
     def export_g2(self):
         self.vk.export_g2()
@@ -858,15 +896,26 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.source_model, mode="source")
         self.list_view_source.selectAll()
 
-    def check_g2_number(self, default_val=(0, 0.0092, 1e-8, 1, 0.95, 1.35)):
-        keys = (
-            self.g2_qmin,
-            self.g2_qmax,
-            self.g2_tmin,
-            self.g2_tmax,
-            self.g2_ymin,
-            self.g2_ymax,
-        )
+    def check_g2_number(self, default_val=(0, 0.0092, 1e-8, 1, 0.95, 1.35), tab="g2"):
+        if tab == "g2":
+            keys = (
+                self.g2_qmin,
+                self.g2_qmax,
+                self.g2_tmin,
+                self.g2_tmax,
+                self.g2_ymin,
+                self.g2_ymax,
+            )
+        else:  # for g2 stability
+            keys = (
+                self.g2_qmin_2,
+                self.g2_qmax_2,
+                self.g2_tmin_2,
+                self.g2_tmax_2,
+                self.g2_ymin_2,
+                self.g2_ymax_2,
+            )
+
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
             if isinstance(key, QtWidgets.QDoubleSpinBox):

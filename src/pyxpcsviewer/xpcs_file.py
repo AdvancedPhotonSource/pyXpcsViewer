@@ -297,6 +297,11 @@ class XpcsFile(object):
             y = y[0 : y.size // 2]
             y[0] = 0
             return np.stack((x, y), axis=1).astype(np.float32).T
+        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels"]:
+            if key not in self.__dict__:
+                ret = get(self.fname, [key], "alias", ftype="nexus")
+                self.__dict__[key] = ret[key]
+            return self.__dict__[key]
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
@@ -320,6 +325,29 @@ class XpcsFile(object):
 
     def get_qbinlist_at_qindex(self, qindex, zero_based=True):
         return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
+
+    def get_g2_stability_data(self, qrange=None, trange=None):
+        assert "Multitau" in self.atype, "only multitau is supported"
+        # qrange can be None
+        qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
+        g2 = self.g2_partial[:, :, qindex_selected]
+        g2_err = self.g2_partial_err[:, :, qindex_selected]
+
+        qbin_labels = [
+            f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}"
+            for qbin in qindex_selected
+        ]
+        labels = self.g2_partial_labels
+
+        if trange is not None:
+            t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
+            g2 = g2[:, t_roi]
+            g2_err = g2_err[:, t_roi]
+            t_el = self.t_el[t_roi]
+        else:
+            t_el = self.t_el
+
+        return qvalues, t_el, g2, g2_err, qbin_labels, labels
 
     def get_g2_data(self, qrange=None, trange=None):
         assert "Multitau" in self.atype, "only multitau is supported"
