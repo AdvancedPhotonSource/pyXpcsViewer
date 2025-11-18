@@ -327,7 +327,10 @@ class XpcsFile(object):
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2[:, qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-        labels = [f"qbin={qbin+1}, {self.qmap.get_qbin_label(qbin + 1)}" for qbin in qindex_selected]
+        labels = [
+            f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}"
+            for qbin in qindex_selected
+        ]
 
         if trange is not None:
             t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
@@ -402,7 +405,7 @@ class XpcsFile(object):
         for qbin in self.c2_processed_bins.tolist():
             qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
         return qbin_labels
-    
+
     def get_cropped_qmap(self, target="dqmap", enabled=True):
         assert target in ["dqmap", "sqmap"]
         obj = getattr(self, target).copy()
@@ -412,11 +415,12 @@ class XpcsFile(object):
             sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
             obj = obj[sl_v, sl_h]
         return obj
-    
-    def get_offseted_g2(self):
+
+    def get_offseted_g2(self, normalization=False):
         g2 = self.g2.copy()
-        g2_baseline = g2[-1]
-        g2 = g2 - g2_baseline + 1.0
+        if normalization:
+            g2_baseline = g2[0]
+            g2 = g2 - g2_baseline + np.mean(g2_baseline)
         return g2
 
     def get_twotime_maps(
@@ -455,9 +459,9 @@ class XpcsFile(object):
 
     def get_twotime_c2(self, selection=0, correct_diag=True, max_size=32678):
         dq_processed = tuple(self.c2_processed_bins.tolist())
-        assert selection >= 0 and selection < len(
-            dq_processed
-        ), f"selection {selection} out of range {dq_processed}"  # noqa: E501
+        assert selection >= 0 and selection < len(dq_processed), (
+            f"selection {selection} out of range {dq_processed}"
+        )  # noqa: E501
         config = (selection, correct_diag, max_size)
         if self.c2_kwargs == config:
             return self.c2_all_data
@@ -545,16 +549,16 @@ class XpcsFile(object):
         """
         assert len(bounds) == 2
         if fit_func == "single":
-            assert (
-                len(bounds[0]) == 4
-            ), "for single exp, the shape of bounds must be (2, 4)"
+            assert len(bounds[0]) == 4, (
+                "for single exp, the shape of bounds must be (2, 4)"
+            )
             if fit_flag is None:
                 fit_flag = [True for _ in range(4)]
             func = single_exp_all
         else:
-            assert (
-                len(bounds[0]) == 7
-            ), "for single exp, the shape of bounds must be (2, 4)"
+            assert len(bounds[0]) == 7, (
+                "for single exp, the shape of bounds must be (2, 4)"
+            )
             if fit_flag is None:
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
@@ -739,7 +743,7 @@ class XpcsFile(object):
         Iq, q = self.saxs_1d["Iq"], self.saxs_1d["q"]
         header = "q(1/Angstron) Intensity"
         for n in range(Iq.shape[0] - 1):
-            header += f" Intensity_phi{n + 1 :03d}"
+            header += f" Intensity_phi{n + 1:03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
 
     def get_pg_tree(self):

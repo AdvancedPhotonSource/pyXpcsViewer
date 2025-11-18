@@ -75,11 +75,12 @@ class ViewerKernel(FileLocator):
         else:
             return None, None
 
-    def plot_g2map(self, g2map_hdl, qmap_hdl, g2_hdl, rows=None, qbin=0):
+    def plot_g2map(
+        self, g2map_hdl, qmap_hdl, g2_hdl, rows=None, qbin=0, normalization=False
+    ):
         xf_obj = self.get_xf_list(rows=rows)[0]
-        print(f"{qbin=}")
         if xf_obj:
-            g2map_hdl.setImage(xf_obj.get_offseted_g2().T)
+            g2map_hdl.setImage(xf_obj.get_offseted_g2(normalization).T)
             qmap_hdl.setImage(xf_obj.get_cropped_qmap("dqmap"))
 
             g2_hdl.clear()

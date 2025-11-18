@@ -1921,7 +1921,7 @@ class Ui_mainWindow(object):
         self.pushButton_plot_g2map = QPushButton(self.groupBox_17)
         self.pushButton_plot_g2map.setObjectName(u"pushButton_plot_g2map")
 
-        self.gridLayout_20.addWidget(self.pushButton_plot_g2map, 0, 2, 1, 1)
+        self.gridLayout_20.addWidget(self.pushButton_plot_g2map, 0, 3, 1, 1)
 
         self.label_30 = QLabel(self.groupBox_17)
         self.label_30.setObjectName(u"label_30")
@@ -1933,6 +1933,11 @@ class Ui_mainWindow(object):
         self.spinBox_qbin.setMaximum(9999)
 
         self.gridLayout_20.addWidget(self.spinBox_qbin, 0, 1, 1, 1)
+
+        self.checkBox_g2map_normalization = QCheckBox(self.groupBox_17)
+        self.checkBox_g2map_normalization.setObjectName(u"checkBox_g2map_normalization")
+
+        self.gridLayout_20.addWidget(self.checkBox_g2map_normalization, 0, 2, 1, 1)
 
 
         self.gridLayout_42.addWidget(self.groupBox_17, 1, 0, 1, 2)
@@ -2412,6 +2417,7 @@ class Ui_mainWindow(object):
         self.groupBox_17.setTitle(QCoreApplication.translate("mainWindow", u"Settings", None))
         self.pushButton_plot_g2map.setText(QCoreApplication.translate("mainWindow", u"Plot", None))
         self.label_30.setText(QCoreApplication.translate("mainWindow", u"qbin", None))
+        self.checkBox_g2map_normalization.setText(QCoreApplication.translate("mainWindow", u"Normalize by g2[0]", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_10), QCoreApplication.translate("mainWindow", u"g2_map", None))
     # retranslateUi
 

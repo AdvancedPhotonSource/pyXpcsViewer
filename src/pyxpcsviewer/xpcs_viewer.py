@@ -223,7 +223,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         hist.gradient.setColorMap(cmap)
 
     def plot_g2map(self, dryrun=False):
-        kwargs = {"rows": self.get_selected_rows(), "qbin": self.spinBox_qbin.value()}
+        kwargs = {
+            "rows": self.get_selected_rows(),
+            "qbin": self.spinBox_qbin.value(),
+            "normalization": self.checkBox_g2map_normalization.isChecked(),
+        }
+
         if dryrun:
             return kwargs
         self.vk.plot_g2map(
