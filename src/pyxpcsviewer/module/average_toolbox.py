@@ -139,11 +139,9 @@ class AverageToolbox(QtCore.QRunnable):
     Emits signals for progress, status, and individual value feedback.
     """
 
-    def __init__(self, work_dir=None, flist=["hello"], jid=None) -> None:
+    def __init__(self, flist=None, jid=None) -> None:
         super().__init__()
-        self.file_list = flist.copy()
-        self.model = ListDataModel(self.file_list)
-        self.work_dir = work_dir
+        self.model = ListDataModel(flist.copy() if flist else [])
         self.signals = WorkerSignal()
         self.kwargs = {}
         self.jid = jid or uuid.uuid4()
@@ -159,9 +157,7 @@ class AverageToolbox(QtCore.QRunnable):
         self._progress = "0%"
         self.ax = None
         # Ensure model is not empty before accessing index 0
-        self.origin_path = (
-            os.path.join(self.work_dir, self.model[0]) if self.model else None
-        )
+        self.origin_path = self.model[0] if self.model else None
         self.is_killed = False
 
     def kill(self):
@@ -230,7 +226,7 @@ class AverageToolbox(QtCore.QRunnable):
             self._progress = f"{curr_percentage}%"
             self.signals.progress.emit((self.jid, curr_percentage))  # Emit progress
 
-            fname = os.path.join(self.work_dir, self.model[m])
+            fname = self.model[m]
             try:
                 xf = get(fname, fields=fields, mode="alias", ret_type="dict")
                 flag, val = validate_g2_baseline(
@@ -322,7 +318,7 @@ class AverageToolbox(QtCore.QRunnable):
             futures = {
                 executor.submit(
                     _process_single_file,
-                    os.path.join(self.work_dir, fname),
+                    fname,
                     fields,
                     avg_window,
                     avg_qindex,
@@ -458,7 +454,9 @@ class AverageToolbox(QtCore.QRunnable):
                 data[key] = (
                     "data size is too large"
                     if val.size > 4096
-                    else float(val) if val.size == 1 else val
+                    else float(val)
+                    if val.size == 1
+                    else val
                 )
             else:
                 data[key] = val
@@ -487,7 +485,6 @@ class AverageToolbox(QtCore.QRunnable):
 
 def do_average(
     flist,
-    work_dir="./",
     save_path="avg_test.hdf",
     avg_window=3,
     avg_qindex=0,
@@ -503,7 +500,7 @@ def do_average(
 
     t0 = time.perf_counter()
     for m in trange(tot_num):
-        fname = os.path.join(work_dir, flist[m])
+        fname = flist[m]
         try:
             xf = get(fname, fields=fields, mode="alias", ret_type="dict")
             flag, val = validate_g2_baseline(

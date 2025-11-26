@@ -19,7 +19,6 @@ class ViewerKernel(FileLocator):
         self.meta = None
         self.reset_meta()
         self.path = path
-        self.avg_tb = AverageToolbox(path)
         self.avg_worker = TableDataModel()
         self.avg_jid = 0
         self.avg_worker_active = {}
@@ -235,7 +234,7 @@ class ViewerKernel(FileLocator):
         if len(self.target) <= 0:
             logger.error("no average target is selected")
             return
-        worker = AverageToolbox(self.path, flist=self.target, jid=self.avg_jid)
+        worker = AverageToolbox(flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
         self.avg_worker.append(worker)
         logger.info("create average job, ID = %s", worker.jid)

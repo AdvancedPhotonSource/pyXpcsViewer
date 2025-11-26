@@ -260,7 +260,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {"rows": self.get_selected_rows()}
         if dryrun:
             return kwargs
-
+        if len(self.vk.target) == 0:
+            return
         msg = self.vk.get_xf_list(**kwargs)[0].get_hdf_info()
         hdf_info_data = create_param_tree(msg)
         hdf_params = Parameter.create(
@@ -543,7 +544,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 logger.info("use the previous save path")
 
             save_name = self.avg_save_name.text()
-            save_name = "Avg" + self.vk.target[0]
+            save_name = "Avg" + os.path.basename(self.vk.target[0])
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
@@ -878,8 +879,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def remove_target(self):
         rmv_list = []
-        for x in self.list_view_target.selectedIndexes():
-            rmv_list.append(x.data())
+        for index in self.list_view_target.selectedIndexes():
+            rmv_list.append(self.vk.target[index.row()])
 
         self.vk.remove_target(rmv_list)
         # clear selection to avoid the bug: when the last one is selected, then
