@@ -78,7 +78,7 @@ class ViewerKernel(FileLocator):
         self, handler, q_range, t_range, y_range, rows=None, **kwargs
     ):
         xf_obj = self.get_xf_list(rows=rows, filter_atype="Multitau")[0]
-        if xf_obj:
+        if xf_obj and xf_obj.g2_partial is not None:
             g2mod.pg_plot_stability(
                 handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs
             )

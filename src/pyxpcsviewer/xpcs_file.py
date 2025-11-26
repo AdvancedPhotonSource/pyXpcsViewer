@@ -300,8 +300,13 @@ class XpcsFile(object):
             return np.stack((x, y), axis=1).astype(np.float32).T
         elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels"]:
             if key not in self.__dict__:
-                ret = get(self.fname, [key], "alias", ftype="nexus")
-                self.__dict__[key] = ret[key]
+                try:
+                    ret = get(self.fname, [key], "alias", ftype="nexus")
+                    self.__dict__[key] = ret[key]
+                except Exception as e:
+                    self.__dict__[key] = None
+                    logger.warning("cannot load %s due to %s", key, str(e))
+
             return self.__dict__[key]
         elif key in self.__dict__:
             return self.__dict__[key]
