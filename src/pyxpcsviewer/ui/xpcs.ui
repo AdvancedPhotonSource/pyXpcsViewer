@@ -364,7 +364,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>11</number>
+        <number>8</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -2945,10 +2945,28 @@
          </item>
          <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_8">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>2</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="title">
             <string>Averaging Setting:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_30">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_28">
               <item row="0" column="5" colspan="2">
@@ -3210,6 +3228,18 @@
             <string>Action:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_35">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
@@ -3225,52 +3255,6 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QPushButton" name="avg_job_pop">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>delete</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_avg_jobinfo">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>info</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_avg_kill">
-                <property name="text">
-                 <string>kill</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_start_avg_job">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>start</string>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
            </layout>
@@ -3280,7 +3264,7 @@
           <widget class="QGroupBox" name="groupBox_9">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
+             <horstretch>2</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
@@ -3288,6 +3272,18 @@
             <string>Averaging Job List</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_29">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0" colspan="2">
              <widget class="QTableView" name="avg_job_table">
               <property name="sizePolicy">
@@ -4032,10 +4028,6 @@
   <tabstop>avg_save_name</tabstop>
   <tabstop>btn_set_average_save_name</tabstop>
   <tabstop>btn_submit_job</tabstop>
-  <tabstop>avg_job_pop</tabstop>
-  <tabstop>btn_avg_jobinfo</tabstop>
-  <tabstop>btn_avg_kill</tabstop>
-  <tabstop>btn_start_avg_job</tabstop>
   <tabstop>avg_job_table</tabstop>
   <tabstop>work_dir</tabstop>
   <tabstop>sort_method</tabstop>
@@ -4124,34 +4116,18 @@
  </resources>
  <connections>
   <connection>
-   <sender>pushButton_4</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_g2()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>497</x>
-     <y>795</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>926</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>sb_window</sender>
    <signal>valueChanged(int)</signal>
    <receiver>pushButton_plot_intt</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>773</x>
-     <y>870</y>
+     <x>892</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -4162,12 +4138,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1024</x>
-     <y>870</y>
+     <x>1147</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -4194,12 +4170,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>662</x>
-     <y>796</y>
+     <x>735</x>
+     <y>826</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1485</x>
-     <y>797</y>
+     <x>1525</x>
+     <y>826</y>
     </hint>
    </hints>
   </connection>
@@ -4210,12 +4186,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>561</x>
-     <y>871</y>
+     <x>710</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1369</x>
-     <y>871</y>
+     <x>1531</x>
+     <y>905</y>
     </hint>
    </hints>
   </connection>
@@ -4226,12 +4202,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>980</x>
-     <y>747</y>
+     <x>1077</x>
+     <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4258,12 +4234,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>550</x>
-     <y>796</y>
+     <x>558</x>
+     <y>826</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1485</x>
-     <y>797</y>
+     <x>1525</x>
+     <y>826</y>
     </hint>
    </hints>
   </connection>
@@ -4290,12 +4266,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1177</x>
-     <y>747</y>
+     <x>1301</x>
+     <y>781</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4310,8 +4286,8 @@
      <y>816</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1485</x>
-     <y>797</y>
+     <x>1525</x>
+     <y>826</y>
     </hint>
    </hints>
   </connection>
@@ -4322,12 +4298,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1275</x>
-     <y>870</y>
+     <x>1403</x>
+     <y>904</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -4354,12 +4330,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>505</x>
-     <y>747</y>
+     <x>686</x>
+     <y>781</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4370,12 +4346,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>884</x>
-     <y>871</y>
+     <x>1038</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1369</x>
-     <y>871</y>
+     <x>1531</x>
+     <y>905</y>
     </hint>
    </hints>
   </connection>
@@ -4386,8 +4362,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1513</x>
-     <y>877</y>
+     <x>1538</x>
+     <y>911</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -4402,12 +4378,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>522</x>
-     <y>870</y>
+     <x>636</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -4418,8 +4394,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>518</x>
-     <y>877</y>
+     <x>589</x>
+     <y>911</y>
     </hint>
     <hint type="destinationlabel">
      <x>1126</x>
@@ -4450,8 +4426,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>828</y>
+     <x>514</x>
+     <y>834</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
@@ -4466,8 +4442,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>861</y>
+     <x>514</x>
+     <y>870</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
@@ -4530,12 +4506,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>918</x>
-     <y>720</y>
+     <x>954</x>
+     <y>752</y>
     </hint>
     <hint type="destinationlabel">
-     <x>452</x>
-     <y>719</y>
+     <x>670</x>
+     <y>753</y>
     </hint>
    </hints>
   </connection>
@@ -4546,12 +4522,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>918</x>
-     <y>752</y>
+     <x>954</x>
+     <y>784</y>
     </hint>
     <hint type="destinationlabel">
-     <x>452</x>
-     <y>751</y>
+     <x>670</x>
+     <y>785</y>
     </hint>
    </hints>
   </connection>
@@ -4562,8 +4538,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>824</x>
-     <y>823</y>
+     <x>954</x>
+     <y>857</y>
     </hint>
     <hint type="destinationlabel">
      <x>517</x>
@@ -4578,8 +4554,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>824</x>
-     <y>861</y>
+     <x>954</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
      <x>517</x>
@@ -4594,12 +4570,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>600</x>
-     <y>780</y>
+     <x>784</x>
+     <y>815</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4610,12 +4586,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>790</x>
-     <y>780</y>
+     <x>882</x>
+     <y>815</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4658,12 +4634,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1177</x>
-     <y>780</y>
+     <x>1301</x>
+     <y>814</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4690,12 +4666,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>980</x>
-     <y>780</y>
+     <x>1077</x>
+     <y>815</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4706,12 +4682,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>790</x>
-     <y>747</y>
+     <x>882</x>
+     <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4726,8 +4702,8 @@
      <y>794</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>796</y>
+     <x>1102</x>
+     <y>799</y>
     </hint>
    </hints>
   </connection>
@@ -4742,8 +4718,8 @@
      <y>827</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>829</y>
+     <x>1102</x>
+     <y>835</y>
     </hint>
    </hints>
   </connection>
@@ -4758,8 +4734,8 @@
      <y>860</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>862</y>
+     <x>1102</x>
+     <y>871</y>
     </hint>
    </hints>
   </connection>
@@ -4774,8 +4750,8 @@
      <y>893</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>895</y>
+     <x>1102</x>
+     <y>907</y>
     </hint>
    </hints>
   </connection>
@@ -4834,12 +4810,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1052</x>
-     <y>859</y>
+     <x>1133</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4850,12 +4826,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1299</x>
-     <y>747</y>
+     <x>1519</x>
+     <y>781</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4866,12 +4842,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>409</x>
-     <y>859</y>
+     <x>562</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>578</x>
-     <y>858</y>
+     <x>798</x>
+     <y>892</y>
     </hint>
    </hints>
   </connection>
@@ -4882,12 +4858,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>409</x>
-     <y>859</y>
+     <x>562</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>796</x>
-     <y>858</y>
+     <x>884</x>
+     <y>892</y>
     </hint>
    </hints>
   </connection>
@@ -4898,12 +4874,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>409</x>
-     <y>859</y>
+     <x>562</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>935</x>
-     <y>858</y>
+     <x>1030</x>
+     <y>893</y>
     </hint>
    </hints>
   </connection>
@@ -4914,12 +4890,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1221</x>
-     <y>859</y>
+     <x>1321</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1131</x>
-     <y>859</y>
+     <x>1223</x>
+     <y>891</y>
     </hint>
    </hints>
   </connection>
@@ -4930,12 +4906,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1221</x>
-     <y>859</y>
+     <x>1321</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1052</x>
-     <y>859</y>
+     <x>1133</x>
+     <y>891</y>
     </hint>
    </hints>
   </connection>
@@ -4994,12 +4970,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>891</x>
-     <y>827</y>
+     <x>953</x>
+     <y>853</y>
     </hint>
     <hint type="destinationlabel">
-     <x>746</x>
-     <y>827</y>
+     <x>802</x>
+     <y>854</y>
     </hint>
    </hints>
   </connection>
@@ -5010,8 +4986,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>897</x>
-     <y>836</y>
+     <x>953</x>
+     <y>853</y>
     </hint>
     <hint type="destinationlabel">
      <x>828</x>
@@ -5026,8 +5002,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1050</x>
-     <y>771</y>
+     <x>1424</x>
+     <y>788</y>
     </hint>
     <hint type="destinationlabel">
      <x>1492</x>
@@ -5046,8 +5022,8 @@
      <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>939</x>
-     <y>773</y>
+     <x>1406</x>
+     <y>788</y>
     </hint>
    </hints>
   </connection>
@@ -5058,8 +5034,8 @@
    <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1211</x>
-     <y>852</y>
+     <x>1216</x>
+     <y>873</y>
     </hint>
     <hint type="destinationlabel">
      <x>1429</x>
@@ -5074,8 +5050,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1482</x>
-     <y>848</y>
+     <x>1538</x>
+     <y>879</y>
     </hint>
     <hint type="destinationlabel">
      <x>880</x>
@@ -5090,8 +5066,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>878</x>
-     <y>891</y>
+     <x>1007</x>
+     <y>910</y>
     </hint>
     <hint type="destinationlabel">
      <x>1053</x>
@@ -5106,8 +5082,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>898</x>
-     <y>899</y>
+     <x>1007</x>
+     <y>910</y>
     </hint>
     <hint type="destinationlabel">
      <x>1174</x>

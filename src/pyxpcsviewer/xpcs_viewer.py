@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import traceback
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 import numpy as np
 import pyqtgraph as pg
@@ -121,13 +122,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.init_g2map_handler()
         self.pushButton_plot_g2map.clicked.connect(self.plot_g2map)
 
-        self.avg_job_pop.clicked.connect(self.remove_avg_job)
+        # self.avg_job_pop.clicked.connect(self.remove_avg_job)
         self.btn_submit_job.clicked.connect(self.submit_job)
-        self.btn_start_avg_job.clicked.connect(self.start_avg_job)
+        # self.btn_start_avg_job.clicked.connect(self.start_avg_job)
         self.btn_set_average_save_path.clicked.connect(self.set_average_save_path)
         self.btn_set_average_save_name.clicked.connect(self.set_average_save_name)
-        self.btn_avg_kill.clicked.connect(self.avg_kill_job)
-        self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
+        # self.btn_avg_kill.clicked.connect(self.avg_kill_job)
+        # self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
         self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
@@ -582,13 +583,46 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "fields": avg_fields,
         }
 
+        try:
+            # "a" = open for append or create; won't truncate existing file
+            with open(kwargs["save_path"], "a"):
+                pass
+        except OSError as e:
+            QMessageBox.critical(
+                self, "Save Error", f"Cannot write to:\n{save_path}\n\n{e}"
+            )
+            return
+
         if kwargs["avg_blmax"] <= kwargs["avg_blmin"]:
             self.statusbar.showMessage("check avg min/max values.", 1000)
+            QMessageBox.critical(
+                self, "Baseline bounds error", "Check avg min/max values for baseline."
+            )
             return
 
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode="target")
+
+        # def start_avg_job(self):
+        #     index = self.avg_job_table.currentIndex().row()
+        #     if index < 0 or index >= len(self.vk.avg_worker):
+        #         self.statusbar.showMessage("select a job to start", 1000)
+        #         return
+        index = len(self.vk.avg_worker) - 1  # start the last submitted job
+        worker = self.vk.avg_worker[index]
+        if worker.status == "finished":
+            self.statusbar.showMessage("this job has finished", 1000)
+            return
+        elif worker.status == "running":
+            self.statusbar.showMessage("this job is running.", 1000)
+            return
+
+        # worker.signals.progress.connect(worker.update_plot)
+        # worker.signals.progress.connect(self.vk.update_avg_worker)
+        worker.signals.values.connect(self.vk.update_avg_values)
+        self.thread_pool.start(worker)
+        self.vk.avg_worker_active[worker.jid] = None
 
     def update_avg_info(self):
         index = self.avg_job_table.currentIndex().row()
@@ -611,49 +645,30 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.timer.timeout.connect(lambda x=index: self.vk.update_avg_info(x))
         self.timer.start()
 
-    def start_avg_job(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage("select a job to start", 1000)
-            return
-        worker = self.vk.avg_worker[index]
-        if worker.status == "finished":
-            self.statusbar.showMessage("this job has finished", 1000)
-            return
-        elif worker.status == "running":
-            self.statusbar.showMessage("this job is running.", 1000)
-            return
-
-        # worker.signals.progress.connect(worker.update_plot)
-        # worker.signals.progress.connect(self.vk.update_avg_worker)
-        worker.signals.values.connect(self.vk.update_avg_values)
-        self.thread_pool.start(worker)
-        self.vk.avg_worker_active[worker.jid] = None
-
-    def avg_kill_job(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage("select a job to kill", 1000)
-            return
-        worker = self.vk.avg_worker[index]
-        if worker.status != "running":
-            self.statusbar.showMessage("the selected job isn's running", 1000)
-            return
-        worker.kill()
+    # def avg_kill_job(self):
+    #     index = self.avg_job_table.currentIndex().row()
+    #     if index < 0 or index >= len(self.vk.avg_worker):
+    #         self.statusbar.showMessage("select a job to kill", 1000)
+    #         return
+    #     worker = self.vk.avg_worker[index]
+    #     if worker.status != "running":
+    #         self.statusbar.showMessage("the selected job isn's running", 1000)
+    #         return
+    #     worker.kill()
 
     def show_g2_fit_summary_func(self):
         rows = self.get_selected_rows()
         self.tree = self.vk.get_fitting_tree(rows)
         self.tree.show()
 
-    def show_avg_jobinfo(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            logger.info("select a job to show it's settting")
-            return
-        worker = self.vk.avg_worker[index]
-        self.tree = worker.get_pg_tree()
-        self.tree.show()
+    # def show_avg_jobinfo(self):
+    #     index = self.avg_job_table.currentIndex().row()
+    #     if index < 0 or index >= len(self.vk.avg_worker):
+    #         logger.info("select a job to show it's settting")
+    #         return
+    #     worker = self.vk.avg_worker[index]
+    #     self.tree = worker.get_pg_tree()
+    #     self.tree.show()
 
     def init_g2(self, qd, tel):
         if qd is None or tel is None:

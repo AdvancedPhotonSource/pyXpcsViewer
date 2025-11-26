@@ -1632,8 +1632,14 @@ class Ui_mainWindow(object):
 
         self.groupBox_8 = QGroupBox(self.tab_5)
         self.groupBox_8.setObjectName(u"groupBox_8")
+        sizePolicy12 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy12.setHorizontalStretch(2)
+        sizePolicy12.setVerticalStretch(0)
+        sizePolicy12.setHeightForWidth(self.groupBox_8.sizePolicy().hasHeightForWidth())
+        self.groupBox_8.setSizePolicy(sizePolicy12)
         self.gridLayout_30 = QGridLayout(self.groupBox_8)
         self.gridLayout_30.setObjectName(u"gridLayout_30")
+        self.gridLayout_30.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_28 = QGridLayout()
         self.gridLayout_28.setObjectName(u"gridLayout_28")
         self.max_thread_count = QSpinBox(self.groupBox_8)
@@ -1783,13 +1789,14 @@ class Ui_mainWindow(object):
 
         self.groupBox_12 = QGroupBox(self.tab_5)
         self.groupBox_12.setObjectName(u"groupBox_12")
-        sizePolicy12 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
-        sizePolicy12.setHorizontalStretch(0)
-        sizePolicy12.setVerticalStretch(0)
-        sizePolicy12.setHeightForWidth(self.groupBox_12.sizePolicy().hasHeightForWidth())
-        self.groupBox_12.setSizePolicy(sizePolicy12)
+        sizePolicy13 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy13.setHorizontalStretch(0)
+        sizePolicy13.setVerticalStretch(0)
+        sizePolicy13.setHeightForWidth(self.groupBox_12.sizePolicy().hasHeightForWidth())
+        self.groupBox_12.setSizePolicy(sizePolicy13)
         self.gridLayout_35 = QGridLayout(self.groupBox_12)
         self.gridLayout_35.setObjectName(u"gridLayout_35")
+        self.gridLayout_35.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.btn_submit_job = QPushButton(self.groupBox_12)
@@ -1799,32 +1806,6 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_3.addWidget(self.btn_submit_job)
 
-        self.avg_job_pop = QPushButton(self.groupBox_12)
-        self.avg_job_pop.setObjectName(u"avg_job_pop")
-        sizePolicy7.setHeightForWidth(self.avg_job_pop.sizePolicy().hasHeightForWidth())
-        self.avg_job_pop.setSizePolicy(sizePolicy7)
-
-        self.verticalLayout_3.addWidget(self.avg_job_pop)
-
-        self.btn_avg_jobinfo = QPushButton(self.groupBox_12)
-        self.btn_avg_jobinfo.setObjectName(u"btn_avg_jobinfo")
-        sizePolicy7.setHeightForWidth(self.btn_avg_jobinfo.sizePolicy().hasHeightForWidth())
-        self.btn_avg_jobinfo.setSizePolicy(sizePolicy7)
-
-        self.verticalLayout_3.addWidget(self.btn_avg_jobinfo)
-
-        self.btn_avg_kill = QPushButton(self.groupBox_12)
-        self.btn_avg_kill.setObjectName(u"btn_avg_kill")
-
-        self.verticalLayout_3.addWidget(self.btn_avg_kill)
-
-        self.btn_start_avg_job = QPushButton(self.groupBox_12)
-        self.btn_start_avg_job.setObjectName(u"btn_start_avg_job")
-        sizePolicy7.setHeightForWidth(self.btn_start_avg_job.sizePolicy().hasHeightForWidth())
-        self.btn_start_avg_job.setSizePolicy(sizePolicy7)
-
-        self.verticalLayout_3.addWidget(self.btn_start_avg_job)
-
 
         self.gridLayout_35.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
 
@@ -1833,10 +1814,14 @@ class Ui_mainWindow(object):
 
         self.groupBox_9 = QGroupBox(self.tab_5)
         self.groupBox_9.setObjectName(u"groupBox_9")
-        sizePolicy5.setHeightForWidth(self.groupBox_9.sizePolicy().hasHeightForWidth())
-        self.groupBox_9.setSizePolicy(sizePolicy5)
+        sizePolicy14 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy14.setHorizontalStretch(2)
+        sizePolicy14.setVerticalStretch(0)
+        sizePolicy14.setHeightForWidth(self.groupBox_9.sizePolicy().hasHeightForWidth())
+        self.groupBox_9.setSizePolicy(sizePolicy14)
         self.gridLayout_29 = QGridLayout(self.groupBox_9)
         self.gridLayout_29.setObjectName(u"gridLayout_29")
+        self.gridLayout_29.setContentsMargins(0, 0, 0, 0)
         self.avg_job_table = QTableView(self.groupBox_9)
         self.avg_job_table.setObjectName(u"avg_job_table")
         sizePolicy5.setHeightForWidth(self.avg_job_table.sizePolicy().hasHeightForWidth())
@@ -1861,11 +1846,11 @@ class Ui_mainWindow(object):
         self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
         self.hdf_info = ParameterTree(self.tab_9)
         self.hdf_info.setObjectName(u"hdf_info")
-        sizePolicy13 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy13.setHorizontalStretch(1)
-        sizePolicy13.setVerticalStretch(1)
-        sizePolicy13.setHeightForWidth(self.hdf_info.sizePolicy().hasHeightForWidth())
-        self.hdf_info.setSizePolicy(sizePolicy13)
+        sizePolicy15 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy15.setHorizontalStretch(1)
+        sizePolicy15.setVerticalStretch(1)
+        sizePolicy15.setHeightForWidth(self.hdf_info.sizePolicy().hasHeightForWidth())
+        self.hdf_info.setSizePolicy(sizePolicy15)
 
         self.gridLayout_7.addWidget(self.hdf_info, 0, 0, 1, 1)
 
@@ -1888,11 +1873,11 @@ class Ui_mainWindow(object):
         self.gridLayout_23.setContentsMargins(0, 0, 0, 0)
         self.widget_g2map_all = GraphicsLayoutWidget(self.groupBox_18)
         self.widget_g2map_all.setObjectName(u"widget_g2map_all")
-        sizePolicy14 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy14.setHorizontalStretch(0)
-        sizePolicy14.setVerticalStretch(1)
-        sizePolicy14.setHeightForWidth(self.widget_g2map_all.sizePolicy().hasHeightForWidth())
-        self.widget_g2map_all.setSizePolicy(sizePolicy14)
+        sizePolicy16 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy16.setHorizontalStretch(0)
+        sizePolicy16.setVerticalStretch(1)
+        sizePolicy16.setHeightForWidth(self.widget_g2map_all.sizePolicy().hasHeightForWidth())
+        self.widget_g2map_all.setSizePolicy(sizePolicy16)
 
         self.gridLayout_23.addWidget(self.widget_g2map_all, 0, 0, 1, 1)
 
@@ -1904,8 +1889,8 @@ class Ui_mainWindow(object):
         self.gridLayout_37.setContentsMargins(0, 0, 0, 0)
         self.widget_g2map_qmap = ImageView(self.groupBox_19)
         self.widget_g2map_qmap.setObjectName(u"widget_g2map_qmap")
-        sizePolicy14.setHeightForWidth(self.widget_g2map_qmap.sizePolicy().hasHeightForWidth())
-        self.widget_g2map_qmap.setSizePolicy(sizePolicy14)
+        sizePolicy16.setHeightForWidth(self.widget_g2map_qmap.sizePolicy().hasHeightForWidth())
+        self.widget_g2map_qmap.setSizePolicy(sizePolicy16)
 
         self.gridLayout_37.addWidget(self.widget_g2map_qmap, 0, 0, 1, 1)
 
@@ -1918,8 +1903,8 @@ class Ui_mainWindow(object):
         self.gridLayout_41.setContentsMargins(0, 0, 0, 0)
         self.widget_g2map_profile = GraphicsLayoutWidget(self.groupBox_20)
         self.widget_g2map_profile.setObjectName(u"widget_g2map_profile")
-        sizePolicy14.setHeightForWidth(self.widget_g2map_profile.sizePolicy().hasHeightForWidth())
-        self.widget_g2map_profile.setSizePolicy(sizePolicy14)
+        sizePolicy16.setHeightForWidth(self.widget_g2map_profile.sizePolicy().hasHeightForWidth())
+        self.widget_g2map_profile.setSizePolicy(sizePolicy16)
 
         self.gridLayout_41.addWidget(self.widget_g2map_profile, 0, 0, 1, 1)
 
@@ -2208,11 +2193,7 @@ class Ui_mainWindow(object):
         QWidget.setTabOrder(self.btn_set_average_save_path, self.avg_save_name)
         QWidget.setTabOrder(self.avg_save_name, self.btn_set_average_save_name)
         QWidget.setTabOrder(self.btn_set_average_save_name, self.btn_submit_job)
-        QWidget.setTabOrder(self.btn_submit_job, self.avg_job_pop)
-        QWidget.setTabOrder(self.avg_job_pop, self.btn_avg_jobinfo)
-        QWidget.setTabOrder(self.btn_avg_jobinfo, self.btn_avg_kill)
-        QWidget.setTabOrder(self.btn_avg_kill, self.btn_start_avg_job)
-        QWidget.setTabOrder(self.btn_start_avg_job, self.avg_job_table)
+        QWidget.setTabOrder(self.btn_submit_job, self.avg_job_table)
         QWidget.setTabOrder(self.avg_job_table, self.work_dir)
         QWidget.setTabOrder(self.work_dir, self.sort_method)
         QWidget.setTabOrder(self.sort_method, self.pushButton_11)
@@ -2296,7 +2277,6 @@ class Ui_mainWindow(object):
         QWidget.setTabOrder(self.g2_b2min, self.g2_fitting_function)
 
         self.retranslateUi(mainWindow)
-        self.pushButton_4.clicked.connect(mainWindow.plot_g2)
         self.sb_window.valueChanged.connect(self.pushButton_plot_intt.click)
         self.sb_intt_sampling.valueChanged.connect(self.pushButton_plot_intt.click)
         self.pushButton_3.clicked.connect(mainWindow.remove_target)
@@ -2359,7 +2339,7 @@ class Ui_mainWindow(object):
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_min.setDisabled)
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_max.setDisabled)
 
-        self.tabWidget.setCurrentIndex(11)
+        self.tabWidget.setCurrentIndex(8)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -2645,10 +2625,6 @@ class Ui_mainWindow(object):
         self.avg_blmin.setSpecialValueText("")
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Action:", None))
         self.btn_submit_job.setText(QCoreApplication.translate("mainWindow", u"submit", None))
-        self.avg_job_pop.setText(QCoreApplication.translate("mainWindow", u"delete", None))
-        self.btn_avg_jobinfo.setText(QCoreApplication.translate("mainWindow", u"info", None))
-        self.btn_avg_kill.setText(QCoreApplication.translate("mainWindow", u"kill", None))
-        self.btn_start_avg_job.setText(QCoreApplication.translate("mainWindow", u"start", None))
         self.groupBox_9.setTitle(QCoreApplication.translate("mainWindow", u"Averaging Job List", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Average", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Metadata", None))
