@@ -1,14 +1,15 @@
+import logging
 import os
 import re
-import numpy as np
-import pyqtgraph as pg
 import warnings
 
+import numpy as np
+import pyqtgraph as pg
+
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
-from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
+from .helper.fitting import fit_with_fixed
 from .module.twotime_utils import get_c2_stream, get_single_c2_from_hdf
-import logging
 
 logger = logging.getLogger(__name__)
 

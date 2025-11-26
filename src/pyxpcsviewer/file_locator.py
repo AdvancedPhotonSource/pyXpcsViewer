@@ -1,13 +1,12 @@
-import os
-from .xpcs_file import XpcsFile as XF
-import logging
-from .helper.listmodel import ListDataModel
-from .fileIO.qmap_utils import QMapManager
-
-import traceback
 import datetime
+import logging
+import os
 import time
+import traceback
 
+from .fileIO.qmap_utils import QMapManager
+from .helper.listmodel import ListDataModel
+from .xpcs_file import XpcsFile as XF
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +95,7 @@ class FileLocator(object):
                     self.target.append(fn)
                     self.cache[full_fname] = xf_obj
             t1 = time.perf_counter()
-            logger.info(f"Load {len(alist)}  files in {t1-t0:.3f} seconds")
+            logger.info(f"Load {len(alist)}  files in {t1 - t0:.3f} seconds")
         else:
             logger.info("preload disabled or too many files added")
             self.target.extend(alist)

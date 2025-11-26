@@ -4,7 +4,6 @@ import os
 import shutil
 import sys
 import traceback
-from PySide6.QtWidgets import QMessageBox, QWidget
 
 import numpy as np
 import pyqtgraph as pg
@@ -12,6 +11,7 @@ from pyqtgraph.parametertree import Parameter
 from pyqtgraph.Qt import QtCore
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import qInstallMessageHandler
+from PySide6.QtWidgets import QMessageBox
 
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui

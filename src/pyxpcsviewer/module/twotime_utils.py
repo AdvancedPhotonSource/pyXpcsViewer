@@ -70,9 +70,9 @@ def get_all_c2_from_hdf(
 
     c2_all = np.array([res[0] for res in result])
     sampling_rate_all = set([res[1] for res in result])
-    assert (
-        len(sampling_rate_all) == 1
-    ), f"Sampling rate not consistent {sampling_rate_all}"
+    assert len(sampling_rate_all) == 1, (
+        f"Sampling rate not consistent {sampling_rate_all}"
+    )
     sampling_rate = list(sampling_rate_all)[0]
     c2_result = {
         "c2_all": c2_all,

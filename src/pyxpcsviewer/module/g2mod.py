@@ -1,9 +1,7 @@
-import numpy as np
-from matplotlib.ticker import FormatStrFormatter
-import pyqtgraph as pg
 import logging
-import matplotlib.pyplot as plt
 
+import numpy as np
+import pyqtgraph as pg
 
 pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 # pg.setConfigOption("background", 'w')

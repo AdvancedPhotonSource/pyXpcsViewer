@@ -1,6 +1,7 @@
 import numpy as np
-from ..plothandler.matplot_qt import get_color_marker
 import pyqtgraph as pg
+
+from ..plothandler.matplot_qt import get_color_marker
 
 pg.setConfigOption("background", "w")
 

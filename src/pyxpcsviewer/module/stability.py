@@ -1,5 +1,4 @@
 from .saxs1d import get_pyqtgraph_anchor_params, plot_line_with_marker
-import numpy as np
 
 
 def plot(
@@ -12,7 +11,6 @@ def plot(
     loc="upper right",
     **kwargs,
 ):
-
     pg_hdl.clear()
     plot_item = pg_hdl.getPlotItem()
 
