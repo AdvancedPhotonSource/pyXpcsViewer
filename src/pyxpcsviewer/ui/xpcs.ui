@@ -38,6 +38,18 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <widget class="QSplitter" name="splitter_3">
       <property name="orientation">
@@ -180,6 +192,18 @@
             <string>Source:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <widget class="QListView" name="list_view_source">
               <property name="dragEnabled">
@@ -306,6 +330,18 @@
             <string>Target:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="1" column="0">
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
@@ -364,7 +400,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>8</number>
+        <number>7</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -1469,8 +1505,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1152</width>
-              <height>698</height>
+              <width>1170</width>
+              <height>716</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -2870,34 +2906,96 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="comboBox_qmap_target">
-           <item>
-            <property name="text">
-             <string>dynamic_roi_map</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>static_roi_map</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>scattering</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_27">
-           <property name="text">
-            <string>Target</string>
+         <item row="0" column="0" colspan="2">
+          <widget class="ImageView" name="pg_qmap" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
            </property>
           </widget>
          </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="ImageView" name="pg_qmap" native="true"/>
+         <item row="1" column="0" colspan="2">
+          <widget class="QGroupBox" name="groupBox_22">
+           <property name="title">
+            <string>Settings</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_46">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_27">
+              <property name="text">
+               <string>Target</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboBox_qmap_target">
+              <item>
+               <property name="text">
+                <string>dynamic_roi_map</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>static_roi_map</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>scattering</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_71">
+              <property name="text">
+               <string>Cmap</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QComboBox" name="cb_qmap_cmap">
+              <item>
+               <property name="text">
+                <string>tab20b</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>jet</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>hot</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>plasma</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>viridis</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>magma</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>gray</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -3546,8 +3644,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1152</width>
-              <height>717</height>
+              <width>1170</width>
+              <height>735</height>
              </rect>
             </property>
             <property name="sizePolicy">

@@ -140,6 +140,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
         self.pushButton_4.clicked.connect(self.update_plot)
         self.pushButton_5.clicked.connect(self.update_plot)
+        self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
+        self.cb_qmap_cmap.currentIndexChanged.connect(self.update_plot)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -411,6 +413,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {
             "rows": self.get_selected_rows(),
             "target": self.comboBox_qmap_target.currentText(),
+            "cmap": self.cb_qmap_cmap.currentText(),
         }
         if dryrun:
             return kwargs

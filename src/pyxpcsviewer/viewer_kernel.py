@@ -123,7 +123,7 @@ class ViewerKernel(FileLocator):
             g2_hdl.setLabel("left", "g2")
             return
 
-    def plot_qmap(self, hdl, rows=None, target=None):
+    def plot_qmap(self, hdl, rows=None, target=None, cmap="tab20b"):
         xf_list = self.get_xf_list(rows=rows)
         if xf_list:
             if target == "scattering":
@@ -134,6 +134,7 @@ class ViewerKernel(FileLocator):
                 hdl.setImage(xf_list[0].dqmap)
             elif target == "static_roi_map":
                 hdl.setImage(xf_list[0].sqmap)
+            hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
 
     def plot_tauq_pre(self, hdl=None, rows=None):
         xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
