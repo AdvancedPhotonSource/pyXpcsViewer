@@ -2,11 +2,10 @@ import numpy as np
 
 
 def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
-    vmin = np.percentile(data.ravel(), min_percent)
-    vmax = np.percentile(data.ravel(), max_percent)
-    if 'plot_norm' in kwargs and 'plot_type' in kwargs:
-        if kwargs['plot_norm'] == 3:
-            if kwargs['plot_type'] == 'log':
+    vmin, vmax = np.percentile(data.ravel(), (min_percent, max_percent))
+    if "plot_norm" in kwargs and "plot_type" in kwargs:
+        if kwargs["plot_norm"] == 3:
+            if kwargs["plot_type"] == "log":
                 t = max(abs(vmin), abs(vmax))
                 vmin, vmax = -t, t
             else:
@@ -17,19 +16,19 @@ def get_min_max(data, min_percent=0, max_percent=100, **kwargs):
 
 
 def norm_saxs_data(Iq, q, plot_norm=0):
-    ylabel = 'Intensity'
+    ylabel = "Intensity"
     if plot_norm == 1:
         Iq = Iq * np.square(q)
-        ylabel = ylabel + ' * q^2'
+        ylabel = ylabel + " * q^2"
     elif plot_norm == 2:
         Iq = Iq * np.square(np.square(q))
-        ylabel = ylabel + ' * q^4'
+        ylabel = ylabel + " * q^4"
     elif plot_norm == 3:
         baseline = Iq[0]
         Iq = Iq / baseline
-        ylabel = ylabel + ' / I_0'
+        ylabel = ylabel + " / I_0"
 
-    xlabel = '$q (\\AA^{-1})$'
+    xlabel = "$q (\\AA^{-1})$"
     return Iq, xlabel, ylabel
 
 

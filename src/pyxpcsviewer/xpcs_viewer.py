@@ -56,8 +56,17 @@ def create_param_tree(data_dict):
             params.append(
                 {"name": key, "type": "group", "children": create_param_tree(value)}
             )
-        elif isinstance(value, (int, float, np.number)):  # Numeric types
-            params.append({"name": key, "type": "float", "value": float(value)})
+        elif isinstance(value, (float, np.floating)):  # Numeric types
+            params.append(
+                {
+                    "name": key,
+                    "type": "float",
+                    "value": float(value),
+                    "format": "{value:.10g}",
+                }
+            )
+        elif isinstance(value, (int, np.integer)):  # Integer types
+            params.append({"name": key, "type": "int", "value": int(value)})
         elif isinstance(value, str):  # String types
             params.append({"name": key, "type": "str", "value": value})
         elif isinstance(value, np.ndarray):  # Numpy arrays
