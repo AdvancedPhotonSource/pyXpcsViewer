@@ -137,7 +137,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
         self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
-        self.pushButton_5.clicked.connect(self.plot_g2_stability)
+        self.pushButton_4.clicked.connect(self.update_plot)
+        self.pushButton_5.clicked.connect(self.update_plot)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -202,6 +203,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             if self.plot_kwargs_record[tab_name] != kwargs:
                 self.plot_kwargs_record[tab_name] = kwargs
                 func(dryrun=False)
+                if tab_name == "g2":  # reset diffusion plot on new g2 plot
+                    logger.info("g2 updated; reset diffusion plot settings")
+                    self.plot_kwargs_record["diffusion"] = {}
         except Exception as e:
             logger.error(f"update selection in [{tab_name}] failed")
             logger.error(e)
@@ -552,7 +556,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             logger.info("the average save_path doesn't exist; creating one")
             try:
                 os.mkdir(save_path)
-            except:
+            except Exception:
                 logger.info("cannot create the folder: %s", save_path)
                 return
 
@@ -598,7 +602,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         try:
             self.timer.timeout.disconnect()
             logger.info("disconnect previous slot")
-        except:
+        except Exception:
             pass
 
         worker = self.vk.avg_worker[index]
@@ -701,10 +705,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "fit_func": fit_func,
             # 'label_size': self.sb_g2_label_size.value(),
         }
-        if kwargs["show_fit"] and sum(kwargs["fit_flag"]) == 0:
-            self.statusbar.showMessage("nothing to fit, really?", 1000)
-            return
-
         if dryrun:
             return kwargs
         else:
@@ -716,6 +716,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 if kwargs["show_fit"]:
                     self.init_diffusion()
             except Exception as e:
+                logger.error(f"plot g2 failed, {e}")
                 traceback.print_exc()
             finally:
                 self.pushButton_4.setEnabled(True)
