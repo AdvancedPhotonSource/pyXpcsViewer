@@ -131,6 +131,7 @@ class WorkerSignal(QObject):
     progress = QtCore.Signal(tuple)
     values = QtCore.Signal(tuple)
     status = QtCore.Signal(tuple)
+    finished = QtCore.Signal(bool)
 
 
 class AverageToolbox(QtCore.QRunnable):
@@ -178,11 +179,7 @@ class AverageToolbox(QtCore.QRunnable):
 
     @Slot()
     def run(self):
-        # Determine which averaging method to call based on a flag in kwargs
         self.do_average_multiprocess(*self.args, **self.kwargs)
-        # if self.kwargs.get("use_multiprocess", False):
-        # else:
-        #     self.do_average(*self.args, **self.kwargs)
 
     def setup(self, *args, **kwargs):
         self.args = args
@@ -279,6 +276,7 @@ class AverageToolbox(QtCore.QRunnable):
         self.etime = time.strftime("%H:%M:%S")
         self.model.layoutChanged.emit()
         self.signals.progress.emit((self.jid, 100))
+        self.signals.finished.emit(True)
         logger.info("average job %d finished", self.jid)
         return result
 
@@ -347,7 +345,6 @@ class AverageToolbox(QtCore.QRunnable):
                 self._progress = f"{curr_percentage}%"
                 self.signals.progress.emit((self.jid, curr_percentage))
 
-                file_index = futures[future]
                 try:
                     data_from_file, baseline_val, is_valid, original_fname = (
                         future.result()
@@ -417,6 +414,7 @@ class AverageToolbox(QtCore.QRunnable):
         self.model.layoutChanged.emit()
         self.signals.progress.emit((self.jid, 100))
         logger.info("average job %d finished", self.jid)
+        self.signals.finished.emit(True)
         return final_averaged_data
 
     def initialize_plot(self, hdl):

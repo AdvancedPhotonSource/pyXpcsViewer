@@ -19,7 +19,7 @@ class ViewerKernel(FileLocator):
         self.meta = None
         self.reset_meta()
         self.path = path
-        self.avg_worker = TableDataModel()
+        self.avg_worker = None
         self.avg_jid = 0
         self.avg_worker_active = {}
         self.current_dset = None
@@ -231,25 +231,35 @@ class ViewerKernel(FileLocator):
         stability.plot(xf_obj, mp_hdl, **kwargs)
 
     def submit_job(self, *args, **kwargs):
+        if self.avg_worker is not None:
+            logger.error("average job is already running")
+            return
+
         if len(self.target) <= 0:
             logger.error("no average target is selected")
             return
+
         worker = AverageToolbox(flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
-        self.avg_worker.append(worker)
+        worker.signals.finished.connect(self.avg_job_finished)
+        self.avg_worker = worker
         logger.info("create average job, ID = %s", worker.jid)
         self.avg_jid += 1
         self.target.clear()
         return
 
-    def remove_job(self, index):
-        self.avg_worker.pop(index)
-        return
+    def update_avg_info(self):
+        if self.avg_worker is None:
+            return
+        self.avg_worker.update_plot()
 
-    def update_avg_info(self, jid):
-        self.avg_worker.layoutChanged.emit()
-        if 0 <= jid < len(self.avg_worker):
-            self.avg_worker[jid].update_plot()
+    def avg_job_finished(self, success):
+        if success:
+            self.statusbar.showMessage("average job finished", 5000)
+        else:
+            self.statusbar.showMessage("average job failed", 5000)
+        self.avg_worker_active = {}
+        self.avg_worker = None
 
     def update_avg_values(self, data):
         key, val = data[0], data[1]
@@ -262,7 +272,6 @@ class ViewerKernel(FileLocator):
             record[1] = new_g2
         record[1][record[0]] = val
         record[0] += 1
-
         return
 
     def export_g2(self):

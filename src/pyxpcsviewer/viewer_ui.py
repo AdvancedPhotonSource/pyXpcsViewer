@@ -17,11 +17,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QCheckBox,
     QComboBox, QDoubleSpinBox, QGridLayout, QGroupBox,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QListView, QMainWindow, QPushButton, QScrollArea,
-    QSizePolicy, QSlider, QSpinBox, QSplitter,
-    QStatusBar, QTabWidget, QTableView, QVBoxLayout,
-    QWidget)
+    QHBoxLayout, QLabel, QLineEdit, QListView,
+    QMainWindow, QPushButton, QScrollArea, QSizePolicy,
+    QSlider, QSpinBox, QSplitter, QStatusBar,
+    QTabWidget, QVBoxLayout, QWidget)
 
 from .plothandler import (ImageViewDev, ImageViewPlotItem, MplCanvasBarV, PlotWidgetDev)
 from pyqtgraph import (DataTreeWidget, GraphicsLayoutWidget, ImageView, PlotWidget)
@@ -1844,32 +1843,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_36.addWidget(self.groupBox_12, 1, 1, 1, 1)
 
-        self.groupBox_9 = QGroupBox(self.tab_5)
-        self.groupBox_9.setObjectName(u"groupBox_9")
-        sizePolicy15 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        sizePolicy15.setHorizontalStretch(2)
-        sizePolicy15.setVerticalStretch(0)
-        sizePolicy15.setHeightForWidth(self.groupBox_9.sizePolicy().hasHeightForWidth())
-        self.groupBox_9.setSizePolicy(sizePolicy15)
-        self.gridLayout_29 = QGridLayout(self.groupBox_9)
-        self.gridLayout_29.setObjectName(u"gridLayout_29")
-        self.gridLayout_29.setContentsMargins(0, 0, 0, 0)
-        self.avg_job_table = QTableView(self.groupBox_9)
-        self.avg_job_table.setObjectName(u"avg_job_table")
-        sizePolicy5.setHeightForWidth(self.avg_job_table.sizePolicy().hasHeightForWidth())
-        self.avg_job_table.setSizePolicy(sizePolicy5)
-        self.avg_job_table.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        self.avg_job_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.avg_job_table.horizontalHeader().setMinimumSectionSize(19)
-        self.avg_job_table.horizontalHeader().setDefaultSectionSize(100)
-        self.avg_job_table.horizontalHeader().setStretchLastSection(True)
-        self.avg_job_table.verticalHeader().setDefaultSectionSize(30)
-
-        self.gridLayout_29.addWidget(self.avg_job_table, 0, 0, 1, 2)
-
-
-        self.gridLayout_36.addWidget(self.groupBox_9, 1, 2, 1, 1)
-
         self.tabWidget.addTab(self.tab_5, "")
         self.tab_9 = QWidget()
         self.tab_9.setObjectName(u"tab_9")
@@ -1878,11 +1851,11 @@ class Ui_mainWindow(object):
         self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
         self.hdf_info = ParameterTree(self.tab_9)
         self.hdf_info.setObjectName(u"hdf_info")
-        sizePolicy16 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy16.setHorizontalStretch(1)
-        sizePolicy16.setVerticalStretch(1)
-        sizePolicy16.setHeightForWidth(self.hdf_info.sizePolicy().hasHeightForWidth())
-        self.hdf_info.setSizePolicy(sizePolicy16)
+        sizePolicy15 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy15.setHorizontalStretch(1)
+        sizePolicy15.setVerticalStretch(1)
+        sizePolicy15.setHeightForWidth(self.hdf_info.sizePolicy().hasHeightForWidth())
+        self.hdf_info.setSizePolicy(sizePolicy15)
 
         self.gridLayout_7.addWidget(self.hdf_info, 0, 0, 1, 1)
 
@@ -2222,8 +2195,7 @@ class Ui_mainWindow(object):
         QWidget.setTabOrder(self.btn_set_average_save_path, self.avg_save_name)
         QWidget.setTabOrder(self.avg_save_name, self.btn_set_average_save_name)
         QWidget.setTabOrder(self.btn_set_average_save_name, self.btn_submit_job)
-        QWidget.setTabOrder(self.btn_submit_job, self.avg_job_table)
-        QWidget.setTabOrder(self.avg_job_table, self.work_dir)
+        QWidget.setTabOrder(self.btn_submit_job, self.work_dir)
         QWidget.setTabOrder(self.work_dir, self.sort_method)
         QWidget.setTabOrder(self.sort_method, self.pushButton_11)
         QWidget.setTabOrder(self.pushButton_11, self.pushButton)
@@ -2368,7 +2340,7 @@ class Ui_mainWindow(object):
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_min.setDisabled)
         self.checkBox_twotime_autolevel.toggled.connect(self.c2_max.setDisabled)
 
-        self.tabWidget.setCurrentIndex(7)
+        self.tabWidget.setCurrentIndex(8)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -2664,7 +2636,6 @@ class Ui_mainWindow(object):
         self.avg_blmin.setSpecialValueText("")
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Action:", None))
         self.btn_submit_job.setText(QCoreApplication.translate("mainWindow", u"submit", None))
-        self.groupBox_9.setTitle(QCoreApplication.translate("mainWindow", u"Averaging Job List", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Average", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Metadata", None))
         self.groupBox_18.setTitle(QCoreApplication.translate("mainWindow", u"g2map", None))

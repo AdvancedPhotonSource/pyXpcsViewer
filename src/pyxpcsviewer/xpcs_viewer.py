@@ -129,7 +129,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_set_average_save_name.clicked.connect(self.set_average_save_name)
         # self.btn_avg_kill.clicked.connect(self.avg_kill_job)
         # self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
-        self.avg_job_table.clicked.connect(self.update_avg_info)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.saxs2d_autolevel.stateChanged.connect(self.update_saxs2d_level)
@@ -517,12 +516,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             return
 
-    def remove_avg_job(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0:
-            return
-        self.vk.remove_job(index)
-
     def set_average_save_path(self):
         save_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Open directory")
         self.avg_save_path.clear()
@@ -607,14 +600,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode="target")
-
-        # def start_avg_job(self):
-        #     index = self.avg_job_table.currentIndex().row()
-        #     if index < 0 or index >= len(self.vk.avg_worker):
-        #         self.statusbar.showMessage("select a job to start", 1000)
-        #         return
-        index = len(self.vk.avg_worker) - 1  # start the last submitted job
-        worker = self.vk.avg_worker[index]
+        worker = self.vk.avg_worker
         if worker.status == "finished":
             self.statusbar.showMessage("this job has finished", 1000)
             return
@@ -622,18 +608,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("this job is running.", 1000)
             return
 
-        # worker.signals.progress.connect(worker.update_plot)
-        # worker.signals.progress.connect(self.vk.update_avg_worker)
         worker.signals.values.connect(self.vk.update_avg_values)
         self.thread_pool.start(worker)
         self.vk.avg_worker_active[worker.jid] = None
+        self.update_avg_info()
 
     def update_avg_info(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage("select a job to start", 1000)
-            return
-
         self.timer.stop()
         self.timer.setInterval(1000)
 
@@ -643,10 +623,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         except Exception:
             pass
 
-        worker = self.vk.avg_worker[index]
+        worker = self.vk.avg_worker
         worker.initialize_plot(self.mp_avg_g2)
-
-        self.timer.timeout.connect(lambda x=index: self.vk.update_avg_info(x))
+        self.timer.timeout.connect(self.vk.update_avg_info())
         self.timer.start()
 
     # def avg_kill_job(self):
@@ -818,7 +797,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.vk.clear()
 
         self.reload_source()
-        self.avg_job_table.setModel(self.vk.avg_worker)
+        # self.avg_job_table.setModel(self.vk.avg_worker)
         self.source_model = self.vk.source
         self.update_box(self.vk.source, mode="source")
 

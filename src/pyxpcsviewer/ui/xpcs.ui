@@ -400,7 +400,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>7</number>
+        <number>8</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -3358,61 +3358,6 @@
            </layout>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QGroupBox" name="groupBox_9">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>2</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="title">
-            <string>Averaging Job List</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_29">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item row="0" column="0" colspan="2">
-             <widget class="QTableView" name="avg_job_table">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="sizeAdjustPolicy">
-               <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
-              </property>
-              <property name="selectionBehavior">
-               <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-              </property>
-              <attribute name="horizontalHeaderMinimumSectionSize">
-               <number>19</number>
-              </attribute>
-              <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>100</number>
-              </attribute>
-              <attribute name="horizontalHeaderStretchLastSection">
-               <bool>true</bool>
-              </attribute>
-              <attribute name="verticalHeaderDefaultSectionSize">
-               <number>30</number>
-              </attribute>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tab_9">
@@ -4126,7 +4071,6 @@
   <tabstop>avg_save_name</tabstop>
   <tabstop>btn_set_average_save_name</tabstop>
   <tabstop>btn_submit_job</tabstop>
-  <tabstop>avg_job_table</tabstop>
   <tabstop>work_dir</tabstop>
   <tabstop>sort_method</tabstop>
   <tabstop>pushButton_11</tabstop>
