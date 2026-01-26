@@ -1,14 +1,15 @@
+import logging
 import os
 import re
-import numpy as np
-import pyqtgraph as pg
 import warnings
 
+import numpy as np
+import pyqtgraph as pg
+
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
-from .helper.fitting import fit_with_fixed
 from .fileIO.qmap_utils import get_qmap
+from .helper.fitting import fit_with_fixed
 from .module.twotime_utils import get_c2_stream, get_single_c2_from_hdf
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -297,6 +298,16 @@ class XpcsFile(object):
             y = y[0 : y.size // 2]
             y[0] = 0
             return np.stack((x, y), axis=1).astype(np.float32).T
+        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels"]:
+            if key not in self.__dict__:
+                try:
+                    ret = get(self.fname, [key], "alias", ftype="nexus")
+                    self.__dict__[key] = ret[key]
+                except Exception as e:
+                    self.__dict__[key] = None
+                    logger.warning("cannot load %s due to %s", key, str(e))
+
+            return self.__dict__[key]
         elif key in self.__dict__:
             return self.__dict__[key]
         else:
@@ -321,13 +332,39 @@ class XpcsFile(object):
     def get_qbinlist_at_qindex(self, qindex, zero_based=True):
         return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
+    def get_g2_stability_data(self, qrange=None, trange=None):
+        assert "Multitau" in self.atype, "only multitau is supported"
+        # qrange can be None
+        qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
+        g2 = self.g2_partial[:, :, qindex_selected]
+        g2_err = self.g2_partial_err[:, :, qindex_selected]
+
+        qbin_labels = [
+            f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}"
+            for qbin in qindex_selected
+        ]
+        labels = self.g2_partial_labels
+
+        if trange is not None:
+            t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
+            g2 = g2[:, t_roi]
+            g2_err = g2_err[:, t_roi]
+            t_el = self.t_el[t_roi]
+        else:
+            t_el = self.t_el
+
+        return qvalues, t_el, g2, g2_err, qbin_labels, labels
+
     def get_g2_data(self, qrange=None, trange=None):
         assert "Multitau" in self.atype, "only multitau is supported"
         # qrange can be None
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2[:, qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-        labels = [self.qmap.get_qbin_label(qbin + 1) for qbin in qindex_selected]
+        labels = [
+            f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}"
+            for qbin in qindex_selected
+        ]
 
         if trange is not None:
             t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
@@ -403,22 +440,33 @@ class XpcsFile(object):
             qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
         return qbin_labels
 
+    def get_cropped_qmap(self, target="dqmap", enabled=True):
+        assert target in ["dqmap", "sqmap"]
+        obj = getattr(self, target).copy()
+        if enabled:
+            idx = np.nonzero(obj >= 1)
+            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
+            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
+            obj = obj[sl_v, sl_h]
+        return obj
+
+    def get_offseted_g2(self, normalization=False):
+        g2 = self.g2.copy()
+        if normalization:
+            g2_baseline = g2[0]
+            g2 = g2 - g2_baseline + np.mean(g2_baseline)
+        return g2
+
     def get_twotime_maps(
         self, scale="log", auto_crop=True, highlight_xy=None, selection=None
     ):
         # emphasize the beamstop region which has qindex = 0;
-        dqmap = np.copy(self.dqmap)
         if scale == "log":
             saxs = self.saxs_2d_log
         else:
             saxs = self.saxs_2d
 
-        if auto_crop:
-            idx = np.nonzero(dqmap >= 1)
-            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
-            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
-            dqmap = dqmap[sl_v, sl_h]
-            saxs = saxs[sl_v, sl_h]
+        dqmap = self.get_cropped_qmap(target="dqmap", enabled=auto_crop)
 
         qindex_max = np.max(dqmap)
         dqlist = np.unique(dqmap)[1:]
@@ -445,9 +493,9 @@ class XpcsFile(object):
 
     def get_twotime_c2(self, selection=0, correct_diag=True, max_size=32678):
         dq_processed = tuple(self.c2_processed_bins.tolist())
-        assert selection >= 0 and selection < len(
-            dq_processed
-        ), f"selection {selection} out of range {dq_processed}"  # noqa: E501
+        assert selection >= 0 and selection < len(dq_processed), (
+            f"selection {selection} out of range {dq_processed}"
+        )  # noqa: E501
         config = (selection, correct_diag, max_size)
         if self.c2_kwargs == config:
             return self.c2_all_data
@@ -535,16 +583,16 @@ class XpcsFile(object):
         """
         assert len(bounds) == 2
         if fit_func == "single":
-            assert (
-                len(bounds[0]) == 4
-            ), "for single exp, the shape of bounds must be (2, 4)"
+            assert len(bounds[0]) == 4, (
+                "for single exp, the shape of bounds must be (2, 4)"
+            )
             if fit_flag is None:
                 fit_flag = [True for _ in range(4)]
             func = single_exp_all
         else:
-            assert (
-                len(bounds[0]) == 7
-            ), "for single exp, the shape of bounds must be (2, 4)"
+            assert len(bounds[0]) == 7, (
+                "for single exp, the shape of bounds must be (2, 4)"
+            )
             if fit_flag is None:
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
@@ -729,7 +777,7 @@ class XpcsFile(object):
         Iq, q = self.saxs_1d["Iq"], self.saxs_1d["q"]
         header = "q(1/Angstron) Intensity"
         for n in range(Iq.shape[0] - 1):
-            header += f" Intensity_phi{n + 1 :03d}"
+            header += f" Intensity_phi{n + 1:03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
 
     def get_pg_tree(self):

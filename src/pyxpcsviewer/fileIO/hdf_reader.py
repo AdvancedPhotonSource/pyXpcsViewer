@@ -66,7 +66,12 @@ def read_metadata_to_dict(file_path):
                 val = obj[()]
                 if type(val) in [np.bytes_, bytes]:
                     val = val.decode()
-                target_dict[key] = val
+                units = obj.attrs.get("units", None)
+                if units is not None:
+                    units = units.decode() if isinstance(units, bytes) else units
+                    target_dict[key + f" ({units})"] = val
+                else:
+                    target_dict[key] = val
             elif isinstance(obj, h5py.Group):
                 target_dict[key] = {}
                 recursive_read(obj, target_dict[key])

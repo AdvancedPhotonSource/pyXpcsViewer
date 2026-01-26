@@ -1,24 +1,25 @@
 from PySide6 import QtCore
+import os
 
 
 class ListDataModel(QtCore.QAbstractListModel):
-    def __init__(self, input_list=None, max_display=16384) -> None:
+    def __init__(self, input_list=None) -> None:
         super().__init__()
         if input_list is None:
             self.input_list = []
         else:
             self.input_list = input_list
-        self.max_display = max_display
 
     # overwrite parent method
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
             content = self.input_list[index.row()]
-            return str(content)
+            basename = os.path.basename(content)
+            return basename
 
     # overwrite parent method
     def rowCount(self, index):
-        return min(self.max_display, len(self.input_list))
+        return len(self.input_list)
 
     def extend(self, new_input_list):
         self.input_list.extend(new_input_list)
@@ -40,7 +41,7 @@ class ListDataModel(QtCore.QAbstractListModel):
 
     def pop(self, i=-1):
         return self.input_list.pop(i)
-    
+
     def insert(self, i, item):
         self.input_list.insert(i, item)
         self.layoutChanged.emit()
@@ -59,27 +60,24 @@ class ListDataModel(QtCore.QAbstractListModel):
 
 
 class TableDataModel(QtCore.QAbstractTableModel):
-    def __init__(self, input_list=None, max_display=16384) -> None:
+    def __init__(self, input_list=None) -> None:
         super().__init__()
         if input_list is None:
             self.input_list = []
         else:
             self.input_list = input_list
-        self.max_display = max_display
-        self.xlabels = ['id', 'size', 'progress', 'start', 'ETA (s)',
-                        'finish', 'fname']
+        self.xlabels = ["id", "size", "progress", "start", "ETA (s)", "finish", "fname"]
 
     # overwrite parent method
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
             x = self.input_list[index.row()]
-            ret = [x.jid, x.size, x._progress, x.stime, x.eta, x.etime,
-                   x.short_name]
+            ret = [x.jid, x.size, x._progress, x.stime, x.eta, x.etime, x.short_name]
             return ret[index.column()]
 
     # overwrite parent method
     def rowCount(self, index):
-        return min(self.max_display, len(self.input_list))
+        return len(self.input_list)
 
     # overwrite parent method
     def columnCount(self, index):
@@ -124,7 +122,7 @@ class TableDataModel(QtCore.QAbstractTableModel):
 
 
 def test():
-    a = ['a', 'b', 'c']
+    a = ["a", "b", "c"]
     model = ListDataModel(a)
     for n in range(len(model)):
         print(model[n])

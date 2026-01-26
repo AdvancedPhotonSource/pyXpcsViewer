@@ -3,15 +3,15 @@ requires = ["setuptools>=61.0", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xpcs-viewer"  # Match the PyPI package name
+name = "xpcs-viewer"                                                                              # Match the PyPI package name
 dynamic = ["version"]
 description = "pyXPCSViewer: A python-based interactive tool to visualize and model XPCS dataset"
 readme = "README.rst"
-authors = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
-maintainers = [{name = "Miaoqi Chu", email = "mqichu@anl.gov"}]
+authors = [{ name = "Miaoqi Chu", email = "mqichu@anl.gov" }]
+maintainers = [{ name = "Miaoqi Chu", email = "mqichu@anl.gov" }]
 
 classifiers = [
-    "Development Status :: 4 - Beta",  
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering",
@@ -20,20 +20,24 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
-    "Natural Language :: English"
+    "Natural Language :: English",
 ]
 
-license = {text = "MIT"}
-keywords = ["XPCS", "X-ray", "photon correlation spectroscopy", "synchrotron", "visualization", "science"]
+license = { text = "MIT" }
+keywords = [
+    "XPCS",
+    "X-ray",
+    "photon correlation spectroscopy",
+    "synchrotron",
+    "visualization",
+    "science",
+]
 
 dependencies = [
-    "pyside6",
     "numpy",
     "scipy",
     "h5py",
@@ -42,7 +46,9 @@ dependencies = [
     "pandas",
     "scikit-learn",
     "joblib",
-    "tqdm"
+    "tqdm",
+    "hdf5plugin",
+    "pyside6==6.8.3",
 ]
 
 [project.scripts]
@@ -50,17 +56,8 @@ pyxpcsviewer = "pyxpcsviewer.cli:main"
 run_viewer = "pyxpcsviewer.cli:main"
 
 [project.optional-dependencies]
-dev = [
-    "coverage",
-    "pytest",
-    "pytest-cov",
-    "mypy",
-    "ruff"
-]
-docs = [
-    "sphinx",
-    "sphinx-rtd-theme"
-]
+dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff"]
+docs = ["sphinx", "sphinx-rtd-theme"]
 
 [project.urls]
 bugs = "https://github.com/AZjk/pyxpcsviewer/issues"
@@ -68,7 +65,7 @@ changelog = "https://github.com/AZjk/pyxpcsviewer/blob/master/changelog.md"
 homepage = "https://github.com/AZjk/pyxpcsviewer"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools_scm]
 version_scheme = "post-release"

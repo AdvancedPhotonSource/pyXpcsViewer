@@ -70,9 +70,9 @@ def get_all_c2_from_hdf(
 
     c2_all = np.array([res[0] for res in result])
     sampling_rate_all = set([res[1] for res in result])
-    assert (
-        len(sampling_rate_all) == 1
-    ), f"Sampling rate not consistent {sampling_rate_all}"
+    assert len(sampling_rate_all) == 1, (
+        f"Sampling rate not consistent {sampling_rate_all}"
+    )
     sampling_rate = list(sampling_rate_all)[0]
     c2_result = {
         "c2_all": c2_all,
@@ -141,7 +141,7 @@ def get_c2_stream(full_path, max_size=-1):
 
     def generator():
         for idx in idxlist:  # Use idxlist for iteration
-            c2, sampling_rate = get_single_c2((full_path, idx, max_size))
+            c2, sampling_rate = read_single_c2((full_path, idx, max_size, True))
             yield int(idx[3:]), c2
 
     return idxlist, generator()

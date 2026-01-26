@@ -1,9 +1,7 @@
-import numpy as np
-from matplotlib.ticker import FormatStrFormatter
-import pyqtgraph as pg
 import logging
-import matplotlib.pyplot as plt
 
+import numpy as np
+import pyqtgraph as pg
 
 pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 # pg.setConfigOption("background", 'w')
@@ -32,7 +30,7 @@ colors = (
 symbols = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
 
 
-def get_data(xf_list, q_range=None, t_range=None):
+def get_g2_data(xf_list, q_range=None, t_range=None):
     for xf in xf_list:
         if "Multitau" not in xf.atype:
             return False, None, None, None, None
@@ -46,6 +44,16 @@ def get_data(xf_list, q_range=None, t_range=None):
         g2_err.append(_g2_err)
         labels.append(_labels)
     return q, tel, g2, g2_err, labels
+
+
+def get_g2_stability_data(xf_obj, q_range=None, t_range=None):
+    if "Multitau" not in xf_obj.atype:
+        return False, None, None, None, None
+
+    q, tel, g2, g2_err, qbin_labels, labels = xf_obj.get_g2_stability_data(
+        qrange=q_range, trange=t_range
+    )
+    return q, tel, g2, g2_err, qbin_labels, labels
 
 
 def compute_geometry(g2, plot_type):
@@ -93,7 +101,6 @@ def pg_plot(
     fit_func="single",
     **kwargs,
 ):
-
     if q_auto:
         q_range = None
     if t_auto:
@@ -101,7 +108,7 @@ def pg_plot(
     if y_auto:
         y_range = None
 
-    q, tel, g2, g2_err, labels = get_data(xf_list, q_range=q_range, t_range=t_range)
+    q, tel, g2, g2_err, labels = get_g2_data(xf_list, q_range=q_range, t_range=t_range)
     num_figs, num_lines = compute_geometry(g2, plot_type)
 
     num_data, num_qval = len(g2), g2[0].shape[1]
@@ -196,6 +203,120 @@ def pg_plot(
                         y_fit,
                         pen=pg.mkPen(color, width=2.5),
                     )
+    return
+
+
+def pg_plot_stability(
+    hdl,
+    xf_obj,
+    q_range,
+    t_range,
+    y_range,
+    y_auto=False,
+    q_auto=False,
+    t_auto=False,
+    num_col=4,
+    rows=None,
+    offset=0,
+    show_fit=False,
+    show_label=False,
+    bounds=None,
+    fit_flag=None,
+    plot_type="multiple",
+    subtract_baseline=True,
+    marker_size=5,
+    label_size=4,
+    fit_func="single",
+    **kwargs,
+):
+    if q_auto:
+        q_range = None
+    if t_auto:
+        t_range = None
+    if y_auto:
+        y_range = None
+
+    q, tel, g2, g2_err, qbin_labels, labels = get_g2_stability_data(
+        xf_obj, q_range=q_range, t_range=t_range
+    )
+
+    num_figs, num_lines = compute_geometry(g2, plot_type)
+
+    num_data, num_qval = len(g2), g2[0].shape[1]
+    # col and rows for the 2d layout
+    col = min(num_figs, num_col)
+    row = (num_figs + col - 1) // col
+
+    rows = np.arange(num_data)
+
+    hdl.adjust_canvas_size(num_col=col, num_row=row)
+    hdl.clear()
+    # a bug in pyqtgraph; the log scale in x-axis doesn't apply
+    if t_range:
+        t0_range = np.log10(t_range)
+    axes = []
+    for n in range(num_figs):
+        i_col = n % col
+        i_row = n // col
+        t = hdl.addPlot(row=i_row, col=i_col)
+        axes.append(t)
+        if show_label:
+            # t.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
+            legend = t.addLegend(labelTextSize="6pt")
+            legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
+
+        t.setMouseEnabled(x=False, y=y_auto)
+
+    for m in range(num_data):
+        # default base line to be 1.0; used for non-fitting or fit error cases
+        baseline_offset = np.ones(num_qval)
+
+        for n in range(num_qval):
+            color = colors[rows[m] % len(colors)]
+            label = None
+            if plot_type == "multiple":
+                ax = axes[n]
+                title = qbin_labels[n]
+                label = f"frame={int(labels[m])}"
+                if m == 0:
+                    ax.setTitle(title)
+            elif plot_type == "single":
+                ax = axes[m]
+                # overwrite color; use the same color for the same set;
+                color = colors[n % len(colors)]
+                title = labels[m]
+                # label = labels[m][n]
+                ax.setTitle(title)
+            elif plot_type == "single-combined":
+                ax = axes[0]
+                label = labels[m] + labels[m][n]
+
+            ax.setLabel("bottom", "tau (s)")
+            ax.setLabel("left", "g2")
+
+            symbol = symbols[rows[m] % len(symbols)]
+
+            x = tel
+            # normalize baseline
+            y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
+            y_err = g2_err[m][:, n]
+
+            pg_plot_one_g2(
+                ax,
+                x,
+                y,
+                y_err,
+                color,
+                label=label,
+                symbol=symbol,
+                symbol_size=marker_size,
+            )
+            # if t_range is not None:
+            if not y_auto:
+                ax.setRange(yRange=y_range)
+            if not t_auto:
+                ax.setRange(xRange=t0_range)
+
     return
 
 

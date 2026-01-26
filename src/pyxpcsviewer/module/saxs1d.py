@@ -1,6 +1,7 @@
 import numpy as np
-from ..plothandler.matplot_qt import get_color_marker
 import pyqtgraph as pg
+
+from ..plothandler.matplot_qt import get_color_marker
 
 pg.setConfigOption("background", "w")
 
@@ -163,7 +164,6 @@ def pg_plot(
     subtract_background=False,
     bkg_file=None,
     weight=1.0,
-    roi_list=None,
     show_roi=True,
     show_phi_roi=True,
 ):

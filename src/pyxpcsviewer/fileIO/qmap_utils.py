@@ -85,8 +85,10 @@ class QMap:
             qmap, qmap_units = self.qmap, self.qmap_units
             result = ""
             for key in self.qmap.keys():
-                if key in ["q", "qx", "qy", "phi", "alpha"]:
+                if key in ["q", "qy", "phi", "alpha", "x", "y"]:
                     result += f" {key}={qmap[key][y, x]:.3f} {qmap_units[key]},"
+                elif key in ["qx", "qr"]:
+                    result += f" {key}={qmap[key][y, x]:.6f} {qmap_units[key]},"
                 else:
                     result += f" {key}={qmap[key][y, x]} {qmap_units[key]},"
             return result[:-1]
@@ -152,7 +154,7 @@ class QMap:
 
     def get_qbinlist_at_qindex(self, qindex, zero_based=True):
         # qindex is zero based; index of dyanmic_map_dim0
-        assert self.map_names == ["q", "phi"], "only q-phi map is supported"
+        # assert self.map_names == ["q", "phi"], "only q-phi map is supported"
         qp_idx = np.ones(self.dynamic_num_pts, dtype=int).flatten() * (-1)
         qp_idx[self.dynamic_index_mapping] = np.arange(len(self.dynamic_index_mapping))
         qp_column_at_qindex = qp_idx.reshape(self.dynamic_num_pts)[qindex]
@@ -232,9 +234,10 @@ class QMap:
             else:
                 saxs1d = avg.reshape(1, -1)  # shape: (1, num_q)
                 labels = [label]
+            max_size = min(self.sqlist.size, saxs1d.shape[1])
             saxs1d_info = {
-                "q": self.sqlist,
-                "Iq": saxs1d,
+                "q": self.sqlist[0:max_size],
+                "Iq": saxs1d[:, 0:max_size],
                 "phi": self.splist,
                 "num_lines": shape[2],
                 "labels": labels,

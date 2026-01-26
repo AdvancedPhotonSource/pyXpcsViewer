@@ -1,13 +1,12 @@
-import os
-from .xpcs_file import XpcsFile as XF
-import logging
-from .helper.listmodel import ListDataModel
-from .fileIO.qmap_utils import QMapManager
-
-import traceback
 import datetime
+import logging
+import os
 import time
+import traceback
 
+from .fileIO.qmap_utils import QMapManager
+from .helper.listmodel import ListDataModel
+from .xpcs_file import XpcsFile as XF
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,8 @@ class FileLocator(object):
         for n in selected:
             if n < 0 or n >= len(self.target):
                 continue
-            full_fname = os.path.join(self.path, self.target[n])
+            # full_fname = os.path.join(self.path, self.target[n])
+            full_fname = self.target[n]
             if full_fname not in self.cache:
                 xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
                 self.cache[full_fname] = xf_obj
@@ -87,19 +87,21 @@ class FileLocator(object):
             return
         if preload and len(alist) <= threshold:
             t0 = time.perf_counter()
-            for fn in alist:
-                if fn in self.target:
+            for fname in alist:
+                full_fname = os.path.join(self.path, fname)
+                if full_fname in self.target:
                     continue
-                full_fname = os.path.join(self.path, fn)
                 xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
                 if xf_obj is not None:
-                    self.target.append(fn)
+                    self.target.append(full_fname)
                     self.cache[full_fname] = xf_obj
+
             t1 = time.perf_counter()
-            logger.info(f"Load {len(alist)}  files in {t1-t0:.3f} seconds")
+            logger.info(f"Load {len(alist)}  files in {t1 - t0:.3f} seconds")
         else:
             logger.info("preload disabled or too many files added")
-            self.target.extend(alist)
+            full_fname_list = [os.path.join(self.path, fname) for fname in alist]
+            self.target.extend(full_fname_list)
         self.timestamp = str(datetime.datetime.now())
         return
 
@@ -111,7 +113,7 @@ class FileLocator(object):
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
-            self.cache.pop(os.path.join(self.path, x), None)
+            self.cache.pop(x, None)
         if not self.target:
             self.clear_target()
         self.timestamp = str(datetime.datetime.now())

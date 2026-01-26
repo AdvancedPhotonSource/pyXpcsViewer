@@ -1,4 +1,1 @@
-setting = {
-  "window_size_w": 1024,
-  "window_size_h": 800
-}
+setting = {"window_size_w": 1400, "window_size_h": 1200}

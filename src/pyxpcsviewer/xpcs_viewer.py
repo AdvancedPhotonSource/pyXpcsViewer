@@ -1,17 +1,20 @@
-from PySide6 import QtCore, QtWidgets
-from .viewer_ui import Ui_mainWindow as Ui
-from .viewer_kernel import ViewerKernel
-import pyqtgraph as pg
-from pyqtgraph.parametertree import Parameter
-import os
-import numpy as np
-import sys
 import json
-import shutil
 import logging
-from pyqtgraph.Qt import QtCore
+import os
+import shutil
+import sys
 import traceback
 
+import numpy as np
+import pyqtgraph as pg
+from pyqtgraph.parametertree import Parameter
+from pyqtgraph.Qt import QtCore
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import qInstallMessageHandler
+from PySide6.QtWidgets import QMessageBox
+
+from .viewer_kernel import ViewerKernel
+from .viewer_ui import Ui_mainWindow as Ui
 
 format = logging.Formatter("%(asctime)s %(message)s")
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -41,6 +44,8 @@ tab_mapping = {
     7: "qmap",
     8: "average",
     9: "metadata",
+    10: "g2map",
+    11: "g2_stability",
 }
 
 
@@ -52,8 +57,17 @@ def create_param_tree(data_dict):
             params.append(
                 {"name": key, "type": "group", "children": create_param_tree(value)}
             )
-        elif isinstance(value, (int, float, np.number)):  # Numeric types
-            params.append({"name": key, "type": "float", "value": float(value)})
+        elif isinstance(value, (float, np.floating)):  # Numeric types
+            params.append(
+                {
+                    "name": key,
+                    "type": "float",
+                    "value": float(value),
+                    "format": "{value:.10g}",
+                }
+            )
+        elif isinstance(value, (int, np.integer)):  # Integer types
+            params.append({"name": key, "type": "int", "value": int(value)})
         elif isinstance(value, str):  # String types
             params.append({"name": key, "type": "str", "value": value})
         elif isinstance(value, np.ndarray):  # Numpy arrays
@@ -105,15 +119,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.mp_2t_hdls = None
         self.init_twotime_plot_handler()
+        self.init_g2map_handler()
+        self.pushButton_plot_g2map.clicked.connect(self.plot_g2map)
 
-        self.avg_job_pop.clicked.connect(self.remove_avg_job)
+        # self.avg_job_pop.clicked.connect(self.remove_avg_job)
         self.btn_submit_job.clicked.connect(self.submit_job)
-        self.btn_start_avg_job.clicked.connect(self.start_avg_job)
+        # self.btn_start_avg_job.clicked.connect(self.start_avg_job)
         self.btn_set_average_save_path.clicked.connect(self.set_average_save_path)
         self.btn_set_average_save_name.clicked.connect(self.set_average_save_name)
-        self.btn_avg_kill.clicked.connect(self.avg_kill_job)
-        self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
-        self.avg_job_table.clicked.connect(self.update_avg_info)
+        # self.btn_avg_kill.clicked.connect(self.avg_kill_job)
+        # self.btn_avg_jobinfo.clicked.connect(self.show_avg_jobinfo)
         self.show_g2_fit_summary.clicked.connect(self.show_g2_fit_summary_func)
         self.btn_g2_refit.clicked.connect(self.plot_g2)
         self.saxs2d_autolevel.stateChanged.connect(self.update_saxs2d_level)
@@ -122,6 +137,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
         self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
+        self.pushButton_4.clicked.connect(self.update_plot)
+        self.pushButton_5.clicked.connect(self.update_plot)
+        self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
+        self.cb_qmap_cmap.currentIndexChanged.connect(self.update_plot)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -186,16 +205,62 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             if self.plot_kwargs_record[tab_name] != kwargs:
                 self.plot_kwargs_record[tab_name] = kwargs
                 func(dryrun=False)
+                if tab_name == "g2":  # reset diffusion plot on new g2 plot
+                    logger.info("g2 updated; reset diffusion plot settings")
+                    self.plot_kwargs_record["diffusion"] = {}
         except Exception as e:
             logger.error(f"update selection in [{tab_name}] failed")
             logger.error(e)
             traceback.print_exc()
 
+    def init_g2map_handler(self):
+        self.widget_g2map_profile_plot = self.widget_g2map_profile.addPlot()
+        cmap = pg.colormap.getFromMatplotlib("tab20b")  # from matplotlib.cm.tab20b
+        self.widget_g2map_qmap.setColorMap(cmap)
+
+        plot = self.widget_g2map_all.addPlot(row=0, col=0)
+        plot.setLabel("bottom", "tau index")
+        plot.setLabel("left", "qbin index")
+        # Optional: grid and aspect ratio
+        plot.showGrid(x=True, y=True)
+        plot.getViewBox().setAspectLocked(False)
+
+        # --- Add the ImageItem ---
+        self.g2map_all_img = pg.ImageItem()
+        plot.addItem(self.g2map_all_img)
+        # Example image data
+
+        # Optional: colorbar
+        hist = pg.HistogramLUTItem()
+        hist.setImageItem(self.g2map_all_img)
+        self.widget_g2map_all.addItem(hist, row=0, col=1)
+        # Optional: apply a matplotlib colormap
+        cmap = pg.colormap.getFromMatplotlib("viridis")
+        self.g2map_all_img.setLookupTable(cmap.getLookupTable())
+        hist.gradient.setColorMap(cmap)
+
+    def plot_g2map(self, dryrun=False):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+            "qbin": self.spinBox_qbin.value(),
+            "normalization": self.checkBox_g2map_normalization.isChecked(),
+        }
+
+        if dryrun:
+            return kwargs
+        self.vk.plot_g2map(
+            self.g2map_all_img,
+            self.widget_g2map_qmap,
+            self.widget_g2map_profile_plot,
+            **kwargs,
+        )
+
     def plot_metadata(self, dryrun=False):
         kwargs = {"rows": self.get_selected_rows()}
         if dryrun:
             return kwargs
-
+        if len(self.vk.target) == 0:
+            return
         msg = self.vk.get_xf_list(**kwargs)[0].get_hdf_info()
         hdf_info_data = create_param_tree(msg)
         hdf_params = Parameter.create(
@@ -348,6 +413,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {
             "rows": self.get_selected_rows(),
             "target": self.comboBox_qmap_target.currentText(),
+            "cmap": self.cb_qmap_cmap.currentText(),
         }
         if dryrun:
             return kwargs
@@ -450,12 +516,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             return
 
-    def remove_avg_job(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0:
-            return
-        self.vk.remove_job(index)
-
     def set_average_save_path(self):
         save_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Open directory")
         self.avg_save_path.clear()
@@ -477,7 +537,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 logger.info("use the previous save path")
 
             save_name = self.avg_save_name.text()
-            save_name = "Avg" + self.vk.target[0]
+            save_name = "Avg" + os.path.basename(self.vk.target[0])
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
@@ -494,13 +554,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             logger.info("the average save_path doesn't exist; creating one")
             try:
                 os.mkdir(save_path)
-            except:
+            except Exception:
                 logger.info("cannot create the folder: %s", save_path)
                 return
 
         avg_fields = []
         if self.bx_avg_G2IPIF.isChecked():
-            avg_fields.extend(["G2", "IP", "IF"])
+            avg_fields.extend(["G2"])
         if self.bx_avg_g2g2err.isChecked():
             avg_fields.extend(["g2", "g2_err"])
         if self.bx_avg_saxs.isChecked():
@@ -512,7 +572,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         kwargs = {
             "save_path": os.path.join(save_path, save_name),
-            "chunk_size": int(self.cb_avg_chunk_size.currentText()),
+            # "chunk_size": int(self.cb_avg_chunk_size.currentText()),
             "avg_blmin": self.avg_blmin.value(),
             "avg_blmax": self.avg_blmax.value(),
             "avg_qindex": self.avg_qindex.value(),
@@ -520,41 +580,27 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "fields": avg_fields,
         }
 
+        try:
+            # "a" = open for append or create; won't truncate existing file
+            with open(kwargs["save_path"], "a"):
+                pass
+        except OSError as e:
+            QMessageBox.critical(
+                self, "Save Error", f"Cannot write to:\n{save_path}\n\n{e}"
+            )
+            return
+
         if kwargs["avg_blmax"] <= kwargs["avg_blmin"]:
             self.statusbar.showMessage("check avg min/max values.", 1000)
+            QMessageBox.critical(
+                self, "Baseline bounds error", "Check avg min/max values for baseline."
+            )
             return
 
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode="target")
-
-    def update_avg_info(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage("select a job to start", 1000)
-            return
-
-        self.timer.stop()
-        self.timer.setInterval(1000)
-
-        try:
-            self.timer.timeout.disconnect()
-            logger.info("disconnect previous slot")
-        except:
-            pass
-
-        worker = self.vk.avg_worker[index]
-        worker.initialize_plot(self.mp_avg_g2)
-
-        self.timer.timeout.connect(lambda x=index: self.vk.update_avg_info(x))
-        self.timer.start()
-
-    def start_avg_job(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage("select a job to start", 1000)
-            return
-        worker = self.vk.avg_worker[index]
+        worker = self.vk.avg_worker
         if worker.status == "finished":
             self.statusbar.showMessage("this job has finished", 1000)
             return
@@ -562,36 +608,50 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("this job is running.", 1000)
             return
 
-        # worker.signals.progress.connect(worker.update_plot)
-        # worker.signals.progress.connect(self.vk.update_avg_worker)
         worker.signals.values.connect(self.vk.update_avg_values)
         self.thread_pool.start(worker)
         self.vk.avg_worker_active[worker.jid] = None
+        self.update_avg_info()
 
-    def avg_kill_job(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            self.statusbar.showMessage("select a job to kill", 1000)
-            return
-        worker = self.vk.avg_worker[index]
-        if worker.status != "running":
-            self.statusbar.showMessage("the selected job isn's running", 1000)
-            return
-        worker.kill()
+    def update_avg_info(self):
+        self.timer.stop()
+        self.timer.setInterval(1000)
+
+        try:
+            self.timer.timeout.disconnect()
+            logger.info("disconnect previous slot")
+        except Exception:
+            pass
+
+        worker = self.vk.avg_worker
+        worker.initialize_plot(self.mp_avg_g2)
+        self.timer.timeout.connect(self.vk.update_avg_info())
+        self.timer.start()
+
+    # def avg_kill_job(self):
+    #     index = self.avg_job_table.currentIndex().row()
+    #     if index < 0 or index >= len(self.vk.avg_worker):
+    #         self.statusbar.showMessage("select a job to kill", 1000)
+    #         return
+    #     worker = self.vk.avg_worker[index]
+    #     if worker.status != "running":
+    #         self.statusbar.showMessage("the selected job isn's running", 1000)
+    #         return
+    #     worker.kill()
 
     def show_g2_fit_summary_func(self):
         rows = self.get_selected_rows()
         self.tree = self.vk.get_fitting_tree(rows)
         self.tree.show()
 
-    def show_avg_jobinfo(self):
-        index = self.avg_job_table.currentIndex().row()
-        if index < 0 or index >= len(self.vk.avg_worker):
-            logger.info("select a job to show it's settting")
-            return
-        worker = self.vk.avg_worker[index]
-        self.tree = worker.get_pg_tree()
-        self.tree.show()
+    # def show_avg_jobinfo(self):
+    #     index = self.avg_job_table.currentIndex().row()
+    #     if index < 0 or index >= len(self.vk.avg_worker):
+    #         logger.info("select a job to show it's settting")
+    #         return
+    #     worker = self.vk.avg_worker[index]
+    #     self.tree = worker.get_pg_tree()
+    #     self.tree.show()
 
     def init_g2(self, qd, tel):
         if qd is None or tel is None:
@@ -620,7 +680,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.g2_qmax.setValue(np.max(qd) * 1.1)
 
     def plot_g2(self, dryrun=False):
-        p = self.check_g2_number()
+        p = self.check_g2_number(tab="g2")
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
 
         kwargs = {
@@ -643,10 +703,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "fit_func": fit_func,
             # 'label_size': self.sb_g2_label_size.value(),
         }
-        if kwargs["show_fit"] and sum(kwargs["fit_flag"]) == 0:
-            self.statusbar.showMessage("nothing to fit, really?", 1000)
-            return
-
         if dryrun:
             return kwargs
         else:
@@ -658,10 +714,47 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 if kwargs["show_fit"]:
                     self.init_diffusion()
             except Exception as e:
+                logger.error(f"plot g2 failed, {e}")
                 traceback.print_exc()
             finally:
                 self.pushButton_4.setEnabled(True)
                 self.pushButton_4.setText("plot")
+
+    def plot_g2_stability(self, dryrun=False):
+        p = self.check_g2_number(tab="g2_stability")
+
+        kwargs = {
+            "num_col": self.sb_g2_column_2.value(),
+            "offset": self.sb_g2_offset_2.value(),
+            "show_label": self.g2_show_label_2.isChecked(),
+            "plot_type": self.g2_plot_type_2.currentText(),
+            "q_range": (p[0], p[1]),
+            "t_range": (p[2], p[3]),
+            "y_range": (p[4], p[5]),
+            "y_auto": self.g2_yauto_2.isChecked(),
+            "q_auto": self.g2_qauto_2.isChecked(),
+            "t_auto": self.g2_tauto_2.isChecked(),
+            "rows": self.get_selected_rows(),
+            "marker_size": self.g2_marker_size_2.value(),
+            "subtract_baseline": self.g2_sub_baseline_2.isChecked(),
+        }
+        if dryrun:
+            return kwargs
+        else:
+            self.pushButton_5.setDisabled(True)
+            self.pushButton_5.setText("plotting")
+            try:
+                qd, tel = self.vk.plot_g2_stability(
+                    handler=self.mp_g2_stability, **kwargs
+                )
+                self.init_g2(qd, tel)
+                # if kwargs["show_fit"]:
+                #     self.init_diffusion()
+            except Exception as e:
+                traceback.print_exc()
+            finally:
+                self.pushButton_5.setEnabled(True)
+                self.pushButton_5.setText("plot")
 
     def export_g2(self):
         self.vk.export_g2()
@@ -704,7 +797,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.vk.clear()
 
         self.reload_source()
-        self.avg_job_table.setModel(self.vk.avg_worker)
+        # self.avg_job_table.setModel(self.vk.avg_worker)
         self.source_model = self.vk.source
         self.update_box(self.vk.source, mode="source")
 
@@ -765,8 +858,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def remove_target(self):
         rmv_list = []
-        for x in self.list_view_target.selectedIndexes():
-            rmv_list.append(x.data())
+        for index in self.list_view_target.selectedIndexes():
+            rmv_list.append(self.vk.target[index.row()])
 
         self.vk.remove_target(rmv_list)
         # clear selection to avoid the bug: when the last one is selected, then
@@ -811,15 +904,26 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.source_model, mode="source")
         self.list_view_source.selectAll()
 
-    def check_g2_number(self, default_val=(0, 0.0092, 1e-8, 1, 0.95, 1.35)):
-        keys = (
-            self.g2_qmin,
-            self.g2_qmax,
-            self.g2_tmin,
-            self.g2_tmax,
-            self.g2_ymin,
-            self.g2_ymax,
-        )
+    def check_g2_number(self, default_val=(0, 0.0092, 1e-8, 1, 0.95, 1.35), tab="g2"):
+        if tab == "g2":
+            keys = (
+                self.g2_qmin,
+                self.g2_qmax,
+                self.g2_tmin,
+                self.g2_tmax,
+                self.g2_ymin,
+                self.g2_ymax,
+            )
+        else:  # for g2 stability
+            keys = (
+                self.g2_qmin_2,
+                self.g2_qmax_2,
+                self.g2_tmin_2,
+                self.g2_tmax_2,
+                self.g2_ymin_2,
+                self.g2_ymax_2,
+            )
+
         vals = [None] * len(keys)
         for n, key in enumerate(keys):
             if isinstance(key, QtWidgets.QDoubleSpinBox):
@@ -960,13 +1064,40 @@ def setup_windows_icon():
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
 
+def qt_message_handler(mode, context, message):
+    """
+    A custom message handler that intercepts Qt messages and prints a traceback
+    for specific warnings.
+    """
+    # Check if the message contains the text of the warnings we're interested in
+    if "QGraphicsItem::itemTransform: null pointer passed" in message:
+        print("--- Caught 'null pointer' warning. Traceback: ---")
+        traceback.print_stack()
+        print("-------------------------------------------------")
+
+    if "unique connections require a pointer" in message:
+        print("--- Caught 'unique connections' warning. Traceback: ---")
+        traceback.print_stack()
+        print("-----------------------------------------------------")
+
+    # Use the default handler to still print the original message
+    # You might need to find the original handler if you want to be perfectly clean,
+    # but for debugging, printing the message here is fine.
+    print(
+        f"Qt Message: {message} (type: {mode}, context: {context.file}:{context.line})"
+    )
+
+
 def main_gui(path=None, label_style=None):
+    qInstallMessageHandler(qt_message_handler)
+
     if os.name == "nt":
         setup_windows_icon()
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
     app = QtWidgets.QApplication([])
     window = XpcsViewer(path=path, label_style=label_style)
+    window.show()
     app.exec_()
 
 

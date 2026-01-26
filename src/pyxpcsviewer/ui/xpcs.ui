@@ -38,6 +38,18 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <widget class="QSplitter" name="splitter_3">
       <property name="orientation">
@@ -180,6 +192,18 @@
             <string>Source:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <widget class="QListView" name="list_view_source">
               <property name="dragEnabled">
@@ -306,6 +330,18 @@
             <string>Target:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="1" column="0">
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
@@ -364,13 +400,25 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>6</number>
+        <number>8</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
          <string>SAXS-2D</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_26">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
@@ -711,6 +759,18 @@
          <string>SAXS-1D</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_25">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="PlotWidget" name="mp_saxs" native="true">
            <property name="sizePolicy">
@@ -1104,6 +1164,18 @@
          <string>Stability</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="PlotWidget" name="mp_stab" native="true">
            <property name="sizePolicy">
@@ -1273,8 +1345,20 @@
          <string>Intensity-Time</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_27">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0" colspan="3">
-          <widget class="PlotWidgetDev" name="pg_intt" native="true">
+          <widget class="GraphicsLayoutWidget" name="pg_intt" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -1381,6 +1465,18 @@
          <string>g2</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_8">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="QScrollArea" name="scrollArea">
            <property name="sizePolicy">
@@ -1409,8 +1505,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1134</width>
-              <height>680</height>
+              <width>1170</width>
+              <height>716</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -1471,6 +1567,18 @@
              <string>Data Selection:</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_13">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item row="0" column="1">
               <layout class="QGridLayout" name="gridLayout_11">
                <item row="1" column="0">
@@ -1833,6 +1941,18 @@
              <string>g2 fitting</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_14">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item row="0" column="0" rowspan="3">
               <layout class="QGridLayout" name="gridLayout_12">
                <item row="3" column="7">
@@ -2260,6 +2380,18 @@
          <string>Diffusion</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_22">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="MplCanvasBarV" name="mp_tauq" native="true">
            <property name="sizePolicy">
@@ -2500,6 +2632,18 @@
          <string>Two Time</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_33">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="QSplitter" name="splitter_4">
            <property name="orientation">
@@ -2750,34 +2894,108 @@
          <string>QMap</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_9">
-         <item row="1" column="1">
-          <widget class="QComboBox" name="comboBox_qmap_target">
-           <item>
-            <property name="text">
-             <string>dynamic_roi_map</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>static_roi_map</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>scattering</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_27">
-           <property name="text">
-            <string>Target</string>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0" colspan="2">
+          <widget class="ImageView" name="pg_qmap" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
            </property>
           </widget>
          </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="ImageView" name="pg_qmap" native="true"/>
+         <item row="1" column="0" colspan="2">
+          <widget class="QGroupBox" name="groupBox_22">
+           <property name="title">
+            <string>Settings</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_46">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_27">
+              <property name="text">
+               <string>Target</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboBox_qmap_target">
+              <item>
+               <property name="text">
+                <string>dynamic_roi_map</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>static_roi_map</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>scattering</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_71">
+              <property name="text">
+               <string>Cmap</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QComboBox" name="cb_qmap_cmap">
+              <item>
+               <property name="text">
+                <string>tab20b</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>jet</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>hot</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>plasma</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>viridis</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>magma</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>gray</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -2786,6 +3004,18 @@
          <string>Average</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_36">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0" colspan="3">
           <widget class="QGroupBox" name="groupBox_10">
            <property name="title">
@@ -2813,10 +3043,28 @@
          </item>
          <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_8">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>2</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="title">
             <string>Averaging Setting:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_30">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_28">
               <item row="0" column="5" colspan="2">
@@ -3078,6 +3326,18 @@
             <string>Action:</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_35">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
@@ -3093,96 +3353,7 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QPushButton" name="avg_job_pop">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>delete</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_avg_jobinfo">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>info</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_avg_kill">
-                <property name="text">
-                 <string>kill</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_start_avg_job">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>start</string>
-                </property>
-               </widget>
-              </item>
              </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QGroupBox" name="groupBox_9">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="title">
-            <string>Averaging Job List</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_29">
-            <item row="0" column="0" colspan="2">
-             <widget class="QTableView" name="avg_job_table">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="sizeAdjustPolicy">
-               <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
-              </property>
-              <property name="selectionBehavior">
-               <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-              </property>
-              <attribute name="horizontalHeaderMinimumSectionSize">
-               <number>19</number>
-              </attribute>
-              <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>100</number>
-              </attribute>
-              <attribute name="horizontalHeaderStretchLastSection">
-               <bool>true</bool>
-              </attribute>
-              <attribute name="verticalHeaderDefaultSectionSize">
-               <number>30</number>
-              </attribute>
-             </widget>
             </item>
            </layout>
           </widget>
@@ -3194,6 +3365,18 @@
          <string>Metadata</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_7">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="ParameterTree" name="hdf_info" native="true">
            <property name="sizePolicy">
@@ -3202,6 +3385,607 @@
              <verstretch>1</verstretch>
             </sizepolicy>
            </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_10">
+        <attribute name="title">
+         <string>g2_map</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_42">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0" colspan="2">
+          <widget class="QSplitter" name="splitter_6">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <widget class="QSplitter" name="splitter_5">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <widget class="QGroupBox" name="groupBox_18">
+             <property name="title">
+              <string>g2map</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_23">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="GraphicsLayoutWidget" name="widget_g2map_all" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>1</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QGroupBox" name="groupBox_19">
+             <property name="title">
+              <string>qmap</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_37">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="ImageView" name="widget_g2map_qmap" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>1</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+           <widget class="QGroupBox" name="groupBox_20">
+            <property name="title">
+             <string>g2 profile</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_41">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="GraphicsLayoutWidget" name="widget_g2map_profile" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>1</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QGroupBox" name="groupBox_17">
+           <property name="title">
+            <string>Settings</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_20">
+            <item row="0" column="3">
+             <widget class="QPushButton" name="pushButton_plot_g2map">
+              <property name="text">
+               <string>Plot</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_30">
+              <property name="text">
+               <string>qbin</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="spinBox_qbin">
+              <property name="maximum">
+               <number>9999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QCheckBox" name="checkBox_g2map_normalization">
+              <property name="text">
+               <string>Normalize by g2[0]</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_11">
+        <attribute name="title">
+         <string>g2_stability</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_49">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QScrollArea" name="scrollArea_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>30</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="verticalScrollBarPolicy">
+            <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="g2_scroll_area_2">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>1170</width>
+              <height>735</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_48">
+             <item row="1" column="0">
+              <widget class="PlotWidgetDev" name="mp_g2_stability" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QSplitter" name="splitter_7">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <widget class="QGroupBox" name="groupBox_21">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>65536</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Data Selection:</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_43">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item row="0" column="1">
+              <layout class="QGridLayout" name="gridLayout_44">
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string>t  (s)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_37">
+                 <property name="text">
+                  <string>q (Å⁻¹)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_51">
+                 <property name="text">
+                  <string>y </string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QDoubleSpinBox" name="g2_qmin_2">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.001000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QDoubleSpinBox" name="g2_qmax_2">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.001000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.010000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="g2_ymin_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
+                 <property name="minimum">
+                  <double>-1.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QDoubleSpinBox" name="g2_ymax_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
+                 <property name="minimum">
+                  <double>-1.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.800000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="g2_tmin_2">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>1e-6</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLineEdit" name="g2_tmax_2">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>100.0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="3">
+                <widget class="QCheckBox" name="g2_yauto_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>auto</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <widget class="QCheckBox" name="g2_tauto_2">
+                 <property name="text">
+                  <string>auto</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QCheckBox" name="g2_qauto_2">
+                 <property name="text">
+                  <string>auto</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="0" column="0">
+              <layout class="QGridLayout" name="gridLayout_45">
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_70">
+                 <property name="text">
+                  <string>column:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2" colspan="2">
+                <widget class="QCheckBox" name="g2_show_label_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>show labels</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2" colspan="2">
+                <widget class="QCheckBox" name="g2_sub_baseline_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>subtract baseline</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2" colspan="2">
+                <widget class="QComboBox" name="g2_plot_type_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>multiple</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>single</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>single-combined</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="sb_g2_offset_2">
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.005000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QDoubleSpinBox" name="g2_marker_size_2">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="minimum">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>15.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>5.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_5">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>plot</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QSpinBox" name="sb_g2_column_2">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>8</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>1</number>
+                 </property>
+                 <property name="value">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_69">
+                 <property name="text">
+                  <string>marker size:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_57">
+                 <property name="text">
+                  <string>offset:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -3224,6 +4008,12 @@
    <class>GraphicsLayoutWidget</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ParameterTree</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph.parametertree</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -3257,12 +4047,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ParameterTree</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph.parametertree</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>PlotWidget</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
@@ -3287,11 +4071,6 @@
   <tabstop>avg_save_name</tabstop>
   <tabstop>btn_set_average_save_name</tabstop>
   <tabstop>btn_submit_job</tabstop>
-  <tabstop>avg_job_pop</tabstop>
-  <tabstop>btn_avg_jobinfo</tabstop>
-  <tabstop>btn_avg_kill</tabstop>
-  <tabstop>btn_start_avg_job</tabstop>
-  <tabstop>avg_job_table</tabstop>
   <tabstop>work_dir</tabstop>
   <tabstop>sort_method</tabstop>
   <tabstop>pushButton_11</tabstop>
@@ -3379,34 +4158,18 @@
  </resources>
  <connections>
   <connection>
-   <sender>pushButton_4</sender>
-   <signal>clicked()</signal>
-   <receiver>mainWindow</receiver>
-   <slot>plot_g2()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>497</x>
-     <y>795</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>926</x>
-     <y>854</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>sb_window</sender>
    <signal>valueChanged(int)</signal>
    <receiver>pushButton_plot_intt</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>773</x>
-     <y>870</y>
+     <x>892</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -3417,12 +4180,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1024</x>
-     <y>870</y>
+     <x>1147</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -3449,12 +4212,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>662</x>
-     <y>796</y>
+     <x>735</x>
+     <y>826</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1485</x>
-     <y>797</y>
+     <x>1525</x>
+     <y>826</y>
     </hint>
    </hints>
   </connection>
@@ -3465,12 +4228,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>561</x>
-     <y>871</y>
+     <x>710</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1369</x>
-     <y>871</y>
+     <x>1531</x>
+     <y>905</y>
     </hint>
    </hints>
   </connection>
@@ -3481,12 +4244,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>980</x>
-     <y>747</y>
+     <x>1077</x>
+     <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3513,12 +4276,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>550</x>
-     <y>796</y>
+     <x>558</x>
+     <y>826</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1485</x>
-     <y>797</y>
+     <x>1525</x>
+     <y>826</y>
     </hint>
    </hints>
   </connection>
@@ -3545,12 +4308,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1177</x>
-     <y>747</y>
+     <x>1301</x>
+     <y>781</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3565,8 +4328,8 @@
      <y>816</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1485</x>
-     <y>797</y>
+     <x>1525</x>
+     <y>826</y>
     </hint>
    </hints>
   </connection>
@@ -3577,12 +4340,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1275</x>
-     <y>870</y>
+     <x>1403</x>
+     <y>904</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -3609,12 +4372,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>505</x>
-     <y>747</y>
+     <x>686</x>
+     <y>781</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3625,12 +4388,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>884</x>
-     <y>871</y>
+     <x>1038</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1369</x>
-     <y>871</y>
+     <x>1531</x>
+     <y>905</y>
     </hint>
    </hints>
   </connection>
@@ -3641,8 +4404,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1513</x>
-     <y>877</y>
+     <x>1538</x>
+     <y>911</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -3657,12 +4420,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>522</x>
-     <y>870</y>
+     <x>636</x>
+     <y>905</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1404</x>
-     <y>870</y>
+     <x>1531</x>
+     <y>904</y>
     </hint>
    </hints>
   </connection>
@@ -3673,8 +4436,8 @@
    <slot>plot_twotime()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>518</x>
-     <y>877</y>
+     <x>589</x>
+     <y>911</y>
     </hint>
     <hint type="destinationlabel">
      <x>1126</x>
@@ -3705,8 +4468,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>828</y>
+     <x>514</x>
+     <y>834</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
@@ -3721,8 +4484,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>861</y>
+     <x>514</x>
+     <y>870</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
@@ -3785,12 +4548,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>918</x>
-     <y>720</y>
+     <x>954</x>
+     <y>752</y>
     </hint>
     <hint type="destinationlabel">
-     <x>452</x>
-     <y>719</y>
+     <x>670</x>
+     <y>753</y>
     </hint>
    </hints>
   </connection>
@@ -3801,12 +4564,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>918</x>
-     <y>752</y>
+     <x>954</x>
+     <y>784</y>
     </hint>
     <hint type="destinationlabel">
-     <x>452</x>
-     <y>751</y>
+     <x>670</x>
+     <y>785</y>
     </hint>
    </hints>
   </connection>
@@ -3817,8 +4580,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>824</x>
-     <y>823</y>
+     <x>954</x>
+     <y>857</y>
     </hint>
     <hint type="destinationlabel">
      <x>517</x>
@@ -3833,8 +4596,8 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>824</x>
-     <y>861</y>
+     <x>954</x>
+     <y>896</y>
     </hint>
     <hint type="destinationlabel">
      <x>517</x>
@@ -3849,12 +4612,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>600</x>
-     <y>780</y>
+     <x>784</x>
+     <y>815</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3865,12 +4628,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>790</x>
-     <y>780</y>
+     <x>882</x>
+     <y>815</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3913,12 +4676,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1177</x>
-     <y>780</y>
+     <x>1301</x>
+     <y>814</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3945,12 +4708,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>980</x>
-     <y>780</y>
+     <x>1077</x>
+     <y>815</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3961,12 +4724,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>790</x>
-     <y>747</y>
+     <x>882</x>
+     <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -3981,8 +4744,8 @@
      <y>794</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>796</y>
+     <x>1102</x>
+     <y>799</y>
     </hint>
    </hints>
   </connection>
@@ -3997,8 +4760,8 @@
      <y>827</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>829</y>
+     <x>1102</x>
+     <y>835</y>
     </hint>
    </hints>
   </connection>
@@ -4013,8 +4776,8 @@
      <y>860</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>862</y>
+     <x>1102</x>
+     <y>871</y>
     </hint>
    </hints>
   </connection>
@@ -4029,8 +4792,8 @@
      <y>893</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1104</x>
-     <y>895</y>
+     <x>1102</x>
+     <y>907</y>
     </hint>
    </hints>
   </connection>
@@ -4089,12 +4852,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1052</x>
-     <y>859</y>
+     <x>1133</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4105,12 +4868,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1299</x>
-     <y>747</y>
+     <x>1519</x>
+     <y>781</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1457</x>
-     <y>848</y>
+     <x>1531</x>
+     <y>882</y>
     </hint>
    </hints>
   </connection>
@@ -4121,12 +4884,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>409</x>
-     <y>859</y>
+     <x>562</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>578</x>
-     <y>858</y>
+     <x>798</x>
+     <y>892</y>
     </hint>
    </hints>
   </connection>
@@ -4137,12 +4900,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>409</x>
-     <y>859</y>
+     <x>562</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>796</x>
-     <y>858</y>
+     <x>884</x>
+     <y>892</y>
     </hint>
    </hints>
   </connection>
@@ -4153,12 +4916,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>409</x>
-     <y>859</y>
+     <x>562</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>935</x>
-     <y>858</y>
+     <x>1030</x>
+     <y>893</y>
     </hint>
    </hints>
   </connection>
@@ -4169,12 +4932,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1221</x>
-     <y>859</y>
+     <x>1321</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1131</x>
-     <y>859</y>
+     <x>1223</x>
+     <y>891</y>
     </hint>
    </hints>
   </connection>
@@ -4185,12 +4948,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1221</x>
-     <y>859</y>
+     <x>1321</x>
+     <y>891</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1052</x>
-     <y>859</y>
+     <x>1133</x>
+     <y>891</y>
     </hint>
    </hints>
   </connection>
@@ -4249,12 +5012,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>891</x>
-     <y>827</y>
+     <x>953</x>
+     <y>853</y>
     </hint>
     <hint type="destinationlabel">
-     <x>746</x>
-     <y>827</y>
+     <x>802</x>
+     <y>854</y>
     </hint>
    </hints>
   </connection>
@@ -4265,8 +5028,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>897</x>
-     <y>836</y>
+     <x>953</x>
+     <y>853</y>
     </hint>
     <hint type="destinationlabel">
      <x>828</x>
@@ -4281,8 +5044,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1050</x>
-     <y>771</y>
+     <x>1424</x>
+     <y>788</y>
     </hint>
     <hint type="destinationlabel">
      <x>1492</x>
@@ -4301,8 +5064,8 @@
      <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>939</x>
-     <y>773</y>
+     <x>1406</x>
+     <y>788</y>
     </hint>
    </hints>
   </connection>
@@ -4313,8 +5076,8 @@
    <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1211</x>
-     <y>852</y>
+     <x>1216</x>
+     <y>873</y>
     </hint>
     <hint type="destinationlabel">
      <x>1429</x>
@@ -4329,8 +5092,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1482</x>
-     <y>848</y>
+     <x>1538</x>
+     <y>879</y>
     </hint>
     <hint type="destinationlabel">
      <x>880</x>
@@ -4345,8 +5108,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>878</x>
-     <y>891</y>
+     <x>1007</x>
+     <y>910</y>
     </hint>
     <hint type="destinationlabel">
      <x>1053</x>
@@ -4361,8 +5124,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>898</x>
-     <y>899</y>
+     <x>1007</x>
+     <y>910</y>
     </hint>
     <hint type="destinationlabel">
      <x>1174</x>

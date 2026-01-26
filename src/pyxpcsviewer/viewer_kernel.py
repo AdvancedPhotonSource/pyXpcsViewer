@@ -19,8 +19,7 @@ class ViewerKernel(FileLocator):
         self.meta = None
         self.reset_meta()
         self.path = path
-        self.avg_tb = AverageToolbox(path)
-        self.avg_worker = TableDataModel()
+        self.avg_worker = None
         self.avg_jid = 0
         self.avg_worker_active = {}
         self.current_dset = None
@@ -70,12 +69,60 @@ class ViewerKernel(FileLocator):
             g2mod.pg_plot(
                 handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs
             )
-            q, tel, *unused = g2mod.get_data(xf_list)
+            q, tel, *unused = g2mod.get_g2_data(xf_list)
             return q, tel
         else:
             return None, None
 
-    def plot_qmap(self, hdl, rows=None, target=None):
+    def plot_g2_stability(
+        self, handler, q_range, t_range, y_range, rows=None, **kwargs
+    ):
+        xf_obj = self.get_xf_list(rows=rows, filter_atype="Multitau")[0]
+        if xf_obj and xf_obj.g2_partial is not None:
+            g2mod.pg_plot_stability(
+                handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs
+            )
+            q, tel, *unused = g2mod.get_g2_data([xf_obj])
+            return q, tel
+        else:
+            return None, None
+
+    def plot_g2map(
+        self, g2map_hdl, qmap_hdl, g2_hdl, rows=None, qbin=0, normalization=False
+    ):
+        xf_obj = self.get_xf_list(rows=rows)[0]
+        if xf_obj:
+            g2map_hdl.setImage(xf_obj.get_offseted_g2(normalization).T)
+            qmap_hdl.setImage(xf_obj.get_cropped_qmap("dqmap"))
+
+            g2_hdl.clear()
+            color = (0, 128, 255)
+            pen = pg.mkPen(color=color, width=2)
+
+            x = xf_obj.t_el
+            y = xf_obj.g2[:, qbin]
+            dy = xf_obj.g2_err[:, qbin]
+
+            line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
+            pen = pg.mkPen(color=color, width=1)
+            g2_hdl.plot(
+                x,
+                y,
+                pen=None,
+                symbol="o",
+                name=f"{qbin=}",
+                symbolSize=3,
+                symbolPen=pen,
+                symbolBrush=pg.mkBrush(color=(*color, 0)),
+            )
+
+            g2_hdl.setLogMode(x=True, y=None)
+            g2_hdl.addItem(line)
+            g2_hdl.setLabel("bottom", "tau", units="s")
+            g2_hdl.setLabel("left", "g2")
+            return
+
+    def plot_qmap(self, hdl, rows=None, target=None, cmap="tab20b"):
         xf_list = self.get_xf_list(rows=rows)
         if xf_list:
             if target == "scattering":
@@ -86,6 +133,7 @@ class ViewerKernel(FileLocator):
                 hdl.setImage(xf_list[0].dqmap)
             elif target == "static_roi_map":
                 hdl.setImage(xf_list[0].sqmap)
+            hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
 
     def plot_tauq_pre(self, hdl=None, rows=None):
         xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
@@ -137,7 +185,6 @@ class ViewerKernel(FileLocator):
         if kwargs["sl_type"] == "Pie":
             hdl.add_roi(cen=cen, radius=100, **kwargs)
         elif kwargs["sl_type"] == "Circle":
-
             radius_v = min(xf_list[0].mask.shape[0] - cen[1], cen[1])
             radius_h = min(xf_list[0].mask.shape[1] - cen[0], cen[0])
             radius = min(radius_h, radius_v) * 0.8
@@ -148,13 +195,8 @@ class ViewerKernel(FileLocator):
     def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
         xf_list = self.get_xf_list()
         if xf_list:
-            roi_list = pg_hdl.get_roi_list()
             saxs1d.pg_plot(
-                xf_list,
-                mp_hdl,
-                bkg_file=self.meta["saxs1d_bkg_xf"],
-                roi_list=roi_list,
-                **kwargs
+                xf_list, mp_hdl, bkg_file=self.meta["saxs1d_bkg_xf"], **kwargs
             )
 
     def export_saxs_1d(self, pg_hdl, folder):
@@ -189,25 +231,35 @@ class ViewerKernel(FileLocator):
         stability.plot(xf_obj, mp_hdl, **kwargs)
 
     def submit_job(self, *args, **kwargs):
+        if self.avg_worker is not None:
+            logger.error("average job is already running")
+            return
+
         if len(self.target) <= 0:
             logger.error("no average target is selected")
             return
-        worker = AverageToolbox(self.path, flist=self.target, jid=self.avg_jid)
+
+        worker = AverageToolbox(flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
-        self.avg_worker.append(worker)
+        worker.signals.finished.connect(self.avg_job_finished)
+        self.avg_worker = worker
         logger.info("create average job, ID = %s", worker.jid)
         self.avg_jid += 1
         self.target.clear()
         return
 
-    def remove_job(self, index):
-        self.avg_worker.pop(index)
-        return
+    def update_avg_info(self):
+        if self.avg_worker is None:
+            return
+        self.avg_worker.update_plot()
 
-    def update_avg_info(self, jid):
-        self.avg_worker.layoutChanged.emit()
-        if 0 <= jid < len(self.avg_worker):
-            self.avg_worker[jid].update_plot()
+    def avg_job_finished(self, success):
+        if success:
+            self.statusbar.showMessage("average job finished", 5000)
+        else:
+            self.statusbar.showMessage("average job failed", 5000)
+        self.avg_worker_active = {}
+        self.avg_worker = None
 
     def update_avg_values(self, data):
         key, val = data[0], data[1]
@@ -220,7 +272,6 @@ class ViewerKernel(FileLocator):
             record[1] = new_g2
         record[1][record[0]] = val
         record[0] += 1
-
         return
 
     def export_g2(self):
