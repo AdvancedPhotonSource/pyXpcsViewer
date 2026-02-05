@@ -12,6 +12,7 @@ from pyqtgraph.Qt import QtCore
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
+import psutil
 
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
@@ -545,7 +546,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("select at least 2 files for averaging", 1000)
             return
 
-        self.thread_pool.setMaxThreadCount(self.max_thread_count.value())
+        max_workers = min(self.num_workers.value(), psutil.cpu_count(logical=False))
+        self.num_workers.setValue(max_workers)
+        self.thread_pool.setMaxThreadCount(max_workers)
 
         save_path = self.avg_save_path.text()
         save_name = self.avg_save_name.text()
@@ -578,6 +581,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "avg_qindex": self.avg_qindex.value(),
             "avg_window": self.avg_window.value(),
             "fields": avg_fields,
+            "status_bar": self.statusbar,
+            "progress_bar": self.progressbar_average,
+            "num_workers": self.num_workers.value(),
         }
 
         try:
