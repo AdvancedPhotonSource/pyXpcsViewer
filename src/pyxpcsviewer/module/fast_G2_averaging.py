@@ -420,10 +420,13 @@ def fast_average_shared_memory(
                     avg_result[key] = value / total_valid_files
 
             try:
-                output_dir = os.path.dirname(output_filename)
-                if output_dir and not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                shutil.copy(first_valid_file_path, output_filename)
+                # since the output_filename is already generated from the 1st part of g2 average;
+                # we just need to apply the new G2 to the file
+                assert os.path.exists(output_filename), f"output_filename: {output_filename} does not exist. check 1st part of g2 average."
+                # output_dir = os.path.dirname(output_filename)
+                # if output_dir and not os.path.exists(output_dir):
+                #     os.makedirs(output_dir)
+                # shutil.copy(first_valid_file_path, output_filename)
                 apply_new_G2_to_file(output_filename, avg_result)
                 logging.info(
                     f"Success: Averaged data saved to '{output_filename}'"
