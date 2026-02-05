@@ -230,7 +230,7 @@ class ViewerKernel(FileLocator):
         xf_obj = self.get_xf_list(rows)[0]
         stability.plot(xf_obj, mp_hdl, **kwargs)
 
-    def submit_job(self, *args, **kwargs):
+    def submit_job(self, status_bar=None, progress_bar=None, *args, **kwargs):
         if self.avg_worker is not None:
             logger.error("average job is already running")
             return
@@ -242,6 +242,8 @@ class ViewerKernel(FileLocator):
         worker = AverageToolbox(flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
         worker.signals.finished.connect(self.avg_job_finished)
+        worker.signals.status.connect(status_bar.showMessage)
+        worker.signals.progress.connect(progress_bar.setValue)
         self.avg_worker = worker
         logger.info("create average job, ID = %s", worker.jid)
         self.avg_jid += 1
