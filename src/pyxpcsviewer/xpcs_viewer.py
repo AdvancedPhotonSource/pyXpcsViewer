@@ -587,6 +587,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
 
         try:
+            if os.path.exists(kwargs["save_path"]):
+                reply = QMessageBox.question(
+                    self,
+                    "File exists",
+                    f"The file {kwargs['save_path']} already exists. Do you want to overwrite it?",
+                    QMessageBox.Yes | QMessageBox.No,
+                )
+                if reply == QMessageBox.No:
+                    return
+                else:
+                    os.remove(kwargs["save_path"])
+            # make sure the write permission
             # "a" = open for append or create; won't truncate existing file
             with open(kwargs["save_path"], "a"):
                 pass
@@ -603,6 +615,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             )
             return
 
+        self.btn_submit_job.setEnabled(False)
+        self.btn_submit_job.setText("Running...")
+
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode="target")
@@ -615,9 +630,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         worker.signals.values.connect(self.vk.update_avg_values)
+        worker.signals.finished.connect(self.avg_job_finished)
         self.thread_pool.start(worker)
         self.vk.avg_worker_active[worker.jid] = None
         self.update_avg_info()
+    
+    def avg_job_finished(self, success):
+        if success:
+            self.statusbar.showMessage("average job finished", 5000)
+        else:
+            self.statusbar.showMessage("average job failed", 5000)
+        self.vk.avg_worker_active = {}
+        self.vk.avg_worker = None
+        self.btn_submit_job.setEnabled(True)
+        self.btn_submit_job.setText("Submit")
 
     def update_avg_info(self):
         self.timer.stop()

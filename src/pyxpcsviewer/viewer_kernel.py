@@ -241,7 +241,6 @@ class ViewerKernel(FileLocator):
 
         worker = AverageToolbox(flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
-        worker.signals.finished.connect(self.avg_job_finished)
         worker.signals.status.connect(status_bar.showMessage)
         worker.signals.progress.connect(progress_bar.setValue)
         self.avg_worker = worker
@@ -254,14 +253,6 @@ class ViewerKernel(FileLocator):
         if self.avg_worker is None:
             return
         self.avg_worker.update_plot()
-
-    def avg_job_finished(self, success):
-        if success:
-            self.statusbar.showMessage("average job finished", 5000)
-        else:
-            self.statusbar.showMessage("average job failed", 5000)
-        self.avg_worker_active = {}
-        self.avg_worker = None
 
     def update_avg_values(self, data):
         key, val = data[0], data[1]
