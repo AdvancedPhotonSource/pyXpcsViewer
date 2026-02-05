@@ -1,7 +1,6 @@
 import numpy as np
 import h5py
 
-# import matplotlib.pyplot as plt
 
 
 keymap = {
@@ -16,7 +15,41 @@ keymap = {
 }
 
 
+def has_G2_field(fname):
+    """
+    Check if the G2 field exists in the specified HDF5 file.
+
+    Parameters
+    ----------
+    fname : str
+        The path to the HDF5 file.
+
+    Returns
+    -------
+    bool
+        True if the G2 field exists, False otherwise.
+    """
+    with h5py.File(fname, "r", libver="latest") as f:
+        return keymap["G2"] in f
+
+
 def average_by_qindex(idx_map, arr):
+    """
+    Calculate the average of an array based on a Q-index map.
+
+    Parameters
+    ----------
+    idx_map : ndarray
+        An index map where each value represents a Q-index.
+    arr : ndarray
+        A 2D array of values to be averaged. The second dimension size
+        must match the size of the flattened index map.
+
+    Returns
+    -------
+    ndarray
+        A 2D array containing the averaged values for each Q-index.
+    """
     size = np.max(idx_map) + 1
     idx_map = idx_map.ravel()
     assert idx_map.size == arr.shape[1], "Index map size must match array columns"
@@ -34,6 +67,24 @@ def average_by_qindex(idx_map, arr):
 
 
 def compute_g2(sqmap, dqmap, G2):
+    """
+    Compute g2 and its error using static and dynamic ROI maps.
+
+    Parameters
+    ----------
+    sqmap : ndarray
+        The static ROI map.
+    dqmap : ndarray
+        The dynamic ROI map.
+    G2 : ndarray
+        The unnormalized G2 data with shape (n_delays, n_channels, img_v, img_h).
+
+    Returns
+    -------
+    tuple of ndarray
+        - g2: The normalized g2 values with shape (n_delays, n_dq).
+        - g2_err: The standard deviation error of g2.
+    """
     # G2 is (N_delay x 3 x IMG_V x IMG_H)
     shape = G2.shape  #
     n_delays, n_channels, img_v, img_h = shape
@@ -73,6 +124,22 @@ def compute_g2(sqmap, dqmap, G2):
 
 
 def apply_new_G2_to_file(fname, avg_result):
+    """
+    Update an HDF5 file with newly computed G2, g2, and g2_err data.
+
+    Parameters
+    ----------
+    fname : str
+        The path to the HDF5 file to be updated.
+    avg_result : dict
+        A dictionary containing the results, with "G2" as a required key.
+        The function will also add "g2" and "g2_err" to this dictionary.
+
+    Returns
+    -------
+    str
+        The path to the updated HDF5 file.
+    """
     config = {}
     with h5py.File(fname, "r") as f:
         for key in ["sqmap", "dqmap"]:
@@ -94,6 +161,14 @@ def apply_new_G2_to_file(fname, avg_result):
 
 
 def test(fname):
+    """
+    Test the g2 computation by comparing it with existing results in a file.
+
+    Parameters
+    ----------
+    fname : str
+        The path to the HDF5 file containing the test data.
+    """
     result = {}
     with h5py.File(fname, "r") as f:
         for key, field in keymap.items():
@@ -104,6 +179,7 @@ def test(fname):
     print(np.max(np.abs(result["g2"] - g2)))
     print(np.max(np.abs(result["g2_err"] - g2_err)))
 
+    import matplotlib.pyplot as plt
     fig, ax = plt.subplots(6, 4, figsize=(12, 8))
     ax = ax.flatten()
     for n in range(min(len(ax), g2.shape[1])):

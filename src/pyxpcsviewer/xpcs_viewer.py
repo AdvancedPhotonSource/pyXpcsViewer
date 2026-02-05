@@ -16,6 +16,7 @@ import psutil
 
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
+from .module.apply_qmap import has_G2_field
 
 format = logging.Formatter("%(asctime)s %(message)s")
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -537,8 +538,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             else:
                 logger.info("use the previous save path")
 
+            has_G2 = all([has_G2_field(x) for x in self.vk.target]) 
+            if has_G2:
+                logger.info("G2 field is available for averaging")
+                self.bx_avg_G2IPIF.setEnabled(True)
+            else:
+                logger.info("G2 field is not available for averaging")
+                self.bx_avg_G2IPIF.setEnabled(False)
+                self.bx_avg_G2IPIF.setChecked(False)
+
             save_name = self.avg_save_name.text()
-            save_name = "Avg" + os.path.basename(self.vk.target[0])
+            save_name = "Average_" + os.path.basename(self.vk.target[0])
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
@@ -573,8 +583,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("No average field is selected. quit", 1000)
             return
 
+        save_path = os.path.join(save_path, save_name)
+
+        if not save_path.endswith(".hdf"):
+            save_path += ".hdf"
+
         kwargs = {
-            "save_path": os.path.join(save_path, save_name),
+            "save_path": save_path,
             # "chunk_size": int(self.cb_avg_chunk_size.currentText()),
             "avg_blmin": self.avg_blmin.value(),
             "avg_blmax": self.avg_blmax.value(),
@@ -587,7 +602,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
 
         try:
-            if os.path.exists(kwargs["save_path"]):
+            if os.path.isfile(kwargs["save_path"]):
                 reply = QMessageBox.question(
                     self,
                     "File exists",

@@ -284,12 +284,13 @@ class AverageToolbox(QtCore.QRunnable):
                     self.update_plot()
 
         if num_valid_dsets == 0:
-            logger.info("no dataset is valid; check the baseline criteria.")
             self.status = "finished"
             self.signals.status.emit(f"{self.jid}: {self.status}")
-            self.model.layoutChanged.emit()
+            # self.model.layoutChanged.emit()
             self.signals.progress.emit(100)
-            logger.info("average job %d finished (no valid datasets)", self.jid)
+            logger.info(f"average job {self.jid} finished (no valid datasets)")
+            if os.path.isfile(save_path):
+                os.remove(save_path)
             return {}  # Return an empty dict if no valid datasets
         else:
             logger.info(f"the valid dataset number is {num_valid_dsets} / {tot_num}")
@@ -378,101 +379,3 @@ class AverageToolbox(QtCore.QRunnable):
         if self.ax is not None:
             # Only update with the actual collected data points
             self.ax.setData(self.baseline[: self.ptr])
-
-    def get_pg_tree(self):
-        """Return a data tree widget with job metadata and parameters."""
-        data = {}
-        for key, val in self.kwargs.items():
-            if isinstance(val, np.ndarray):
-                data[key] = (
-                    "data size is too large"
-                    if val.size > 4096
-                    else float(val)
-                    if val.size == 1
-                    else val
-                )
-            else:
-                data[key] = val
-
-        add_keys = ["submit_time", "etime", "status", "baseline", "ptr", "eta", "size"]
-        for key in add_keys:
-            # For baseline, only show the relevant part
-            if key == "baseline":
-                data[key] = self.__dict__[key][
-                    : self.ptr
-                ].tolist()  # Convert to list for display
-            else:
-                data[key] = self.__dict__[key]
-
-        if self.size > 20:
-            data["first_10_datasets"] = self.model[0:10]
-            data["last_10_datasets"] = self.model[-10:]
-        else:
-            data["input_datasets"] = self.model[:]
-
-        tree = pg.DataTreeWidget(data=data)
-        tree.setWindowTitle("Job_%d_%s" % (self.jid, self.model[0]))
-        tree.resize(600, 800)
-        return tree
-
-
-def do_average(
-    flist,
-    save_path="avg_test.hdf",
-    avg_window=3,
-    avg_qindex=0,
-    avg_blmin=0.95,
-    avg_blmax=1.05,
-    fields=["saxs_2d", "saxs_1d", "g2", "g2_err"],
-):
-    tot_num = len(flist)
-    logger.info(f"Averaging starts on {tot_num} datasets with fields {fields}.")
-
-    mask = np.zeros(tot_num, dtype=np.int64)
-    result = {key: None for key in fields}  # Initialize with None, will be summed
-
-    t0 = time.perf_counter()
-    for m in trange(tot_num):
-        fname = flist[m]
-        try:
-            xf = get(fname, fields=fields, mode="alias", ret_type="dict")
-            flag, val = validate_g2_baseline(
-                xf["g2"], avg_window, avg_qindex, avg_blmin, avg_blmax
-            )
-            if flag:
-                for key in fields:
-                    if result[key] is None:
-                        result[key] = xf[key].copy()  # Initialize with first valid data
-                    else:
-                        result[key] += xf[key]
-                mask[m] = 1
-        except Exception:
-            traceback.print_exc()
-            logger.error(f"unable to process file {fname}, skip")
-
-    num_valid_dsets = np.sum(mask)
-    if num_valid_dsets == 0:
-        logger.info("no dataset is valid; check the baseline criteria.")
-    else:
-        logger.info(f"the valid dataset number is {num_valid_dsets} / {tot_num}")
-        for key in fields:
-            if result[key] is not None:
-                result[key] /= num_valid_dsets
-                if key == "g2_err":
-                    result[key] /= np.sqrt(num_valid_dsets)
-                if key == "saxs_2d" and result[key].ndim == 2:
-                    result[key] = np.expand_dims(result[key], axis=0)
-
-        if save_path and self.origin_path:
-            logger.info("create file: {}".format(save_path))
-            try:
-                copyfile(self.origin_path, save_path)
-                put(save_path, result, ftype="nexus", mode="alias")
-            except Exception as e:
-                logger.error(f"Error saving averaged file: {e}")
-                traceback.print_exc()
-        else:
-            logger.warning("save_path or origin_path is None, skipping file save.")
-
-    logger.info("average job finished")
-    return result
