@@ -209,6 +209,16 @@ class ViewerKernel(FileLocator):
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         pass
         # saxs1d.switch_line_builder(mp_hdl, lb_type)
+    
+    def plot_G2_regroup(self, hdl, cmap="jet", rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows, filter_atype="Multitau")
+        if len(xf_list) == 0:
+            return None
+        xfile = xf_list[0]
+        G2_data = xfile.get_G2_data(**kwargs)
+        hdl.setImage(G2_data)
+        hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
+        return
 
     def plot_twotime(self, hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows, filter_atype="Twotime")

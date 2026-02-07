@@ -298,7 +298,7 @@ class XpcsFile(object):
             y = y[0 : y.size // 2]
             y[0] = 0
             return np.stack((x, y), axis=1).astype(np.float32).T
-        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels"]:
+        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels", "G2"]:
             if key not in self.__dict__:
                 try:
                     ret = get(self.fname, [key], "alias", ftype="nexus")
@@ -354,6 +354,22 @@ class XpcsFile(object):
             t_el = self.t_el
 
         return qvalues, t_el, g2, g2_err, qbin_labels, labels
+    
+    def get_G2_data(self, target="G2", delay_index=0, cutoff=99.5):
+        assert target in ["G2", "IP", "IF", "g2_per_pixel"]
+        G2 = self.G2
+        delay_index = min(delay_index, G2.shape[0] - 1)
+
+        if target in ["G2", "IP", "IF"]:
+            channel_index = {"G2": 0, "IP": 1, "IF": 2}[target]
+            return G2[delay_index, channel_index]
+        elif target == "g2_per_pixel":
+            denominator = G2[delay_index, 1] * G2[delay_index, 2]
+            denominator[denominator == 0] = 1 
+            g2_per_pixel = G2[delay_index, 0] / denominator
+            max_threshold = np.percentile(g2_per_pixel[g2_per_pixel > 0], cutoff)
+            g2_per_pixel[g2_per_pixel > max_threshold] = max_threshold
+            return g2_per_pixel
 
     def get_g2_data(self, qrange=None, trange=None):
         assert "Multitau" in self.atype, "only multitau is supported"

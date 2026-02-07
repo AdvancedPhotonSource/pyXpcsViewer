@@ -48,6 +48,7 @@ tab_mapping = {
     9: "metadata",
     10: "g2map",
     11: "g2_stability",
+    12: "G2_regroup",
 }
 
 
@@ -143,6 +144,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_5.clicked.connect(self.update_plot)
         self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
         self.cb_qmap_cmap.currentIndexChanged.connect(self.update_plot)
+        self.comboBox_G2_target.currentIndexChanged.connect(self.update_plot)
+        self.horizontalSlider_G2_delay.valueChanged.connect(self.update_plot)
+        self.doubleSpinBox_G2_maxcutoff.valueChanged.connect(self.update_plot)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -254,6 +258,23 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.g2map_all_img,
             self.widget_g2map_qmap,
             self.widget_g2map_profile_plot,
+            **kwargs,
+        )
+    
+    def plot_G2_regroup(self, dryrun=False):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+            "target": self.comboBox_G2_target.currentText(),
+            "delay_index": self.horizontalSlider_G2_delay.value(),
+            "cmap": self.cb_saxs2D_cmap.currentText(),
+            "cutoff": self.doubleSpinBox_G2_maxcutoff.value(),
+        }
+
+        if dryrun:
+            return kwargs
+
+        self.vk.plot_G2_regroup(
+            self.pg_regroup_G2,
             **kwargs,
         )
 
