@@ -23,7 +23,7 @@ import glob
 import psutil
 
 # Import the key mapping and file writing utility from the user's custom module.
-from .apply_qmap import keymap, apply_new_G2_to_file
+from .apply_qmap import keymap, regroup_G2_and_update_file
 
 # --- Globals for Worker Processes ---
 # These will be initialized by the pool's initializer function. This is the
@@ -427,7 +427,7 @@ def fast_average_shared_memory(
                 # if output_dir and not os.path.exists(output_dir):
                 #     os.makedirs(output_dir)
                 # shutil.copy(first_valid_file_path, output_filename)
-                apply_new_G2_to_file(output_filename, avg_result)
+                regroup_G2_and_update_file(output_filename, avg_result)
                 logging.info(
                     f"Success: Averaged data saved to '{output_filename}'"
                 )

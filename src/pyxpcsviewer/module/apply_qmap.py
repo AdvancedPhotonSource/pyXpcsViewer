@@ -123,41 +123,98 @@ def compute_g2(sqmap, dqmap, G2):
     return g2, g2_err
 
 
-def apply_new_G2_to_file(fname, avg_result):
+def _update_file(fname, avg_result):
     """
-    Update an HDF5 file with newly computed G2, g2, and g2_err data.
+    Update an HDF5 file with averaged results.
+
+    This is a helper function that writes the averaged G2, g2, and g2_err data
+    to the specified HDF5 file. If the datasets already exist, they are deleted
+    and recreated.
 
     Parameters
     ----------
     fname : str
         The path to the HDF5 file to be updated.
     avg_result : dict
-        A dictionary containing the results, with "G2" as a required key.
-        The function will also add "g2" and "g2_err" to this dictionary.
+        A dictionary containing the averaged results. Keys should match those
+        in the keymap (e.g., 'G2', 'g2', 'g2_err'), and values are numpy arrays
+        containing the data to be written.
 
     Returns
     -------
-    str
-        The path to the updated HDF5 file.
+    None
     """
-    config = {}
-    with h5py.File(fname, "r") as f:
-        for key in ["sqmap", "dqmap"]:
-            config[key] = f[keymap[key]][()]
-    g2, g2_err = compute_g2(config["sqmap"], config["dqmap"], avg_result["G2"])
-    avg_result["g2"] = g2
-    avg_result["g2_err"] = g2_err
-
     with h5py.File(fname, "a") as f:
         for key, data in avg_result.items():
             field = keymap[key]
             if field in f:
                 del f[field]
+            compression = "lzf" if key == "G2" else None
+            f.create_dataset(field, data=data, compression=compression)
 
-            if key != "G2":
-                compression = "lzf" if key == "G2" else None
-                f.create_dataset(field, data=data, compression=compression)
-    return fname
+
+def regroup_G2_with_qmap_array(avg_result, sqmap, dqmap):
+    """
+    Compute g2 and g2_err from G2 data using Q-maps and add them to results.
+
+    This function takes the unnormalized G2 data from avg_result and computes
+    the normalized g2 and its error using the provided static and dynamic Q-maps.
+    The computed g2 and g2_err are added to the avg_result dictionary.
+
+    Parameters
+    ----------
+    avg_result : dict
+        A dictionary containing at least the 'G2' key with unnormalized G2 data.
+        This dictionary will be modified in-place to include 'g2' and 'g2_err'.
+    sqmap : ndarray
+        The static ROI map used for averaging.
+    dqmap : ndarray
+        The dynamic ROI map used for grouping pixels.
+
+    Returns
+    -------
+    dict
+        The updated avg_result dictionary with 'g2' and 'g2_err' added.
+    """
+    g2, g2_err = compute_g2(sqmap, dqmap, avg_result["G2"])
+    avg_result["g2"] = g2
+    avg_result["g2_err"] = g2_err
+    return avg_result
+
+
+def regroup_G2_and_update_file(fname, avg_result, qmap_fname=None):
+    """
+    Regroup G2 data using Q-maps and update the HDF5 file with all results.
+
+    This function reads the static and dynamic Q-maps from an HDF5 file,
+    computes g2 and g2_err from the G2 data in avg_result, and writes all
+    the averaged results (G2, g2, g2_err, and any other fields) to the
+    specified output file.
+
+    Parameters
+    ----------
+    fname : str
+        The path to the HDF5 file to be updated with the results.
+    avg_result : dict
+        A dictionary containing at least the 'G2' key with unnormalized G2 data.
+        May also contain other keys like 'saxs2d', 'saxs1d', etc.
+    qmap_fname : str, optional
+        The path to the HDF5 file containing the Q-maps (sqmap and dqmap).
+        If None, the Q-maps are read from the same file as fname.
+        Default is None.
+
+    Returns
+    -------
+    None
+    """
+    qmap_fname = qmap_fname or fname
+    with h5py.File(qmap_fname, "r") as f:
+        dqmap = f[keymap["dqmap"]][()]
+        sqmap = f[keymap["sqmap"]][()]
+    avg_result = regroup_G2_with_qmap_array(avg_result, sqmap, dqmap)
+    _update_file(fname, avg_result)
+    return
+
 
 
 def test(fname):
