@@ -2224,19 +2224,19 @@ class Ui_mainWindow(object):
         self.gridLayout_30.addWidget(self.pg_regroup_G2, 0, 0, 1, 4)
 
         self.splitter_8.addWidget(self.groupBox_9)
-        self.widget = QWidget(self.splitter_8)
-        self.widget.setObjectName(u"widget")
-        self.verticalLayout_3 = QVBoxLayout(self.widget)
+        self.layoutWidget2 = QWidget(self.splitter_8)
+        self.layoutWidget2.setObjectName(u"layoutWidget2")
+        self.verticalLayout_3 = QVBoxLayout(self.layoutWidget2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.groupBox_12 = QGroupBox(self.widget)
+        self.groupBox_12 = QGroupBox(self.layoutWidget2)
         self.groupBox_12.setObjectName(u"groupBox_12")
         sizePolicy10.setHeightForWidth(self.groupBox_12.sizePolicy().hasHeightForWidth())
         self.groupBox_12.setSizePolicy(sizePolicy10)
         self.gridLayout_35 = QGridLayout(self.groupBox_12)
         self.gridLayout_35.setObjectName(u"gridLayout_35")
         self.gridLayout_35.setContentsMargins(1, 1, 1, 1)
-        self.pg_regroup_g2 = PlotWidget(self.groupBox_12)
+        self.pg_regroup_g2 = PlotWidgetDev(self.groupBox_12)
         self.pg_regroup_g2.setObjectName(u"pg_regroup_g2")
         sizePolicy10.setHeightForWidth(self.pg_regroup_g2.sizePolicy().hasHeightForWidth())
         self.pg_regroup_g2.setSizePolicy(sizePolicy10)
@@ -2246,19 +2246,19 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_3.addWidget(self.groupBox_12)
 
-        self.groupBox_24 = QGroupBox(self.widget)
+        self.groupBox_24 = QGroupBox(self.layoutWidget2)
         self.groupBox_24.setObjectName(u"groupBox_24")
         self.gridLayout_47 = QGridLayout(self.groupBox_24)
         self.gridLayout_47.setObjectName(u"gridLayout_47")
         self.gridLayout_47.setContentsMargins(0, 0, 0, 0)
-        self.tabWidget_2 = QTabWidget(self.groupBox_24)
-        self.tabWidget_2.setObjectName(u"tabWidget_2")
+        self.tabWidget_G2_regroup = QTabWidget(self.groupBox_24)
+        self.tabWidget_G2_regroup.setObjectName(u"tabWidget_G2_regroup")
         self.tab_13 = QWidget()
         self.tab_13.setObjectName(u"tab_13")
         self.label_74 = QLabel(self.tab_13)
         self.label_74.setObjectName(u"label_74")
         self.label_74.setGeometry(QRect(20, 20, 581, 18))
-        self.tabWidget_2.addTab(self.tab_13, "")
+        self.tabWidget_G2_regroup.addTab(self.tab_13, "")
         self.tab_14 = QWidget()
         self.tab_14.setObjectName(u"tab_14")
         self.gridLayout_51 = QGridLayout(self.tab_14)
@@ -2268,22 +2268,22 @@ class Ui_mainWindow(object):
 
         self.gridLayout_51.addWidget(self.pushButton_G2_loadexternal, 2, 3, 1, 1)
 
-        self.label_77 = QLabel(self.tab_14)
-        self.label_77.setObjectName(u"label_77")
+        self.label_G2_external_qmapfname = QLabel(self.tab_14)
+        self.label_G2_external_qmapfname.setObjectName(u"label_G2_external_qmapfname")
         sizePolicy17 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy17.setHorizontalStretch(1)
         sizePolicy17.setVerticalStretch(0)
-        sizePolicy17.setHeightForWidth(self.label_77.sizePolicy().hasHeightForWidth())
-        self.label_77.setSizePolicy(sizePolicy17)
+        sizePolicy17.setHeightForWidth(self.label_G2_external_qmapfname.sizePolicy().hasHeightForWidth())
+        self.label_G2_external_qmapfname.setSizePolicy(sizePolicy17)
 
-        self.gridLayout_51.addWidget(self.label_77, 2, 0, 1, 3)
+        self.gridLayout_51.addWidget(self.label_G2_external_qmapfname, 2, 0, 1, 3)
 
         self.label_75 = QLabel(self.tab_14)
         self.label_75.setObjectName(u"label_75")
 
         self.gridLayout_51.addWidget(self.label_75, 0, 0, 1, 4)
 
-        self.tabWidget_2.addTab(self.tab_14, "")
+        self.tabWidget_G2_regroup.addTab(self.tab_14, "")
         self.tab_15 = QWidget()
         self.tab_15.setObjectName(u"tab_15")
         self.gridLayout_52 = QGridLayout(self.tab_15)
@@ -2303,14 +2303,14 @@ class Ui_mainWindow(object):
 
         self.gridLayout_52.addWidget(self.spinBox_G2_num_sbin, 1, 1, 1, 1)
 
-        self.tabWidget_2.addTab(self.tab_15, "")
+        self.tabWidget_G2_regroup.addTab(self.tab_15, "")
 
-        self.gridLayout_47.addWidget(self.tabWidget_2, 0, 0, 1, 1)
+        self.gridLayout_47.addWidget(self.tabWidget_G2_regroup, 0, 0, 1, 1)
 
 
         self.verticalLayout_3.addWidget(self.groupBox_24)
 
-        self.groupBox_23 = QGroupBox(self.widget)
+        self.groupBox_23 = QGroupBox(self.layoutWidget2)
         self.groupBox_23.setObjectName(u"groupBox_23")
         sizePolicy18 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         sizePolicy18.setHorizontalStretch(0)
@@ -2319,18 +2319,6 @@ class Ui_mainWindow(object):
         self.groupBox_23.setSizePolicy(sizePolicy18)
         self.gridLayout_50 = QGridLayout(self.groupBox_23)
         self.gridLayout_50.setObjectName(u"gridLayout_50")
-        self.checkBox_G2_removeoutlier = QCheckBox(self.groupBox_23)
-        self.checkBox_G2_removeoutlier.setObjectName(u"checkBox_G2_removeoutlier")
-        self.checkBox_G2_removeoutlier.setCheckable(True)
-        self.checkBox_G2_removeoutlier.setChecked(True)
-
-        self.gridLayout_50.addWidget(self.checkBox_G2_removeoutlier, 0, 0, 1, 2)
-
-        self.pushButton_G2_save = QPushButton(self.groupBox_23)
-        self.pushButton_G2_save.setObjectName(u"pushButton_G2_save")
-
-        self.gridLayout_50.addWidget(self.pushButton_G2_save, 1, 2, 1, 3)
-
         self.comboBox_G2_outliermethod = QComboBox(self.groupBox_23)
         self.comboBox_G2_outliermethod.addItem("")
         self.comboBox_G2_outliermethod.addItem("")
@@ -2338,15 +2326,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.comboBox_G2_outliermethod, 0, 5, 1, 1)
 
-        self.pushButton_G2_overwrite = QPushButton(self.groupBox_23)
-        self.pushButton_G2_overwrite.setObjectName(u"pushButton_G2_overwrite")
-
-        self.gridLayout_50.addWidget(self.pushButton_G2_overwrite, 1, 5, 1, 1)
-
         self.pushButton_G2_regroup = QPushButton(self.groupBox_23)
         self.pushButton_G2_regroup.setObjectName(u"pushButton_G2_regroup")
 
-        self.gridLayout_50.addWidget(self.pushButton_G2_regroup, 1, 0, 1, 2)
+        self.gridLayout_50.addWidget(self.pushButton_G2_regroup, 0, 6, 1, 1)
+
+        self.checkBox_G2_removeoutlier = QCheckBox(self.groupBox_23)
+        self.checkBox_G2_removeoutlier.setObjectName(u"checkBox_G2_removeoutlier")
+        self.checkBox_G2_removeoutlier.setCheckable(True)
+        self.checkBox_G2_removeoutlier.setChecked(True)
+
+        self.gridLayout_50.addWidget(self.checkBox_G2_removeoutlier, 0, 0, 1, 2)
 
         self.label_76 = QLabel(self.groupBox_23)
         self.label_76.setObjectName(u"label_76")
@@ -2359,10 +2349,15 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.doubleSpinBox_G2_threshold, 0, 3, 1, 2)
 
+        self.pushButton_G2_savetofile = QPushButton(self.groupBox_23)
+        self.pushButton_G2_savetofile.setObjectName(u"pushButton_G2_savetofile")
+
+        self.gridLayout_50.addWidget(self.pushButton_G2_savetofile, 0, 7, 1, 1)
+
 
         self.verticalLayout_3.addWidget(self.groupBox_23)
 
-        self.splitter_8.addWidget(self.widget)
+        self.splitter_8.addWidget(self.layoutWidget2)
 
         self.gridLayout_53.addWidget(self.splitter_8, 0, 0, 1, 1)
 
@@ -2534,7 +2529,7 @@ class Ui_mainWindow(object):
         self.cb_stab_norm.setCurrentIndex(0)
         self.cb_tauq_type.setCurrentIndex(3)
         self.cb_avg_chunk_size.setCurrentIndex(2)
-        self.tabWidget_2.setCurrentIndex(2)
+        self.tabWidget_G2_regroup.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(mainWindow)
@@ -2866,23 +2861,22 @@ class Ui_mainWindow(object):
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Grouped g2", None))
         self.groupBox_24.setTitle(QCoreApplication.translate("mainWindow", u"QMap", None))
         self.label_74.setText(QCoreApplication.translate("mainWindow", u"Using the internal QMap located in /xpcs/qmap to group G2 the original way.", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Internal", None))
+        self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Internal", None))
         self.pushButton_G2_loadexternal.setText(QCoreApplication.translate("mainWindow", u"Load", None))
-        self.label_77.setText(QCoreApplication.translate("mainWindow", u"filename", None))
+        self.label_G2_external_qmapfname.setText("")
         self.label_75.setText(QCoreApplication.translate("mainWindow", u"Select an external QMap file generated by pysimplemask to apply a new QMap", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_14), QCoreApplication.translate("mainWindow", u"External", None))
+        self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_14), QCoreApplication.translate("mainWindow", u"External", None))
         self.label_78.setText(QCoreApplication.translate("mainWindow", u"Draw an ROI to explore the dynamics in it.", None))
         self.label_79.setText(QCoreApplication.translate("mainWindow", u"num_static_bins:", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Draw", None))
+        self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Draw", None))
         self.groupBox_23.setTitle(QCoreApplication.translate("mainWindow", u"Group Setting", None))
-        self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
-        self.pushButton_G2_save.setText(QCoreApplication.translate("mainWindow", u"Save as New File", None))
         self.comboBox_G2_outliermethod.setItemText(0, QCoreApplication.translate("mainWindow", u"MeanAbsoluteDeviation", None))
         self.comboBox_G2_outliermethod.setItemText(1, QCoreApplication.translate("mainWindow", u"StandardDeviation", None))
 
-        self.pushButton_G2_overwrite.setText(QCoreApplication.translate("mainWindow", u"Overwrite Original File", None))
         self.pushButton_G2_regroup.setText(QCoreApplication.translate("mainWindow", u"ReGroup", None))
+        self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
         self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
+        self.pushButton_G2_savetofile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 

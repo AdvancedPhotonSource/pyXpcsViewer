@@ -4072,7 +4072,7 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="">
+           <widget class="QWidget" name="layoutWidget">
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
               <widget class="QGroupBox" name="groupBox_12">
@@ -4099,7 +4099,7 @@
                  <number>1</number>
                 </property>
                 <item row="0" column="0">
-                 <widget class="PlotWidget" name="pg_regroup_g2" native="true">
+                 <widget class="PlotWidgetDev" name="pg_regroup_g2" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -4130,9 +4130,9 @@
                  <number>0</number>
                 </property>
                 <item row="0" column="0">
-                 <widget class="QTabWidget" name="tabWidget_2">
+                 <widget class="QTabWidget" name="tabWidget_G2_regroup">
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>1</number>
                   </property>
                   <widget class="QWidget" name="tab_13">
                    <attribute name="title">
@@ -4165,7 +4165,7 @@
                      </widget>
                     </item>
                     <item row="2" column="0" colspan="3">
-                     <widget class="QLabel" name="label_77">
+                     <widget class="QLabel" name="label_G2_external_qmapfname">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                         <horstretch>1</horstretch>
@@ -4173,7 +4173,7 @@
                        </sizepolicy>
                       </property>
                       <property name="text">
-                       <string>filename</string>
+                       <string/>
                       </property>
                      </widget>
                     </item>
@@ -4227,26 +4227,6 @@
                 <string>Group Setting</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_50">
-                <item row="0" column="0" colspan="2">
-                 <widget class="QCheckBox" name="checkBox_G2_removeoutlier">
-                  <property name="text">
-                   <string>Remove Outlier</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="2" colspan="3">
-                 <widget class="QPushButton" name="pushButton_G2_save">
-                  <property name="text">
-                   <string>Save as New File</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="5">
                  <widget class="QComboBox" name="comboBox_G2_outliermethod">
                   <item>
@@ -4261,17 +4241,23 @@
                   </item>
                  </widget>
                 </item>
-                <item row="1" column="5">
-                 <widget class="QPushButton" name="pushButton_G2_overwrite">
-                  <property name="text">
-                   <string>Overwrite Original File</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0" colspan="2">
+                <item row="0" column="6">
                  <widget class="QPushButton" name="pushButton_G2_regroup">
                   <property name="text">
                    <string>ReGroup</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QCheckBox" name="checkBox_G2_removeoutlier">
+                  <property name="text">
+                   <string>Remove Outlier</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -4286,6 +4272,13 @@
                  <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_threshold">
                   <property name="value">
                    <double>3.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="7">
+                 <widget class="QPushButton" name="pushButton_G2_savetofile">
+                  <property name="text">
+                   <string>SaveToFile</string>
                   </property>
                  </widget>
                 </item>
@@ -4306,6 +4299,12 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>ImageView</class>
    <extends>QWidget</extends>
@@ -4352,12 +4351,6 @@
    <class>ImageViewPlotItem</class>
    <extends>QWidget</extends>
    <header>.plothandler</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PlotWidget</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
