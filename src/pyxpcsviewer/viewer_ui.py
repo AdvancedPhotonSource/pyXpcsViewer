@@ -2184,11 +2184,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_30.addWidget(self.comboBox_G2_target, 1, 1, 1, 1)
 
-        self.label_80 = QLabel(self.groupBox_9)
-        self.label_80.setObjectName(u"label_80")
-
-        self.gridLayout_30.addWidget(self.label_80, 1, 2, 1, 1)
-
         self.label_72 = QLabel(self.groupBox_9)
         self.label_72.setObjectName(u"label_72")
 
@@ -2199,13 +2194,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_30.addWidget(self.label_73, 2, 0, 1, 1)
 
-        self.doubleSpinBox_G2_maxcutoff = QDoubleSpinBox(self.groupBox_9)
-        self.doubleSpinBox_G2_maxcutoff.setObjectName(u"doubleSpinBox_G2_maxcutoff")
-        self.doubleSpinBox_G2_maxcutoff.setMaximum(100.000000000000000)
-        self.doubleSpinBox_G2_maxcutoff.setSingleStep(0.001000000000000)
-        self.doubleSpinBox_G2_maxcutoff.setValue(99.500000000000000)
+        self.pg_regroup_G2 = ImageView(self.groupBox_9)
+        self.pg_regroup_G2.setObjectName(u"pg_regroup_G2")
 
-        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_maxcutoff, 1, 3, 1, 1)
+        self.gridLayout_30.addWidget(self.pg_regroup_G2, 0, 0, 1, 6)
 
         self.horizontalSlider_G2_delay = QSlider(self.groupBox_9)
         self.horizontalSlider_G2_delay.setObjectName(u"horizontalSlider_G2_delay")
@@ -2216,12 +2208,28 @@ class Ui_mainWindow(object):
         self.horizontalSlider_G2_delay.setSizePolicy(sizePolicy16)
         self.horizontalSlider_G2_delay.setOrientation(Qt.Orientation.Horizontal)
 
-        self.gridLayout_30.addWidget(self.horizontalSlider_G2_delay, 2, 1, 1, 3)
+        self.gridLayout_30.addWidget(self.horizontalSlider_G2_delay, 2, 1, 1, 5)
 
-        self.pg_regroup_G2 = ImageView(self.groupBox_9)
-        self.pg_regroup_G2.setObjectName(u"pg_regroup_G2")
+        self.doubleSpinBox_G2_vmax = QDoubleSpinBox(self.groupBox_9)
+        self.doubleSpinBox_G2_vmax.setObjectName(u"doubleSpinBox_G2_vmax")
+        self.doubleSpinBox_G2_vmax.setValue(5.000000000000000)
 
-        self.gridLayout_30.addWidget(self.pg_regroup_G2, 0, 0, 1, 4)
+        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_vmax, 1, 5, 1, 1)
+
+        self.doubleSpinBox_G2_vmin = QDoubleSpinBox(self.groupBox_9)
+        self.doubleSpinBox_G2_vmin.setObjectName(u"doubleSpinBox_G2_vmin")
+
+        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_vmin, 1, 4, 1, 1)
+
+        self.label_77 = QLabel(self.groupBox_9)
+        self.label_77.setObjectName(u"label_77")
+        sizePolicy17 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy17.setHorizontalStretch(0)
+        sizePolicy17.setVerticalStretch(0)
+        sizePolicy17.setHeightForWidth(self.label_77.sizePolicy().hasHeightForWidth())
+        self.label_77.setSizePolicy(sizePolicy17)
+
+        self.gridLayout_30.addWidget(self.label_77, 1, 3, 1, 1)
 
         self.splitter_8.addWidget(self.groupBox_9)
         self.layoutWidget2 = QWidget(self.splitter_8)
@@ -2236,12 +2244,24 @@ class Ui_mainWindow(object):
         self.gridLayout_35 = QGridLayout(self.groupBox_12)
         self.gridLayout_35.setObjectName(u"gridLayout_35")
         self.gridLayout_35.setContentsMargins(1, 1, 1, 1)
-        self.pg_regroup_g2 = PlotWidgetDev(self.groupBox_12)
+        self.scrollArea_3 = QScrollArea(self.groupBox_12)
+        self.scrollArea_3.setObjectName(u"scrollArea_3")
+        self.scrollArea_3.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 660, 437))
+        self.gridLayout_54 = QGridLayout(self.scrollAreaWidgetContents)
+        self.gridLayout_54.setObjectName(u"gridLayout_54")
+        self.pg_regroup_g2 = PlotWidgetDev(self.scrollAreaWidgetContents)
         self.pg_regroup_g2.setObjectName(u"pg_regroup_g2")
         sizePolicy10.setHeightForWidth(self.pg_regroup_g2.sizePolicy().hasHeightForWidth())
         self.pg_regroup_g2.setSizePolicy(sizePolicy10)
 
-        self.gridLayout_35.addWidget(self.pg_regroup_g2, 0, 0, 1, 1)
+        self.gridLayout_54.addWidget(self.pg_regroup_g2, 0, 0, 1, 1)
+
+        self.scrollArea_3.setWidget(self.scrollAreaWidgetContents)
+
+        self.gridLayout_35.addWidget(self.scrollArea_3, 0, 0, 1, 1)
 
 
         self.verticalLayout_3.addWidget(self.groupBox_12)
@@ -2263,18 +2283,18 @@ class Ui_mainWindow(object):
         self.tab_14.setObjectName(u"tab_14")
         self.gridLayout_51 = QGridLayout(self.tab_14)
         self.gridLayout_51.setObjectName(u"gridLayout_51")
-        self.pushButton_G2_loadexternal = QPushButton(self.tab_14)
-        self.pushButton_G2_loadexternal.setObjectName(u"pushButton_G2_loadexternal")
+        self.pushButton_G2_loadQMap = QPushButton(self.tab_14)
+        self.pushButton_G2_loadQMap.setObjectName(u"pushButton_G2_loadQMap")
 
-        self.gridLayout_51.addWidget(self.pushButton_G2_loadexternal, 2, 3, 1, 1)
+        self.gridLayout_51.addWidget(self.pushButton_G2_loadQMap, 2, 3, 1, 1)
 
         self.label_G2_external_qmapfname = QLabel(self.tab_14)
         self.label_G2_external_qmapfname.setObjectName(u"label_G2_external_qmapfname")
-        sizePolicy17 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy17.setHorizontalStretch(1)
-        sizePolicy17.setVerticalStretch(0)
-        sizePolicy17.setHeightForWidth(self.label_G2_external_qmapfname.sizePolicy().hasHeightForWidth())
-        self.label_G2_external_qmapfname.setSizePolicy(sizePolicy17)
+        sizePolicy18 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy18.setHorizontalStretch(1)
+        sizePolicy18.setVerticalStretch(0)
+        sizePolicy18.setHeightForWidth(self.label_G2_external_qmapfname.sizePolicy().hasHeightForWidth())
+        self.label_G2_external_qmapfname.setSizePolicy(sizePolicy18)
 
         self.gridLayout_51.addWidget(self.label_G2_external_qmapfname, 2, 0, 1, 3)
 
@@ -2312,11 +2332,11 @@ class Ui_mainWindow(object):
 
         self.groupBox_23 = QGroupBox(self.layoutWidget2)
         self.groupBox_23.setObjectName(u"groupBox_23")
-        sizePolicy18 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
-        sizePolicy18.setHorizontalStretch(0)
-        sizePolicy18.setVerticalStretch(0)
-        sizePolicy18.setHeightForWidth(self.groupBox_23.sizePolicy().hasHeightForWidth())
-        self.groupBox_23.setSizePolicy(sizePolicy18)
+        sizePolicy19 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        sizePolicy19.setHorizontalStretch(0)
+        sizePolicy19.setVerticalStretch(0)
+        sizePolicy19.setHeightForWidth(self.groupBox_23.sizePolicy().hasHeightForWidth())
+        self.groupBox_23.setSizePolicy(sizePolicy19)
         self.gridLayout_50 = QGridLayout(self.groupBox_23)
         self.gridLayout_50.setObjectName(u"gridLayout_50")
         self.comboBox_G2_outliermethod = QComboBox(self.groupBox_23)
@@ -2349,10 +2369,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.doubleSpinBox_G2_threshold, 0, 3, 1, 2)
 
-        self.pushButton_G2_savetofile = QPushButton(self.groupBox_23)
-        self.pushButton_G2_savetofile.setObjectName(u"pushButton_G2_savetofile")
+        self.pushButton_G2_savefile = QPushButton(self.groupBox_23)
+        self.pushButton_G2_savefile.setObjectName(u"pushButton_G2_savefile")
 
-        self.gridLayout_50.addWidget(self.pushButton_G2_savetofile, 0, 7, 1, 1)
+        self.gridLayout_50.addWidget(self.pushButton_G2_savefile, 0, 7, 1, 1)
 
 
         self.verticalLayout_3.addWidget(self.groupBox_23)
@@ -2855,14 +2875,14 @@ class Ui_mainWindow(object):
         self.comboBox_G2_target.setItemText(2, QCoreApplication.translate("mainWindow", u"IP", None))
         self.comboBox_G2_target.setItemText(3, QCoreApplication.translate("mainWindow", u"IF", None))
 
-        self.label_80.setText(QCoreApplication.translate("mainWindow", u"Max value cutoff (%):", None))
         self.label_72.setText(QCoreApplication.translate("mainWindow", u"Target:", None))
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Delay:", None))
+        self.label_77.setText(QCoreApplication.translate("mainWindow", u"levels: [min, max]", None))
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Grouped g2", None))
         self.groupBox_24.setTitle(QCoreApplication.translate("mainWindow", u"QMap", None))
         self.label_74.setText(QCoreApplication.translate("mainWindow", u"Using the internal QMap located in /xpcs/qmap to group G2 the original way.", None))
         self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Internal", None))
-        self.pushButton_G2_loadexternal.setText(QCoreApplication.translate("mainWindow", u"Load", None))
+        self.pushButton_G2_loadQMap.setText(QCoreApplication.translate("mainWindow", u"Load QMap", None))
         self.label_G2_external_qmapfname.setText("")
         self.label_75.setText(QCoreApplication.translate("mainWindow", u"Select an external QMap file generated by pysimplemask to apply a new QMap", None))
         self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_14), QCoreApplication.translate("mainWindow", u"External", None))
@@ -2876,7 +2896,7 @@ class Ui_mainWindow(object):
         self.pushButton_G2_regroup.setText(QCoreApplication.translate("mainWindow", u"ReGroup", None))
         self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
         self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
-        self.pushButton_G2_savetofile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
+        self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 
