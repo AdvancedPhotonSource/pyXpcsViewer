@@ -6,19 +6,17 @@ import sys
 import traceback
 
 import numpy as np
+import psutil
 import pyqtgraph as pg
 from pyqtgraph.parametertree import Parameter
-from pyqtgraph.Qt import QtCore
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import qInstallMessageHandler
+from PySide6.QtCore import Qt, QThread, Signal, qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
-import psutil
 
+from .module.apply_qmap import has_G2_field
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
-from .module.apply_qmap import has_G2_field
 
-format = logging.Formatter("%(asctime)s %(message)s")
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
 if not os.path.isdir(home_dir):
     os.mkdir(home_dir)
@@ -146,7 +144,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.cb_qmap_cmap.currentIndexChanged.connect(self.update_plot)
         self.comboBox_G2_target.currentIndexChanged.connect(self.update_plot)
         self.horizontalSlider_G2_delay.valueChanged.connect(self.update_plot)
-        self.doubleSpinBox_G2_maxcutoff.valueChanged.connect(self.update_plot)
+        self.pushButton_G2_regroup.clicked.connect(self.process_G2_regroup)
+        self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
+        self.pushButton_G2_loadQMap.clicked.connect(self.load_external_qmap_for_G2_regroup)
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -207,6 +207,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         func = getattr(self, "plot_" + tab_name)
         try:
             kwargs = func(dryrun=True)
+            if not kwargs:
+                return
             kwargs["target_timestamp"] = self.vk.timestamp
             if self.plot_kwargs_record[tab_name] != kwargs:
                 self.plot_kwargs_record[tab_name] = kwargs
@@ -261,22 +263,102 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             **kwargs,
         )
     
+    def load_external_qmap_for_G2_regroup(self):
+        f = QtWidgets.QFileDialog.getOpenFileName(
+            self, caption="select the external qmap file for G2 regrouping", dir=None
+        )[0]
+        if os.path.isfile(f):
+            self.label_G2_external_qmapfname.setText(f)
+        
+    def savefile_G2_regroup(self):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+        } 
+        if len(kwargs["rows"]) == 0:
+            return None
+
+        save_fname = QtWidgets.QFileDialog.getSaveFileName(
+            self, caption="select the save file for G2 regrouping", dir=None
+        )[0]
+
+        if save_fname:
+            kwargs["save_fname"] = save_fname
+        else:
+            kwargs["save_fname"] = None
+
+        flag = self.vk.savefile_G2_regroup(**kwargs)
+        if flag:
+            QMessageBox.information(
+                self, "Save G2 regrouping", "G2 regrouping saved successfully."
+            )
+        else:
+            QMessageBox.critical(
+                self, "Save G2 regrouping", "Failed to save G2 regrouping."
+            )
+    
+    def process_G2_regroup(self):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+        }
+        if len(kwargs["rows"]) == 0:
+            return None
+
+        qmap_method = {
+            0: "internal",
+            1: "external",
+            2: "draw"
+        }[self.tabWidget_G2_regroup.currentIndex()]
+
+        if qmap_method == "internal":
+            kwargs["qmap_fname"] = None 
+        elif qmap_method == "external":
+            fname = self.label_G2_external_qmapfname.text()
+            if not os.path.isfile(fname):
+                QMessageBox.critical(
+                    self, "No QMap file found", "No QMap file found in the selected dataset."
+                )
+                return
+            kwargs["qmap_fname"] = fname
+        elif qmap_method == "draw":
+            # kwargs["external_qmap"] = None
+            raise NotImplementedError("draw qmap is not implemented yet")
+            return
+
+        self.vk.process_G2_regroup(**kwargs)
+
+        g2_plot_kwargs = self.plot_g2(dryrun=True)
+        self.vk.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
+    
     def plot_G2_regroup(self, dryrun=False):
         kwargs = {
             "rows": self.get_selected_rows(),
             "target": self.comboBox_G2_target.currentText(),
             "delay_index": self.horizontalSlider_G2_delay.value(),
             "cmap": self.cb_saxs2D_cmap.currentText(),
-            "cutoff": self.doubleSpinBox_G2_maxcutoff.value(),
+            "vmin": self.doubleSpinBox_G2_vmin.value(),
+            "vmax": self.doubleSpinBox_G2_vmax.value(),
         }
+        if len(kwargs["rows"]) == 0:
+            # no dataset selected
+            return
 
         if dryrun:
             return kwargs
 
-        self.vk.plot_G2_regroup(
-            self.pg_regroup_G2,
-            **kwargs,
-        )
+        if not has_G2_field(self.vk.target[kwargs["rows"][0]]):
+            QMessageBox.critical(
+                self, "No G2 data found", "No G2 data found in the selected dataset."
+            )
+            return
+
+        self.progress = QtWidgets.QProgressDialog("Loading data, please wait...", None, 0, 0, self)
+        self.progress.setWindowModality(Qt.WindowModal) # Blocks interaction with main window
+        self.progress.setRange(0, 0) # Setting 0,0 makes it an infinite "spinner"
+        self.progress.show()
+        self.vk.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
+        self.progress.close()
+
+        return
 
     def plot_metadata(self, dryrun=False):
         kwargs = {"rows": self.get_selected_rows()}

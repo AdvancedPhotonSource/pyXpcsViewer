@@ -2,7 +2,6 @@ import numpy as np
 import h5py
 
 
-
 keymap = {
     "g2": "/xpcs/multitau/normalized_g2",
     "g2_err": "/xpcs/multitau/normalized_g2_err",
@@ -123,7 +122,7 @@ def compute_g2(sqmap, dqmap, G2):
     return g2, g2_err
 
 
-def _update_file(fname, avg_result):
+def save_G2_to_file(fname, avg_result):
     """
     Update an HDF5 file with averaged results.
 
@@ -182,14 +181,13 @@ def regroup_G2_with_qmap_array(avg_result, sqmap, dqmap):
     return avg_result
 
 
-def regroup_G2_and_update_file(fname, avg_result, qmap_fname=None):
+def regroup_G2(fname, avg_result, qmap_fname=None):
     """
     Regroup G2 data using Q-maps and update the HDF5 file with all results.
 
     This function reads the static and dynamic Q-maps from an HDF5 file,
-    computes g2 and g2_err from the G2 data in avg_result, and writes all
-    the averaged results (G2, g2, g2_err, and any other fields) to the
-    specified output file.
+    computes g2 and g2_err from the G2 data in avg_result, and adds them
+    to the avg_result dictionary.
 
     Parameters
     ----------
@@ -205,15 +203,32 @@ def regroup_G2_and_update_file(fname, avg_result, qmap_fname=None):
 
     Returns
     -------
-    None
+    dict
+        The updated avg_result dictionary with 'g2' and 'g2_err' added.
     """
     qmap_fname = qmap_fname or fname
+
+    def _load_qmap(f, qmap_key):
+        """Try to load Q-map with or without /xpcs/ prefix."""
+        path = keymap[qmap_key]
+        if path in f:
+            return f[path][()]
+        
+        # Try without /xpcs/ prefix for raw qmap files
+        alt_path = path.replace("/xpcs/", "")
+        if alt_path in f:
+            return f[alt_path][()]
+        
+        return None
+
     with h5py.File(qmap_fname, "r") as f:
-        dqmap = f[keymap["dqmap"]][()]
-        sqmap = f[keymap["sqmap"]][()]
-    avg_result = regroup_G2_with_qmap_array(avg_result, sqmap, dqmap)
-    _update_file(fname, avg_result)
-    return
+        dqmap = _load_qmap(f, "dqmap")
+        sqmap = _load_qmap(f, "sqmap")
+        
+        if dqmap is None or sqmap is None:
+            raise ValueError("Q-maps not found in the HDF5 file.")
+    
+    return regroup_G2_with_qmap_array(avg_result, sqmap, dqmap)
 
 
 

@@ -1,13 +1,14 @@
-import numpy as np
-from .file_locator import FileLocator
-from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
-from .module.average_toolbox import AverageToolbox
-from .helper.listmodel import TableDataModel
-import pyqtgraph as pg
-import os
 import logging
-from .xpcs_file import XpcsFile
+import os
 
+import numpy as np
+import pyqtgraph as pg
+
+from .file_locator import FileLocator
+from .helper.listmodel import TableDataModel
+from .module import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
+from .module.average_toolbox import AverageToolbox
+from .xpcs_file import XpcsFile
 
 logger = logging.getLogger(__name__)
 
@@ -210,13 +211,33 @@ class ViewerKernel(FileLocator):
         pass
         # saxs1d.switch_line_builder(mp_hdl, lb_type)
     
-    def plot_G2_regroup(self, hdl, cmap="jet", rows=None, **kwargs):
+    def savefile_G2_regroup(self, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows)
+        if len(xf_list) == 0:
+            return None
+        xfile = xf_list[0]
+        flag = xfile.save_G2(**kwargs)
+        return flag
+
+    def process_G2_regroup(self, rows=None, method="internal", **kwargs):
+        xf_list = self.get_xf_list(rows)
+        if len(xf_list) == 0:
+            return None
+        xfile = xf_list[0]
+        flag = xfile.regroup_G2(**kwargs)
+        return flag
+
+    def plot_G2_regroup(self, hdl, cmap="jet", rows=None, vmin=None, vmax=None, **kwargs):
         xf_list = self.get_xf_list(rows, filter_atype="Multitau")
         if len(xf_list) == 0:
             return None
         xfile = xf_list[0]
         G2_data = xfile.get_G2_data(**kwargs)
-        hdl.setImage(G2_data)
+
+        if vmin is not None and vmax is not None:
+            G2_data = np.clip(G2_data, vmin, vmax)
+
+        hdl.setImage(G2_data, levels=(vmin, vmax))
         hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
         return
 

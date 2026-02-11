@@ -8,22 +8,23 @@ completely avoiding disk I/O and IPC bottlenecks for large data transfer.
 
 """
 
-import h5py
-import numpy as np
-import tqdm
-import shutil
+import argparse
+import glob
+import logging
+import multiprocessing
 import os
+import shutil
 import time
 import traceback
-import argparse
-import multiprocessing
 from multiprocessing import shared_memory
-import logging
-import glob
+
+import h5py
+import numpy as np
 import psutil
+import tqdm
 
 # Import the key mapping and file writing utility from the user's custom module.
-from .apply_qmap import keymap, regroup_G2_and_update_file
+from .apply_qmap import keymap, regroup_G2, save_G2_to_file
 
 # --- Globals for Worker Processes ---
 # These will be initialized by the pool's initializer function. This is the
@@ -427,7 +428,8 @@ def fast_average_shared_memory(
                 # if output_dir and not os.path.exists(output_dir):
                 #     os.makedirs(output_dir)
                 # shutil.copy(first_valid_file_path, output_filename)
-                regroup_G2_and_update_file(output_filename, avg_result)
+                avg_result = regroup_G2(output_filename, avg_result)
+                save_G2_to_file(output_filename, avg_result=avg_result)
                 logging.info(
                     f"Success: Averaged data saved to '{output_filename}'"
                 )

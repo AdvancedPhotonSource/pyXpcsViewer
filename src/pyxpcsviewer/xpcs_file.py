@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import shutil
 import warnings
 
 import numpy as np
@@ -355,7 +356,7 @@ class XpcsFile(object):
 
         return qvalues, t_el, g2, g2_err, qbin_labels, labels
     
-    def get_G2_data(self, target="G2", delay_index=0, cutoff=99.5):
+    def get_G2_data(self, target="G2", delay_index=0):
         assert target in ["G2", "IP", "IF", "g2_per_pixel"]
         G2 = self.G2
         delay_index = min(delay_index, G2.shape[0] - 1)
@@ -367,8 +368,6 @@ class XpcsFile(object):
             denominator = G2[delay_index, 1] * G2[delay_index, 2]
             denominator[denominator == 0] = 1 
             g2_per_pixel = G2[delay_index, 0] / denominator
-            max_threshold = np.percentile(g2_per_pixel[g2_per_pixel > 0], cutoff)
-            g2_per_pixel[g2_per_pixel > max_threshold] = max_threshold
             return g2_per_pixel
 
     def get_g2_data(self, qrange=None, trange=None):
@@ -472,6 +471,25 @@ class XpcsFile(object):
             g2_baseline = g2[0]
             g2 = g2 - g2_baseline + np.mean(g2_baseline)
         return g2
+    
+    def regroup_G2(self, **kwargs):
+        from .module.apply_qmap import regroup_G2
+        avg_result = regroup_G2(self.fname, {"G2": self.G2}, **kwargs)
+        self.g2 = avg_result["g2"]
+        self.g2_err = avg_result["g2_err"]
+    
+    def save_G2(self, save_fname=None):
+        from .module.apply_qmap import save_G2_to_file
+        try:
+            if save_fname is None:
+                save_fname = self.fname
+            else:
+                shutil.copy(self.fname, save_fname)
+            save_G2_to_file(save_fname, {"g2": self.g2, "g2_err": self.g2_err})
+        except Exception as e:
+            logger.error(f"Failed to save G2: {e}")
+            return False
+        return True
 
     def get_twotime_maps(
         self, scale="log", auto_crop=True, highlight_xy=None, selection=None
