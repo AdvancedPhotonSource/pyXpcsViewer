@@ -182,6 +182,24 @@ class AverageToolbox(QtCore.QRunnable):
         self.args = args
         self.kwargs = kwargs
 
+    def check_fields(self, fields):
+        """Check if the required fields are present in the first file."""
+        valid_fields = []
+        xf = XF(self.model[0])
+        for field in fields:
+            if xf.has_field(field):
+                valid_fields.append(field)
+            else:
+                logger.warning(
+                    f"field {field} not found in file {self.model[0]},"
+                    "skipping this field."
+                )
+        valid_fields = list(set(valid_fields))
+        assert len(valid_fields) > 0, (
+            "none of the required fields are found in the file."
+        )
+        return valid_fields
+
     def do_average_multiprocess(
         self,
         save_path=None,
@@ -201,6 +219,7 @@ class AverageToolbox(QtCore.QRunnable):
         logger.info(
             f"Averaging worker [{self.jid}] starts multiprocess on {tot_num} datasets with fields {fields}."
         )
+        fields = self.check_fields(fields)
 
         # G2 is handled separately
         if "G2" in fields:
@@ -208,15 +227,13 @@ class AverageToolbox(QtCore.QRunnable):
             flag_G2 = True
         else:
             flag_G2 = False
-        all_valid_fname = [] 
+        all_valid_fname = []
 
         # Initialize result accumulators. Using None for initial check if data is available.
         # This allows us to handle the first valid dataset correctly for initialization.
         num_valid_dsets = 0
         processed_files_count = 0
         final_averaged_data = {key: None for key in fields}
-
-        t0 = time.perf_counter()
 
         # Using ProcessPoolExecutor for parallel processing
         # max_workers=None means it will default to the number of CPUs
@@ -316,8 +333,9 @@ class AverageToolbox(QtCore.QRunnable):
                     traceback.print_exc()
             else:
                 logger.warning("save_path or origin_path is None, skipping file save.")
-        
+
         if flag_G2:
+
             def progress_cb(current, total):
                 # offset 50% for the G2 averaging
                 percentage = int(current * 90 / (2 * total)) + 50
@@ -343,7 +361,6 @@ class AverageToolbox(QtCore.QRunnable):
                 progress_callback=progress_cb,
                 status_callback=status_cb,
             )
-
 
         self.status = "finished"
         self.signals.status.emit(f"{self.jid}: {self.status}")

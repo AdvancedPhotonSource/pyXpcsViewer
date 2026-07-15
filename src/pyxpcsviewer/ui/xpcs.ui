@@ -400,7 +400,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>12</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -1961,10 +1961,13 @@
                   <number>3</number>
                  </property>
                  <property name="minimum">
-                  <double>0.501000000000000</double>
+                  <double>0.000000000000000</double>
                  </property>
                  <property name="maximum">
                   <double>1.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -4322,18 +4325,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PlotWidget</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ImageView</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>GraphicsLayoutWidget</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
@@ -4343,6 +4334,18 @@
    <class>ParameterTree</class>
    <extends>QWidget</extends>
    <header>pyqtgraph.parametertree</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ImageView</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
    <container>1</container>
   </customwidget>
   <customwidget>

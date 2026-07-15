@@ -146,7 +146,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.horizontalSlider_G2_delay.valueChanged.connect(self.update_plot)
         self.pushButton_G2_regroup.clicked.connect(self.process_G2_regroup)
         self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
-        self.pushButton_G2_loadQMap.clicked.connect(self.load_external_qmap_for_G2_regroup)
+        self.pushButton_G2_loadQMap.clicked.connect(
+            self.load_external_qmap_for_G2_regroup
+        )
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -262,18 +264,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.widget_g2map_profile_plot,
             **kwargs,
         )
-    
+
     def load_external_qmap_for_G2_regroup(self):
         f = QtWidgets.QFileDialog.getOpenFileName(
             self, caption="select the external qmap file for G2 regrouping", dir=None
         )[0]
         if os.path.isfile(f):
             self.label_G2_external_qmapfname.setText(f)
-        
+
     def savefile_G2_regroup(self):
         kwargs = {
             "rows": self.get_selected_rows(),
-        } 
+        }
         if len(kwargs["rows"]) == 0:
             return None
 
@@ -295,7 +297,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             QMessageBox.critical(
                 self, "Save G2 regrouping", "Failed to save G2 regrouping."
             )
-    
+
     def process_G2_regroup(self):
         kwargs = {
             "rows": self.get_selected_rows(),
@@ -303,19 +305,19 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if len(kwargs["rows"]) == 0:
             return None
 
-        qmap_method = {
-            0: "internal",
-            1: "external",
-            2: "draw"
-        }[self.tabWidget_G2_regroup.currentIndex()]
+        qmap_method = {0: "internal", 1: "external", 2: "draw"}[
+            self.tabWidget_G2_regroup.currentIndex()
+        ]
 
         if qmap_method == "internal":
-            kwargs["qmap_fname"] = None 
+            kwargs["qmap_fname"] = None
         elif qmap_method == "external":
             fname = self.label_G2_external_qmapfname.text()
             if not os.path.isfile(fname):
                 QMessageBox.critical(
-                    self, "No QMap file found", "No QMap file found in the selected dataset."
+                    self,
+                    "No QMap file found",
+                    "No QMap file found in the selected dataset.",
                 )
                 return
             kwargs["qmap_fname"] = fname
@@ -328,7 +330,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         g2_plot_kwargs = self.plot_g2(dryrun=True)
         self.vk.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
-    
+
     def plot_G2_regroup(self, dryrun=False):
         kwargs = {
             "rows": self.get_selected_rows(),
@@ -351,9 +353,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             )
             return
 
-        self.progress = QtWidgets.QProgressDialog("Loading data, please wait...", None, 0, 0, self)
-        self.progress.setWindowModality(Qt.WindowModal) # Blocks interaction with main window
-        self.progress.setRange(0, 0) # Setting 0,0 makes it an infinite "spinner"
+        self.progress = QtWidgets.QProgressDialog(
+            "Loading data, please wait...", None, 0, 0, self
+        )
+        self.progress.setWindowModality(
+            Qt.WindowModal
+        )  # Blocks interaction with main window
+        self.progress.setRange(0, 0)  # Setting 0,0 makes it an infinite "spinner"
         self.progress.show()
         self.vk.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
         self.progress.close()
@@ -641,7 +647,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             else:
                 logger.info("use the previous save path")
 
-            has_G2 = all([has_G2_field(x) for x in self.vk.target]) 
+            has_G2 = all([has_G2_field(x) for x in self.vk.target])
             if has_G2:
                 logger.info("G2 field is available for averaging")
                 self.bx_avg_G2IPIF.setEnabled(True)
@@ -678,7 +684,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.bx_avg_G2IPIF.isChecked():
             avg_fields.extend(["G2"])
         if self.bx_avg_g2g2err.isChecked():
-            avg_fields.extend(["g2", "g2_err"])
+            avg_fields.extend(["g2", "g2_err", "g2_partial", "g2_partial_err"])
         if self.bx_avg_saxs.isChecked():
             avg_fields.extend(["saxs_1d", "saxs_2d"])
 
@@ -752,7 +758,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.thread_pool.start(worker)
         self.vk.avg_worker_active[worker.jid] = None
         self.update_avg_info()
-    
+
     def avg_job_finished(self, success):
         if success:
             self.statusbar.showMessage("average job finished", 5000)

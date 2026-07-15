@@ -1057,8 +1057,9 @@ class Ui_mainWindow(object):
         self.g2_fmin = QDoubleSpinBox(self.groupBox_2)
         self.g2_fmin.setObjectName(u"g2_fmin")
         self.g2_fmin.setDecimals(3)
-        self.g2_fmin.setMinimum(0.501000000000000)
+        self.g2_fmin.setMinimum(0.000000000000000)
         self.g2_fmin.setMaximum(1.000000000000000)
+        self.g2_fmin.setSingleStep(0.010000000000000)
 
         self.gridLayout_12.addWidget(self.g2_fmin, 3, 7, 1, 1)
 
@@ -2543,7 +2544,7 @@ class Ui_mainWindow(object):
         self.checkBox_G2_removeoutlier.toggled.connect(self.doubleSpinBox_G2_threshold.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliermethod.setEnabled)
 
-        self.tabWidget.setCurrentIndex(12)
+        self.tabWidget.setCurrentIndex(4)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)

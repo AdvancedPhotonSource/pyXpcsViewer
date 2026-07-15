@@ -205,6 +205,13 @@ class XpcsFile(object):
             self.hdf_info = read_metadata_to_dict(self.fname)
         return self.hdf_info
 
+    def has_field(self, field):
+        try:
+            get(self.fname, [field], "alias", ftype="nexus")
+            return True
+        except Exception:
+            return False
+
     def load_data(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
@@ -355,7 +362,7 @@ class XpcsFile(object):
             t_el = self.t_el
 
         return qvalues, t_el, g2, g2_err, qbin_labels, labels
-    
+
     def get_G2_data(self, target="G2", delay_index=0):
         assert target in ["G2", "IP", "IF", "g2_per_pixel"]
         G2 = self.G2
@@ -366,7 +373,7 @@ class XpcsFile(object):
             return G2[delay_index, channel_index]
         elif target == "g2_per_pixel":
             denominator = G2[delay_index, 1] * G2[delay_index, 2]
-            denominator[denominator == 0] = 1 
+            denominator[denominator == 0] = 1
             g2_per_pixel = G2[delay_index, 0] / denominator
             return g2_per_pixel
 
@@ -471,15 +478,17 @@ class XpcsFile(object):
             g2_baseline = g2[0]
             g2 = g2 - g2_baseline + np.mean(g2_baseline)
         return g2
-    
+
     def regroup_G2(self, **kwargs):
         from .module.apply_qmap import regroup_G2
+
         avg_result = regroup_G2(self.fname, {"G2": self.G2}, **kwargs)
         self.g2 = avg_result["g2"]
         self.g2_err = avg_result["g2_err"]
-    
+
     def save_G2(self, save_fname=None):
         from .module.apply_qmap import save_G2_to_file
+
         try:
             if save_fname is None:
                 save_fname = self.fname
