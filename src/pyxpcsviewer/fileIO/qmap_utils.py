@@ -214,15 +214,12 @@ class QMap:
         shape = (num_samples, len(self.sqlist), len(self.splist))
         compressed_data = compressed_data_raw.reshape(num_samples, -1)
 
-        if shape[2] == 1:
-            labels = [label]
-            avg = compressed_data.reshape(shape[0], -1)
-        else:
-            full_data = np.full((shape[0], shape[1] * shape[2]), fill_value=np.nan)
-            for i in range(num_samples):
-                full_data[i, self.static_index_mapping] = compressed_data[i]
-            full_data = full_data.reshape(shape)
-            avg = np.nanmean(full_data, axis=2)
+        # recover the full data with nan for empty static bins
+        full_data = np.full((shape[0], shape[1] * shape[2]), fill_value=np.nan)
+        for i in range(num_samples):
+            full_data[i, self.static_index_mapping] = compressed_data[i]
+        full_data = full_data.reshape(shape)
+        avg = np.nanmean(full_data, axis=2)
 
         if mode == "saxs_1d":
             assert num_samples == 1, "saxs1d mode only supports one sample"
@@ -234,6 +231,12 @@ class QMap:
             else:
                 saxs1d = avg.reshape(1, -1)  # shape: (1, num_q)
                 labels = [label]
+            if self.sqlist.size != saxs1d.shape[1]:
+                logger.warning(
+                    "sqlist size (%d) does not match saxs1d shape (%d), truncating to min size",
+                    self.sqlist.size,
+                    saxs1d.shape[1],
+                )
             max_size = min(self.sqlist.size, saxs1d.shape[1])
             saxs1d_info = {
                 "q": self.sqlist[0:max_size],
