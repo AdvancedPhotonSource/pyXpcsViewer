@@ -6,17 +6,17 @@ import sys
 import traceback
 
 import numpy as np
+import psutil
 import pyqtgraph as pg
 from pyqtgraph.parametertree import Parameter
-from pyqtgraph.Qt import QtCore
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import qInstallMessageHandler
+from PySide6.QtCore import Qt, QThread, Signal, qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
 
+from .module.apply_qmap import has_G2_field
 from .viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
 
-format = logging.Formatter("%(asctime)s %(message)s")
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
 if not os.path.isdir(home_dir):
     os.mkdir(home_dir)
@@ -46,6 +46,7 @@ tab_mapping = {
     9: "metadata",
     10: "g2map",
     11: "g2_stability",
+    12: "G2_regroup",
 }
 
 
@@ -141,6 +142,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_5.clicked.connect(self.update_plot)
         self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
         self.cb_qmap_cmap.currentIndexChanged.connect(self.update_plot)
+        self.comboBox_G2_target.currentIndexChanged.connect(self.update_plot)
+        self.horizontalSlider_G2_delay.valueChanged.connect(self.update_plot)
+        self.pushButton_G2_regroup.clicked.connect(self.process_G2_regroup)
+        self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
+        self.pushButton_G2_loadQMap.clicked.connect(
+            self.load_external_qmap_for_G2_regroup
+        )
 
         self.g2_fitting_function.currentIndexChanged.connect(
             self.update_g2_fitting_function
@@ -201,6 +209,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         func = getattr(self, "plot_" + tab_name)
         try:
             kwargs = func(dryrun=True)
+            if not kwargs:
+                return
             kwargs["target_timestamp"] = self.vk.timestamp
             if self.plot_kwargs_record[tab_name] != kwargs:
                 self.plot_kwargs_record[tab_name] = kwargs
@@ -254,6 +264,107 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.widget_g2map_profile_plot,
             **kwargs,
         )
+
+    def load_external_qmap_for_G2_regroup(self):
+        f = QtWidgets.QFileDialog.getOpenFileName(
+            self, caption="select the external qmap file for G2 regrouping", dir=None
+        )[0]
+        if os.path.isfile(f):
+            self.label_G2_external_qmapfname.setText(f)
+
+    def savefile_G2_regroup(self):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+        }
+        if len(kwargs["rows"]) == 0:
+            return None
+
+        save_fname = QtWidgets.QFileDialog.getSaveFileName(
+            self, caption="select the save file for G2 regrouping", dir=None
+        )[0]
+
+        if save_fname:
+            kwargs["save_fname"] = save_fname
+        else:
+            kwargs["save_fname"] = None
+
+        flag = self.vk.savefile_G2_regroup(**kwargs)
+        if flag:
+            QMessageBox.information(
+                self, "Save G2 regrouping", "G2 regrouping saved successfully."
+            )
+        else:
+            QMessageBox.critical(
+                self, "Save G2 regrouping", "Failed to save G2 regrouping."
+            )
+
+    def process_G2_regroup(self):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+        }
+        if len(kwargs["rows"]) == 0:
+            return None
+
+        qmap_method = {0: "internal", 1: "external", 2: "draw"}[
+            self.tabWidget_G2_regroup.currentIndex()
+        ]
+
+        if qmap_method == "internal":
+            kwargs["qmap_fname"] = None
+        elif qmap_method == "external":
+            fname = self.label_G2_external_qmapfname.text()
+            if not os.path.isfile(fname):
+                QMessageBox.critical(
+                    self,
+                    "No QMap file found",
+                    "No QMap file found in the selected dataset.",
+                )
+                return
+            kwargs["qmap_fname"] = fname
+        elif qmap_method == "draw":
+            # kwargs["external_qmap"] = None
+            raise NotImplementedError("draw qmap is not implemented yet")
+            return
+
+        self.vk.process_G2_regroup(**kwargs)
+
+        g2_plot_kwargs = self.plot_g2(dryrun=True)
+        self.vk.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
+
+    def plot_G2_regroup(self, dryrun=False):
+        kwargs = {
+            "rows": self.get_selected_rows(),
+            "target": self.comboBox_G2_target.currentText(),
+            "delay_index": self.horizontalSlider_G2_delay.value(),
+            "cmap": self.cb_saxs2D_cmap.currentText(),
+            "vmin": self.doubleSpinBox_G2_vmin.value(),
+            "vmax": self.doubleSpinBox_G2_vmax.value(),
+        }
+        if len(kwargs["rows"]) == 0:
+            # no dataset selected
+            return
+
+        if dryrun:
+            return kwargs
+
+        if not has_G2_field(self.vk.target[kwargs["rows"][0]]):
+            QMessageBox.critical(
+                self, "No G2 data found", "No G2 data found in the selected dataset."
+            )
+            return
+
+        self.progress = QtWidgets.QProgressDialog(
+            "Loading data, please wait...", None, 0, 0, self
+        )
+        self.progress.setWindowModality(
+            Qt.WindowModal
+        )  # Blocks interaction with main window
+        self.progress.setRange(0, 0)  # Setting 0,0 makes it an infinite "spinner"
+        self.progress.show()
+        self.vk.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
+        self.progress.close()
+
+        return
 
     def plot_metadata(self, dryrun=False):
         kwargs = {"rows": self.get_selected_rows()}
@@ -536,8 +647,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             else:
                 logger.info("use the previous save path")
 
+            has_G2 = all([has_G2_field(x) for x in self.vk.target])
+            if has_G2:
+                logger.info("G2 field is available for averaging")
+                self.bx_avg_G2IPIF.setEnabled(True)
+            else:
+                logger.info("G2 field is not available for averaging")
+                self.bx_avg_G2IPIF.setEnabled(False)
+                self.bx_avg_G2IPIF.setChecked(False)
+
             save_name = self.avg_save_name.text()
-            save_name = "Avg" + os.path.basename(self.vk.target[0])
+            save_name = "Average_" + os.path.basename(self.vk.target[0])
             self.avg_save_name.setText(save_name)
 
     def submit_job(self):
@@ -545,7 +665,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("select at least 2 files for averaging", 1000)
             return
 
-        self.thread_pool.setMaxThreadCount(self.max_thread_count.value())
+        max_workers = min(self.num_workers.value(), psutil.cpu_count(logical=False))
+        self.num_workers.setValue(max_workers)
+        self.thread_pool.setMaxThreadCount(max_workers)
 
         save_path = self.avg_save_path.text()
         save_name = self.avg_save_name.text()
@@ -562,7 +684,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if self.bx_avg_G2IPIF.isChecked():
             avg_fields.extend(["G2"])
         if self.bx_avg_g2g2err.isChecked():
-            avg_fields.extend(["g2", "g2_err"])
+            avg_fields.extend(["g2", "g2_err", "g2_partial", "g2_partial_err"])
         if self.bx_avg_saxs.isChecked():
             avg_fields.extend(["saxs_1d", "saxs_2d"])
 
@@ -570,17 +692,37 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("No average field is selected. quit", 1000)
             return
 
+        save_path = os.path.join(save_path, save_name)
+
+        if not save_path.endswith(".hdf"):
+            save_path += ".hdf"
+
         kwargs = {
-            "save_path": os.path.join(save_path, save_name),
+            "save_path": save_path,
             # "chunk_size": int(self.cb_avg_chunk_size.currentText()),
             "avg_blmin": self.avg_blmin.value(),
             "avg_blmax": self.avg_blmax.value(),
             "avg_qindex": self.avg_qindex.value(),
             "avg_window": self.avg_window.value(),
             "fields": avg_fields,
+            "status_bar": self.statusbar,
+            "progress_bar": self.progressbar_average,
+            "num_workers": self.num_workers.value(),
         }
 
         try:
+            if os.path.isfile(kwargs["save_path"]):
+                reply = QMessageBox.question(
+                    self,
+                    "File exists",
+                    f"The file {kwargs['save_path']} already exists. Do you want to overwrite it?",
+                    QMessageBox.Yes | QMessageBox.No,
+                )
+                if reply == QMessageBox.No:
+                    return
+                else:
+                    os.remove(kwargs["save_path"])
+            # make sure the write permission
             # "a" = open for append or create; won't truncate existing file
             with open(kwargs["save_path"], "a"):
                 pass
@@ -597,6 +739,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             )
             return
 
+        self.btn_submit_job.setEnabled(False)
+        self.btn_submit_job.setText("Running...")
+
         self.vk.submit_job(**kwargs)
         # the target_average has been reset
         self.update_box(self.vk.target, mode="target")
@@ -609,9 +754,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         worker.signals.values.connect(self.vk.update_avg_values)
+        worker.signals.finished.connect(self.avg_job_finished)
         self.thread_pool.start(worker)
         self.vk.avg_worker_active[worker.jid] = None
         self.update_avg_info()
+
+    def avg_job_finished(self, success):
+        if success:
+            self.statusbar.showMessage("average job finished", 5000)
+        else:
+            self.statusbar.showMessage("average job failed", 5000)
+        self.vk.avg_worker_active = {}
+        self.vk.avg_worker = None
+        self.btn_submit_job.setEnabled(True)
+        self.btn_submit_job.setText("Submit")
 
     def update_avg_info(self):
         self.timer.stop()

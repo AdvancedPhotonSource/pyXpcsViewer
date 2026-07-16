@@ -1,13 +1,14 @@
-import numpy as np
-from .file_locator import FileLocator
-from .module import saxs2d, saxs1d, intt, stability, g2mod, tauq, twotime
-from .module.average_toolbox import AverageToolbox
-from .helper.listmodel import TableDataModel
-import pyqtgraph as pg
-import os
 import logging
-from .xpcs_file import XpcsFile
+import os
 
+import numpy as np
+import pyqtgraph as pg
+
+from .file_locator import FileLocator
+from .helper.listmodel import TableDataModel
+from .module import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
+from .module.average_toolbox import AverageToolbox
+from .xpcs_file import XpcsFile
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +210,36 @@ class ViewerKernel(FileLocator):
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         pass
         # saxs1d.switch_line_builder(mp_hdl, lb_type)
+    
+    def savefile_G2_regroup(self, rows=None, **kwargs):
+        xf_list = self.get_xf_list(rows)
+        if len(xf_list) == 0:
+            return None
+        xfile = xf_list[0]
+        flag = xfile.save_G2(**kwargs)
+        return flag
+
+    def process_G2_regroup(self, rows=None, method="internal", **kwargs):
+        xf_list = self.get_xf_list(rows)
+        if len(xf_list) == 0:
+            return None
+        xfile = xf_list[0]
+        flag = xfile.regroup_G2(**kwargs)
+        return flag
+
+    def plot_G2_regroup(self, hdl, cmap="jet", rows=None, vmin=None, vmax=None, **kwargs):
+        xf_list = self.get_xf_list(rows, filter_atype="Multitau")
+        if len(xf_list) == 0:
+            return None
+        xfile = xf_list[0]
+        G2_data = xfile.get_G2_data(**kwargs)
+
+        if vmin is not None and vmax is not None:
+            G2_data = np.clip(G2_data, vmin, vmax)
+
+        hdl.setImage(G2_data, levels=(vmin, vmax))
+        hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
+        return
 
     def plot_twotime(self, hdl, rows=None, **kwargs):
         xf_list = self.get_xf_list(rows, filter_atype="Twotime")
@@ -230,7 +261,7 @@ class ViewerKernel(FileLocator):
         xf_obj = self.get_xf_list(rows)[0]
         stability.plot(xf_obj, mp_hdl, **kwargs)
 
-    def submit_job(self, *args, **kwargs):
+    def submit_job(self, status_bar=None, progress_bar=None, *args, **kwargs):
         if self.avg_worker is not None:
             logger.error("average job is already running")
             return
@@ -241,7 +272,8 @@ class ViewerKernel(FileLocator):
 
         worker = AverageToolbox(flist=self.target, jid=self.avg_jid)
         worker.setup(*args, **kwargs)
-        worker.signals.finished.connect(self.avg_job_finished)
+        worker.signals.status.connect(status_bar.showMessage)
+        worker.signals.progress.connect(progress_bar.setValue)
         self.avg_worker = worker
         logger.info("create average job, ID = %s", worker.jid)
         self.avg_jid += 1
@@ -252,14 +284,6 @@ class ViewerKernel(FileLocator):
         if self.avg_worker is None:
             return
         self.avg_worker.update_plot()
-
-    def avg_job_finished(self, success):
-        if success:
-            self.statusbar.showMessage("average job finished", 5000)
-        else:
-            self.statusbar.showMessage("average job failed", 5000)
-        self.avg_worker_active = {}
-        self.avg_worker = None
 
     def update_avg_values(self, data):
         key, val = data[0], data[1]

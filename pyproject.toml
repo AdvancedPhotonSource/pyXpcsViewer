@@ -46,6 +46,7 @@ dependencies = [
     "pandas",
     "scikit-learn",
     "joblib",
+    "psutil",
     "tqdm",
     "hdf5plugin",
     "pyside6==6.8.3",

@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import shutil
 import warnings
 
 import numpy as np
@@ -204,6 +205,13 @@ class XpcsFile(object):
             self.hdf_info = read_metadata_to_dict(self.fname)
         return self.hdf_info
 
+    def has_field(self, field):
+        try:
+            get(self.fname, [field], "alias", ftype="nexus")
+            return True
+        except Exception:
+            return False
+
     def load_data(self, extra_fields=None):
         # default common fields for both twotime and multitau analysis;
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
@@ -298,7 +306,7 @@ class XpcsFile(object):
             y = y[0 : y.size // 2]
             y[0] = 0
             return np.stack((x, y), axis=1).astype(np.float32).T
-        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels"]:
+        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels", "G2"]:
             if key not in self.__dict__:
                 try:
                     ret = get(self.fname, [key], "alias", ftype="nexus")
@@ -354,6 +362,20 @@ class XpcsFile(object):
             t_el = self.t_el
 
         return qvalues, t_el, g2, g2_err, qbin_labels, labels
+
+    def get_G2_data(self, target="G2", delay_index=0):
+        assert target in ["G2", "IP", "IF", "g2_per_pixel"]
+        G2 = self.G2
+        delay_index = min(delay_index, G2.shape[0] - 1)
+
+        if target in ["G2", "IP", "IF"]:
+            channel_index = {"G2": 0, "IP": 1, "IF": 2}[target]
+            return G2[delay_index, channel_index]
+        elif target == "g2_per_pixel":
+            denominator = G2[delay_index, 1] * G2[delay_index, 2]
+            denominator[denominator == 0] = 1
+            g2_per_pixel = G2[delay_index, 0] / denominator
+            return g2_per_pixel
 
     def get_g2_data(self, qrange=None, trange=None):
         assert "Multitau" in self.atype, "only multitau is supported"
@@ -456,6 +478,27 @@ class XpcsFile(object):
             g2_baseline = g2[0]
             g2 = g2 - g2_baseline + np.mean(g2_baseline)
         return g2
+
+    def regroup_G2(self, **kwargs):
+        from .module.apply_qmap import regroup_G2
+
+        avg_result = regroup_G2(self.fname, {"G2": self.G2}, **kwargs)
+        self.g2 = avg_result["g2"]
+        self.g2_err = avg_result["g2_err"]
+
+    def save_G2(self, save_fname=None):
+        from .module.apply_qmap import save_G2_to_file
+
+        try:
+            if save_fname is None:
+                save_fname = self.fname
+            else:
+                shutil.copy(self.fname, save_fname)
+            save_G2_to_file(save_fname, {"g2": self.g2, "g2_err": self.g2_err})
+        except Exception as e:
+            logger.error(f"Failed to save G2: {e}")
+            return False
+        return True
 
     def get_twotime_maps(
         self, scale="log", auto_crop=True, highlight_xy=None, selection=None

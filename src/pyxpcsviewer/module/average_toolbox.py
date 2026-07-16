@@ -13,6 +13,7 @@ import pyqtgraph as pg
 from tqdm import trange
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from .fast_G2_averaging import fast_average_shared_memory
 from sklearn.cluster import (
     KMeans as sk_kmeans,
 )  # Added this import based on the original code's usage
@@ -130,7 +131,7 @@ class WorkerSignal(QObject):
 
     progress = QtCore.Signal(tuple)
     values = QtCore.Signal(tuple)
-    status = QtCore.Signal(tuple)
+    status = QtCore.Signal(str)
     finished = QtCore.Signal(bool)
 
 
@@ -147,15 +148,11 @@ class AverageToolbox(QtCore.QRunnable):
         self.kwargs = {}
         self.jid = jid or uuid.uuid4()
         self.submit_time = time.strftime("%H:%M:%S")
-        self.stime = self.submit_time
-        self.etime = "--:--:--"
         self.status = "wait"
         self.baseline = np.zeros(max(len(self.model), 1), dtype=np.float32)
         self.ptr = 0
         self.short_name = self.generate_avg_fname()
-        self.eta = "..."
         self.size = len(self.model)
-        self._progress = "0%"
         self.ax = None
         # Ensure model is not empty before accessing index 0
         self.origin_path = self.model[0] if self.model else None
@@ -185,100 +182,23 @@ class AverageToolbox(QtCore.QRunnable):
         self.args = args
         self.kwargs = kwargs
 
-    def do_average(
-        self,
-        save_path=None,
-        avg_window=3,
-        avg_qindex=0,
-        avg_blmin=0.95,
-        avg_blmax=1.05,
-        fields=["saxs_2d"],
-    ):
-        """
-        Run the averaging operation on the dataset list with filtering and signal emission.
-        This is the single-process version.
-        """
-        self.stime = time.strftime("%H:%M:%S")
-        self.status = "running"
-        tot_num = len(self.model)
-        logger.info(
-            f"Averaging worker [{self.jid}] starts on {tot_num} datasets with fields {fields}."
-        )
-
-        mask = np.zeros(tot_num, dtype=np.int64)
-        result = {key: None for key in fields}  # Initialize with None, will be summed
-
-        t0 = time.perf_counter()
-        for m in range(tot_num):
-            if self.is_killed:
-                logger.info("the averaging instance has been killed.")
-                self._progress = "killed"
-                self.status = "killed"
-                return
-
-            # ETA and progress tracking
-            curr_percentage = int((m + 1) * 100 / tot_num)
-            dt = (time.perf_counter() - t0) / (m + 1)
-            self.eta = dt * (tot_num - m - 1)
-            self._progress = f"{curr_percentage}%"
-            self.signals.progress.emit((self.jid, curr_percentage))  # Emit progress
-
-            fname = self.model[m]
-            try:
-                xf = get(fname, fields=fields, mode="alias", ret_type="dict")
-                flag, val = validate_g2_baseline(
-                    xf["g2"], avg_window, avg_qindex, avg_blmin, avg_blmax
-                )
-                self.baseline[self.ptr] = val
-                self.ptr += 1
-                if flag:
-                    for key in fields:
-                        if result[key] is None:
-                            result[key] = xf[
-                                key
-                            ].copy()  # Initialize with first valid data
-                        else:
-                            result[key] += xf[key]
-                    mask[m] = 1
-            except Exception:
-                traceback.print_exc()
-                logger.error(f"unable to process file {fname}, skip")
-
-            self.signals.values.emit((self.jid, val))
-            self.update_plot()  # Update plot after each file
-
-        num_valid_dsets = np.sum(mask)
-        if num_valid_dsets == 0:
-            logger.info("no dataset is valid; check the baseline criteria.")
-        else:
-            logger.info(f"the valid dataset number is {num_valid_dsets} / {tot_num}")
-            for key in fields:
-                if result[key] is not None:
-                    result[key] /= num_valid_dsets
-                    if key == "g2_err":
-                        result[key] /= np.sqrt(num_valid_dsets)
-                    if key == "saxs_2d" and result[key].ndim == 2:
-                        result[key] = np.expand_dims(result[key], axis=0)
-
-            if save_path and self.origin_path:
-                logger.info("create file: {}".format(save_path))
-                try:
-                    copyfile(self.origin_path, save_path)
-                    put(save_path, result, ftype="nexus", mode="alias")
-                except Exception as e:
-                    logger.error(f"Error saving averaged file: {e}")
-                    traceback.print_exc()
+    def check_fields(self, fields):
+        """Check if the required fields are present in the first file."""
+        valid_fields = []
+        xf = XF(self.model[0])
+        for field in fields:
+            if xf.has_field(field):
+                valid_fields.append(field)
             else:
-                logger.warning("save_path or origin_path is None, skipping file save.")
-
-        self.status = "finished"
-        self.signals.status.emit((self.jid, self.status))
-        self.etime = time.strftime("%H:%M:%S")
-        self.model.layoutChanged.emit()
-        self.signals.progress.emit((self.jid, 100))
-        self.signals.finished.emit(True)
-        logger.info("average job %d finished", self.jid)
-        return result
+                logger.warning(
+                    f"field {field} not found in file {self.model[0]},"
+                    "skipping this field."
+                )
+        valid_fields = list(set(valid_fields))
+        assert len(valid_fields) > 0, (
+            "none of the required fields are found in the file."
+        )
+        return valid_fields
 
     def do_average_multiprocess(
         self,
@@ -288,30 +208,36 @@ class AverageToolbox(QtCore.QRunnable):
         avg_blmin=0.95,
         avg_blmax=1.05,
         fields=["saxs_2d"],
-        max_workers=None,
+        num_workers=None,
     ):
         """
         Run the averaging operation on the dataset list using multiprocessing with
         ProcessPoolExecutor for parallel processing and G2 filtering and signal emission.
         """
-        self.stime = time.strftime("%H:%M:%S")
         self.status = "running (multiprocess)"
         tot_num = len(self.model)
         logger.info(
             f"Averaging worker [{self.jid}] starts multiprocess on {tot_num} datasets with fields {fields}."
         )
+        fields = self.check_fields(fields)
+
+        # G2 is handled separately
+        if "G2" in fields:
+            fields.remove("G2")
+            flag_G2 = True
+        else:
+            flag_G2 = False
+        all_valid_fname = []
 
         # Initialize result accumulators. Using None for initial check if data is available.
         # This allows us to handle the first valid dataset correctly for initialization.
-        final_averaged_data = {key: None for key in fields}
         num_valid_dsets = 0
         processed_files_count = 0
-
-        t0 = time.perf_counter()
+        final_averaged_data = {key: None for key in fields}
 
         # Using ProcessPoolExecutor for parallel processing
         # max_workers=None means it will default to the number of CPUs
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        with ProcessPoolExecutor(max_workers=num_workers) as executor:
             # Submit tasks for each file
             futures = {
                 executor.submit(
@@ -332,19 +258,18 @@ class AverageToolbox(QtCore.QRunnable):
                     logger.info(
                         "the averaging instance has been killed during multiprocessing."
                     )
-                    self._progress = "killed"
                     self.status = "killed"
                     # Shut down the executor immediately to stop ongoing tasks
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
                 processed_files_count += 1
-                curr_percentage = int((processed_files_count) * 100 / tot_num)
-                dt = (time.perf_counter() - t0) / (processed_files_count)
-                self.eta = dt * (tot_num - processed_files_count)
-                self._progress = f"{curr_percentage}%"
-                self.signals.progress.emit((self.jid, curr_percentage))
+                if flag_G2:
+                    curr_percentage = int((processed_files_count) * 100 / tot_num / 2)
+                else:
+                    curr_percentage = int((processed_files_count) * 100 / tot_num)
 
+                self.signals.progress.emit(curr_percentage)
                 try:
                     data_from_file, baseline_val, is_valid, original_fname = (
                         future.result()
@@ -357,6 +282,7 @@ class AverageToolbox(QtCore.QRunnable):
                     self.update_plot()  # Update plot after each result
 
                     if is_valid and data_from_file is not None:
+                        all_valid_fname.append(original_fname)
                         num_valid_dsets += 1
                         for key in fields:
                             if final_averaged_data[key] is None:
@@ -375,13 +301,13 @@ class AverageToolbox(QtCore.QRunnable):
                     self.update_plot()
 
         if num_valid_dsets == 0:
-            logger.info("no dataset is valid; check the baseline criteria.")
             self.status = "finished"
-            self.signals.status.emit((self.jid, self.status))
-            self.etime = time.strftime("%H:%M:%S")
-            self.model.layoutChanged.emit()
-            self.signals.progress.emit((self.jid, 100))
-            logger.info("average job %d finished (no valid datasets)", self.jid)
+            self.signals.status.emit(f"{self.jid}: {self.status}")
+            # self.model.layoutChanged.emit()
+            self.signals.progress.emit(100)
+            logger.info(f"average job {self.jid} finished (no valid datasets)")
+            if os.path.isfile(save_path):
+                os.remove(save_path)
             return {}  # Return an empty dict if no valid datasets
         else:
             logger.info(f"the valid dataset number is {num_valid_dsets} / {tot_num}")
@@ -408,11 +334,38 @@ class AverageToolbox(QtCore.QRunnable):
             else:
                 logger.warning("save_path or origin_path is None, skipping file save.")
 
+        if flag_G2:
+
+            def progress_cb(current, total):
+                # offset 50% for the G2 averaging
+                percentage = int(current * 90 / (2 * total)) + 50
+                self.signals.progress.emit(percentage)
+
+            def status_cb(msg):
+                self.status = f"G2 Average: {msg}"
+                self.signals.status.emit(f"{self.jid}: {self.status}")
+
+            fast_average_shared_memory(
+                all_valid_fname,
+                output_filename=save_path,
+                avg_window=avg_window,
+                avg_qindex=avg_qindex,
+                avg_blmin=avg_blmin,
+                avg_blmax=avg_blmax,
+                num_workers=num_workers,
+                h5_cache_size_mb=512,
+                verbose=False,
+                precision="single",
+                nonzero_G2=False,
+                always_valid=True,
+                progress_callback=progress_cb,
+                status_callback=status_cb,
+            )
+
         self.status = "finished"
-        self.signals.status.emit((self.jid, self.status))
-        self.etime = time.strftime("%H:%M:%S")
+        self.signals.status.emit(f"{self.jid}: {self.status}")
         self.model.layoutChanged.emit()
-        self.signals.progress.emit((self.jid, 100))
+        self.signals.progress.emit(100)
         logger.info("average job %d finished", self.jid)
         self.signals.finished.emit(True)
         return final_averaged_data
@@ -443,101 +396,3 @@ class AverageToolbox(QtCore.QRunnable):
         if self.ax is not None:
             # Only update with the actual collected data points
             self.ax.setData(self.baseline[: self.ptr])
-
-    def get_pg_tree(self):
-        """Return a data tree widget with job metadata and parameters."""
-        data = {}
-        for key, val in self.kwargs.items():
-            if isinstance(val, np.ndarray):
-                data[key] = (
-                    "data size is too large"
-                    if val.size > 4096
-                    else float(val)
-                    if val.size == 1
-                    else val
-                )
-            else:
-                data[key] = val
-
-        add_keys = ["submit_time", "etime", "status", "baseline", "ptr", "eta", "size"]
-        for key in add_keys:
-            # For baseline, only show the relevant part
-            if key == "baseline":
-                data[key] = self.__dict__[key][
-                    : self.ptr
-                ].tolist()  # Convert to list for display
-            else:
-                data[key] = self.__dict__[key]
-
-        if self.size > 20:
-            data["first_10_datasets"] = self.model[0:10]
-            data["last_10_datasets"] = self.model[-10:]
-        else:
-            data["input_datasets"] = self.model[:]
-
-        tree = pg.DataTreeWidget(data=data)
-        tree.setWindowTitle("Job_%d_%s" % (self.jid, self.model[0]))
-        tree.resize(600, 800)
-        return tree
-
-
-def do_average(
-    flist,
-    save_path="avg_test.hdf",
-    avg_window=3,
-    avg_qindex=0,
-    avg_blmin=0.95,
-    avg_blmax=1.05,
-    fields=["saxs_2d", "saxs_1d", "g2", "g2_err"],
-):
-    tot_num = len(flist)
-    logger.info(f"Averaging starts on {tot_num} datasets with fields {fields}.")
-
-    mask = np.zeros(tot_num, dtype=np.int64)
-    result = {key: None for key in fields}  # Initialize with None, will be summed
-
-    t0 = time.perf_counter()
-    for m in trange(tot_num):
-        fname = flist[m]
-        try:
-            xf = get(fname, fields=fields, mode="alias", ret_type="dict")
-            flag, val = validate_g2_baseline(
-                xf["g2"], avg_window, avg_qindex, avg_blmin, avg_blmax
-            )
-            if flag:
-                for key in fields:
-                    if result[key] is None:
-                        result[key] = xf[key].copy()  # Initialize with first valid data
-                    else:
-                        result[key] += xf[key]
-                mask[m] = 1
-        except Exception:
-            traceback.print_exc()
-            logger.error(f"unable to process file {fname}, skip")
-
-    num_valid_dsets = np.sum(mask)
-    if num_valid_dsets == 0:
-        logger.info("no dataset is valid; check the baseline criteria.")
-    else:
-        logger.info(f"the valid dataset number is {num_valid_dsets} / {tot_num}")
-        for key in fields:
-            if result[key] is not None:
-                result[key] /= num_valid_dsets
-                if key == "g2_err":
-                    result[key] /= np.sqrt(num_valid_dsets)
-                if key == "saxs_2d" and result[key].ndim == 2:
-                    result[key] = np.expand_dims(result[key], axis=0)
-
-        if save_path and self.origin_path:
-            logger.info("create file: {}".format(save_path))
-            try:
-                copyfile(self.origin_path, save_path)
-                put(save_path, result, ftype="nexus", mode="alias")
-            except Exception as e:
-                logger.error(f"Error saving averaged file: {e}")
-                traceback.print_exc()
-        else:
-            logger.warning("save_path or origin_path is None, skipping file save.")
-
-    logger.info("average job finished")
-    return result
