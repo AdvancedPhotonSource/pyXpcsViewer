@@ -1,9 +1,9 @@
-from .aps_8idi import key as hdf_key
-import h5py
-import os
-import numpy as np
 import logging
-import re
+
+import h5py
+import numpy as np
+
+from .aps_8idi import key as hdf_key
 
 logger = logging.getLogger(__name__)
 

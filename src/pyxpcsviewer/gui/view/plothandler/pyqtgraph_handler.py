@@ -100,9 +100,7 @@ class ImageViewDev(ImageView):
 
         if sl_type == "Circle":
             if second_point is not None:
-                radius = np.sqrt(
-                    (second_point[1] - cen[1]) ** 2 + (second_point[0] - cen[0]) ** 2
-                )
+                radius = np.sqrt((second_point[1] - cen[1]) ** 2 + (second_point[0] - cen[0]) ** 2)
             new_roi = pg.CircleROI(
                 pos=[cen[0] - radius, cen[1] - radius],
                 radius=radius,

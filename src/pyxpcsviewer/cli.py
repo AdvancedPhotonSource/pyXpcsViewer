@@ -16,17 +16,11 @@ def main() -> int:
     from pyxpcsviewer import __version__
     from pyxpcsviewer.gui.view.xpcs_viewer import main_gui
 
-    argparser = argparse.ArgumentParser(
-        description="pyXpcsViewer: a GUI tool for XPCS data analysis"
-    )
+    argparser = argparse.ArgumentParser(description="pyXpcsViewer: a GUI tool for XPCS data analysis")
 
-    argparser.add_argument(
-        "--version", action="version", version=f"pyxpcsviewer: {__version__}"
-    )
+    argparser.add_argument("--version", action="version", version=f"pyxpcsviewer: {__version__}")
 
-    argparser.add_argument(
-        "--path", type=str, help="path to the result folder", default="./"
-    )
+    argparser.add_argument("--path", type=str, help="path to the result folder", default="./")
     argparser.add_argument(
         "positional_path",
         nargs="?",

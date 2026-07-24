@@ -72,9 +72,7 @@ def get_g2_stability_data(xf_obj, q_range=None, t_range=None):
     if "Multitau" not in xf_obj.atype:
         return False, None, None, None, None
 
-    q, tel, g2, g2_err, qbin_labels, labels = xf_obj.get_g2_stability_data(
-        qrange=q_range, trange=t_range
-    )
+    q, tel, g2, g2_err, qbin_labels, labels = xf_obj.get_g2_stability_data(qrange=q_range, trange=t_range)
     return q, tel, g2, g2_err, qbin_labels, labels
 
 
@@ -189,15 +187,9 @@ def pg_plot(
         # default base line to be 1.0; used for non-fitting or fit error cases
         baseline_offset = np.ones(num_qval)
         if show_fit:
-            fit_summary = xf_list[m].fit_g2(
-                q_range, t_range, bounds, fit_flag, fit_func
-            )
+            fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag, fit_func)
             # make sure the fitting is successful
-            if (
-                fit_summary is not None
-                and subtract_baseline
-                and fit_summary["fit_line"][n].get("success", False)
-            ):
+            if fit_summary is not None and subtract_baseline and fit_summary["fit_line"][n].get("success", False):
                 baseline_offset = fit_summary["fit_val"][:, 0, 3]
 
         for n in range(num_qval):
@@ -315,9 +307,7 @@ def pg_plot_stability(
     if y_auto:
         y_range = None
 
-    _q, tel, g2, g2_err, qbin_labels, labels = get_g2_stability_data(
-        xf_obj, q_range=q_range, t_range=t_range
-    )
+    _q, tel, g2, g2_err, qbin_labels, labels = get_g2_stability_data(xf_obj, q_range=q_range, t_range=t_range)
 
     num_figs, _num_lines = compute_geometry(g2, plot_type)
 
@@ -399,9 +389,7 @@ def pg_plot_stability(
     return
 
 
-def pg_plot_one_g2(
-    ax, x, y, dy, color: tuple[int, ...], label: str | None, symbol: str, symbol_size: int = 5
-) -> None:
+def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symbol: str, symbol_size: int = 5) -> None:
     """Plot a single G2 curve with error bars on a pyqtgraph axis.
 
     Args:

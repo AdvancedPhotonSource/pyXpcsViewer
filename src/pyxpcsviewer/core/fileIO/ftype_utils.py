@@ -1,7 +1,6 @@
-import h5py
-import numpy
-import sys
 import os
+
+import h5py
 
 
 def isNeXusFile(fname: str) -> bool:
@@ -47,8 +46,8 @@ def get_ftype(fname: str) -> bool | str:
         return False
 
     if isLegacyFile(fname):
-        return 'legacy'
+        return "legacy"
     elif isNeXusFile(fname):
-         return 'nexus' 
+        return "nexus"
     else:
         return False

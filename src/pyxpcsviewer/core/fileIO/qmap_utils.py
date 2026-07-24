@@ -1,8 +1,9 @@
-import hdf5plugin
+import logging
+
 import h5py
 import numpy as np
+
 from .aps_8idi import key as key_map
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +176,9 @@ class QMap:
                 label = f"qbin={qbin}, {label}"
             return label
 
-    def get_qbin_in_qrange(self, qrange: tuple[float, float] | None, zero_based: bool = True) -> tuple[np.ndarray, np.ndarray]:
+    def get_qbin_in_qrange(
+        self, qrange: tuple[float, float] | None, zero_based: bool = True
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Return Q-bin indices and corresponding q-values within a Q-range.
 
         Args:
@@ -201,7 +204,7 @@ class QMap:
         qbin_valid = []
         index_compressed = np.arange(len(self.dynamic_index_mapping))
         index_nature = self.dynamic_index_mapping
-        for qbin_cprs, qbin_nature in zip(index_compressed, index_nature):
+        for qbin_cprs, qbin_nature in zip(index_compressed, index_nature, strict=False):
             if qselected[qbin_nature]:
                 qbin_valid.append(qbin_cprs)
 

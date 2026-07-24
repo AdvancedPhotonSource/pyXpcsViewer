@@ -56,9 +56,7 @@ def create_param_tree(data_dict):
     params = []
     for key, value in data_dict.items():
         if isinstance(value, dict):  # If value is a nested dictionary
-            params.append(
-                {"name": key, "type": "group", "children": create_param_tree(value)}
-            )
+            params.append({"name": key, "type": "group", "children": create_param_tree(value)})
         elif isinstance(value, (float, np.floating)):  # Numeric types
             params.append(
                 {
@@ -159,13 +157,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.horizontalSlider_G2_delay.valueChanged.connect(self.update_plot)
         self.pushButton_G2_regroup.clicked.connect(self.process_G2_regroup)
         self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
-        self.pushButton_G2_loadQMap.clicked.connect(
-            self.load_external_qmap_for_G2_regroup
-        )
+        self.pushButton_G2_loadQMap.clicked.connect(self.load_external_qmap_for_G2_regroup)
 
-        self.g2_fitting_function.currentIndexChanged.connect(
-            self.update_g2_fitting_function
-        )
+        self.g2_fitting_function.currentIndexChanged.connect(self.update_g2_fitting_function)
         self.btn_up.clicked.connect(lambda: self.reorder_target("up"))
         self.btn_down.clicked.connect(lambda: self.reorder_target("down"))
 
@@ -199,9 +193,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 logger.info("set mainwindow to size %s", new_size)
                 self.resize(*new_size)
 
-        cache_dir = os.path.join(
-            os.path.expanduser("~"), ".pyxpcsviewer", "joblib/pyxpcsviewer"
-        )
+        cache_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer", "joblib/pyxpcsviewer")
         if os.path.isdir(cache_dir):
             shutil.rmtree(cache_dir)
 
@@ -316,13 +308,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         flag = self.vk.savefile_G2_regroup(**kwargs)
         if flag:
-            QMessageBox.information(
-                self, "Save G2 regrouping", "G2 regrouping saved successfully."
-            )
+            QMessageBox.information(self, "Save G2 regrouping", "G2 regrouping saved successfully.")
         else:
-            QMessageBox.critical(
-                self, "Save G2 regrouping", "Failed to save G2 regrouping."
-            )
+            QMessageBox.critical(self, "Save G2 regrouping", "Failed to save G2 regrouping.")
 
     def process_G2_regroup(self) -> None:
         """Re-group G2 correlations using internal, external, or drawn Q-map (delegates to ``self.vk``)."""
@@ -332,9 +320,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if len(kwargs["rows"]) == 0:
             return None
 
-        qmap_method = {0: "internal", 1: "external", 2: "draw"}[
-            self.tabWidget_G2_regroup.currentIndex()
-        ]
+        qmap_method = {0: "internal", 1: "external", 2: "draw"}[self.tabWidget_G2_regroup.currentIndex()]
 
         if qmap_method == "internal":
             kwargs["qmap_fname"] = None
@@ -376,17 +362,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return kwargs
 
         if not has_G2_field(self.vk.target[kwargs["rows"][0]]):
-            QMessageBox.critical(
-                self, "No G2 data found", "No G2 data found in the selected dataset."
-            )
+            QMessageBox.critical(self, "No G2 data found", "No G2 data found in the selected dataset.")
             return
 
-        self.progress = QtWidgets.QProgressDialog(
-            "Loading data, please wait...", None, 0, 0, self
-        )
-        self.progress.setWindowModality(
-            Qt.WindowModal
-        )  # Blocks interaction with main window
+        self.progress = QtWidgets.QProgressDialog("Loading data, please wait...", None, 0, 0, self)
+        self.progress.setWindowModality(Qt.WindowModal)  # Blocks interaction with main window
         self.progress.setRange(0, 0)  # Setting 0,0 makes it an infinite "spinner"
         self.progress.show()
         self.vk.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
@@ -403,9 +383,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         msg = self.vk.get_xf_list(**kwargs)[0].get_hdf_info()
         hdf_info_data = create_param_tree(msg)
-        hdf_params = Parameter.create(
-            name="Settings", type="group", children=hdf_info_data
-        )
+        hdf_params = Parameter.create(name="Settings", type="group", children=hdf_info_data)
         self.hdf_info.setParameters(hdf_params, showTop=True)
 
     def saxs2d_mouseMoved(self, pos) -> None:
@@ -446,9 +424,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def saxs2d_roi_add(self) -> None:
         """Add a Pie or Circle ROI to the SAXS-2D display using current widget settings."""
         sl_type_idx = self.cb_saxs2D_roi_type.currentIndex()
-        color = ("g", "y", "b", "r", "c", "m", "k", "w")[
-            self.cb_saxs2D_roi_color.currentIndex()
-        ]
+        color = ("g", "y", "b", "r", "c", "m", "k", "w")[self.cb_saxs2D_roi_color.currentIndex()]
         kwargs = {
             "sl_type": ("Pie", "Circle")[sl_type_idx],
             "width": self.sb_saxs2D_roi_width.value(),
@@ -494,9 +470,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def saxs1d_export(self) -> None:
         """Export SAXS-1D ROI data to the user-selected folder via :meth:`ViewerKernel.export_saxs_1d`."""
-        folder = QtWidgets.QFileDialog.getExistingDirectory(
-            self, caption="select a folder to export SAXS profiles"
-        )
+        folder = QtWidgets.QFileDialog.getExistingDirectory(self, caption="select a folder to export SAXS profiles")
 
         if folder in [None, ""]:
             return
@@ -670,9 +644,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def select_bkgfile(self) -> None:
         """Open a file dialog to select a background SAXS-1D file for subtraction."""
         path = self.work_dir.text()
-        f = QtWidgets.QFileDialog.getOpenFileName(
-            self, caption="select the file for background subtraction", dir=path
-        )[0]
+        f = QtWidgets.QFileDialog.getOpenFileName(self, caption="select the file for background subtraction", dir=path)[
+            0
+        ]
         if os.path.isfile(f):
             self.le_bkg_fname.setText(f)
             self.vk.select_bkgfile(f)
@@ -783,16 +757,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             with open(kwargs["save_path"], "a"):
                 pass
         except OSError as e:
-            QMessageBox.critical(
-                self, "Save Error", f"Cannot write to:\n{save_path}\n\n{e}"
-            )
+            QMessageBox.critical(self, "Save Error", f"Cannot write to:\n{save_path}\n\n{e}")
             return
 
         if kwargs["avg_blmax"] <= kwargs["avg_blmin"]:
             self.statusbar.showMessage("check avg min/max values.", 1000)
-            QMessageBox.critical(
-                self, "Baseline bounds error", "Check avg min/max values for baseline."
-            )
+            QMessageBox.critical(self, "Baseline bounds error", "Check avg min/max values for baseline.")
             return
 
         self.btn_submit_job.setEnabled(False)
@@ -963,9 +933,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.pushButton_5.setDisabled(True)
             self.pushButton_5.setText("plotting")
             try:
-                qd, tel = self.vk.plot_g2_stability(
-                    handler=self.mp_g2_stability, **kwargs
-                )
+                qd, tel = self.vk.plot_g2_stability(handler=self.mp_g2_stability, **kwargs)
                 self.init_g2(qd, tel)
                 # if kwargs["show_fit"]:
                 #     self.init_diffusion()
@@ -1131,9 +1099,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
-            self.statusbar.showMessage(
-                f"Please enter at least {min_length} characters", 1000
-            )
+            self.statusbar.showMessage(f"Please enter at least {min_length} characters", 1000)
             return
 
         filter_type = ["prefix", "substr"][self.filter_type.currentIndex()]
@@ -1272,8 +1238,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         idx = self.g2_fitting_function.currentIndex()
         title = [
             "g2 fitting with Single Exp:  y = a·exp[-2(x/b)^c]+d",
-            "g2 fitting with Double Exp:  y = a·[f·exp[-(x/b)^c +"
-            + "(1-f)·exp[-(x/b2)^c2]^2+d",
+            "g2 fitting with Double Exp:  y = a·[f·exp[-(x/b)^c +" + "(1-f)·exp[-(x/b2)^c2]^2+d",
         ]
         self.groupBox_2.setTitle(title[idx])
 
@@ -1333,9 +1298,7 @@ def qt_message_handler(mode, context, message):
     # Use the default handler to still print the original message
     # You might need to find the original handler if you want to be perfectly clean,
     # but for debugging, printing the message here is fine.
-    print(
-        f"Qt Message: {message} (type: {mode}, context: {context.file}:{context.line})"
-    )
+    print(f"Qt Message: {message} (type: {mode}, context: {context.file}:{context.line})")
 
 
 def main_gui(path=None, label_style=None) -> int:

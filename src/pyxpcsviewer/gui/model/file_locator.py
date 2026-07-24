@@ -86,9 +86,7 @@ class FileLocator:
         :param fstr: list of filter string;
         :return: list of strings that contains the hdf information;
         """
-        xf_obj = create_xpcs_dataset(
-            os.path.join(self.path, fname), qmap_manager=self.qmap_manager
-        )
+        xf_obj = create_xpcs_dataset(os.path.join(self.path, fname), qmap_manager=self.qmap_manager)
         return xf_obj.get_hdf_info(filter_str)
 
     def add_target(self, alist: list[str], threshold: int = 256, preload: bool = True) -> None:
@@ -155,9 +153,7 @@ class FileLocator:
         """
         size = len(self.target)
         assert 0 <= row < size, "check row value"
-        if (direction == "up" and row == 0) or (
-            direction == "down" and row == size - 1
-        ):
+        if (direction == "up" and row == 0) or (direction == "down" and row == size - 1):
             return -1
 
         item = self.target.pop(row)
@@ -209,9 +205,7 @@ class FileLocator:
         flist = [
             entry.name
             for entry in os.scandir(path)
-            if entry.is_file()
-            and entry.name.lower().endswith(filter_list)
-            and not entry.name.startswith(".")
+            if entry.is_file() and entry.name.lower().endswith(filter_list) and not entry.name.startswith(".")
         ]
         if sort_method.startswith("Filename"):
             flist.sort()

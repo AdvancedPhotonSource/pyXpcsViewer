@@ -120,31 +120,23 @@ class ViewerKernel(FileLocator):
         """
         xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
         if xf_list:
-            g2mod.pg_plot(
-                handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs
-            )
+            g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs)
             q, tel, *_unused = g2mod.get_g2_data(xf_list)
             return q, tel
         else:
             return None, None
 
-    def plot_g2_stability(
-        self, handler, q_range, t_range, y_range, rows=None, **kwargs
-    ):
+    def plot_g2_stability(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
         """Delegate to :func:`.plot.g2mod.pg_plot_stability` for G2 stability display."""
         xf_obj = self.get_xf_list(rows=rows, filter_atype="Multitau")[0]
         if xf_obj and xf_obj.g2_partial is not None:
-            g2mod.pg_plot_stability(
-                handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs
-            )
+            g2mod.pg_plot_stability(handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs)
             q, tel, *_unused = g2mod.get_g2_data([xf_obj])
             return q, tel
         else:
             return None, None
 
-    def plot_g2map(
-        self, g2map_hdl, qmap_hdl, g2_hdl, rows=None, qbin: int = 0, normalization: bool = False
-    ):
+    def plot_g2map(self, g2map_hdl, qmap_hdl, g2_hdl, rows=None, qbin: int = 0, normalization: bool = False):
         """Display a G2 correlation image overlayed with its Q-map and a G2-vs-tau trace.
 
         Args:
@@ -240,9 +232,7 @@ class ViewerKernel(FileLocator):
         """
         if rows is None:
             rows = []
-        xf_list = self.get_xf_list(
-            rows=rows, filter_atype="Multitau", filter_fitted=True
-        )
+        xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau", filter_fitted=True)
         result = {}
         for x in xf_list:
             if x.fit_summary is None:
@@ -252,9 +242,7 @@ class ViewerKernel(FileLocator):
                 result[x.label] = x.get_fitting_info(mode="tauq_fitting")
 
         if len(result) > 0:
-            tauq.plot(
-                xf_list, hdl=hdl, q_range=q_range, offset=offset, plot_type=plot_type
-            )
+            tauq.plot(xf_list, hdl=hdl, q_range=q_range, offset=offset, plot_type=plot_type)
 
         return result
 
@@ -306,9 +294,7 @@ class ViewerKernel(FileLocator):
         """
         xf_list = self.get_xf_list()
         if xf_list:
-            saxs1d.pg_plot(
-                xf_list, mp_hdl, bkg_file=self.meta["saxs1d_bkg_xf"], **kwargs
-            )
+            saxs1d.pg_plot(xf_list, mp_hdl, bkg_file=self.meta["saxs1d_bkg_xf"], **kwargs)
 
     def export_saxs_1d(self, pg_hdl, folder: str) -> None:
         """Export SAXS 1D data (ROI-extracted and full) to text files.

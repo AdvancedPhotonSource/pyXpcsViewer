@@ -33,18 +33,13 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
     num_clusters : int
         Number of clusters to form
     """
-    if (
-        self.meta["avg_file_list"] != tuple(self.target)
-        or "avg_intt_minmax" not in self.meta
-    ):
+    if self.meta["avg_file_list"] != tuple(self.target) or "avg_intt_minmax" not in self.meta:
         logger.info("avg cache not exist")
         labels = ["Int_t"]
         res = self.fetch(labels, file_list=self.target)
         Int_t = res["Int_t"][:, 1, :].astype(np.float32)
         Int_t = Int_t / np.max(Int_t)
-        intt_minmax = np.array([[np.min(row), np.max(row)] for row in Int_t]).T.astype(
-            np.float32
-        )
+        intt_minmax = np.array([[np.min(row), np.max(row)] for row in Int_t]).T.astype(np.float32)
 
         self.meta["avg_file_list"] = tuple(self.target)
         self.meta["avg_intt_minmax"] = intt_minmax
@@ -58,14 +53,10 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
     self.meta["avg_intt_mask"] = y_pred == y_pred[freq.argmax()]
     valid_num = np.sum(y_pred == y_pred[freq.argmax()])
     title = f"{valid_num} / {y_pred.size}"
-    hdl1.show_scatter(
-        intt_minmax, color=y_pred, xlabel="Int-t min", ylabel="Int-t max", title=title
-    )
+    hdl1.show_scatter(intt_minmax, color=y_pred, xlabel="Int-t min", ylabel="Int-t max", title=title)
 
 
-def validate_g2_baseline(
-    g2_data, avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05
-):
+def validate_g2_baseline(g2_data, avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05):
     """
     Check if the G2 baseline in the given Q index falls within a valid range.
 
@@ -111,9 +102,7 @@ def _process_single_file(fname, fields, avg_window, avg_qindex, avg_blmin, avg_b
     """
     try:
         xf = get(fname, fields=fields, mode="alias", ret_type="dict")
-        flag, val = validate_g2_baseline(
-            xf["g2"], avg_window, avg_qindex, avg_blmin, avg_blmax
-        )
+        flag, val = validate_g2_baseline(xf["g2"], avg_window, avg_qindex, avg_blmin, avg_blmax)
         if flag:
             # If valid, return the data for averaging
             return {key: xf[key] for key in fields}, val, True, fname
@@ -205,14 +194,9 @@ class AverageToolbox(QtCore.QRunnable):
             if xf.has_field(field):
                 valid_fields.append(field)
             else:
-                logger.warning(
-                    f"field {field} not found in file {self.model[0]},"
-                    "skipping this field."
-                )
+                logger.warning(f"field {field} not found in file {self.model[0]},skipping this field.")
         valid_fields = list(set(valid_fields))
-        assert len(valid_fields) > 0, (
-            "none of the required fields are found in the file."
-        )
+        assert len(valid_fields) > 0, "none of the required fields are found in the file."
         return valid_fields
 
     def do_average_multiprocess(
@@ -233,9 +217,7 @@ class AverageToolbox(QtCore.QRunnable):
             fields = ["saxs_2d"]
         self.status = "running (multiprocess)"
         tot_num = len(self.model)
-        logger.info(
-            f"Averaging worker [{self.jid}] starts multiprocess on {tot_num} datasets with fields {fields}."
-        )
+        logger.info(f"Averaging worker [{self.jid}] starts multiprocess on {tot_num} datasets with fields {fields}.")
         fields = self.check_fields(fields)
 
         # G2 is handled separately
@@ -272,9 +254,7 @@ class AverageToolbox(QtCore.QRunnable):
             # Process results as they complete
             for future in as_completed(futures):
                 if self.is_killed:
-                    logger.info(
-                        "the averaging instance has been killed during multiprocessing."
-                    )
+                    logger.info("the averaging instance has been killed during multiprocessing.")
                     self.status = "killed"
                     # Shut down the executor immediately to stop ongoing tasks
                     executor.shutdown(wait=False, cancel_futures=True)
@@ -288,12 +268,8 @@ class AverageToolbox(QtCore.QRunnable):
 
                 self.signals.progress.emit(curr_percentage)
                 try:
-                    data_from_file, baseline_val, is_valid, original_fname = (
-                        future.result()
-                    )
-                    self.baseline[self.ptr] = (
-                        baseline_val  # Store baseline for plotting
-                    )
+                    data_from_file, baseline_val, is_valid, original_fname = future.result()
+                    self.baseline[self.ptr] = baseline_val  # Store baseline for plotting
                     self.ptr += 1
                     self.signals.values.emit((self.jid, baseline_val))
                     self.update_plot()  # Update plot after each result
@@ -307,9 +283,7 @@ class AverageToolbox(QtCore.QRunnable):
                             else:
                                 final_averaged_data[key] += data_from_file[key]
                     else:
-                        logger.warning(
-                            f"File {original_fname} was invalid or failed processing."
-                        )
+                        logger.warning(f"File {original_fname} was invalid or failed processing.")
 
                 except Exception as e:
                     logger.error(f"Error processing a file in multiprocessing: {e}")
@@ -335,9 +309,7 @@ class AverageToolbox(QtCore.QRunnable):
                     if key == "g2_err":
                         final_averaged_data[key] /= np.sqrt(num_valid_dsets)
                     if key == "saxs_2d" and final_averaged_data[key].ndim == 2:
-                        final_averaged_data[key] = np.expand_dims(
-                            final_averaged_data[key], axis=0
-                        )
+                        final_averaged_data[key] = np.expand_dims(final_averaged_data[key], axis=0)
 
             # Save the averaged data
             if save_path and self.origin_path:
@@ -397,17 +369,9 @@ class AverageToolbox(QtCore.QRunnable):
         t.setLabel("left", "g2 baseline")
         self.ax = t.plot(symbol="o")
         if "avg_blmin" in self.kwargs:
-            t.addItem(
-                pg.InfiniteLine(
-                    pos=self.kwargs["avg_blmin"], angle=0, pen=pg.mkPen("r")
-                )
-            )
+            t.addItem(pg.InfiniteLine(pos=self.kwargs["avg_blmin"], angle=0, pen=pg.mkPen("r")))
         if "avg_blmax" in self.kwargs:
-            t.addItem(
-                pg.InfiniteLine(
-                    pos=self.kwargs["avg_blmax"], angle=0, pen=pg.mkPen("r")
-                )
-            )
+            t.addItem(pg.InfiniteLine(pos=self.kwargs["avg_blmax"], angle=0, pen=pg.mkPen("r")))
         t.setMouseEnabled(x=False, y=False)
 
     def update_plot(self):

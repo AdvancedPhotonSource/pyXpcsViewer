@@ -148,5 +148,4 @@ cython_debug/
 .idea
 .loglogin
 .vscode
-core
 .DS_Store

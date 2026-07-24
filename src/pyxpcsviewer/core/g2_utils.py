@@ -1,6 +1,5 @@
-import numpy as np
 import h5py
-
+import numpy as np
 
 keymap = {
     "g2": "/xpcs/multitau/normalized_g2",
@@ -213,19 +212,19 @@ def regroup_G2(fname, avg_result, qmap_fname=None):
         path = keymap[qmap_key]
         if path in f:
             return f[path][()]
-        
+
         # Try without /xpcs/ prefix for raw qmap files
         alt_path = path.replace("/xpcs/", "")
         if alt_path in f:
             return f[alt_path][()]
-        
+
         return None
 
     with h5py.File(qmap_fname, "r") as f:
         dqmap = _load_qmap(f, "dqmap")
         sqmap = _load_qmap(f, "sqmap")
-        
+
         if dqmap is None or sqmap is None:
             raise ValueError("Q-maps not found in the HDF5 file.")
-    
+
     return regroup_G2_with_qmap_array(avg_result, sqmap, dqmap)

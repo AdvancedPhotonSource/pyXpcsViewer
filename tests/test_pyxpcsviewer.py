@@ -2,7 +2,6 @@
 
 """Tests for `pyxpcsviewer` package."""
 
-
 import unittest
 
 

@@ -65,9 +65,7 @@ def get_pyqtgraph_anchor_params(loc, padding=10):
         else:
             raise ValueError(f"Invalid Matplotlib integer location code: {loc}")
     elif isinstance(loc, str):
-        loc_str = (
-            loc.lower().replace(" ", "").replace("_", "")
-        )  # Normalize input string
+        loc_str = loc.lower().replace(" ", "").replace("_", "")  # Normalize input string
     else:
         raise ValueError(f"Invalid loc type: {type(loc)}. Must be str or int.")
 
@@ -126,9 +124,7 @@ def switch_line_builder(hdl, lb_type: str | None = None) -> None:
     hdl.link_line_builder(lb_type)
 
 
-def plot_line_with_marker(
-    plot_item, x, y, index, label, alpha_val, marker_size=6, log_x=False, log_y=False
-):
+def plot_line_with_marker(plot_item, x, y, index, label, alpha_val, marker_size=6, log_x=False, log_y=False):
     """Plot a SAXS 1D line with aligned scatter markers (handles both linear and log scales).
 
     Args:

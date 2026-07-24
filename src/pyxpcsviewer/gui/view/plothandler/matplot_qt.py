@@ -175,12 +175,8 @@ class MplCanvas(FigureCanvasQTAgg):
 
         if self.line_builder is None and self.shape == (1, 1):
             self.line_builder = LineBuilder(self.fig, self.axes, lb_type)
-            cid1 = self.fig.canvas.mpl_connect(
-                "button_press_event", self.line_builder.mouse_click
-            )
-            cid2 = self.fig.canvas.mpl_connect(
-                "motion_notify_event", self.line_builder.mouse_move
-            )
+            cid1 = self.fig.canvas.mpl_connect("button_press_event", self.line_builder.mouse_click)
+            cid2 = self.fig.canvas.mpl_connect("motion_notify_event", self.line_builder.mouse_move)
             self.cids = [cid1, cid2]
 
     def unlink_line_builder(self) -> None:
@@ -325,6 +321,7 @@ class MplCanvas(FigureCanvasQTAgg):
         Returns:
             None. Draws an ``imshow`` or updates existing if called a second time.
         """
+
         def add_vline(ax, stop, vline_freq):
             """Draw vertical reference lines at regular intervals.
 
@@ -523,9 +520,7 @@ def adjust_yerr(err_obj, x, y, y_error) -> None:
     # err_top.set_ydata(yerr_top)
     # err_bot.set_ydata(yerr_bot)
 
-    new_segments = [
-        np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x, yerr_top, yerr_bot, strict=False)
-    ]
+    new_segments = [np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x, yerr_top, yerr_bot, strict=False)]
 
     bars.set_segments(new_segments)
 
@@ -679,12 +674,8 @@ class LineBuilder:
         self.curr_time = time.perf_counter()
         if len(self.xs) % 2 == 1:
             if self.lb_type == "slope":
-                (line,) = self.ax.plot(
-                    [self.xs[-1], event.xdata], [self.ys[-1], event.ydata], self.color
-                )
+                (line,) = self.ax.plot([self.xs[-1], event.xdata], [self.ys[-1], event.ydata], self.color)
             else:
-                (line,) = self.ax.plot(
-                    [self.xs[-1], event.xdata], [event.ydata, event.ydata], self.color
-                )
+                (line,) = self.ax.plot([self.xs[-1], event.xdata], [event.ydata, event.ydata], self.color)
             line.figure.canvas.draw()
             self.ax.lines.pop()

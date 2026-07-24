@@ -13,9 +13,7 @@ import glob
 import logging
 import multiprocessing
 import os
-import shutil
 import time
-import traceback
 from multiprocessing import shared_memory
 
 import h5py
@@ -73,6 +71,7 @@ def is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax, always_va
     except Exception:
         return False, -1.0
 
+
 def find_first_valid_file_and_dims(
     flist,
     avg_window,
@@ -84,14 +83,10 @@ def find_first_valid_file_and_dims(
     always_valid=False,
 ):
     """Reads files sequentially until it finds one that is valid to get data shapes."""
-    logging.info(
-        "Searching for a valid file to determine array shapes for memory allocation..."
-    )
+    logging.info("Searching for a valid file to determine array shapes for memory allocation...")
     for fname in flist:
         try:
-            valid, g2_baseline = is_valid_file(
-                fname, avg_window, avg_qindex, avg_blmin, avg_blmax
-            )
+            valid, g2_baseline = is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax)
             if valid:
                 logging.info(f"Found valid file: {os.path.basename(fname)}")
                 with h5py.File(fname, "r", libver="latest") as fhdl:
@@ -135,15 +130,12 @@ def worker_process_chunk(args_tuple):
     logger.debug(f"Started. Processing {len(flist_chunk)} files.")
 
     # Attach to the existing shared memory blocks
-    shm_blocks = {
-        key: shared_memory.SharedMemory(name=meta["name"])
-        for key, meta in shm_metas.items()
-    }
+    shm_blocks = {key: shared_memory.SharedMemory(name=meta["name"]) for key, meta in shm_metas.items()}
 
     # Create numpy arrays that are views into the shared memory
     shm_arrays = {
         key: np.ndarray(meta["shape"], dtype=meta["dtype"], buffer=shm.buf)
-        for (key, shm), meta in zip(shm_blocks.items(), shm_metas.values())
+        for (key, shm), meta in zip(shm_blocks.items(), shm_metas.values(), strict=False)
     }
     # Initialize this worker's memory block to zero
     for arr in shm_arrays.values():
@@ -157,17 +149,12 @@ def worker_process_chunk(args_tuple):
     for i, fname in enumerate(flist_chunk):
         file_basename = os.path.basename(fname)
         try:
-            valid, g2_baseline = is_valid_file(
-                fname, avg_window, avg_qindex, avg_blmin, avg_blmax
-            )
+            valid, g2_baseline = is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax)
             if valid:
                 if first_valid_file_in_chunk is None:
                     first_valid_file_in_chunk = fname
 
-                with h5py.File(
-                    fname, "r", rdcc_nbytes=h5_cache_size_bytes, libver="latest"
-                ) as fhdl:
-
+                with h5py.File(fname, "r", rdcc_nbytes=h5_cache_size_bytes, libver="latest") as fhdl:
                     if nonzero_G2:
                         # Load G2 data once and compute valid mask for efficiency
                         G2_data = fhdl[keymap["G2"]][()]
@@ -208,6 +195,7 @@ def worker_process_chunk(args_tuple):
         skipped_files_in_chunk,
         worker_id,
     )
+
 
 def fast_average_shared_memory(
     flist,
@@ -285,9 +273,7 @@ def fast_average_shared_memory(
     # --- Worker Configuration ---
     if num_workers is None or num_workers <= 0:
         physical_cores = get_physical_core_count()
-        logging.info(
-            f"Detected {physical_cores} physical cores. Setting number of workers accordingly."
-        )
+        logging.info(f"Detected {physical_cores} physical cores. Setting number of workers accordingly.")
         num_workers = physical_cores
 
     num_workers = min(num_workers, len(flist), os.cpu_count())
@@ -313,9 +299,7 @@ def fast_average_shared_memory(
             worker_shm_blocks[key] = shm
         all_shm_metas.append(worker_shm_metas)
         all_shm_blocks.append(worker_shm_blocks)
-    logging.info(
-        f"Successfully allocated {total_mem_gb / 1e9:.2f} GB of shared memory."
-    )
+    logging.info(f"Successfully allocated {total_mem_gb / 1e9:.2f} GB of shared memory.")
 
     # --- Map Step ---
     file_chunks = np.array_split(flist, num_workers)
@@ -330,11 +314,7 @@ def fast_average_shared_memory(
         always_valid,
     )
     # The counter and lock are no longer passed in the tasks tuple
-    tasks = [
-        (chunk, worker_args, i + 1, all_shm_metas[i])
-        for i, chunk in enumerate(file_chunks)
-        if chunk.size > 0
-    ]
+    tasks = [(chunk, worker_args, i + 1, all_shm_metas[i]) for i, chunk in enumerate(file_chunks) if chunk.size > 0]
 
     final_sum_result = {}
     total_valid_files = 0
@@ -352,9 +332,7 @@ def fast_average_shared_memory(
         # Pass the initializer function and its arguments to the Pool
         log_level = logging.DEBUG if verbose else logging.INFO
         pool_initargs = (progress_counter, progress_lock, log_level)
-        with multiprocessing.Pool(
-            processes=num_workers, initializer=init_worker, initargs=pool_initargs
-        ) as pool:
+        with multiprocessing.Pool(processes=num_workers, initializer=init_worker, initargs=pool_initargs) as pool:
             # Use map_async for non-blocking execution
             result_async = pool.map_async(worker_process_chunk, tasks)
 
@@ -394,9 +372,7 @@ def fast_average_shared_memory(
                 first_valid_file_path = local_first_valid
 
         map_end_time = time.time()
-        logging.info(
-            f"Map stage completed in {map_end_time - main_start_time:.2f} seconds."
-        )
+        logging.info(f"Map stage completed in {map_end_time - main_start_time:.2f} seconds.")
 
         # --- Reduce Step (in main process from shared memory) ---
         _report_status("Starting result aggregation from shared memory (reduce stage)...")
@@ -424,9 +400,7 @@ def fast_average_shared_memory(
                 sum_arr += worker_results_in_ram[i][key]
             final_sum_result[key] = sum_arr
 
-        logging.info(
-            f"Reduce stage completed in {time.time() - reduce_start_time:.2f} seconds."
-        )
+        logging.info(f"Reduce stage completed in {time.time() - reduce_start_time:.2f} seconds.")
 
         # --- Finalization and Output ---
         if total_valid_files > 0 and first_valid_file_path:
@@ -452,29 +426,27 @@ def fast_average_shared_memory(
             try:
                 # since the output_filename is already generated from the 1st part of g2 average;
                 # we just need to apply the new G2 to the file
-                assert os.path.exists(output_filename), f"output_filename: {output_filename} does not exist. check 1st part of g2 average."
+                assert os.path.exists(output_filename), (
+                    f"output_filename: {output_filename} does not exist. check 1st part of g2 average."
+                )
                 # output_dir = os.path.dirname(output_filename)
                 # if output_dir and not os.path.exists(output_dir):
                 #     os.makedirs(output_dir)
                 # shutil.copy(first_valid_file_path, output_filename)
                 avg_result = regroup_G2(output_filename, avg_result)
                 save_G2_to_file(output_filename, avg_result=avg_result)
-                logging.info(
-                    f"Success: Averaged data saved to '{output_filename}'"
-                )
+                logging.info(f"Success: Averaged data saved to '{output_filename}'")
             except Exception:
-                logging.exception(f"Error saving output file:")
+                logging.exception("Error saving output file:")
         else:
-            logging.warning(
-                "No files passed the baseline check. No averaging performed."
-            )
+            logging.warning("No files passed the baseline check. No averaging performed.")
 
         # --- Summary ---
         summary_lines = [
             "--- Summary ---",
             f"Total processing time: {time.time() - main_start_time:.2f} seconds.",
             f"Processed {len(flist)} files in total.",
-            f"Found {total_valid_files} files that met the baseline criteria."
+            f"Found {total_valid_files} files that met the baseline criteria.",
         ]
 
         for line in summary_lines:
@@ -483,9 +455,7 @@ def fast_average_shared_memory(
         if all_skipped_files:
             _report_status(f"Skipped {len(all_skipped_files)} files.")
             for i, (fname, baseline) in enumerate(all_skipped_files[:5]):
-                status = (
-                    f"baseline {baseline:.4f}" if baseline != -1.0 else "read error"
-                )
+                status = f"baseline {baseline:.4f}" if baseline != -1.0 else "read error"
                 logging.info(f"  - Example Skipped: {fname} ({status})")
             if len(all_skipped_files) > 5:
                 logging.info("  ...")
@@ -514,9 +484,7 @@ def main():
         "input_path",
         help="A text file with a list of input HDF files (one per line), a folder containing *_result.hdf files, OR a path prefix (e.g., /path/to/folder/my_prefix to match my_prefix* files).",
     )
-    parser.add_argument(
-        "-o", "--output", default="averaged_results.hdf", help="Output file name."
-    )
+    parser.add_argument("-o", "--output", default="averaged_results.hdf", help="Output file name.")
     parser.add_argument(
         "--baseline-min",
         type=float,
@@ -592,19 +560,15 @@ def main():
     logging.info(f"Baseline window:       {args.baseline_window}")
     logging.info(f"HDF5 cache per worker: {args.cache_mb} MB")
     logging.info(f"Processing Precision:  {args.precision}")
-    logging.info(
-        f"Nonzero G2 averaging:  {'Enabled' if args.nonzero_G2 else 'Disabled'}"
-    )
-    logging.info(
-        f"Always Valid Policy:   {'Enabled' if args.always_valid else 'Disabled'}"
-    )
+    logging.info(f"Nonzero G2 averaging:  {'Enabled' if args.nonzero_G2 else 'Disabled'}")
+    logging.info(f"Always Valid Policy:   {'Enabled' if args.always_valid else 'Disabled'}")
     logging.info(f"Verbose Logging:       {'Enabled' if args.verbose else 'Disabled'}")
     logging.info("---------------------\n")
-    
+
     # --- Generate file list ---
     input_path = args.input_path
     if os.path.isfile(input_path) and input_path.endswith(".txt"):
-        with open(input_path, "r") as f:
+        with open(input_path) as f:
             flist = [line.strip() for line in f if line.strip()]
     elif os.path.isdir(input_path):
         flist = sorted(glob.glob(os.path.join(input_path, "*_result.hdf")))

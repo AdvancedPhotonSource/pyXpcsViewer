@@ -21,9 +21,7 @@ colors = [
 ]
 
 
-def smooth_data(
-    fc, window: int = 1, sampling: int = 1
-) -> tuple[np.ndarray, np.ndarray]:
+def smooth_data(fc, window: int = 1, sampling: int = 1) -> tuple[np.ndarray, np.ndarray]:
     """Apply a moving-average window and optional temporal downsampling to intensity data.
 
     Args:
@@ -104,9 +102,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
 
     for n in range(len(data)):
         x, y = xf_list[n].Int_t_fft
-        tf.plot(
-            x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label
-        )
+        tf.plot(x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label)
 
     for n in range(len(data)):
         tz.plot(

@@ -146,7 +146,7 @@ def create_id(fname, label_style=None, simplify_flag=True):
     return "_".join(selected_segments)
 
 
-class XpcsFile(object):
+class XpcsFile:
     """
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
@@ -286,12 +286,8 @@ class XpcsFile(object):
             ret["t_el"] = ret["tau"] * ret["t0"]
             ret["g2_t0"] = ret["t0"]
 
-        ret["saxs_1d"] = self.qmap.reshape_phi_analysis(
-            ret["saxs_1d"], self.label, mode="saxs_1d"
-        )
-        ret["Iqp"] = self.qmap.reshape_phi_analysis(
-            ret["Iqp"], self.label, mode="stability"
-        )
+        ret["saxs_1d"] = self.qmap.reshape_phi_analysis(ret["saxs_1d"], self.label, mode="saxs_1d")
+        ret["Iqp"] = self.qmap.reshape_phi_analysis(ret["Iqp"], self.label, mode="stability")
 
         ret["abs_cross_section_scale"] = 1.0
         return ret
@@ -435,10 +431,7 @@ class XpcsFile(object):
         g2 = self.g2_partial[:, :, qindex_selected]
         g2_err = self.g2_partial_err[:, :, qindex_selected]
 
-        qbin_labels = [
-            f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}"
-            for qbin in qindex_selected
-        ]
+        qbin_labels = [f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}" for qbin in qindex_selected]
         labels = self.g2_partial_labels
 
         if trange is not None:
@@ -493,10 +486,7 @@ class XpcsFile(object):
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2[:, qindex_selected]
         g2_err = self.g2_err[:, qindex_selected]
-        labels = [
-            f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}"
-            for qbin in qindex_selected
-        ]
+        labels = [f"qbin={qbin + 1}, {self.qmap.get_qbin_label(qbin + 1)}" for qbin in qindex_selected]
 
         if trange is not None:
             t_roi = (self.t_el >= trange[0]) * (self.t_el <= trange[1])
@@ -542,9 +532,7 @@ class XpcsFile(object):
                 Iq = Iq - bkg_weight * bkg_xf.saxs_1d["Iq"]
                 Iq[Iq < 0] = np.nan
             else:
-                logger.warning(
-                    "background subtraction is not applied because q is not matched"
-                )
+                logger.warning("background subtraction is not applied because q is not matched")
         if qrange is not None:
             q_roi = (q >= qrange[0]) * (q <= qrange[1])
             if q_roi.sum() > 0:
@@ -735,9 +723,7 @@ class XpcsFile(object):
             Dict with keys ``c2_mat``, ``delta_t``, ``acquire_period``, etc.
         """
         dq_processed = tuple(self.c2_processed_bins.tolist())
-        assert selection >= 0 and selection < len(dq_processed), (
-            f"selection {selection} out of range {dq_processed}"
-        )  # noqa: E501
+        assert selection >= 0 and selection < len(dq_processed), f"selection {selection} out of range {dq_processed}"
         config = (selection, correct_diag, max_size)
         if self.c2_kwargs == config:
             return self.c2_all_data
@@ -763,6 +749,7 @@ class XpcsFile(object):
             Tuple of ``(idxlist, generator)`` where each yielded value is ``(index, c2_array)``.
         """
         return get_c2_stream(self.fname, **kwargs)
+
     #     """
     #     get the fitting line for q, within tor
     #     """
@@ -803,9 +790,7 @@ class XpcsFile(object):
             for n in range(val.shape[0]):
                 temp = []
                 for m in range(len(prefix)):
-                    temp.append(
-                        "%s = %f ± %f" % (prefix[m], val[n, 0, m], val[n, 1, m])
-                    )
+                    temp.append("%s = %f ± %f" % (prefix[m], val[n, 0, m], val[n, 1, m]))
                 msg.append(", ".join(temp))
             result["fit_val"] = np.array(msg)
 
@@ -825,9 +810,7 @@ class XpcsFile(object):
 
         return result
 
-    def fit_g2(
-        self, q_range=None, t_range=None, bounds=None, fit_flag=None, fit_func="single"
-    ):
+    def fit_g2(self, q_range=None, t_range=None, bounds=None, fit_flag=None, fit_func="single"):
         """
         fit the g2 values using single exponential decay function
         :param q_range: a tuple of q lower bound and upper bound
@@ -840,16 +823,12 @@ class XpcsFile(object):
         """
         assert len(bounds) == 2
         if fit_func == "single":
-            assert len(bounds[0]) == 4, (
-                "for single exp, the shape of bounds must be (2, 4)"
-            )
+            assert len(bounds[0]) == 4, "for single exp, the shape of bounds must be (2, 4)"
             if fit_flag is None:
                 fit_flag = [True for _ in range(4)]
             func = single_exp_all
         else:
-            assert len(bounds[0]) == 7, (
-                "for single exp, the shape of bounds must be (2, 4)"
-            )
+            assert len(bounds[0]) == 7, "for single exp, the shape of bounds must be (2, 4)"
             if fit_flag is None:
                 fit_flag = [True for _ in range(7)]
             func = double_exp_all
@@ -863,13 +842,9 @@ class XpcsFile(object):
         if fit_func == "double":
             p0[4] = np.sqrt(bounds[0][4] * bounds[1][4])
 
-        fit_x = np.logspace(
-            np.log10(np.min(t_el)) - 0.5, np.log10(np.max(t_el)) + 0.5, 128
-        )
+        fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5, np.log10(np.max(t_el)) + 0.5, 128)
 
-        fit_line, fit_val = fit_with_fixed(
-            func, t_el, g2, sigma, bounds, fit_flag, fit_x, p0=p0
-        )
+        fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma, bounds, fit_flag, fit_x, p0=p0)
 
         self.fit_summary = {
             "fit_func": fit_func,
@@ -959,9 +934,7 @@ class XpcsFile(object):
         p0 = [1.0e-7, -2.0]
         fit_x = np.logspace(np.log10(np.min(x) / 1.1), np.log10(np.max(x) * 1.1), 128)
 
-        fit_line, fit_val = fit_with_fixed(
-            power_law, x, y, sigma, bounds, fit_flag, fit_x, p0=p0
-        )
+        fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds, fit_flag, fit_x, p0=p0)
 
         # fit_line and fit_val are lists with just one element;
         self.fit_summary["tauq_success"] = fit_line[0]["success"]
@@ -973,9 +946,7 @@ class XpcsFile(object):
 
         return self.fit_summary
 
-    def get_roi_data(
-        self, roi_parameter: dict, phi_num: int = 180
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def get_roi_data(self, roi_parameter: dict, phi_num: int = 180) -> tuple[np.ndarray, np.ndarray]:
         """Extract SAXS 1D data within a circular or pie-slice ROI on the detector.
 
         Supports ``"Pie"`` (angular sector) and ``"Ring"`` (radial annulus) ROI types.
@@ -1066,9 +1037,7 @@ class XpcsFile(object):
         # export ROI
         idx = 0
         for roi in roi_list:
-            fname = os.path.join(
-                folder, self.label + "_" + roi["sl_type"] + f"_{idx:03d}.txt"
-            )
+            fname = os.path.join(folder, self.label + "_" + roi["sl_type"] + f"_{idx:03d}.txt")
             idx += 1
             x, y = self.get_roi_data(roi)
             if roi["sl_type"] == "Ring":

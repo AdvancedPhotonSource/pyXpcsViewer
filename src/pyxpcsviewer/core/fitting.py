@@ -1,17 +1,18 @@
-import numpy as np
-from scipy.optimize import curve_fit
-import traceback
-from sklearn import linear_model
+import logging
 import os
 import traceback
-import logging
-from joblib import Memory
 
+import numpy as np
+from joblib import Memory
+from scipy.optimize import curve_fit
+from sklearn import linear_model
 
 logger = logging.getLogger(__name__)
-cache_dir = os.path.join(os.path.expanduser('~'), '.pyxpcsviewer')
+cache_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
 
 memory = Memory(cache_dir, verbose=0)
+
+
 @memory.cache
 def fit_with_fixed(*args, **kwargs):
     """Cache-aware wrapper around :func:`fit_with_fixed_raw` to skip redundant fits."""
@@ -31,7 +32,7 @@ def single_exp(x: float | np.ndarray, tau: float, bkg: float, cts: float) -> flo
     Returns:
         Computed decay values ``cts * exp(-2*x/tau) + bkg``.
     """
-    return cts * np.exp( -2 * x / tau) + bkg
+    return cts * np.exp(-2 * x / tau) + bkg
 
 
 def fit_tau(qd: np.ndarray, tau: np.ndarray, tau_err: np.ndarray):
@@ -66,46 +67,46 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
     """
 
     # fit_x = np.logspace(-5, 0.5, num=128)
-    fit_x = np.logspace(np.log10(np.min(tel)) - 0.5,
-                        np.log10(np.max(tel)) + 0.5, 128)
+    fit_x = np.logspace(np.log10(np.min(tel)) - 0.5, np.log10(np.max(tel)) + 0.5, 128)
 
-    p0_guess = [np.sqrt(b[0][0] * b[1][0]),
-                0.5 * (b[0][1] + b[1][1]),
-                0.5 * (b[0][2] + b[1][2])]
+    p0_guess = [np.sqrt(b[0][0] * b[1][0]), 0.5 * (b[0][1] + b[1][1]), 0.5 * (b[0][2] + b[1][2])]
 
     fit_val = np.zeros(shape=(qd.size, 7))
     fit_result = []
     for n in range(qd.size):
         err = g2_err[:, n]
-        result = {'num_zero_err': np.sum(err < 1E-6)}
-        avg = np.mean(err[err > 1E-6])
-        err[err <= 1E-6] = avg
+        result = {"num_zero_err": np.sum(err < 1e-6)}
+        avg = np.mean(err[err > 1e-6])
+        err[err <= 1e-6] = avg
         fit_val[n, 0] = qd[n]
 
         try:
-            popt, pcov = curve_fit(single_exp, tel, g2[:, n],
-                                   p0=p0_guess,
-                                   sigma=err,
-                                   bounds=b)
+            popt, pcov = curve_fit(single_exp, tel, g2[:, n], p0=p0_guess, sigma=err, bounds=b)
             fit_val[n, 1:4], fit_val[n, 4:7] = popt, np.sqrt(np.diag(pcov))
         except:
             # fit_val[n, 1:4], fit_val[n, 4:7] = popt, np.sqrt(np.diag(pcov))
-            result = {'err_msg': 'q_index %2d:' + str(traceback.format_exc()),
-                      'fit_x': fit_x, 'fit_y': np.ones_like(fit_x)}
+            result = {
+                "err_msg": "q_index %2d:" + str(traceback.format_exc()),
+                "fit_x": fit_x,
+                "fit_y": np.ones_like(fit_x),
+            }
         else:
             fit_y = single_exp(fit_x, *popt)
-            result = {'err_msg': None,
-            # result = {'err_msg': 'q_index %2d: fit ends without err' % n,
-                      'opt': popt, 'err': np.sqrt(np.diag(pcov)),
-                      'fit_x': fit_x, 'fit_y': fit_y}
+            result = {
+                "err_msg": None,
+                # result = {'err_msg': 'q_index %2d: fit ends without err' % n,
+                "opt": popt,
+                "err": np.sqrt(np.diag(pcov)),
+                "fit_x": fit_x,
+                "fit_y": fit_y,
+            }
         finally:
             fit_result.append(result)
 
     return fit_result, fit_val
 
 
-def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
-                       p0=None):
+def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
     """
     :param base_func: the base function used for fitting; it can have multiple
         input variables, some of which can be fixed during the fitting;
@@ -157,13 +158,12 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
     for n in range(y.shape[1]):
         flag = True
         try:
-            popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n],
-                                   bounds=bounds_fit)
-        except (Exception, RuntimeError, ValueError, Warning) as err:
+            popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n], bounds=bounds_fit)
+        except (Exception, RuntimeError, ValueError, Warning):
             msg = "Fitting failed: %s" % traceback.format_exc()
             logger.info(msg)
             flag = False
-            fit_val[n, 0, fit_flag] = p0 
+            fit_val[n, 0, fit_flag] = p0
             fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
             # mark failed fitting to be negative so they can be filtered later
             fit_val[n, 1, :] = -1
@@ -171,7 +171,7 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
 
         else:
             flag = True
-            msg = 'FittingSuccess'
+            msg = "FittingSuccess"
             # converge values
             fit_val[n, 0, fit_flag] = popt
             fit_val[n, 0, fix_flag] = bounds[1, fix_flag]
@@ -181,7 +181,6 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
             fit_y = func(fit_x, *popt)
 
         finally:
-            fit_line.append({'fit_x': fit_x, 'fit_y': fit_y, 'success': flag,
-                             'msg': msg})
+            fit_line.append({"fit_x": fit_x, "fit_y": fit_y, "success": flag, "msg": msg})
 
     return fit_line, fit_val

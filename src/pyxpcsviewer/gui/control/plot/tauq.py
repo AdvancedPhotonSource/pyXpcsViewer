@@ -85,9 +85,7 @@ def plot_pre(xf_list, hdl) -> None:
             x = xf.fit_summary["q_val"]
             y = xf.fit_summary["fit_val"][:, 0, n]
             e = xf.fit_summary["fit_val"][:, 1, n]
-            ax[n].errorbar(
-                x, y, yerr=e, fmt=shape, markersize=3, color=color, mfc="white"
-            )
+            ax[n].errorbar(x, y, yerr=e, fmt=shape, markersize=3, color=color, mfc="white")
 
         if idx == len(xf_list) - 1:
             bounds = xf.fit_summary["bounds"]

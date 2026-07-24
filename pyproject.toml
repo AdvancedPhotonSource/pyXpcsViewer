@@ -84,6 +84,9 @@ extend-exclude = [
     "src/pyxpcsviewer/gui/view/icons_rc.py",
 ]
 
+[tool.ruff.format]
+quote-style = "double"
+
 [tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
