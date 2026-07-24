@@ -77,12 +77,14 @@ def get_g2_stability_data(xf_obj, q_range=None, t_range=None):
 
 
 def compute_geometry(g2, plot_type):
-    """
-    compute the number of figures and number of plot lines for a given type
-    and dataset;
-    :param g2: input g2 data; 2D array; dim0: t_el; dim1: q_vals
-    :param plot_type: string in ['multiple', 'single', 'single-combined']
-    :return: tuple of (number_of_figures, number_of_lines)
+    """Compute the number of figures and plot lines for a G2 plot type.
+
+    Args:
+        g2: Input G2 data; 2D array with shape (time_delay, q_vals).
+        plot_type: One of ``"multiple"``, ``"single"``, or ``"single-combined"``.
+
+    Returns:
+        Tuple of ``(number_of_figures, number_of_lines)``.
     """
     if plot_type == "multiple":
         num_figs = g2[0].shape[1]

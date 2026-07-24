@@ -90,9 +90,10 @@ class QMap:
         return info
 
     def get_detector_extent(self):
-        """
-        get the angular extent on the detector, for saxs2d, qmap/display;
-        :return:
+        """Return the angular extent on the detector for SAXS-2D / Q-map display.
+
+        Returns:
+            Tuple of ``(qx_min, qx_max, qy_min, qy_max)`` covering the detector area.
         """
         shape = self.mask.shape
         pix2q_x = self.pixel_size / self.det_dist * self.k0

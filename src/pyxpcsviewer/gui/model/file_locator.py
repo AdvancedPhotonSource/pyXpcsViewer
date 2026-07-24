@@ -56,10 +56,16 @@ class FileLocator:
         self.source_search.clear()
 
     def get_xf_list(self, rows=None, filter_atype=None, filter_fitted=False):
-        """
-        get the cached xpcs_file list;
-        :param rows: a list of index to select; if None is given, then use
-        :return: list of xpcs_file objects;
+        """Return cached XpcsFile objects for the requested indices.
+
+        Args:
+            rows: List of target indices; ``None`` uses all targets.
+            filter_atype: If set, only return files whose analysis type
+                contains this string.
+            filter_fitted: If ``True``, skip files without a fitting summary.
+
+        Returns:
+            List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` objects.
         """
         selected = rows if rows else list(range(len(self.target)))
 
@@ -80,11 +86,14 @@ class FileLocator:
         return ret
 
     def get_hdf_info(self, fname, filter_str=None):
-        """
-        get the hdf information / hdf structure for fname
-        :param fname: input filename
-        :param fstr: list of filter string;
-        :return: list of strings that contains the hdf information;
+        """Return the HDF5 structure info for a given file.
+
+        Args:
+            fname: Input filename to query.
+            filter_str: List of filter strings to narrow the output.
+
+        Returns:
+            List of strings describing the HDF5 structure.
         """
         xf_obj = create_xpcs_dataset(os.path.join(self.path, fname), qmap_manager=self.qmap_manager)
         return xf_obj.get_hdf_info(filter_str)

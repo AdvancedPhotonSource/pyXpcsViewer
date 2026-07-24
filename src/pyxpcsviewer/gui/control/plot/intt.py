@@ -49,13 +49,14 @@ def smooth_data(fc, window: int = 1, sampling: int = 1) -> tuple[np.ndarray, np.
 
 
 def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
-    """
-    :param xf_list: list of xf objects
-    :param pg_hdl: pyqtgraph handler to plot
-    :param enable_zoom: bool, if to plot the zoom view or not
-    :param xlabel:
-    :param kwargs: used to define how to average/sample the data
-    :return:
+    """Plot intensity-vs-time for a list of XPCS files.
+
+    Args:
+        xf_list: List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` objects.
+        pg_hdl: PyQtGraph handler widget for plotting.
+        enable_zoom: If ``True``, enable the zoom view.
+        xlabel: Label for the x-axis. Defaults to ``"Frame Index"``.
+        **kwargs: Passed to :func:`smooth_data` for averaging / sampling.
     """
     data = []
     for fc in xf_list:

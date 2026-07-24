@@ -102,15 +102,19 @@ def read_metadata_to_dict(file_path):
 
 
 def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
-    """
-    get the values for the various keys listed in fields for a single
-    file;
-    :param fname:
-    :param fields_raw: list of keys [key1, key2, ..., ]
-    :param mode: ['raw' | 'alias']; alias is defined in .hdf_key
-                 otherwise the raw hdf key will be used
-    :param ret_type: return dictonary if 'dict', list if it is 'list'
-    :return: dictionary or dictionary;
+    """Retrieve field values from an HDF5 result file.
+
+    Args:
+        fname: Path to the HDF5 file.
+        fields: List of key names to retrieve.
+        mode: ``"raw"`` reads the literal key; ``"alias"`` resolves via the
+            key map in ``aps_8idi``.
+        ret_type: ``"dict"`` returns a dict keyed by field name; ``"list"``
+            returns a flat list of values.
+        ftype: Expected file type for the reader backend.
+
+    Returns:
+        Dictionary or list of field values depending on *ret_type*.
     """
     assert mode in ["raw", "alias"], "mode not supported"
     assert ret_type in ["dict", "list"], "ret_type not supported"

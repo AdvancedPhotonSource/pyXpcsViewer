@@ -125,10 +125,16 @@ def create_id(fname, label_style=None, simplify_flag=True):
     try:
         selection = [int(x.strip()) for x in label_style.split(",")]
         if not selection:
-            warnings.warn("Empty label_style selection. Returning simplified filename.")
+            warnings.warn(
+                "Empty label_style selection. Returning simplified filename.",
+                stacklevel=2,
+            )
             return fname
     except ValueError:
-        warnings.warn("Invalid label_style format. Must be comma-separated integers.")
+        warnings.warn(
+            "Invalid label_style format. Must be comma-separated integers.",
+            stacklevel=2,
+        )
         return fname
 
     segments = fname.split("_")
@@ -138,7 +144,10 @@ def create_id(fname, label_style=None, simplify_flag=True):
         if i < len(segments):
             selected_segments.append(segments[i])
         else:
-            warnings.warn(f"Index {i} out of range for segments {segments}")
+            warnings.warn(
+                f"Index {i} out of range for segments {segments}",
+                stacklevel=2,
+            )
 
     if not selected_segments:
         return fname  # fallback if nothing valid was selected
@@ -211,11 +220,15 @@ class XpcsFile:
         return ans
 
     def get_hdf_info(self, fstr=None):
-        """
-        get a text representation of the xpcs file; the entries are organized
-        in a tree structure;
-        :param fstr: list of filter strings, ["string_1", "string_2", ...]
-        :return: a list strings
+        """Return a tree-structured text representation of the HDF5 file.
+
+        Results are cached on the instance after first call.
+
+        Args:
+            fstr: List of filter strings to include (e.g. ``["string_1", "string_2"]``).
+
+        Returns:
+            List of strings describing the file structure.
         """
         # cache the data because it may take long time to generate the str
         if self.hdf_info is None:
@@ -679,10 +692,7 @@ class XpcsFile:
             Tuple of ``(dqmap_display, saxs_2d_background, selected_qbin_index)``.
         """
         # emphasize the beamstop region which has qindex = 0;
-        if scale == "log":
-            saxs = self.saxs_2d_log
-        else:
-            saxs = self.saxs_2d
+        saxs = self.saxs_2d_log if scale == "log" else self.saxs_2d
 
         dqmap = self.get_cropped_qmap(target="dqmap", enabled=auto_crop)
 
@@ -774,17 +784,14 @@ class XpcsFile:
             fit is available or an unknown *mode* is requested.
         """
         if self.fit_summary is None:
-            return "fitting is not ready for %s" % self.label
+            return f"fitting is not ready for {self.label}"
 
         if mode == "g2_fitting":
             result = self.fit_summary.copy()
             # fit_line is not useful to display
             result.pop("fit_line", None)
             val = result.pop("fit_val", None)
-            if result["fit_func"] == "single":
-                prefix = ["a", "b", "c", "d"]
-            else:
-                prefix = ["a", "b", "c", "d", "b2", "c2", "f"]
+            prefix = ["a", "b", "c", "d"] if result["fit_func"] == "single" else ["a", "b", "c", "d", "b2", "c2", "f"]
 
             msg = []
             for n in range(val.shape[0]):
@@ -811,15 +818,18 @@ class XpcsFile:
         return result
 
     def fit_g2(self, q_range=None, t_range=None, bounds=None, fit_flag=None, fit_func="single"):
-        """
-        fit the g2 values using single exponential decay function
-        :param q_range: a tuple of q lower bound and upper bound
-        :param t_range: a tuple of t lower bound and upper bound
-        :param bounds: bounds for fitting;
-        :param fit_flag: tuple of bools; True to fit and False to float
-        :param fit_func: ["single" | "double"]: to fit with single exponential
-            or double exponential function
-        :return: dictionary with the fitting result;
+        """Fit G2 values with single or double exponential decay.
+
+        Args:
+            q_range: Tuple of (q_min, q_max) for the Q-axis filter.
+            t_range: Tuple of (t_min, t_max) for the time-axis filter.
+            bounds: Fitting bounds as ``(lower, upper)``.
+            fit_flag: Tuple of bools — ``True`` to fit, ``False`` to hold fixed.
+            fit_func: Either ``"single"`` or ``"double"`` to select the
+                exponential model.
+
+        Returns:
+            Dictionary with the fitting results.
         """
         assert len(bounds) == 2
         if fit_func == "single":

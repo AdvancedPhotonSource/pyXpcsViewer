@@ -45,13 +45,18 @@ def fit_tau(qd: np.ndarray, tau: np.ndarray, tau_err: np.ndarray):
 
 
 def fit_xpcs(tel, qd, g2, g2_err, b):
-    """
-    :param tel: t_el
-    :param qd: ql_dyn
-    :param g2: g2 [time, ql_dyn]
-    :param g2_err: [time, ql_dyn]
-    :param b: bounds
-    :return:
+    """Fit G2 data with single exponential decay for each Q bin.
+
+    Args:
+        tel: Time delay values.
+        qd: Dynamic Q-axis values.
+        g2: G2 correlation data, shape (time, q_vals).
+        g2_err: Error on G2, shape (time, q_vals).
+        b: Fitting bounds.
+
+    Returns:
+        Tuple of ``(fit_result, fit_val)`` where *fit_result* is a list of
+        per-Q-bin dictionaries and *fit_val* is a ``(n_q, 7)`` array.
     """
 
     # fit_x = np.logspace(-5, 0.5, num=128)
@@ -95,20 +100,24 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
 
 
 def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
-    """
-    :param base_func: the base function used for fitting; it can have multiple
-        input variables, some of which can be fixed during the fitting;
-    :param x: scaler input
-    :param y: scaler output
-    :param sigma: the error for y value
-    :param bounds: tuple with two elements. 1st is the lower bounds and 2nd is
-        the upper bounds; if the fit_flag for a variable is False, then the
-        upper bound is used as the fixed value;
-    :param fit_flag: tuple of bools, True/False for fit and fixed
-    :param fit_x: the fitting line for x
-    :param p0: the initial value for the variables; if None is provided, the
-        intial value is set as the mean of lower and upper bounds
-    :return: a tuple of (fit_line, fit_val)
+    """Fit *base_func* with per-variable bounds and optional fixed parameters.
+
+    Args:
+        base_func: Fittable function (e.g. ``single_exp``). May accept
+            multiple arguments, some of which can be held constant.
+        x: Independent variable (scaler input).
+        y: Dependent variable (scaler output).
+        sigma: Measurement error on *y*.
+        bounds: Tuple of ``(lower, upper)`` arrays. When a parameter's flag
+            is ``False``, the upper bound is used as the fixed value.
+        fit_flag: Boolean array — ``True`` to fit, ``False`` to hold fixed.
+        fit_x: X-axis values for plotting the fitted curve.
+        p0: Initial parameter guess. Defaults to the midpoint of the fit
+            parameter bounds.
+
+    Returns:
+        Tuple of ``(fit_line, fit_val)`` where *fit_line* is a list of
+        per-Q-bin dictionaries and *fit_val* is a ``(n_q, 2, n_params)`` array.
     """
     if not isinstance(fit_flag, np.ndarray):
         fit_flag = np.array(fit_flag)
