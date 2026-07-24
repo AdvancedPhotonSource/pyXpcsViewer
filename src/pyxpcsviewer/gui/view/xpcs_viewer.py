@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import shutil
@@ -174,30 +173,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show()
 
     def load_default_setting(self) -> None:
-        """Load the default window size from JSON and clear the joblib cache."""
-        if not os.path.isdir(self.home_dir):
-            os.mkdir(self.home_dir)
-
-        key_fname = os.path.join(self.home_dir, "default_setting.json")
-        # copy the default values
-        if not os.path.isfile(key_fname):
-            setting = {"window_size_w": 1400, "window_size_h": 1200}
-            with open(key_fname, "w") as f:
-                json.dump(setting, f, indent=4)
-
-        # the display size might too big for some laptops
-        with open(key_fname) as f:
-            config = json.load(f)
-            if "window_size_h" in config:
-                new_size = (config["window_size_w"], config["window_size_h"])
-                logger.info("set mainwindow to size %s", new_size)
-                self.resize(*new_size)
+        """Set the default window size and clear the joblib cache."""
+        self.resize(1400, 1200)
 
         cache_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer", "joblib/pyxpcsviewer")
         if os.path.isdir(cache_dir):
             shutil.rmtree(cache_dir)
-
-        return
 
     def get_selected_rows(self) -> list[int]:
         """Return the currently selected row indices from the target file list."""
