@@ -45,7 +45,6 @@ dependencies = [
     "pyqtgraph",
     "pandas",
     "scikit-learn",
-    "joblib",
     "psutil",
     "tqdm",
     "hdf5plugin",

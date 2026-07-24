@@ -1,6 +1,5 @@
 import logging
 import os
-import shutil
 import sys
 import traceback
 
@@ -173,12 +172,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.show()
 
     def load_default_setting(self) -> None:
-        """Set the default window size and clear the joblib cache."""
+        """Set the default window size."""
         self.resize(1400, 1200)
-
-        cache_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer", "joblib/pyxpcsviewer")
-        if os.path.isdir(cache_dir):
-            shutil.rmtree(cache_dir)
 
     def get_selected_rows(self) -> list[int]:
         """Return the currently selected row indices from the target file list."""

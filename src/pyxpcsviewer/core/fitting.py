@@ -1,23 +1,11 @@
 import logging
-import os
 import traceback
 
 import numpy as np
-from joblib import Memory
 from scipy.optimize import curve_fit
 from sklearn import linear_model
 
 logger = logging.getLogger(__name__)
-cache_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
-
-memory = Memory(cache_dir, verbose=0)
-
-
-@memory.cache
-def fit_with_fixed(*args, **kwargs):
-    """Cache-aware wrapper around :func:`fit_with_fixed_raw` to skip redundant fits."""
-    # wrap the fitting function in memory so avoid re-run
-    return fit_with_fixed_raw(*args, **kwargs)
 
 
 def single_exp(x: float | np.ndarray, tau: float, bkg: float, cts: float) -> float | np.ndarray:
@@ -106,7 +94,7 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
     return fit_result, fit_val
 
 
-def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
+def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
     """
     :param base_func: the base function used for fitting; it can have multiple
         input variables, some of which can be fixed during the fitting;
