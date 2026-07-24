@@ -1,22 +1,23 @@
+import logging
 import os
+import time
+import traceback
+import uuid
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from shutil import copyfile
+
+import numpy as np
+import pyqtgraph as pg
 from PySide6 import QtCore
 from PySide6.QtCore import QObject, Slot
-import logging
-import uuid
-import time
-import numpy as np
-from ...core.fileIO.hdf_reader import put, get
-from ...core.xpcs_file import XpcsFile as XF
-from shutil import copyfile
-from ..model.listmodel import ListDataModel
-import pyqtgraph as pg
-from tqdm import trange
-import traceback
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from ...core.fast_g2_averaging import fast_average_shared_memory
 from sklearn.cluster import (
     KMeans as sk_kmeans,
 )  # Added this import based on the original code's usage
+
+from ...core.fast_g2_averaging import fast_average_shared_memory
+from ...core.fileIO.hdf_reader import get, put
+from ...core.xpcs_file import XpcsFile as XF
+from ..model.listmodel import ListDataModel
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +143,12 @@ class AverageToolbox(QtCore.QRunnable):
     """
 
     def __init__(self, flist=None, jid=None) -> None:
+        """Initialize the averaging worker with a file list and job ID.
+
+        Args:
+            flist: List of HDF5 file paths to average.
+            jid: Optional job identifier; auto-generated UUID if omitted.
+        """
         super().__init__()
         self.model = ListDataModel(flist.copy() if flist else [])
         self.signals = WorkerSignal()
@@ -163,6 +170,7 @@ class AverageToolbox(QtCore.QRunnable):
         self.is_killed = True
 
     def __str__(self) -> str:
+        """Return the job ID string."""
         return str(self.jid)
 
     def generate_avg_fname(self):
@@ -176,9 +184,16 @@ class AverageToolbox(QtCore.QRunnable):
 
     @Slot()
     def run(self):
+        """Entry point for the :class:`QRunnable` — dispatches to ``do_average_multiprocess``."""
         self.do_average_multiprocess(*self.args, **self.kwargs)
 
-    def setup(self, *args, **kwargs):
+    def setup(self, *args, **kwargs) -> None:
+        """Store positional and keyword arguments for later execution via :meth:`run`.
+
+        Args:
+            *args: Positional arguments passed to ``do_average_multiprocess``.
+            **kwargs: Keyword arguments passed to ``do_average_multiprocess``.
+        """
         self.args = args
         self.kwargs = kwargs
 
@@ -207,13 +222,15 @@ class AverageToolbox(QtCore.QRunnable):
         avg_qindex=0,
         avg_blmin=0.95,
         avg_blmax=1.05,
-        fields=["saxs_2d"],
+        fields=None,
         num_workers=None,
     ):
         """
         Run the averaging operation on the dataset list using multiprocessing with
         ProcessPoolExecutor for parallel processing and G2 filtering and signal emission.
         """
+        if fields is None:
+            fields = ["saxs_2d"]
         self.status = "running (multiprocess)"
         tot_num = len(self.model)
         logger.info(
@@ -233,7 +250,7 @@ class AverageToolbox(QtCore.QRunnable):
         # This allows us to handle the first valid dataset correctly for initialization.
         num_valid_dsets = 0
         processed_files_count = 0
-        final_averaged_data = {key: None for key in fields}
+        final_averaged_data = dict.fromkeys(fields)
 
         # Using ProcessPoolExecutor for parallel processing
         # max_workers=None means it will default to the number of CPUs
@@ -324,7 +341,7 @@ class AverageToolbox(QtCore.QRunnable):
 
             # Save the averaged data
             if save_path and self.origin_path:
-                logger.info("create file: {}".format(save_path))
+                logger.info(f"create file: {save_path}")
                 try:
                     copyfile(self.origin_path, save_path)
                     put(save_path, final_averaged_data, ftype="nexus", mode="alias")
@@ -337,11 +354,13 @@ class AverageToolbox(QtCore.QRunnable):
         if flag_G2:
 
             def progress_cb(current, total):
+                """Map G2 progress (0-1) to the upper half of the global 0-100 range."""
                 # offset 50% for the G2 averaging
                 percentage = int(current * 90 / (2 * total)) + 50
                 self.signals.progress.emit(percentage)
 
             def status_cb(msg):
+                """Forward a G2 progress status message to the UI via signals."""
                 self.status = f"G2 Average: {msg}"
                 self.signals.status.emit(f"{self.jid}: {self.status}")
 

@@ -14,15 +14,37 @@ cache_dir = os.path.join(os.path.expanduser('~'), '.pyxpcsviewer')
 memory = Memory(cache_dir, verbose=0)
 @memory.cache
 def fit_with_fixed(*args, **kwargs):
+    """Cache-aware wrapper around :func:`fit_with_fixed_raw` to skip redundant fits."""
     # wrap the fitting function in memory so avoid re-run
     return fit_with_fixed_raw(*args, **kwargs)
 
 
-def single_exp(x, tau, bkg, cts):
+def single_exp(x: float | np.ndarray, tau: float, bkg: float, cts: float) -> float | np.ndarray:
+    """Evaluate a single-exponential decay function.
+
+    Args:
+        x: Independent variable (time delay).
+        tau: Characteristic decay time.
+        bkg: Constant background level.
+        cts: Amplitude scaling factor (contrast).
+
+    Returns:
+        Computed decay values ``cts * exp(-2*x/tau) + bkg``.
+    """
     return cts * np.exp( -2 * x / tau) + bkg
 
 
-def fit_tau(qd, tau, tau_err):
+def fit_tau(qd: np.ndarray, tau: np.ndarray, tau_err: np.ndarray):
+    """Perform linear regression on ``log(tau)`` vs ``log(q)`` to extract the diffusion exponent.
+
+    Args:
+        qd: Momentum-transfer values (Q-axis).
+        tau: Characteristic times corresponding to each Q value.
+        tau_err: Errors on tau for weighted fitting.
+
+    Returns:
+        Tuple of ``(slope, intercept, fit_x, fit_y)`` where *fit_x/fit_y* span the fitted line.
+    """
     x = np.log(qd).reshape(-1, 1)
     y = np.log(tau).reshape(-1, 1)
     dy = tau / tau_err
@@ -115,6 +137,7 @@ def fit_with_fixed_raw(base_func, x, y, sigma, bounds, fit_flag, fit_x,
 
     # create a function that takes care of the fit flag;
     def func(x1, *args):
+        """Construct a callable with fixed parameters set to their upper bounds."""
         inputs = np.zeros(num_args)
         inputs[fix_flag] = bounds[1, fix_flag]
         inputs[fit_flag] = np.array(args)

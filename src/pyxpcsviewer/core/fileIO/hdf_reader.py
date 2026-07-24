@@ -34,7 +34,16 @@ def put(save_path, result, ftype="nexus", mode="raw"):
         return
 
 
-def get_abs_cs_scale(fname, ftype="nexus"):
+def get_abs_cs_scale(fname: str, ftype: str = "nexus") -> float | None:
+    """Retrieve the absolute cross-section scaling factor from an HDF5 file.
+
+    Args:
+        fname: Path to the HDF5 file.
+        ftype: File format — ``"nexus"`` or ``"aps_8idi"``.
+
+    Returns:
+        The scaling factor as a float, or ``None`` if not present.
+    """
     key = hdf_key[ftype]["abs_cross_section_scale"]
     with h5py.File(fname, "r") as f:
         if key not in f:

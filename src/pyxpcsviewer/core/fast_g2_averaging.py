@@ -225,11 +225,40 @@ def fast_average_shared_memory(
     progress_callback=None,
     status_callback=None,
 ):
+    """Run G2 averaging across a file list using shared-memory map-reduce.
+
+    Allocates per-worker shared memory, dispatches HDF5 reads to a process pool,
+    and writes the averaged result back to *output_filename*.
+
+    Args:
+        flist: List of absolute paths to HDF5 result files.
+        output_filename: Path for the averaged output file.
+        avg_window: Number of trailing frames used for baseline calculation.
+        avg_qindex: Q-index into G2 data for baseline evaluation.
+        avg_blmin: Inclusive lower bound for valid G2 baseline.
+        avg_blmax: Inclusive upper bound for valid G2 baseline.
+        num_workers: Process count (default: physical CPU cores).
+        h5_cache_size_mb: HDF5 raw chunk cache per worker in MB.
+        verbose: Enable DEBUG-level logging.
+        precision: ``"single"`` for float32 or ``"double"`` for float64 accumulation.
+        nonzero_G2: Use per-pixel valid counting to exclude zero pixels.
+        always_valid: Skip baseline checks and process all files.
+        progress_callback: Callable ``(current, total)`` invoked every 0.1 s.
+        status_callback: Callable with a single status-message string.
+
+    Returns:
+        ``None`` on empty input or no valid files; the output file is written in place.
+    """
     if not flist:
         logging.warning("No files provided for averaging.")
         return
 
-    def _report_status(msg):
+    def _report_status(msg: str) -> None:
+        """Log a status message and forward it to the callback.
+
+        Args:
+            msg: Status message string.
+        """
         logging.info(msg)
         if status_callback:
             status_callback(msg)
@@ -472,6 +501,10 @@ def fast_average_shared_memory(
 
 
 def main():
+    """CLI entry point for the G2 averaging tool.
+
+    Parses arguments from sys.argv and calls :func:`fast_average_shared_memory`.
+    """
     # command line arguments
     parser = argparse.ArgumentParser(
         description="Average G2 data from HDF files using a shared-memory map-reduce strategy.",

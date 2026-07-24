@@ -1,2 +1,2 @@
-from .matplot_qt import MplCanvasBarH, MplCanvasBarV, MplCanvasBar, MplCanvas
-from .pyqtgraph_handler import ImageViewDev, PlotWidgetDev, ImageViewPlotItem
+from .matplot_qt import MplCanvas, MplCanvasBar, MplCanvasBarH, MplCanvasBarV
+from .pyqtgraph_handler import ImageViewDev, ImageViewPlotItem, PlotWidgetDev

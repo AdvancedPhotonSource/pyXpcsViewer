@@ -151,7 +151,15 @@ class XpcsFile(object):
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
 
-    def __init__(self, fname, fields=None, label_style=None, qmap_manager=None):
+    def __init__(self, fname: str, fields=None, label_style=None, qmap_manager=None):
+        """Open an XPCS result HDF5 file and lazily load core datasets.
+
+        Args:
+            fname: Absolute path to the HDF5 result file.
+            fields: Extra field names to preload beyond the defaults.
+            label_style: Comma-separated indices for deriving a short file ID.
+            qmap_manager: Optional :class:`QMapManager` to share Q-map caches.
+        """
         self.fname = fname
         if qmap_manager is None:
             self.qmap = get_qmap(self.fname)
@@ -170,11 +178,20 @@ class XpcsFile(object):
         self.saxs_2d_data = None
         self.saxs_2d_log_data = None
 
-    def update_label(self, label_style):
+    def update_label(self, label_style) -> str:
+        """Re-derive the short label from the current filename.
+
+        Args:
+            label_style: Comma-separated indices for ID generation.
+
+        Returns:
+            The newly computed label string.
+        """
         self.label = create_id(self.fname, label_style=label_style)
         return self.label
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Multi-line representation showing filename and all attribute shapes."""
         ans = ["File:" + str(self.fname)]
         for key, val in self.__dict__.items():
             # omit those to avoid lengthy output
@@ -187,7 +204,8 @@ class XpcsFile(object):
             ans.append(f"   {key.ljust(12)}: {val.ljust(30)}")
         return "\n".join(ans)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Class name followed by the output of :meth:`__str__`."""
         ans = str(type(self))
         ans = "\n".join([ans, self.__str__()])
         return ans
@@ -204,14 +222,33 @@ class XpcsFile(object):
             self.hdf_info = read_metadata_to_dict(self.fname)
         return self.hdf_info
 
-    def has_field(self, field):
+    def has_field(self, field: str) -> bool:
+        """Check whether *field* exists in the HDF5 file via the alias key map.
+
+        Args:
+            field: Semantic field name (e.g. ``"g2"``, ``"saxs_2d"``).
+
+        Returns:
+            ``True`` if the field is resolvable and present, else ``False``.
+        """
         try:
             get(self.fname, [field], "alias", ftype="nexus")
             return True
         except Exception:
             return False
 
-    def load_data(self, extra_fields=None):
+    def load_data(self, extra_fields: list[str] | None = None) -> dict:
+        """Load default (and optional extra) datasets from the HDF5 file.
+
+        Handles g2_err correction, time-step multiplication, and Q-map reshaping
+        for SAXS 1D / stability data before returning everything as a flat dict.
+
+        Args:
+            extra_fields: Additional field names to include beyond the defaults.
+
+        Returns:
+            Dict of loaded dataset values keyed by their semantic names.
+        """
         # default common fields for both twotime and multitau analysis;
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
 
@@ -259,7 +296,22 @@ class XpcsFile(object):
         ret["abs_cross_section_scale"] = 1.0
         return ret
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str):
+        """Attribute fallback that delegates to :attr:`qmap`, SAXS-2D lazy load, FFTs, or partial G2 datasets.
+
+        This method is only invoked when normal attribute lookup fails. It first checks for
+        Q-map attributes, then lazily loads the large SAXS 2D array and its log variant,
+        computes an intensity FFT on demand, and finally falls back to ``__dict__`` contents.
+
+        Args:
+            key: Attribute name being accessed.
+
+        Returns:
+            The requested attribute value.
+
+        Raises:
+            KeyError: If *key* is not found in the qmap or instance dict.
+        """
         # keys from qmap
         if key in [
             "sqlist",
@@ -320,7 +372,16 @@ class XpcsFile(object):
         else:
             raise KeyError(f"key [{key}] not found")
 
-    def get_info_at_position(self, x, y):
+    def get_info_at_position(self, x: int, y: int) -> str | None:
+        """Return a formatted string with scattering intensity and Q-map values at *(x, y)*.
+
+        Args:
+            x: Column pixel index on the 2D detector.
+            y: Row pixel index on the 2D detector.
+
+        Returns:
+            Formatted intensity + Q-map info, or ``None`` if out of bounds.
+        """
         x, y = int(x), int(y)
         shape = self.saxs_2d.shape
         if x < 0 or x >= shape[1] or y < 0 or y >= shape[0]:
@@ -330,16 +391,44 @@ class XpcsFile(object):
             qmap_info = self.qmap.get_qmap_at_pos(x, y)
             return f"I={scat_intensity:.4e} {qmap_info}"
 
-    def get_detector_extent(self):
+    def get_detector_extent(self) -> tuple[float, float, float, float]:
+        """Return the Q-value extent of the detector (qx_min, qx_max, qy_min, qy_max)."""
         return self.qmap.extent
 
-    def get_qbin_label(self, qbin: int, append_qbin: bool = False):
+    def get_qbin_label(self, qbin: int, append_qbin: bool = False) -> str:
+        """Delegate to :meth:`QMap.get_qbin_label` for this file's Q-map.
+
+        Args:
+            qbin: 1-based Q-bin index.
+            append_qbin: If ``True``, prepend ``"qbin=N, "`` to the label.
+
+        Returns:
+            Human-readable Q-bin label string.
+        """
         return self.qmap.get_qbin_label(qbin, append_qbin=append_qbin)
 
-    def get_qbinlist_at_qindex(self, qindex, zero_based=True):
+    def get_qbinlist_at_qindex(self, qindex: int, zero_based: bool = True) -> list[int]:
+        """Delegate to :meth:`QMap.get_qbinlist_at_qindex` for this file's Q-map.
+
+        Args:
+            qindex: Zero-based column index on the dynamic axis.
+            zero_based: If ``False``, return 1-based indices.
+
+        Returns:
+            List of valid Q-bin indices for that column.
+        """
         return self.qmap.get_qbinlist_at_qindex(qindex, zero_based=zero_based)
 
     def get_g2_stability_data(self, qrange=None, trange=None):
+        """Extract G2 stability data (partial G2 vs time) for a single file.
+
+        Args:
+            qrange: Optional Q-range filter ``(q_min, q_max)``.
+            trange: Optional time-range filter on the elapsed axis.
+
+        Returns:
+            Tuple of ``(q_values, t_elapsed, g2_array, g2_err_array, qbin_labels, frame_labels)``.
+        """
         assert "Multitau" in self.atype, "only multitau is supported"
         # qrange can be None
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
@@ -362,7 +451,16 @@ class XpcsFile(object):
 
         return qvalues, t_el, g2, g2_err, qbin_labels, labels
 
-    def get_G2_data(self, target="G2", delay_index=0):
+    def get_G2_data(self, target: str = "G2", delay_index: int = 0) -> np.ndarray:
+        """Extract a single G2 channel array (raw counts, correlations, or fraction) for one delay bin.
+
+        Args:
+            target: One of ``"G2"``, ``"IP"``, ``"IF"``, or ``"g2_per_pixel"``.
+            delay_index: Index into the first (delay) axis.
+
+        Returns:
+            2D detector array for the requested channel.
+        """
         assert target in ["G2", "IP", "IF", "g2_per_pixel"]
         G2 = self.G2
         delay_index = min(delay_index, G2.shape[0] - 1)
@@ -376,7 +474,20 @@ class XpcsFile(object):
             g2_per_pixel = G2[delay_index, 0] / denominator
             return g2_per_pixel
 
-    def get_g2_data(self, qrange=None, trange=None):
+    def get_g2_data(
+        self,
+        qrange: tuple[float, float] | None = None,
+        trange: tuple[float, float] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str]]:
+        """Return multitau G2 data optionally filtered by Q-range and time range.
+
+        Args:
+            qrange: ``(q_min, q_max)`` filter or ``None`` for all Q values.
+            trange: ``(t_min, t_max)`` filter on the elapsed time axis.
+
+        Returns:
+            Tuple of ``(q_values, t_elapsed, g2_array, g2_err_array, labels)``.
+        """
         assert "Multitau" in self.atype, "only multitau is supported"
         # qrange can be None
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
@@ -407,6 +518,20 @@ class XpcsFile(object):
         norm_method=None,
         target="saxs1d",
     ):
+        """Extract SAXS 1D data with optional background subtraction, Q filtering, and normalization.
+
+        Args:
+            bkg_xf: Background :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` for subtraction.
+            bkg_weight: Weighting factor for background subtraction.
+            qrange: Optional ``(q_min, q_max)`` filter.
+            sampling: Q-axis subsample factor.
+            use_absolute_crosssection: Apply absolute cross-section scaling.
+            norm_method: Normalisation mode — ``None``, ``"q2"``, ``"q4"``, or ``"I0"``.
+            target: Data source — ``"saxs1d"`` or ``"saxs1d_partial"``.
+
+        Returns:
+            Tuple of ``(q, Iq, xlabel, ylabel)`` where *xlabel* and *ylabel* describe the axes.
+        """
         assert target in ["saxs1d", "saxs1d_partial"]
         if target == "saxs1d":
             q, Iq = self.saxs_1d["q"], self.saxs_1d["Iq"]
@@ -437,7 +562,19 @@ class XpcsFile(object):
         q, Iq, xlabel, ylabel = self.norm_saxs_data(q, Iq, norm_method=norm_method)
         return q, Iq, xlabel, ylabel
 
-    def norm_saxs_data(self, q, Iq, norm_method=None):
+    def norm_saxs_data(
+        self, q: np.ndarray, Iq: np.ndarray, norm_method: str | None = None
+    ) -> tuple[np.ndarray, np.ndarray, str, str]:
+        """Apply an optional normalisation to SAXS 1D data (q², q⁴, or I₀ scaling).
+
+        Args:
+            q: Momentum-transfer array.
+            Iq: Intensity array (possibly multi-line).
+            norm_method: ``None``, ``"q2"``, ``"q4"``, or ``"I0"``.
+
+        Returns:
+            Tuple of ``(q, Iq_normalised, xlabel, ylabel)``.
+        """
         assert norm_method in (None, "q2", "q4", "I0")
         if norm_method is None:
             return q, Iq, "q (Å⁻¹)", "Intensity"
@@ -455,13 +592,23 @@ class XpcsFile(object):
         xlabel = "q (Å⁻¹)"
         return q, Iq, xlabel, ylabel
 
-    def get_twotime_qbin_labels(self):
+    def get_twotime_qbin_labels(self) -> list[str]:
+        """Generate human-readable labels for each C2-processed Q-bin."""
         qbin_labels = []
         for qbin in self.c2_processed_bins.tolist():
             qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
         return qbin_labels
 
-    def get_cropped_qmap(self, target="dqmap", enabled=True):
+    def get_cropped_qmap(self, target: str = "dqmap", enabled: bool = True) -> np.ndarray:
+        """Return the cropped Q-map (or S-map) array limited to valid detector pixels.
+
+        Args:
+            target: Either ``"dqmap"`` or ``"sqmap"``.
+            enabled: If ``True``, crop to the bounding box of non-zero entries.
+
+        Returns:
+            2D Numpy array cropped to the active region.
+        """
         assert target in ["dqmap", "sqmap"]
         obj = getattr(self, target).copy()
         if enabled:
@@ -471,21 +618,45 @@ class XpcsFile(object):
             obj = obj[sl_v, sl_h]
         return obj
 
-    def get_offseted_g2(self, normalization=False):
+    def get_offseted_g2(self, normalization: bool = False) -> np.ndarray:
+        """Return a copy of the multitau G2 data with optional baseline offset.
+
+        Args:
+            normalization: If ``True``, subtract the first-frame baseline and restore
+                its mean level.
+
+        Returns:
+            Offset- or normalised G2 array.
+        """
         g2 = self.g2.copy()
         if normalization:
             g2_baseline = g2[0]
             g2 = g2 - g2_baseline + np.mean(g2_baseline)
         return g2
 
-    def regroup_G2(self, **kwargs):
+    def regroup_G2(self, **kwargs) -> None:
+        """Re-group the per-pixel G2 correlation data into multitau bins.
+
+        The result is stored in-place as ``self.g2`` and ``self.g2_err``.
+
+        Args:
+            **kwargs: Forwarded to :func:`g2_utils.regroup_G2`.
+        """
         from .g2_utils import regroup_G2
 
         avg_result = regroup_G2(self.fname, {"G2": self.G2}, **kwargs)
         self.g2 = avg_result["g2"]
         self.g2_err = avg_result["g2_err"]
 
-    def save_G2(self, save_fname=None):
+    def save_G2(self, save_fname: str | None = None) -> bool:
+        """Save the current ``self.g2`` / ``self.g2_err`` back to an HDF5 file.
+
+        Args:
+            save_fname: Destination path; defaults to ``self.fname`` (overwrites).
+
+        Returns:
+            ``True`` on success, ``False`` if an exception occurred.
+        """
         from .g2_utils import save_G2_to_file
 
         try:
@@ -500,8 +671,25 @@ class XpcsFile(object):
         return True
 
     def get_twotime_maps(
-        self, scale="log", auto_crop=True, highlight_xy=None, selection=None
-    ):
+        self,
+        scale: str = "log",
+        auto_crop: bool = True,
+        highlight_xy: tuple[int, int] | None = None,
+        selection: int | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, int | None]:
+        """Return the detector Q-map overlay and SAXS 2D background for two-time analysis display.
+
+        Optionally highlights a specific q-bin or pixel position by modifying the colour map index.
+
+        Args:
+            scale: Display scale — ``"log"`` or ``"linear"``.
+            auto_crop: Crop the Q-map to its active bounding box.
+            highlight_xy: Pixel coordinates whose q-bin will be highlighted.
+            selection: Direct q-bin index to highlight (mutually exclusive with *highlight_xy*).
+
+        Returns:
+            Tuple of ``(dqmap_display, saxs_2d_background, selected_qbin_index)``.
+        """
         # emphasize the beamstop region which has qindex = 0;
         if scale == "log":
             saxs = self.saxs_2d_log
@@ -533,7 +721,19 @@ class XpcsFile(object):
             selection = None
         return dqmap_disp, saxs, selection
 
-    def get_twotime_c2(self, selection=0, correct_diag=True, max_size=32678):
+    def get_twotime_c2(
+        self, selection: int = 0, correct_diag: bool = True, max_size: int = 32678
+    ) -> dict[str, np.ndarray | float | int]:
+        """Retrieve the C2 matrix for a single q-bin (cached per call signature).
+
+        Args:
+            selection: Index into ``c2_processed_bins``.
+            correct_diag: Apply diagonal correction.
+            max_size: Maximum dimension for the returned C2 matrix.
+
+        Returns:
+            Dict with keys ``c2_mat``, ``delta_t``, ``acquire_period``, etc.
+        """
         dq_processed = tuple(self.c2_processed_bins.tolist())
         assert selection >= 0 and selection < len(dq_processed), (
             f"selection {selection} out of range {dq_processed}"
@@ -553,10 +753,16 @@ class XpcsFile(object):
             self.c2_kwargs = config
         return c2_result
 
-    def get_twotime_stream(self, **kwargs):
-        return get_c2_stream(self.fname, **kwargs)
+    def get_twotime_stream(self, **kwargs) -> tuple[list[str], object]:
+        """Return the C2 stream index list and a generator yielding C2 blocks.
 
-    # def get_g2_fitting_line(self, q, tor=1e-6):
+        Args:
+            **kwargs: Forwarded to :func:`twotime_utils.get_c2_stream`.
+
+        Returns:
+            Tuple of ``(idxlist, generator)`` where each yielded value is ``(index, c2_array)``.
+        """
+        return get_c2_stream(self.fname, **kwargs)
     #     """
     #     get the fitting line for q, within tor
     #     """
@@ -570,7 +776,16 @@ class XpcsFile(object):
     #     fit_y = self.fit_summary["fit_line"][idx]["fit_y"]
     #     return fit_x, fit_y
 
-    def get_fitting_info(self, mode="g2_fitting"):
+    def get_fitting_info(self, mode: str = "g2_fitting") -> dict | str:
+        """Format the stored fitting summary into a human-readable dictionary or message.
+
+        Args:
+            mode: Either ``"g2_fitting"`` or ``"tauq_fitting"``.
+
+        Returns:
+            Dict of fitting results for g2 mode, or a descriptive string when no
+            fit is available or an unknown *mode* is requested.
+        """
         if self.fit_summary is None:
             return "fitting is not ready for %s" % self.label
 
@@ -672,7 +887,16 @@ class XpcsFile(object):
         return self.fit_summary
 
     @staticmethod
-    def correct_g2_err(g2_err=None, threshold=1e-6):
+    def correct_g2_err(g2_err: np.ndarray | None = None, threshold: float = 1e-6) -> np.ndarray:
+        """Replace near-zero G2 errors with the column mean to prevent fitting divergence.
+
+        Args:
+            g2_err: Error array of shape ``(time, q_bins)``.
+            threshold: Below this value an error is considered too small.
+
+        Returns:
+            A copy of *g2_err* with corrected errors.
+        """
         # correct the err for some data points with really small error, which
         # may cause the fitting to blowup
 
@@ -689,7 +913,23 @@ class XpcsFile(object):
 
         return g2_err_mod
 
-    def fit_tauq(self, q_range, bounds, fit_flag):
+    def fit_tauq(
+        self,
+        q_range: tuple[float, float],
+        bounds: tuple[np.ndarray, np.ndarray],
+        fit_flag: list[bool],
+    ) -> dict | None:
+        """Fit ``tau(q)`` to a power law after g2 fitting is complete.
+
+        Args:
+            q_range: ``(q_min, q_max)`` range for selecting data points.
+            bounds: Lower and upper parameter bounds for the fit.
+            fit_flag: Boolean flags indicating which parameters are free.
+
+        Returns:
+            Updated ``fit_summary`` dict (with tau-q fitting keys) or ``None`` if
+            no g2 fit summary is available.
+        """
         if self.fit_summary is None:
             return
 
@@ -733,7 +973,21 @@ class XpcsFile(object):
 
         return self.fit_summary
 
-    def get_roi_data(self, roi_parameter, phi_num=180):
+    def get_roi_data(
+        self, roi_parameter: dict, phi_num: int = 180
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Extract SAXS 1D data within a circular or pie-slice ROI on the detector.
+
+        Supports ``"Pie"`` (angular sector) and ``"Ring"`` (radial annulus) ROI types.
+
+        Args:
+            roi_parameter: Dict containing at least ``sl_type`` and either
+                ``angle_range`` / ``radius`` and optionally ``dist``.
+            phi_num: Number of bins for ring-type ROIs (azimuthal resolution).
+
+        Returns:
+            Tuple of ``(x_axis, intensity_array)`` — either *q-intensity* or *phi-intensity*.
+        """
         qmap_all = self.compute_qmap()
         qmap = qmap_all["q"]
         pmap = qmap_all["phi"]
@@ -799,7 +1053,16 @@ class XpcsFile(object):
             saxs_roi = saxs_roi[1:]
             return x, saxs_roi
 
-    def export_saxs1d(self, roi_list, folder):
+    def export_saxs1d(self, roi_list: list[dict], folder: str) -> None:
+        """Write SAXS 1D data (ROI-extracted and full) to text files in *folder*.
+
+        Args:
+            roi_list: List of ROI parameter dicts (each with ``sl_type``).
+            folder: Destination directory for the output ``.txt`` files.
+
+        Returns:
+            None. Creates one file per ROI plus a combined ``saxs1d.txt`` file.
+        """
         # export ROI
         idx = 0
         for roi in roi_list:
@@ -824,6 +1087,7 @@ class XpcsFile(object):
 
 
 def test1():
+    """Quick smoke-test script: load an example file and call ``plot_saxs2d``."""
     cwd = "../../../xpcs_data"
     af = XpcsFile(fname="N077_D100_att02_0128_0001-100000.hdf", cwd=cwd)
     af.plot_saxs2d()

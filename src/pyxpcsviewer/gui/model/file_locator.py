@@ -5,8 +5,8 @@ import time
 import traceback
 
 from ...core.fileIO.qmap_utils import QMapManager
-from .listmodel import ListDataModel
 from ...core.xpcs_file import XpcsFile as XF
+from .listmodel import ListDataModel
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +17,23 @@ def create_xpcs_dataset(fname, **kwargs):
     """
     try:
         temp = XF(fname, **kwargs)
-    except Exception as e:
+    except Exception:
         logger.error("failed to load file: %s", fname)
         logger.error(traceback.format_exc())
         temp = None
     return temp
 
 
-class FileLocator(object):
-    def __init__(self, path):
+class FileLocator:
+    """Locate XPCS result files, manage source/target lists, and cache loaded
+    :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` objects."""
+
+    def __init__(self, path: str):
+        """Initialize with a data directory path.
+
+        Args:
+            path: Directory containing ``*_result.hdf`` or ``*_result.h5`` files.
+        """
         self.path = path
         self.source = ListDataModel()
         self.source_search = ListDataModel()
@@ -34,10 +42,16 @@ class FileLocator(object):
         self.cache = {}
         self.timestamp = None
 
-    def set_path(self, path):
+    def set_path(self, path: str) -> None:
+        """Update the data directory path.
+
+        Args:
+            path: New directory to scan for result files.
+        """
         self.path = path
 
-    def clear(self):
+    def clear(self) -> None:
+        """Clear the source and source-search lists."""
         self.source.clear()
         self.source_search.clear()
 
@@ -47,10 +61,7 @@ class FileLocator(object):
         :param rows: a list of index to select; if None is given, then use
         :return: list of xpcs_file objects;
         """
-        if not rows:
-            selected = list(range(len(self.target)))
-        else:
-            selected = rows
+        selected = rows if rows else list(range(len(self.target)))
 
         ret = []
         for n in selected:
@@ -64,9 +75,7 @@ class FileLocator(object):
             xf_obj = self.cache[full_fname]
             if xf_obj.fit_summary is None and filter_fitted:
                 continue
-            if filter_atype is None:
-                ret.append(xf_obj)
-            elif filter_atype in xf_obj.atype:
+            if filter_atype is None or filter_atype in xf_obj.atype:
                 ret.append(xf_obj)
         return ret
 
@@ -82,7 +91,17 @@ class FileLocator(object):
         )
         return xf_obj.get_hdf_info(filter_str)
 
-    def add_target(self, alist, threshold=256, preload=True):
+    def add_target(self, alist: list[str], threshold: int = 256, preload: bool = True) -> None:
+        """Add a list of filenames to the target model and cache.
+
+        For small batches (≤ *threshold*) each file is loaded into the
+        ``XpcsFile`` cache; larger batches are deferred.
+
+        Args:
+            alist: List of relative or absolute filenames to add.
+            threshold: File count above which preloading is skipped.
+            preload: If ``True``, load files into cache for small batches.
+        """
         if not alist:
             return
         if preload and len(alist) <= threshold:
@@ -105,11 +124,17 @@ class FileLocator(object):
         self.timestamp = str(datetime.datetime.now())
         return
 
-    def clear_target(self):
+    def clear_target(self) -> None:
+        """Clear the target list and its file cache."""
         self.target.clear()
         self.cache.clear()
 
-    def remove_target(self, rlist):
+    def remove_target(self, rlist: list[str]) -> None:
+        """Remove a list of paths from the target model and cache.
+
+        Args:
+            rlist: Paths to remove.
+        """
         for x in rlist:
             if x in self.target:
                 self.target.remove(x)
@@ -118,7 +143,16 @@ class FileLocator(object):
             self.clear_target()
         self.timestamp = str(datetime.datetime.now())
 
-    def reorder_target(self, row, direction="up"):
+    def reorder_target(self, row: int, direction: str = "up") -> int:
+        """Move the target entry at *row* up or down.
+
+        Args:
+            row: Zero-based index of the target entry to move.
+            direction: Either ``"up"`` or ``"down"``.
+
+        Returns:
+            New index on success, or ``-1`` if no move was needed.
+        """
         size = len(self.target)
         assert 0 <= row < size, "check row value"
         if (direction == "up" and row == 0) or (
@@ -133,7 +167,13 @@ class FileLocator(object):
         self.timestamp = str(datetime.datetime.now())
         return idx
 
-    def search(self, val, filter_type="prefix"):
+    def search(self, val: str, filter_type: str = "prefix") -> None:
+        """Filter the source list by prefix or substring and populate ``source_search``.
+
+        Args:
+            val: Search string. Multiple space-separated words require all to match in *substr* mode.
+            filter_type: Either ``"prefix"`` or ``"substr"``.
+        """
         assert filter_type in [
             "prefix",
             "substr",
@@ -146,7 +186,25 @@ class FileLocator(object):
         self.source_search.replace(selected)
         return
 
-    def build(self, path=None, filter_list=(".hdf", ".h5"), sort_method="Filename"):
+    def build(
+        self,
+        path: str | None = None,
+        filter_list: tuple[str, ...] = (".hdf", ".h5"),
+        sort_method: str = "Filename",
+    ) -> bool:
+        """Scan a directory for XPCS result files and populate the source model.
+
+        Files are filtered by extension and sorted according to *sort_method*.
+
+        Args:
+            path: Directory to scan (also stored as ``self.path``).
+            filter_list: Allowed file extensions.
+            sort_method: One of ``"Filename"``, ``"Time"``, or ``"Index"``, each
+                optionally suffixed with ``"-reverse"``.
+
+        Returns:
+            ``True`` on success.
+        """
         self.path = path
         flist = [
             entry.name

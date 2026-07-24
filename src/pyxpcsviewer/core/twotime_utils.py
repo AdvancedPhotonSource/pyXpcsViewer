@@ -7,7 +7,18 @@ from .fileIO.aps_8idi import key as key_map
 key_map = key_map["nexus"]
 
 
-def correct_diagonal_c2(c2_mat):
+def correct_diagonal_c2(c2_mat: np.ndarray) -> np.ndarray:
+    """Correct diagonal elements of a C2 matrix using side-band averaging.
+
+    Replaces each diagonal entry with an average of its off-diagonal neighbours
+    weighted by the number of contributing side bands.
+
+    Args:
+        c2_mat: Square (N x N) C2 array in place.
+
+    Returns:
+        The modified *c2_mat* with corrected diagonals.
+    """
     size = c2_mat.shape[0]
     side_band = c2_mat[(np.arange(size - 1), np.arange(1, size))]
     diag_val = np.zeros(size)
@@ -19,7 +30,16 @@ def correct_diagonal_c2(c2_mat):
     return c2_mat
 
 
-def read_single_c2(args):
+def read_single_c2(args: tuple[str, str, int, bool]) -> tuple[np.ndarray, int]:
+    """Read a single C2 block from an HDF5 file and optionally correct its diagonal.
+
+    Args:
+        args: Tuple of ``(full_path, index_str, max_size, correct_diag)``.
+
+    Returns:
+        Tuple of ``(c2_matrix, sampling_rate)`` where *sampling_rate* reflects any
+        decimation applied when *max_size* is positive.
+    """
     full_path, index_str, max_size, correct_diag = args
     c2_prefix = key_map["c2_prefix"]
     with h5py.File(full_path, "r") as f:
@@ -38,13 +58,27 @@ def read_single_c2(args):
 
 @lru_cache(maxsize=16)
 def get_all_c2_from_hdf(
-    full_path,
-    dq_selection=None,
-    max_c2_num=32,
-    max_size=512,
-    num_workers=12,
-    correct_diag=True,
-):
+    full_path: str,
+    dq_selection: list[int] | None = None,
+    max_c2_num: int = 32,
+    max_size: int = 512,
+    num_workers: int = 12,
+    correct_diag: bool = True,
+) -> dict[str, np.ndarray | float | int | list[int] | None]:
+    """Read all C2 blocks from an HDF5 file (parallelised with a process pool).
+
+    Args:
+        full_path: Absolute path to the HDF5 result file.
+        dq_selection: List of q-bin indices to load; ``None`` loads all.
+        max_c2_num: Maximum number of C2 blocks to read (``0`` = unlimited).
+        max_size: Max dimension for each C2 matrix.
+        num_workers: Process pool size.
+        correct_diag: Whether to apply diagonal correction.
+
+    Returns:
+        Dict with keys ``c2_all``, ``delta_t``, ``acquire_period``, ``dq_selection``.
+        Returns ``None`` if no C2 prefix exists in the file.
+    """
     # t0 = time.perf_counter()
     idx_toload = []
     c2_prefix = key_map["c2_prefix"]
@@ -85,8 +119,21 @@ def get_all_c2_from_hdf(
 
 @lru_cache(maxsize=16)
 def get_single_c2_from_hdf(
-    full_path, selection=0, max_size=512, t0=1, correct_diag=True
-):
+    full_path: str, selection: int = 0, max_size: int = 512, t0: float = 1, correct_diag: bool = True
+) -> dict[str, np.ndarray | float | int]:
+    """Read a single C2 block and its associated G2 partials from an HDF5 file.
+
+    Args:
+        full_path: Absolute path to the HDF5 result file.
+        selection: Index of the C2 block to read.
+        max_size: Max dimension for the C2 matrix.
+        t0: Time step multiplier.
+        correct_diag: Whether to apply diagonal correction.
+
+    Returns:
+        Dict with keys ``c2_mat``, ``delta_t``, ``acquire_period``, ``dq_selection``,
+        ``g2_full``, and ``g2_partial``. Returns ``None`` if no C2 prefix exists.
+    """
     c2_prefix = key_map["c2_prefix"]
     with h5py.File(full_path, "r") as f:
         if c2_prefix not in f:
@@ -107,7 +154,15 @@ def get_single_c2_from_hdf(
 
 
 @lru_cache(maxsize=16)
-def get_c2_g2partials_from_hdf(full_path):
+def get_c2_g2partials_from_hdf(full_path: str) -> dict[str, np.ndarray] | None:
+    """Read the full and partial G2 arrays stored alongside C2 data in an HDF5 file.
+
+    Args:
+        full_path: Absolute path to the HDF5 result file.
+
+    Returns:
+        Dict with keys ``g2_full`` and ``g2_partial``, or ``None`` if no C2 prefix exists.
+    """
     # t0 = time.perf_counter()
     c2_prefix = key_map["c2_prefix"]
     g2_full_key = key_map["c2_g2"]  # Dataset {5000, 25}
@@ -140,6 +195,7 @@ def get_c2_stream(full_path, max_size=-1):
             idxlist = []  # Return empty list if prefix is missing
 
     def generator():
+        """Yield ``(index_int, c2_array)`` tuples for every C2 block in the file."""
         for idx in idxlist:  # Use idxlist for iteration
             c2, sampling_rate = read_single_c2((full_path, idx, max_size, True))
             yield int(idx[3:]), c2

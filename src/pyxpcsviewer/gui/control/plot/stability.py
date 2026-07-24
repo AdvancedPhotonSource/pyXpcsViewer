@@ -4,13 +4,25 @@ from .saxs1d import get_pyqtgraph_anchor_params, plot_line_with_marker
 def plot(
     fc,
     pg_hdl,
-    plot_type=2,
-    plot_norm=0,
+    plot_type: int = 2,
+    plot_norm: int = 0,
     legend=None,
-    title=None,
-    loc="upper right",
+    title: str | None = None,
+    loc: str = "upper right",
     **kwargs,
-):
+) -> None:
+    """Plot SAXS-1D segments (partial intensity vs Q) with optional log-log display.
+
+    Args:
+        fc: An :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instance.
+        pg_hdl: pyqtgraph ``PlotWidget`` to draw on.
+        plot_type: Bitmask controlling axes — bit 0 = x-log, bits 1-2 = y-log.
+        plot_norm: Normalisation index (0=None, 1=q², 2=q⁴, 3=I₀).
+        legend: Existing legend object to anchor (re-created if ``None``).
+        title: Plot title shown as the file label.
+        loc: Anchor position for the legend box.
+        **kwargs: Ignored (reserved for future extensions).
+    """
     pg_hdl.clear()
     plot_item = pg_hdl.getPlotItem()
 

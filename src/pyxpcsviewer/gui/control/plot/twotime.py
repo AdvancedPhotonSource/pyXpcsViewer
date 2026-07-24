@@ -18,16 +18,30 @@ PG_COLORS = [
 def plot_twotime(
     xfile,
     hdl,
-    scale="log",
-    auto_crop=True,
-    highlight_xy=None,
-    cmap="jet",
-    vmin=None,
-    vmax=None,
-    autolevel=True,
-    correct_diag=False,
-    selection=0,
-):
+    scale: str = "log",
+    auto_crop: bool = True,
+    highlight_xy: tuple[int, int] | None = None,
+    cmap: str = "jet",
+    vmin: float | None = None,
+    vmax: float | None = None,
+    autolevel: bool = True,
+    correct_diag: bool = False,
+    selection: int = 0,
+) -> None:
+    """Plot two-time correlation (C2) maps alongside SAXS-2D background and G2 traces.
+
+    Args:
+        xfile: An :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` with ``Twotime`` data.
+        hdl: Dict-like handle mapping names to ``ImageView`` / ``PlotWidget`` widgets.
+        scale: ``"log"`` or ``"linear"`` for the SAXS-2D background display.
+        auto_crop: Crop Q-map to its active bounding box.
+        highlight_xy: Pixel coordinates whose q-bin is highlighted on the Q-map.
+        cmap: Colour map for all image displays.
+        vmin / vmax: Manual colour range (ignored if *autolevel*).
+        autolevel: Auto-scale colour levels each call.
+        correct_diag: Apply diagonal correction to the C2 matrix.
+        selection: Q-bin index for the C2 block.
+    """
     assert "Twotime" in xfile.atype, "Not a twotime file"
 
     # display dqmap and saxs
@@ -64,7 +78,13 @@ def plot_twotime(
     plot_twotime_g2(hdl, c2_result)
 
 
-def plot_twotime_g2(hdl, c2_result):
+def plot_twotime_g2(hdl, c2_result) -> None:
+    """Plot full G2 and partial G2 traces inside the C2 plot area.
+
+    Args:
+        hdl: Dict-like handle with a ``"c2g2"`` key pointing to a pyqtgraph PlotWidget.
+        c2_result: Dict returned by :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_twotime_c2`.
+    """
     g2_full, g2_partial = c2_result["g2_full"], c2_result["g2_partial"]
 
     hdl["c2g2"].clear()

@@ -8,10 +8,21 @@ logger = logging.getLogger(__name__)
 
 
 class QMapManager:
+    """Cache manager for :class:`QMap` objects keyed by content hash."""
+
     def __init__(self):
+        """Initialize an empty cache dictionary."""
         self.db = {}
 
-    def get_qmap(self, fname):
+    def get_qmap(self, fname: str) -> "QMap":
+        """Return a :class:`QMap` for *fname*, loading from disk only once.
+
+        Args:
+            fname: Path to the HDF5 result file.
+
+        Returns:
+            A :class:`QMap` instance (cached by content hash).
+        """
         hash_value = get_hash(fname)  # Compute hash
         if hash_value not in self.db:
             qmap = QMap(fname=fname)
@@ -20,7 +31,19 @@ class QMapManager:
 
 
 class QMap:
+    """Detector Q-map extracted from a NeXus HDF5 result file.
+
+    Holds masks, scattering maps, beam center, pixel geometry, and
+    computed q-value arrays (qx, qy, phi, alpha).
+    """
+
     def __init__(self, fname=None, root_key="/xpcs/qmap"):
+        """Initialize and load Q-map datasets from *fname*.
+
+        Args:
+            fname: Path to the HDF5 result file.
+            root_key: HDF5 group path for Q-map data.
+        """
         self.root_key = root_key
         self.fname = fname
         self.load_dataset()
@@ -28,7 +51,12 @@ class QMap:
         self.qmap, self.qmap_units = self.compute_qmap()
         self.qbin_labels = self.create_qbin_labels()
 
-    def load_dataset(self):
+    def load_dataset(self) -> dict:
+        """Read all Q-map datasets from the HDF5 file into instance attributes.
+
+        Returns:
+            Dict mapping dataset names to their loaded values.
+        """
         info = {}
         with h5py.File(self.fname, "r") as f:
             for key in (
@@ -77,7 +105,16 @@ class QMap:
         extent = (qx_min, qx_max, qy_min, qy_max)
         return extent
 
-    def get_qmap_at_pos(self, x, y):
+    def get_qmap_at_pos(self, x: int, y: int) -> str | None:
+        """Return a formatted string of Q-map values at detector pixel *(x, y)*.
+
+        Args:
+            x: Column index in the detector mask.
+            y: Row index in the detector mask.
+
+        Returns:
+            Formatted string of q-value pairs, or ``None`` if out of bounds.
+        """
         shape = self.mask.shape
         if x < 0 or x >= shape[1] or y < 0 or y >= shape[0]:
             return None
@@ -93,7 +130,12 @@ class QMap:
                     result += f" {key}={qmap[key][y, x]} {qmap_units[key]},"
             return result[:-1]
 
-    def create_qbin_labels(self):
+    def create_qbin_labels(self) -> list[str]:
+        """Generate human-readable labels for each Q-bin from dynamic/static lists.
+
+        Returns:
+            List of label strings (single or double-axis depending on configuration).
+        """
         if self.map_names == ["q", "phi"]:
             label_0 = [f"q={x:.5f} {self.map_units[0]}" for x in self.dqlist]
             label_1 = [f"φ={y:.1f} {self.map_units[1]}" for y in self.dplist]
@@ -114,7 +156,16 @@ class QMap:
                     combined_list.append(f"{item_a}, {item_b}")
             return combined_list
 
-    def get_qbin_label(self, qbin: int, append_qbin=False):
+    def get_qbin_label(self, qbin: int, append_qbin: bool = False) -> str:
+        """Return the label string for a given Q-bin index.
+
+        Args:
+            qbin: 1-based Q-bin index.
+            append_qbin: If ``True``, prepend ``"qbin=N, "`` to the label.
+
+        Returns:
+            Formatted label string, or ``"invalid qbin"`` if out of range.
+        """
         qbin_absolute = self.dynamic_index_mapping[qbin - 1]
         if qbin_absolute < 0 or qbin_absolute > len(self.qbin_labels):
             return "invalid qbin"
@@ -124,7 +175,16 @@ class QMap:
                 label = f"qbin={qbin}, {label}"
             return label
 
-    def get_qbin_in_qrange(self, qrange, zero_based=True):
+    def get_qbin_in_qrange(self, qrange: tuple[float, float] | None, zero_based: bool = True) -> tuple[np.ndarray, np.ndarray]:
+        """Return Q-bin indices and corresponding q-values within a Q-range.
+
+        Args:
+            qrange: ``(qmin, qmax)`` pair, or ``None`` to select all bins.
+            zero_based: If ``True``, return zero-based numpy indices.
+
+        Returns:
+            Tuple of ``(valid_qbin_indices, q_values)``, where both are arrays.
+        """
         if self.map_names[0] != "q":
             logger.info("qrange is only supported for qmaps with 0-axis as q")
             qrange = None
@@ -152,7 +212,16 @@ class QMap:
             qbin_valid += 1
         return qbin_valid, qvalues
 
-    def get_qbinlist_at_qindex(self, qindex, zero_based=True):
+    def get_qbinlist_at_qindex(self, qindex: int, zero_based: bool = True) -> list[int]:
+        """Return Q-bin indices corresponding to a single dynamic-axis column.
+
+        Args:
+            qindex: Zero-based index into the dynamic axis.
+            zero_based: If ``False``, return 1-based indices.
+
+        Returns:
+            List of valid Q-bin indices for that column.
+        """
         # qindex is zero based; index of dyanmic_map_dim0
         # assert self.map_names == ["q", "phi"], "only q-phi map is supported"
         qp_idx = np.ones(self.dynamic_num_pts, dtype=int).flatten() * (-1)
@@ -164,7 +233,13 @@ class QMap:
             qbin_list = [idx + 1 for idx in qbin_list]
         return qbin_list
 
-    def compute_qmap(self):
+    def compute_qmap(self) -> tuple[dict, dict]:
+        """Compute q-value arrays from detector geometry (pixel positions, beam center, energy).
+
+        Returns:
+            Tuple of ``(qmap_dict, unit_dict)`` containing per-pixel q, qx, qy, phi, alpha
+            and their corresponding units.
+        """
         shape = self.mask.shape
         v = np.arange(shape[0], dtype=np.uint32) - self.bcy
         h = np.arange(shape[1], dtype=np.uint32) - self.bcx
@@ -259,11 +334,21 @@ def get_hash(fname, root_key="/xpcs/qmap"):
         return f[root_key].attrs["hash"]
 
 
-def get_qmap(fname, **kwargs):
+def get_qmap(fname: str, **kwargs) -> "QMap":
+    """Convenience function to create and return a :class:`QMap`.
+
+    Args:
+        fname: Path to the HDF5 result file.
+        **kwargs: Additional keyword arguments forwarded to :class:`QMap`.
+
+    Returns:
+        A new :class:`QMap` instance.
+    """
     return QMap(fname, **kwargs)
 
 
 def test_qmap_manager():
+    """Smoke-test: load three Q-maps and print elapsed time."""
     import time
 
     for i in range(5):

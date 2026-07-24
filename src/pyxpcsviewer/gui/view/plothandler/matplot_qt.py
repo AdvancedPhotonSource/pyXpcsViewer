@@ -1,12 +1,12 @@
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
-from matplotlib.figure import Figure
-from PySide6 import QtWidgets, QtCore
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
-import numpy as np
-import matplotlib.pyplot as plt
 import random
 import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.figure import Figure
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
 # hide the lines in legend
 # https://stackoverflow.com/questions/21285885
@@ -32,7 +32,16 @@ colors = (
 )
 
 
-def get_color_marker(n, backend="matplotlib"):
+def get_color_marker(n: int, backend: str = "matplotlib") -> tuple[str, str]:
+    """Return a colour and marker symbol for the n-th data series.
+
+    Args:
+        n: Series index (modulo-cycled through the palette).
+        backend: ``"matplotlib"`` or ``"pyqtgraph"`` — selects the marker set.
+
+    Returns:
+        Tuple of ``(colour_hex, marker_str)``.
+    """
     if backend == "matplotlib":
         mk = markers[n % len(markers)]
     elif backend == "pyqtgraph":
@@ -42,20 +51,35 @@ def get_color_marker(n, backend="matplotlib"):
 
 
 class NavigationToolbarSimple(NavigationToolbar2QT):
+    """Minimal :class:`NavigationToolbar2QT` with mouse-move disabled."""
+
     def __init__(self, *kw, **kwargs):
-        super(NavigationToolbarSimple, self).__init__(*kw, **kwargs)
+        """Initialize the simplified navigation toolbar.
+
+        Args:
+            *kw: Positional arguments forwarded to ``NavigationToolbar2QT``.
+            **kwargs: Keyword arguments forwarded to ``NavigationToolbar2QT``.
+        """
+        super().__init__(*kw, **kwargs)
 
     def mouse_move(self, event):
+        """Override to suppress mouse-move events (prevents unwanted toolbar behaviour)."""
         # just disable the mose_move event
         pass
 
 
 class MplCanvasBarH(QtWidgets.QWidget):
-    """
-    MplWidget combines a MplCanvas with a vertical toolbar
+    """A :class:`MplCanvas` widget with a vertical navigation toolbar.
+
+    Combines the canvas and toolbar in a horizontal layout.
     """
 
     def __init__(self, parent=None):
+        """Create the canvas, toolbar, and horizontal layout.
+
+        Args:
+            parent: Parent Qt widget.
+        """
         QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbarSimple(self.hdl, self)
@@ -67,16 +91,23 @@ class MplCanvasBarH(QtWidgets.QWidget):
         self.setLayout(self.hbl)
 
     def clear(self):
+        """Clear the underlying :class:`MplCanvas` and redraw."""
         self.hdl.clear()
         self.hdl.draw()
 
 
 class MplCanvasBarV(QWidget):
-    """
-    MplWidget combines a MplCanvas with a horizontal toolbar
+    """A :class:`MplCanvas` widget with a horizontal navigation toolbar.
+
+    Combines the toolbar (top) and canvas in a vertical layout.
     """
 
     def __init__(self, parent=None):
+        """Create the canvas, toolbar, and vertical layout.
+
+        Args:
+            parent: Parent Qt widget.
+        """
         QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbar2QT(self.hdl, self)
@@ -86,16 +117,19 @@ class MplCanvasBarV(QWidget):
         self.setLayout(self.vbl)
 
     def clear(self):
+        """Clear the underlying :class:`MplCanvas` and redraw."""
         self.hdl.clear()
         self.hdl.draw()
 
 
 class MplCanvasBar(QWidget):
-    """
-    MplWidget combines a MplCanvas with a Toolbar
+    """A :class:`MplCanvas` widget with a ``NavigationToolbarSimple`` toolbar.
+
+    Combines the canvas and toolbar in a vertical layout.
     """
 
     def __init__(self, parent=None):
+        """Create the canvas, simplified toolbar, and vertical layout."""
         QWidget.__init__(self, parent)
         self.hdl = MplCanvas()
         self.navi_toolbar = NavigationToolbarSimple(self.hdl, self)
@@ -107,10 +141,20 @@ class MplCanvasBar(QWidget):
 
 
 class MplCanvas(FigureCanvasQTAgg):
+    """Matplotlib canvas for the XPCS viewer — supports images, line plots, and scatter plots."""
+
     def __init__(self, parent=None, width=15, height=12, dpi=100):
+        """Initialize with a :class:`~matplotlib.figure.Figure` of given dimensions.
+
+        Args:
+            parent: Parent Qt widget.
+            width: Figure width in inches.
+            height: Figure height in inches.
+            dpi: Dots per inch.
+        """
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         # self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(self.fig)
+        super().__init__(self.fig)
         self.shape = None
         self.axes = None
         self.obj = None
@@ -118,6 +162,11 @@ class MplCanvas(FigureCanvasQTAgg):
         self.cids = []
 
     def link_line_builder(self, lb_type=None):
+        """Attach a :class:`LineBuilder` for interactive drawing on this canvas.
+
+        Args:
+            lb_type: Line-builder mode — ``"hline"``, ``"slope"``, or ``None`` to unlink.
+        """
         if lb_type is None:
             self.unlink_line_builder()
 
@@ -134,38 +183,54 @@ class MplCanvas(FigureCanvasQTAgg):
             )
             self.cids = [cid1, cid2]
 
-    def unlink_line_builder(self):
+    def unlink_line_builder(self) -> None:
+        """Remove the current :class:`LineBuilder` and its matplotlib event connections."""
         if self.line_builder is not None:
             for cid in self.cids:
                 self.fig.canvas.mpl_disconnect(cid)
             self.line_builder.clear()
             self.line_builder = None
 
-    def subplots(self, n, m, **kwargs):
+    def subplots(self, n: int, m: int, **kwargs):
+        """Create an ``n x m`` subplot grid and store axes references.
+
+        Args:
+            n: Number of rows.
+            m: Number of columns.
+            **kwargs: Forwarded to :meth:`matplotlib.figure.Figure.subplots`.
+
+        Returns:
+            The :class:`~matplotlib.axes.Axes` object (or array thereof).
+        """
         self.axes = self.fig.subplots(n, m, **kwargs)
         self.shape = (n, m)
         return self.axes
 
     def clear(self):
+        """Unlink line builder, clear axes, and reset internal state."""
         self.unlink_line_builder()
         self.clear_axes()
         self.fig.clear()
         self.axes = None
         self.obj = None
 
-    def adjust_canvas_size(self, num_col, num_row):
+    def adjust_canvas_size(self, num_col: int, num_row: int) -> None:
+        """Resize the canvas to maintain a good aspect ratio for a grid of subplots.
+
+        Args:
+            num_col: Number of columns in the plot grid.
+            num_row: Number of rows in the plot grid.
+        """
         t = self.parent().parent().parent()
-        if t is None:
-            aspect = 1 / 1.618
-        else:
-            aspect = t.height() / self.width()
+        aspect = 1 / 1.618 if t is None else t.height() / self.width()
 
         min_size = t.height() - 20
         width = self.width()
         canvas_size = max(min_size, int(width / num_col * aspect * num_row))
         self.setMinimumSize(QtCore.QSize(0, canvas_size))
 
-    def clear_axes(self):
+    def clear_axes(self) -> None:
+        """Clear all axes (single or multi-subplot)."""
         if self.axes is None:
             return
         else:
@@ -175,7 +240,15 @@ class MplCanvas(FigureCanvasQTAgg):
                 for ax in self.axes.ravel():
                     ax.clear()
 
-    def auto_scale(self, ylim=None, xlim=None, xscale=None, yscale=None):
+    def auto_scale(self, ylim=None, xlim=None, xscale=None, yscale=None) -> None:
+        """Rescale all axes to fit the data and optionally set scales/ranges.
+
+        Args:
+            ylim: Y-axis limits.
+            xlim: X-axis limits.
+            xscale: X-axis scale (``"linear"``, ``"log"``, etc.).
+            yscale: Y-axis scale.
+        """
         if self.axes is None:
             return
         else:
@@ -191,7 +264,15 @@ class MplCanvas(FigureCanvasQTAgg):
                 if xlim is not None:
                     ax.set_xlim(xlim)
 
-    def update_lin(self, loc, x, y, visible=True):
+    def update_lin(self, loc: int, x, y, visible: bool = True) -> None:
+        """Update an existing line object's data and visibility.
+
+        Args:
+            loc: Index into ``self.obj["lin"]``.
+            x: X-axis data.
+            y: Y-axis data.
+            visible: Whether the line is visible.
+        """
         if self.obj is None:
             return
         (lin_obj,) = self.obj["lin"][loc]
@@ -199,7 +280,15 @@ class MplCanvas(FigureCanvasQTAgg):
         lin_obj.set_visible(visible)
         return
 
-    def update_err(self, loc, x, y, y_error):
+    def update_err(self, loc: int, x, y, y_error) -> None:
+        """Update an error-bar object's data and error segments.
+
+        Args:
+            loc: Index into ``self.obj["err"]``.
+            x: X-axis data.
+            y: Y-axis data.
+            y_error: Error bar lengths.
+        """
         if self.obj is None:
             return
         err_obj = self.obj["err"][loc]
@@ -212,14 +301,38 @@ class MplCanvas(FigureCanvasQTAgg):
         vmin=None,
         vmax=None,
         extent=None,
-        cmap="seismic",
-        xlabel=None,
-        ylabel=None,
-        title=None,
+        cmap: str = "seismic",
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        title: str | None = None,
         id_list=None,
-        vline_freq=-1,
+        vline_freq: int = -1,
     ):
+        """Display a 2D image with optional colour bar, axis labels, and vertical grid lines.
+
+        Args:
+            data: 2D numpy array to display as an image.
+            vmin: Lower colour limit.
+            vmax: Upper colour limit.
+            extent: Data-to-pixel coordinate mapping for ``imshow``.
+            cmap: Matplotlib colormap name.
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            title: Plot title.
+            id_list: Optional list of tick labels (only when data has <20 columns).
+            vline_freq: Spacing in pixels for vertical reference lines (< 0 to skip).
+
+        Returns:
+            None. Draws an ``imshow`` or updates existing if called a second time.
+        """
         def add_vline(ax, stop, vline_freq):
+            """Draw vertical reference lines at regular intervals.
+
+            Args:
+                ax: Matplotlib axes to draw on.
+                stop: Last column index.
+                vline_freq: Spacing in pixels between lines.
+            """
             if vline_freq < 0:
                 return
             for x in np.arange(vline_freq, stop - 1, vline_freq):
@@ -264,15 +377,26 @@ class MplCanvas(FigureCanvasQTAgg):
     def show_lines(
         self,
         data,
-        xlabel=None,
-        ylabel=None,
-        title=None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        title: str | None = None,
         legend=None,
-        loc="best",
+        loc: str = "best",
         rows=None,
         marker_size=3,
     ):
+        """Plot one or more line curves with optional per-series alpha highlighting.
 
+        Args:
+            data: 2D array of shape ``(n_series, n_points)`` or list of ``(x, y)`` pairs.
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            title: Plot title.
+            legend: Series labels for the legend (``None``/``False`` uses auto-generated).
+            loc: Legend location string.
+            rows: Indices of series to highlight (full alpha); others are faded.
+            marker_size: Size of markers on each line.
+        """
         if legend in [None, False]:
             legend = np.arange(len(data))
 
@@ -333,13 +457,28 @@ class MplCanvas(FigureCanvasQTAgg):
         self,
         data,
         color=None,
-        xlabel=None,
-        ylabel=None,
-        title=None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        title: str | None = None,
         legend=None,
-        loc="best",
-        alpha=0.85,
+        loc: str = "best",
+        alpha: float = 0.85,
     ):
+        """Display a 2D scatter plot with an optional colour bar and legend.
+
+        Args:
+            data: 2D array of shape ``(2, n_points)`` — ``[x, y]``.
+            color: Colour mapping for each point (integer indices or RGB).
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            title: Plot title.
+            legend: Legend labels.
+            loc: Legend location string.
+            alpha: Point opacity.
+
+        Returns:
+            None. Clears any existing plot before rendering.
+        """
         if data.ndim != 2 or data.shape[0] != 2:
             raise ValueError("input data shape not supported")
         x, y = data[0], data[1]
@@ -364,7 +503,15 @@ class MplCanvas(FigureCanvasQTAgg):
 
 
 # https://github.com/matplotlib/matplotlib/issues/4556
-def adjust_yerr(err_obj, x, y, y_error):
+def adjust_yerr(err_obj, x, y, y_error) -> None:
+    """Update an error-bar artist's segment data for new positions.
+
+    Args:
+        err_obj: Error bar object returned by :meth:`matplotlib.axes.Axes.errorbar`.
+        x: X-axis coordinates.
+        y: Y-axis coordinates (baseline).
+        y_error: Half-length of each error bar.
+    """
     # not using error top / bot bar;
     # ln, (err_top, err_bot), (bars, ) = err_obj
     ln, _, (bars,) = err_obj
@@ -377,7 +524,7 @@ def adjust_yerr(err_obj, x, y, y_error):
     # err_bot.set_ydata(yerr_bot)
 
     new_segments = [
-        np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x, yerr_top, yerr_bot)
+        np.array([[x, yt], [x, yb]]) for x, yt, yb in zip(x, yerr_top, yerr_bot, strict=False)
     ]
 
     bars.set_segments(new_segments)
@@ -397,7 +544,7 @@ MplToolbar = NavigationToolbar2QT
 #         self.setCentralWidget(widget)
 
 
-class LineBuilder(object):
+class LineBuilder:
     """
         code copied from
         http://chuanshuoge2.blogspot.com/2019/12/matplotlib-mouse-click-event\
@@ -405,7 +552,15 @@ class LineBuilder(object):
 
     """
 
-    def __init__(self, fig, ax, lb_type="hline"):
+    def __init__(self, fig, ax, lb_type: str = "hline"):
+        """Initialize the interactive line builder for drawing on a matplotlib axes.
+
+        Args:
+            fig: :class:`~matplotlib.figure.Figure` to draw on.
+            ax: :class:`~matplotlib.axes.Axes` instance.
+            lb_type: Line-builder mode — ``"hline"`` for horizontal lines or
+                ``"slope"`` for slope annotation.
+        """
         self.xs = []
         self.ys = []
         self.ax = ax
@@ -418,18 +573,20 @@ class LineBuilder(object):
         self.lb_type = lb_type
         self.reserve_lines = len(self.ax.lines)
 
-    def clear(self):
+    def clear(self) -> None:
+        """Remove all drawn lines, labels, and reset point storage."""
         self.xs = []
         self.ys = []
         self.color_hist = []
-        for n in range(len(self.ax.lines) - self.reserve_lines):
+        for _n in range(len(self.ax.lines) - self.reserve_lines):
             self.ax.lines.pop()
-        for n in range(len(self.labels)):
+        for _n in range(len(self.labels)):
             label = self.labels.pop()
             label.remove()
         self.fig.canvas.draw()
 
-    def plot_line(self):
+    def plot_line(self) -> None:
+        """Draw a line segment between the last two clicked points and annotate it."""
         if self.lb_type == "slope":
             xa, xb = self.xs[-2], self.xs[-1]
             ya, yb = self.ys[-2], self.ys[-1]
@@ -437,7 +594,7 @@ class LineBuilder(object):
             if dn_term == 0:
                 dn_term = 1e-8
             slope = np.log(ya / yb) / dn_term
-            txt = "$q^{%.2f}$" % slope
+            txt = f"$q^{{{slope:.2f}}}$"
 
             # compute position to add label, notice the plot should be
             # logx-logy; slightly offset cen_x to make the label more clear
@@ -448,7 +605,7 @@ class LineBuilder(object):
             xa, xb = self.xs[-2], self.xs[-1]
             ya, yb = self.ys[-1], self.ys[-1]
             delta_x = 2 * np.pi / abs(xa - xb)
-            txt = "$\\Delta_x={%.1f}\\AA$" % delta_x
+            txt = f"$\\Delta_x={{{delta_x:.1f}}}\\AA$"
 
             cen_x = np.sqrt(xa * xa)
             cen_y = np.sqrt(ya * yb * 0.3)
@@ -464,7 +621,12 @@ class LineBuilder(object):
         self.color_hist.append(self.color)
         self.color = random.choice(colors)
 
-    def mouse_click(self, event):
+    def mouse_click(self, event) -> None:
+        """Handle left-click (add points / draw lines) and right-click (undo).
+
+        Args:
+            event: Matplotlib ``ButtonPressEvent``.
+        """
         if not event.inaxes:
             return
 
@@ -501,7 +663,12 @@ class LineBuilder(object):
             # refresh plot
             self.fig.canvas.draw()
 
-    def mouse_move(self, event):
+    def mouse_move(self, event) -> None:
+        """Draw a temporary preview line following the mouse cursor.
+
+        Args:
+            event: Matplotlib ``MotionNotifyEvent``.
+        """
         if self.lb_type is None or not event.inaxes:
             return
         # draw temporary line from a single point to the mouse position

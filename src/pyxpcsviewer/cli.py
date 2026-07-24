@@ -4,7 +4,15 @@ import argparse
 import sys
 
 
-def main():
+def main() -> int:
+    """Entry point for the pyxpcsviewer CLI.
+
+    Parses command-line arguments and launches the GUI with the
+    specified data directory.
+
+    Returns:
+        Exit code for sys.exit().
+    """
     from pyxpcsviewer import __version__
     from pyxpcsviewer.gui.view.xpcs_viewer import main_gui
 

@@ -10,7 +10,7 @@ import psutil
 import pyqtgraph as pg
 from pyqtgraph.parametertree import Parameter
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt, QThread, Signal, qInstallMessageHandler
+from PySide6.QtCore import Qt, qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
 
 from ...core.g2_utils import has_G2_field
@@ -26,7 +26,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)-24s: %(messa
 logger = logging.getLogger(__name__)
 
 
-def exception_hook(exc_type, exc_value, exc_traceback):
+def exception_hook(exc_type, exc_value, exc_traceback) -> None:
+    """Global uncaught-exception handler that logs errors to the application logger."""
     logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 
@@ -79,8 +80,20 @@ def create_param_tree(data_dict):
 
 
 class XpcsViewer(QtWidgets.QMainWindow, Ui):
+    """Main application window for the pyXPCSViewer GUI.
+
+    Combines the generated Qt UI (:class:`Ui_mainWindow`) with controller logic
+    via :class:`~pyxpcsviewer.gui.control.viewer_kernel.ViewerKernel`.
+    """
+
     def __init__(self, path=None, label_style=None):
-        super(XpcsViewer, self).__init__()
+        """Initialize the main window, set up the viewer kernel and connect signals.
+
+        Args:
+            path: Starting directory for file browsing.
+            label_style: Comma-separated index string for deriving short file labels.
+        """
+        super().__init__()
         self.setupUi(self)
         self.home_dir = home_dir
         self.label_style = label_style
@@ -107,7 +120,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.start_wd = os.path.expanduser("~")
 
         self.start_wd = os.path.abspath(self.start_wd)
-        logger.info("Start up directory is [{}]".format(self.start_wd))
+        logger.info(f"Start up directory is [{self.start_wd}]")
 
         self.pushButton_plot_saxs2d.clicked.connect(self.plot_saxs_2d)
         self.pushButton_plot_saxs1d.clicked.connect(self.plot_saxs_1d)
@@ -166,7 +179,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.load_default_setting()
         self.show()
 
-    def load_default_setting(self):
+    def load_default_setting(self) -> None:
+        """Load the default window size from JSON and clear the joblib cache."""
         if not os.path.isdir(self.home_dir):
             os.mkdir(self.home_dir)
 
@@ -178,7 +192,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 json.dump(setting, f, indent=4)
 
         # the display size might too big for some laptops
-        with open(key_fname, "r") as f:
+        with open(key_fname) as f:
             config = json.load(f)
             if "window_size_h" in config:
                 new_size = (config["window_size_w"], config["window_size_h"])
@@ -193,7 +207,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         return
 
-    def get_selected_rows(self):
+    def get_selected_rows(self) -> list[int]:
+        """Return the currently selected row indices from the target file list."""
         selected_index = self.list_view_target.selectedIndexes()
         selected_row = [x.row() for x in selected_index]
         # the selected index is ordered;
@@ -201,6 +216,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         return selected_row
 
     def update_plot(self):
+        """Update the current tab's plot using dry-run diff against recorded kwargs."""
         idx = self.tabWidget.currentIndex()
         tab_name = tab_mapping[idx]
         if tab_name == "average":
@@ -222,7 +238,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             logger.error(e)
             traceback.print_exc()
 
-    def init_g2map_handler(self):
+    def init_g2map_handler(self) -> None:
+        """Create and configure the pyqtgraph ``ImageView`` widgets for G2-map display.
+
+        Sets up three panels: G2 correlation image (with colour bar), Q-map overlay,
+        and a G2-vs-time profile plot with histogram LUT.
+        """
         self.widget_g2map_profile_plot = self.widget_g2map_profile.addPlot()
         cmap = pg.colormap.getFromMatplotlib("tab20b")  # from matplotlib.cm.tab20b
         self.widget_g2map_qmap.setColorMap(cmap)
@@ -248,7 +269,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.g2map_all_img.setLookupTable(cmap.getLookupTable())
         hist.gradient.setColorMap(cmap)
 
-    def plot_g2map(self, dryrun=False):
+    def plot_g2map(self, dryrun: bool = False) -> dict | None:
+        """Display the G2 correlation image with Q-map overlay and profile trace.
+
+        Returns keyword arguments for dry-run comparison in :meth:`update_plot`.
+        """
         kwargs = {
             "rows": self.get_selected_rows(),
             "qbin": self.spinBox_qbin.value(),
@@ -264,7 +289,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             **kwargs,
         )
 
-    def load_external_qmap_for_G2_regroup(self):
+    def load_external_qmap_for_G2_regroup(self) -> None:
+        """Open a file dialog to select an external Q-map HDF5 file for G2 regrouping."""
         f = QtWidgets.QFileDialog.getOpenFileName(
             self, caption="select the external qmap file for G2 regrouping", dir=None
         )[0]
@@ -272,6 +298,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.label_G2_external_qmapfname.setText(f)
 
     def savefile_G2_regroup(self):
+        """Prompt the user to choose a save location and delegate to :meth:`ViewerKernel.savefile_G2_regroup`."""
         kwargs = {
             "rows": self.get_selected_rows(),
         }
@@ -297,7 +324,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 self, "Save G2 regrouping", "Failed to save G2 regrouping."
             )
 
-    def process_G2_regroup(self):
+    def process_G2_regroup(self) -> None:
+        """Re-group G2 correlations using internal, external, or drawn Q-map (delegates to ``self.vk``)."""
         kwargs = {
             "rows": self.get_selected_rows(),
         }
@@ -330,7 +358,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         g2_plot_kwargs = self.plot_g2(dryrun=True)
         self.vk.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
 
-    def plot_G2_regroup(self, dryrun=False):
+    def plot_G2_regroup(self, dryrun: bool = False) -> dict | None:
+        """Display the G2 correlation data from regrouped results (or returns kwargs in dry-run mode)."""
         kwargs = {
             "rows": self.get_selected_rows(),
             "target": self.comboBox_G2_target.currentText(),
@@ -365,7 +394,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         return
 
-    def plot_metadata(self, dryrun=False):
+    def plot_metadata(self, dryrun: bool = False) -> dict | None:
+        """Display HDF5 metadata in a ParameterTree widget (or return kwargs in dry-run)."""
         kwargs = {"rows": self.get_selected_rows()}
         if dryrun:
             return kwargs
@@ -378,7 +408,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         )
         self.hdf_info.setParameters(hdf_params, showTop=True)
 
-    def saxs2d_mouseMoved(self, pos):
+    def saxs2d_mouseMoved(self, pos) -> None:
+        """Update the SAXS-2D display with Q-map info at the cursor position."""
         if self.pg_saxs.view.sceneBoundingRect().contains(pos):
             mouse_point = self.pg_saxs.getView().mapSceneToView(pos)
             x, y = int(mouse_point.x()), int(mouse_point.y())
@@ -387,11 +418,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             if payload:
                 self.saxs2d_display.setText(payload)
 
-    def plot_saxs_2d_selection(self):
+    def plot_saxs_2d_selection(self) -> None:
+        """Re-plot SAXS-2D with the currently selected q-bin."""
         selection = self.spinBox_saxs2d_selection.value()
         self.plot_saxs_2d(selection=selection)
 
-    def plot_saxs_2d(self, selection=None, dryrun=False):
+    def plot_saxs_2d(self, selection=None, dryrun: bool = False):
+        """Display SAXS 2D image with optional q-bin selection and dry-run kwargs."""
         kwargs = {
             "plot_type": self.cb_saxs2D_type.currentText(),
             "cmap": self.cb_saxs2D_cmap.currentText(),
@@ -410,7 +443,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
-    def saxs2d_roi_add(self):
+    def saxs2d_roi_add(self) -> None:
+        """Add a Pie or Circle ROI to the SAXS-2D display using current widget settings."""
         sl_type_idx = self.cb_saxs2D_roi_type.currentIndex()
         color = ("g", "y", "b", "r", "c", "m", "k", "w")[
             self.cb_saxs2D_roi_color.currentIndex()
@@ -422,7 +456,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         self.vk.add_roi(self.pg_saxs, **kwargs)
 
-    def plot_saxs_1d(self, dryrun=False):
+    def plot_saxs_1d(self, dryrun: bool = False):
+        """Display SAXS 1D intensity curves with optional normalization and offset."""
         kwargs = {
             "plot_type": self.cb_saxs_type.currentIndex(),
             "plot_offset": self.sb_saxs_offset.value(),
@@ -451,12 +486,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # adjust the line behavior
             self.switch_saxs1d_line()
 
-    def switch_saxs1d_line(self):
+    def switch_saxs1d_line(self) -> None:
+        """Switch the matplotlib line-builder mode (slope/hline)."""
         lb_type = self.saxs1d_lb_type.currentIndex()
         lb_type = [None, "slope", "hline"][lb_type]
         self.vk.switch_saxs1d_line(self.mp_saxs, lb_type)
 
-    def saxs1d_export(self):
+    def saxs1d_export(self) -> None:
+        """Export SAXS-1D ROI data to the user-selected folder via :meth:`ViewerKernel.export_saxs_1d`."""
         folder = QtWidgets.QFileDialog.getExistingDirectory(
             self, caption="select a folder to export SAXS profiles"
         )
@@ -466,7 +503,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.vk.export_saxs_1d(self.pg_saxs, folder)
 
-    def init_twotime_plot_handler(self):
+    def init_twotime_plot_handler(self) -> None:
+        """Create the two-time analysis display widgets: SAXS background, Q-map overlay."""
         # self.mp_2t.setBackground('w')
         self.mp_2t_hdls = {}
         labels = ["saxs", "dqmap"]
@@ -512,14 +550,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_2t.view.setLabel("left", "t2", units="s")
         self.mp_2t.view.setLabel("bottom", "t1", units="s")
 
-    def pick_twotime_index(self, event):
+    def pick_twotime_index(self, event) -> None:
+        """Re-plot twotime data when the user clicks on the Q-map display."""
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.pos()
             x, y = int(pos.x()), int(pos.y())
             self.plot_twotime(highlight_xy=(x, y))
         event.accept()  # Mark the event as handled
 
-    def plot_qmap(self, dryrun=False):
+    def plot_qmap(self, dryrun: bool = False) -> dict | None:
+        """Display a Q-map image (scattering, dynamic ROI, or static ROI)."""
         kwargs = {
             "rows": self.get_selected_rows(),
             "target": self.comboBox_qmap_target.currentText(),
@@ -529,7 +569,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return kwargs
         self.vk.plot_qmap(self.pg_qmap, **kwargs)
 
-    def plot_twotime(self, dryrun=False, highlight_xy=None):
+    def plot_twotime(self, dryrun: bool = False, highlight_xy=None):
+        """Display two-time correlation (C2) maps alongside SAXS-2D background.
+
+        Returns keyword arguments in dry-run mode; otherwise renders the twotime view.
+        """
         kwargs = {
             "rows": self.get_selected_rows(),
             "auto_crop": self.twotime_autocrop.isChecked(),
@@ -552,13 +596,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.comboBox_twotime_selection.addItems(new_labels)
             self.horizontalSlider_twotime_selection.setMaximum(len(new_labels) - 1)
 
-    def show_dataset(self):
+    def show_dataset(self) -> None:
+        """Open a pop-up :class:`~pyqtgraph.DataTreeWidget` showing the first target file's data tree."""
         rows = self.get_selected_rows()
         self.tree = self.vk.get_pg_tree(rows)
         if self.tree:
             self.tree.show()
 
-    def plot_stability(self, dryrun=False):
+    def plot_stability(self, dryrun: bool = False):
+        """Plot SAXS-1D segment (stability) data with optional log-log display."""
         kwargs = {
             "plot_type": self.cb_stab_type.currentIndex(),
             "plot_norm": self.cb_stab_norm.currentIndex(),
@@ -570,7 +616,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.vk.plot_stability(self.mp_stab, **kwargs)
 
-    def plot_intensity_t(self, dryrun=False):
+    def plot_intensity_t(self, dryrun: bool = False):
+        """Plot intensity-vs-time curves with optional Fourier spectrum and zoom view."""
         kwargs = {
             "sampling": max(1, self.sb_intt_sampling.value()),
             "window": self.sb_window.value(),
@@ -582,10 +629,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.vk.plot_intt(self.pg_intt, **kwargs)
 
-    def init_diffusion(self):
+    def init_diffusion(self) -> None:
+        """Initialize the tau-q pre-view subplot with current target data."""
         self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
 
-    def plot_diffusion(self, dryrun=False):
+    def plot_diffusion(self, dryrun: bool = False):
+        """Plot tau(q) diffusion fitting with optional parameter range configuration.
+
+        Returns keyword arguments in dry-run mode; otherwise runs the tau-q fit and displays results.
+        """
         keys = [self.tauq_amin, self.tauq_bmin, self.tauq_amax, self.tauq_bmax]
         bounds = np.array([float(x.text()) for x in keys]).reshape(2, 2)
 
@@ -615,7 +667,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.tauq_msg.setData(msg)
             self.tauq_msg.parent().repaint()
 
-    def select_bkgfile(self):
+    def select_bkgfile(self) -> None:
+        """Open a file dialog to select a background SAXS-1D file for subtraction."""
         path = self.work_dir.text()
         f = QtWidgets.QFileDialog.getOpenFileName(
             self, caption="select the file for background subtraction", dir=path
@@ -626,19 +679,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             return
 
-    def set_average_save_path(self):
+    def set_average_save_path(self) -> None:
+        """Open a directory dialog to set the save location for average results."""
         save_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Open directory")
         self.avg_save_path.clear()
         self.avg_save_path.setText(save_path)
         return
 
-    def set_average_save_name(self):
+    def set_average_save_name(self) -> None:
+        """Open a file-save dialog to set the output name for average results."""
         save_name = QtWidgets.QFileDialog.getSaveFileName(self, "Save as")
         self.avg_save_name.clear()
         self.avg_save_name.setText(os.path.basename(save_name[0]))
         return
 
-    def init_average(self):
+    def init_average(self) -> None:
+        """Initialize the average tab settings based on available G2 fields and target files."""
         if len(self.vk.target) > 0:
             save_path = self.avg_save_path.text()
             if save_path == "":
@@ -646,7 +702,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             else:
                 logger.info("use the previous save path")
 
-            has_G2 = all([has_G2_field(x) for x in self.vk.target])
+            has_G2 = all(has_G2_field(x) for x in self.vk.target)
             if has_G2:
                 logger.info("G2 field is available for averaging")
                 self.bx_avg_G2IPIF.setEnabled(True)
@@ -659,7 +715,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             save_name = "Average_" + os.path.basename(self.vk.target[0])
             self.avg_save_name.setText(save_name)
 
-    def submit_job(self):
+    def submit_job(self) -> None:
+        """Submit an average job to the thread pool with user-configured options."""
         if len(self.vk.target) < 2:
             self.statusbar.showMessage("select at least 2 files for averaging", 1000)
             return
@@ -758,7 +815,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.vk.avg_worker_active[worker.jid] = None
         self.update_avg_info()
 
-    def avg_job_finished(self, success):
+    def avg_job_finished(self, success: bool) -> None:
+        """Update the UI and status bar when an average job completes."""
         if success:
             self.statusbar.showMessage("average job finished", 5000)
         else:
@@ -768,7 +826,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_submit_job.setEnabled(True)
         self.btn_submit_job.setText("Submit")
 
-    def update_avg_info(self):
+    def update_avg_info(self) -> None:
+        """Set up a timer to periodically poll the averaging worker's progress."""
         self.timer.stop()
         self.timer.setInterval(1000)
 
@@ -794,7 +853,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     #         return
     #     worker.kill()
 
-    def show_g2_fit_summary_func(self):
+    def show_g2_fit_summary_func(self) -> None:
+        """Open a pop-up data tree widget showing per-file g2 fitting results."""
         rows = self.get_selected_rows()
         self.tree = self.vk.get_fitting_tree(rows)
         self.tree.show()
@@ -808,7 +868,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     #     self.tree = worker.get_pg_tree()
     #     self.tree.show()
 
-    def init_g2(self, qd, tel):
+    def init_g2(self, qd, tel) -> None:
+        """Initialize g2 plot range widgets from the latest G2 data ranges."""
         if qd is None or tel is None:
             return None
 
@@ -820,7 +881,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         t_max = np.max([t[-1] for t in tel])
 
         def to_e(x):
-            return "%.2e" % x
+            """Format a float in scientific notation."""
+            return f"{x:.2e}"
 
         self.g2_bmin.setValue(t_min / 20)
         # self.g2_bmax.setText(to_e(t_max * 10))
@@ -834,7 +896,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.g2_qmin.setValue(np.min(qd) / 1.1)
             self.g2_qmax.setValue(np.max(qd) * 1.1)
 
-    def plot_g2(self, dryrun=False):
+    def plot_g2(self, dryrun: bool = False):
+        """Plot multitau G2 correlation curves with optional fitting overlay."""
         p = self.check_g2_number(tab="g2")
         bounds, fit_flag, fit_func = self.check_g2_fitting_number()
 
@@ -875,7 +938,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 self.pushButton_4.setEnabled(True)
                 self.pushButton_4.setText("plot")
 
-    def plot_g2_stability(self, dryrun=False):
+    def plot_g2_stability(self, dryrun: bool = False):
+        """Plot G2 stability (partial G2 vs time) curves for a single file."""
         p = self.check_g2_number(tab="g2_stability")
 
         kwargs = {
@@ -905,16 +969,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 self.init_g2(qd, tel)
                 # if kwargs["show_fit"]:
                 #     self.init_diffusion()
-            except Exception as e:
+            except Exception:
                 traceback.print_exc()
             finally:
                 self.pushButton_5.setEnabled(True)
                 self.pushButton_5.setText("plot")
 
-    def export_g2(self):
+    def export_g2(self) -> None:
+        """Placeholder — currently a no-op."""
         self.vk.export_g2()
 
-    def reload_source(self):
+    def reload_source(self) -> None:
+        """Re-scan the current directory and refresh the source file list."""
         self.pushButton_11.setText("loading")
         self.pushButton_11.setDisabled(True)
         self.pushButton_11.parent().repaint()
@@ -927,7 +993,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.vk.source, mode="source")
         self.apply_filter_to_source()
 
-    def load_path(self, path=None, debug=False):
+    def load_path(self, path=None, debug: bool = False) -> None:
+        """Load a directory path, initialize the ViewerKernel, and reload the source list.
+
+        Args:
+            path: Directory path to load; opens a file dialog if ``None``/``False``.
+            debug: Not used (reserved).
+        """
         if path in [None, False]:
             # DontUseNativeDialog is used so files are shown along with dirs;
             folder = QtWidgets.QFileDialog.getExistingDirectory(
@@ -940,7 +1012,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             folder = path
 
         if not os.path.isdir(folder):
-            self.statusbar.showMessage("{} is not a folder.".format(folder))
+            self.statusbar.showMessage(f"{folder} is not a folder.")
             folder = self.start_wd
 
         self.work_dir.setText(folder)
@@ -956,17 +1028,23 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.source_model = self.vk.source
         self.update_box(self.vk.source, mode="source")
 
-    def update_box(self, file_list, mode="source"):
+    def update_box(self, file_list, mode: str = "source") -> None:
+        """Update a source or target list widget with the given :class:`ListDataModel`.
+
+        Args:
+            file_list: A ``ListDataModel`` instance to display.
+            mode: Either ``"source"`` or ``"target"`` to select which list widget to update.
+        """
         if file_list is None:
             return
         if mode == "source":
             self.list_view_source.setModel(file_list)
-            self.box_source.setTitle("Source: %5d" % len(file_list))
+            self.box_source.setTitle(f"Source: {len(file_list):5d}")
             self.box_source.parent().repaint()
             self.list_view_source.parent().repaint()
         elif mode == "target":
             self.list_view_target.setModel(file_list)
-            self.box_target.setTitle("Target: %5d" % (len(file_list)))
+            self.box_target.setTitle(f"Target: {len(file_list):5d}")
             # on macos, the target box doesn't seem to update; force it
             file_list.layoutChanged.emit()
             self.box_target.repaint()
@@ -979,7 +1057,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.statusbar.showMessage("Target file list updated.", 1000)
         return
 
-    def add_target(self):
+    def add_target(self) -> None:
+        """Add selected files from the source list to the target list."""
         target = []
         for x in self.list_view_source.selectedIndexes():
             # in some cases, it will return None
@@ -1001,7 +1080,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.update_plot()
 
-    def reorder_target(self, direction="up"):
+    def reorder_target(self, direction: str = "up") -> None:
+        """Reorder a single target entry up or down in the target list."""
         rows = self.get_selected_rows()
         if len(rows) != 1 or len(self.vk.target) <= 1:
             return
@@ -1011,7 +1091,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_plot()
         return
 
-    def remove_target(self):
+    def remove_target(self) -> None:
+        """Remove selected files from the target list and update the UI."""
         rmv_list = []
         for index in self.list_view_target.selectedIndexes():
             rmv_list.append(self.vk.target[index.row()])
@@ -1026,7 +1107,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.reset_gui()
         self.update_box(self.vk.target, mode="target")
 
-    def reset_gui(self):
+    def reset_gui(self) -> None:
+        """Reset the kernel and clear all plot widgets and input fields."""
         self.vk.reset_kernel()
         for x in [
             # self.pg_saxs,
@@ -1039,7 +1121,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             x.clear()
         self.le_bkg_fname.clear()
 
-    def apply_filter_to_source(self):
+    def apply_filter_to_source(self) -> None:
+        """Filter the source file list by prefix or substring based on the filter widget."""
         min_length = 1
         val = self.filter_str.text()
         if len(val) == 0:
@@ -1049,7 +1132,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
             self.statusbar.showMessage(
-                "Please enter at least %d characters" % min_length, 1000
+                f"Please enter at least {min_length} characters", 1000
             )
             return
 
@@ -1059,7 +1142,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.source_model, mode="source")
         self.list_view_source.selectAll()
 
-    def check_g2_number(self, default_val=(0, 0.0092, 1e-8, 1, 0.95, 1.35), tab="g2"):
+    def check_g2_number(self, default_val=(0, 0.0092, 1e-8, 1, 0.95, 1.35), tab: str = "g2"):
+        """Read and validate G2 plot range values (q, t, y min/max) from widget state."""
         if tab == "g2":
             keys = (
                 self.g2_qmin,
@@ -1091,7 +1175,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                     self.statusbar.showMessage("g2 number is invalid", 1000)
             vals[n] = val
 
-        def swap_min_max(id1, id2):
+        def swap_min_max(id1: int, id2: int) -> None:
+            """Swap values when min > max."""
             if vals[id1] > vals[id2]:
                 keys[id1].setValue(vals[id2])
                 keys[id2].setValue(vals[id1])
@@ -1103,7 +1188,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         return vals
 
-    def check_g2_fitting_number(self):
+    def check_g2_fitting_number(self) -> tuple[list, list, str]:
+        """Read and validate g2 fitting parameter bounds from widget state.
+
+        Returns:
+            Tuple of ``(bounds, fit_flag, fit_func)`` where *bounds* is a list of [min, max] pairs.
+        """
         fit_func = ["single", "double"][self.g2_fitting_function.currentIndex()]
         keys = (
             self.g2_amin,
@@ -1126,7 +1216,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for n, key in enumerate(keys):
             vals[n] = key.value()
 
-        def swap_min_max(id1, id2):
+        def swap_min_max(id1: int, id2: int) -> None:
+            """Swap values when min > max (for fitting parameter pairs)."""
             if vals[id1] > vals[id2]:
                 keys[id1].setValue(vals[id2])
                 keys[id2].setValue(vals[id1])
@@ -1155,7 +1246,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         bounds = bounds.tolist()
         return bounds, fit_flag, fit_func
 
-    def update_saxs2d_level(self, flag=True):
+    def update_saxs2d_level(self, flag: bool = True) -> None:
+        """Sync the SAXS-2D level spinboxes with the current image display levels."""
         if not flag:
             vmin = self.pg_saxs.levelMin
             vmax = self.pg_saxs.levelMax
@@ -1171,10 +1263,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.saxs2d_min.parent().repaint()
 
-    def clear_target_selection(self):
+    def clear_target_selection(self) -> None:
+        """Clear the selection in the target list widget."""
         self.list_view_target.clearSelection()
 
-    def update_g2_fitting_function(self):
+    def update_g2_fitting_function(self) -> None:
+        """Update the g2 fitting function title and parameter widget visibility."""
         idx = self.g2_fitting_function.currentIndex()
         title = [
             "g2 fitting with Single Exp:  y = a·exp[-2(x/b)^c]+d",
@@ -1204,7 +1298,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                     pvs[n][0].setEnabled(True)
 
 
-def setup_windows_icon():
+def setup_windows_icon() -> None:
+    """Set the Windows AppUserModelID for taskbar pinning (Windows only)."""
     # reference: https://stackoverflow.com/questions/1551605
     import ctypes
     from ctypes import wintypes
@@ -1243,7 +1338,16 @@ def qt_message_handler(mode, context, message):
     )
 
 
-def main_gui(path=None, label_style=None):
+def main_gui(path=None, label_style=None) -> int:
+    """Launch the pyXPCSViewer GUI application.
+
+    Args:
+        path: Starting directory for file browsing; opens user's home if ``None``.
+        label_style: Comma-separated index string for deriving short file labels.
+
+    Returns:
+        The Qt application exit code.
+    """
     qInstallMessageHandler(qt_message_handler)
 
     if os.name == "nt":

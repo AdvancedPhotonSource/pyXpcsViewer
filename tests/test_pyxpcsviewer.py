@@ -5,8 +5,6 @@
 
 import unittest
 
-from pyxpcsviewer import pyxpcsviewer
-
 
 class TestPyxpcsviewer(unittest.TestCase):
     """Tests for `pyxpcsviewer` package."""

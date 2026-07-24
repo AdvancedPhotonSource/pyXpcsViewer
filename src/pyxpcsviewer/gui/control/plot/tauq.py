@@ -1,11 +1,25 @@
 import numpy as np
 
-
 colors = ("b", "r", "g", "c", "m", "y", "k")
 shapes = ("o", "v", "^", "<", ">", "8", "s", "p", "P", "*")
 
 
-def plot(xf_list, hdl, q_range, offset, plot_type=3):
+def plot(
+    xf_list,
+    hdl,
+    q_range: tuple[float, float],
+    offset: float,
+    plot_type: int = 3,
+) -> None:
+    """Plot ``tau(q)`` data with optional vertical offsets and per-file fit lines.
+
+    Args:
+        xf_list: List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instances with g2 fits.
+        hdl: matplotlib plot handler widget.
+        q_range: Ignored (reserved for future Q filtering).
+        offset: Vertical log-offset between files.
+        plot_type: Bitmask controlling axes scales — bit 0 = x-log, bits 1-2 = y-log.
+    """
     hdl.clear()
     ax = hdl.subplots(1, 1)
 
@@ -22,7 +36,7 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
 
         color = colors[n % len(colors)]
         shape = shapes[n % len(shapes)]
-        line = ax.errorbar(
+        ax.errorbar(
             x,
             y / s,
             yerr=e / s,
@@ -53,7 +67,13 @@ def plot(xf_list, hdl, q_range, offset, plot_type=3):
     return
 
 
-def plot_pre(xf_list, hdl):
+def plot_pre(xf_list, hdl) -> None:
+    """Display a 2x2 subplot grid of g2 fitting parameters (a, tau, c, d) vs q.
+
+    Args:
+        xf_list: List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instances with fits.
+        hdl: matplotlib plot handler widget supporting ``subplots`` and ``draw``.
+    """
     hdl.clear()
     ax = hdl.subplots(2, 2, sharex=True).flatten()
     titles = ["contrast", "tau (s)", "stretch", "baseline"]

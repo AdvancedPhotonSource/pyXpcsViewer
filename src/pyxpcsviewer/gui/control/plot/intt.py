@@ -21,7 +21,19 @@ colors = [
 ]
 
 
-def smooth_data(fc, window=1, sampling=1):
+def smooth_data(
+    fc, window: int = 1, sampling: int = 1
+) -> tuple[np.ndarray, np.ndarray]:
+    """Apply a moving-average window and optional temporal downsampling to intensity data.
+
+    Args:
+        fc: An :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instance with ``Int_t`` data.
+        window: Moving-average span in frames. Pass ``1`` to skip smoothing.
+        sampling: Temporal subsample factor (≥ 2). Pass ``1`` for no subsampling.
+
+    Returns:
+        Tuple of ``(x_array, y_array)`` — frame indices and smoothed intensities.
+    """
     # some bad frames have both x and y = 0;
     # x, y = fc.Int_t[0], fc.Int_t[1]
     y = fc.Int_t[1]
@@ -77,7 +89,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
             pen=pg.mkPen(colors[n % len(colors)], width=1),
             name=xf_list[n].label,
         )
-    t.setTitle("Intensity vs %s" % xlabel)
+    t.setTitle(f"Intensity vs {xlabel}")
 
     if enable_zoom:
         vmin = np.min(data[0][0])
@@ -87,7 +99,7 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
         lr = pg.LinearRegionItem([cen - width, cen + width])
         # lr.setZValue(-10)
         t.addItem(lr)
-    t.setLabel("bottom", "%s" % xlabel)
+    t.setLabel("bottom", f"{xlabel}")
     t.setLabel("left", "Intensity (cts / pixel)")
 
     for n in range(len(data)):
@@ -105,15 +117,17 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
         )
 
     def update_plot():
+        """Update the zoom plot's x-range to match the linear-region selection."""
         tz.setXRange(*lr.getRegion(), padding=0)
 
     def update_region():
+        """Sync the linear-region selection when the zoom plot is panned."""
         lr.setRegion(tz.getViewBox().viewRange()[0])
 
     lr.sigRegionChanged.connect(update_plot)
     tz.sigXRangeChanged.connect(update_region)
 
-    tz.setLabel("bottom", "%s" % xlabel)
+    tz.setLabel("bottom", f"{xlabel}")
     tz.setLabel("left", "Intensity (cts / pixel)")
     update_plot()
 
