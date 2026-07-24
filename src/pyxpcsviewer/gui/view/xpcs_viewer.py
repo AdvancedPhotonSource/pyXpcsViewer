@@ -397,17 +397,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
-    def saxs2d_roi_add(self) -> None:
-        """Add a Pie or Circle ROI to the SAXS-2D display using current widget settings."""
-        sl_type_idx = self.cb_saxs2D_roi_type.currentIndex()
-        color = ("g", "y", "b", "r", "c", "m", "k", "w")[self.cb_saxs2D_roi_color.currentIndex()]
-        kwargs = {
-            "sl_type": ("Pie", "Circle")[sl_type_idx],
-            "width": self.sb_saxs2D_roi_width.value(),
-            "color": color,
-        }
-        self.vk.add_roi(self.pg_saxs, **kwargs)
-
     def plot_saxs_1d(self, dryrun: bool = False):
         """Display SAXS 1D intensity curves with optional normalization and offset."""
         kwargs = {

@@ -265,25 +265,6 @@ class ViewerKernel(FileLocator):
         if xf_list:
             saxs2d.plot(xf_list[0], *args, **kwargs)
 
-    def add_roi(self, hdl, **kwargs):
-        """Add a Region of Interest (Pie or Circle type) centred on the beam position.
-
-        Args:
-            hdl: pyqtgraph ``ImageView`` widget.
-            **kwargs: Keyword arguments forwarded to ``hdl.add_roi()`` including ``sl_type``.
-        """
-        xf_list = self.get_xf_list()
-        cen = (xf_list[0].bcx, xf_list[0].bcy)
-        if kwargs["sl_type"] == "Pie":
-            hdl.add_roi(cen=cen, radius=100, **kwargs)
-        elif kwargs["sl_type"] == "Circle":
-            radius_v = min(xf_list[0].mask.shape[0] - cen[1], cen[1])
-            radius_h = min(xf_list[0].mask.shape[1] - cen[0], cen[0])
-            radius = min(radius_h, radius_v) * 0.8
-
-            hdl.add_roi(cen=cen, radius=radius, label="RingA", **kwargs)
-            hdl.add_roi(cen=cen, radius=0.8 * radius, label="RingB", **kwargs)
-
     def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
         """Delegate SAXS 1D plotting to :func:`.plot.saxs1d.pg_plot`.
 
