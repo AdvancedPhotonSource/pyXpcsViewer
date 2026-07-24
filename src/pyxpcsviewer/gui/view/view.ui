@@ -400,7 +400,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab1_1">
         <attribute name="title">
@@ -424,7 +424,7 @@
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
+             <verstretch>1</verstretch>
             </sizepolicy>
            </property>
           </widget>
@@ -724,12 +724,36 @@
             <string>SAXS 1D Plot Setting</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_24">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
             <item row="1" column="0" rowspan="2">
              <widget class="QGroupBox" name="groupBox_14">
               <property name="title">
                <string>Background</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_34">
+               <property name="leftMargin">
+                <number>1</number>
+               </property>
+               <property name="topMargin">
+                <number>1</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <property name="bottomMargin">
+                <number>1</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QCheckBox" name="cb_sub_bkg">
                  <property name="text">
@@ -786,16 +810,18 @@
                <string>Display</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_32">
-               <item row="0" column="2">
-                <widget class="QCheckBox" name="box_show_roi">
-                 <property name="text">
-                  <string>q-I_ROIs</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
+               <property name="leftMargin">
+                <number>1</number>
+               </property>
+               <property name="topMargin">
+                <number>1</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <property name="bottomMargin">
+                <number>1</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QCheckBox" name="box_all_phi">
                  <property name="toolTip">
@@ -813,10 +839,33 @@
                  </property>
                 </widget>
                </item>
+               <item row="0" column="2">
+                <widget class="QCheckBox" name="box_show_roi">
+                 <property name="text">
+                  <string>q-I_ROIs</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="4">
                 <widget class="QPushButton" name="btn_export_saxs1d">
                  <property name="text">
                   <string>Export profiles</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QPushButton" name="pushButton_plot_saxs1d">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Plot</string>
                  </property>
                 </widget>
                </item>
@@ -829,6 +878,18 @@
                <string>Basic</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_16">
+               <property name="leftMargin">
+                <number>1</number>
+               </property>
+               <property name="topMargin">
+                <number>1</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <property name="bottomMargin">
+                <number>1</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_21">
                  <property name="text">
@@ -1066,19 +1127,6 @@
               </layout>
              </widget>
             </item>
-            <item row="1" column="2" rowspan="2">
-             <widget class="QPushButton" name="pushButton_plot_saxs1d">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Plot</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
          </item>
@@ -1129,6 +1177,18 @@
             <string>Stability Plot Setting</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_17">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
             <item row="0" column="1">
              <widget class="QComboBox" name="cb_stab_type">
               <property name="currentIndex">
@@ -1304,6 +1364,18 @@
             <string>Intensity-Time Plot Setting</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_18">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="label_9">
               <property name="text">
@@ -2364,6 +2436,18 @@
             <string>Power Law Fitting: y = a·x^b</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_39">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_38">
               <item row="1" column="1">
@@ -2632,16 +2716,16 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
             <property name="leftMargin">
-             <number>2</number>
+             <number>1</number>
             </property>
             <property name="topMargin">
-             <number>2</number>
+             <number>1</number>
             </property>
             <property name="rightMargin">
-             <number>2</number>
+             <number>1</number>
             </property>
             <property name="bottomMargin">
-             <number>2</number>
+             <number>1</number>
             </property>
             <item row="1" column="0">
              <widget class="QLabel" name="label_28">
@@ -2850,6 +2934,18 @@
             <string>Settings</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_46">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="label_27">
               <property name="text">
@@ -2957,16 +3053,16 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_29">
             <property name="leftMargin">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="topMargin">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="rightMargin">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="bottomMargin">
-             <number>1</number>
+             <number>0</number>
             </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_28">
@@ -3240,6 +3336,18 @@
             <string>g2 outlier</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_31">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <widget class="PlotWidgetDev" name="mp_avg_g2" native="true">
               <property name="sizePolicy">
@@ -3412,6 +3520,18 @@
             <string>Settings</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_20">
+            <property name="leftMargin">
+             <number>1</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
             <item row="0" column="3">
              <widget class="QPushButton" name="pushButton_plot_g2map">
               <property name="text">
@@ -3501,6 +3621,18 @@
              </sizepolicy>
             </property>
             <layout class="QGridLayout" name="gridLayout_48">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item row="1" column="0">
               <widget class="PlotWidgetDev" name="mp_g2_stability" native="true">
                <property name="sizePolicy">
@@ -4040,10 +4172,19 @@
                      <x>0</x>
                      <y>0</y>
                      <width>660</width>
-                     <height>437</height>
+                     <height>453</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_54">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
                     <item row="0" column="0">
                      <widget class="PlotWidgetDev" name="pg_regroup_g2" native="true">
                       <property name="sizePolicy">
@@ -4177,6 +4318,18 @@
                 <string>Group Setting</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_50">
+                <property name="leftMargin">
+                 <number>1</number>
+                </property>
+                <property name="topMargin">
+                 <number>1</number>
+                </property>
+                <property name="rightMargin">
+                 <number>1</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>1</number>
+                </property>
                 <item row="0" column="5">
                  <widget class="QComboBox" name="comboBox_G2_outliermethod">
                   <item>
