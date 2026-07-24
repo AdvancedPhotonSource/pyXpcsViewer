@@ -11,6 +11,8 @@ It reads a custom NeXus-based HDF5 format containing multi-tau (g2) and two-time
 
 ## Commands
 
+Conda environment for testing the installation and running the commands below: `/local/MQICHU/envs/l2604_xpcs`.
+
 Install in editable mode with dev extras (the package is not installed by default in this checkout):
 
 ```bash
@@ -23,7 +25,7 @@ Run the GUI:
 pyxpcsviewer path_to_hdf_directory   # or: pyxpcsviewer   (uses cwd)
 ```
 
-Lint (ruff.toml is empty, so ruff runs with its default rule set):
+Lint (no ruff config in the repo, so ruff runs with its default rule set):
 
 ```bash
 ruff check .
