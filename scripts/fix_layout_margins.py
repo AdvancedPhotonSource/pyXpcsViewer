@@ -11,7 +11,6 @@ import re
 import sys
 from pathlib import Path
 
-
 # Match any of the four layout margin property blocks
 MARGIN_RE = re.compile(
     r'<property name="(leftMargin|topMargin|rightMargin|bottomMargin)">\s*\n\s*<number>(\d+)</number>',

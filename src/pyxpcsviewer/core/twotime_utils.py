@@ -1,3 +1,5 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 from functools import lru_cache
 from multiprocessing import Pool
 

@@ -1,3 +1,5 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 """
 Optimized script for efficiently averaging data from HDF5 files using a
 shared memory-based map-reduce strategy with a real-time progress bar.

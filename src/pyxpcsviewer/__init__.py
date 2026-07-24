@@ -1,3 +1,5 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 from importlib.metadata import PackageNotFoundError, version
 
 from pyxpcsviewer.core.xpcs_file import XpcsFile

@@ -1,3 +1,5 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 def plot(
     xfile,
     pg_hdl=None,
