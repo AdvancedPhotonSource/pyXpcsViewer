@@ -5,12 +5,11 @@ import shutil
 import warnings
 
 import numpy as np
-import pyqtgraph as pg
 
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .fileIO.qmap_utils import get_qmap
-from .helper.fitting import fit_with_fixed
-from .module.twotime_utils import get_c2_stream, get_single_c2_from_hdf
+from .fitting import fit_with_fixed
+from .twotime_utils import get_c2_stream, get_single_c2_from_hdf
 
 logger = logging.getLogger(__name__)
 
@@ -480,14 +479,14 @@ class XpcsFile(object):
         return g2
 
     def regroup_G2(self, **kwargs):
-        from .module.apply_qmap import regroup_G2
+        from .g2_utils import regroup_G2
 
         avg_result = regroup_G2(self.fname, {"G2": self.G2}, **kwargs)
         self.g2 = avg_result["g2"]
         self.g2_err = avg_result["g2_err"]
 
     def save_G2(self, save_fname=None):
-        from .module.apply_qmap import save_G2_to_file
+        from .g2_utils import save_G2_to_file
 
         try:
             if save_fname is None:
@@ -822,22 +821,6 @@ class XpcsFile(object):
         for n in range(Iq.shape[0] - 1):
             header += f" Intensity_phi{n + 1:03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
-
-    def get_pg_tree(self):
-        data = self.load_data()
-        for key, val in data.items():
-            if isinstance(val, np.ndarray):
-                if val.size > 4096:
-                    data[key] = "data size is too large"
-                # suqeeze one-element array
-                if val.size == 1:
-                    data[key] = float(val)
-        data["analysis_type"] = self.atype
-        data["label"] = self.label
-        tree = pg.DataTreeWidget(data=data)
-        tree.setWindowTitle(self.fname)
-        tree.resize(600, 800)
-        return tree
 
 
 def test1():

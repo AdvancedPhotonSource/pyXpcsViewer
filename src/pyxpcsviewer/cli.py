@@ -6,7 +6,7 @@ import sys
 
 def main():
     from pyxpcsviewer import __version__
-    from pyxpcsviewer.xpcs_viewer import main_gui
+    from pyxpcsviewer.gui.view.xpcs_viewer import main_gui
 
     argparser = argparse.ArgumentParser(
         description="pyXpcsViewer: a GUI tool for XPCS data analysis"

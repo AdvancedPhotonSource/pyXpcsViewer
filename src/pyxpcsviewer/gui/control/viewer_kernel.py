@@ -4,13 +4,29 @@ import os
 import numpy as np
 import pyqtgraph as pg
 
-from .file_locator import FileLocator
-from .helper.listmodel import TableDataModel
-from .module import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
-from .module.average_toolbox import AverageToolbox
-from .xpcs_file import XpcsFile
+from ..model.file_locator import FileLocator
+from ..model.listmodel import TableDataModel
+from .plot import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
+from .average_toolbox import AverageToolbox
+from ...core.xpcs_file import XpcsFile
 
 logger = logging.getLogger(__name__)
+
+
+def _build_pg_tree(xf):
+    data = xf.load_data()
+    for key, val in data.items():
+        if isinstance(val, np.ndarray):
+            if val.size > 4096:
+                data[key] = "data size is too large"
+            if val.size == 1:
+                data[key] = float(val)
+    data["analysis_type"] = xf.atype
+    data["label"] = xf.label
+    tree = pg.DataTreeWidget(data=data)
+    tree.setWindowTitle(xf.fname)
+    tree.resize(600, 800)
+    return tree
 
 
 class ViewerKernel(FileLocator):
@@ -50,7 +66,7 @@ class ViewerKernel(FileLocator):
     def get_pg_tree(self, rows):
         xf_list = self.get_xf_list(rows)
         if xf_list:
-            return xf_list[0].get_pg_tree()
+            return _build_pg_tree(xf_list[0])
         else:
             return None
 

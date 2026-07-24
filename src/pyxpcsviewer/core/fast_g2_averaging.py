@@ -24,7 +24,7 @@ import psutil
 import tqdm
 
 # Import the key mapping and file writing utility from the user's custom module.
-from .apply_qmap import keymap, regroup_G2, save_G2_to_file
+from .g2_utils import keymap, regroup_G2, save_G2_to_file
 
 # --- Globals for Worker Processes ---
 # These will be initialized by the pool's initializer function. This is the

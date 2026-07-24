@@ -5,15 +5,15 @@ import logging
 import uuid
 import time
 import numpy as np
-from ..fileIO.hdf_reader import put, get
-from ..xpcs_file import XpcsFile as XF
+from ...core.fileIO.hdf_reader import put, get
+from ...core.xpcs_file import XpcsFile as XF
 from shutil import copyfile
-from ..helper.listmodel import ListDataModel
+from ..model.listmodel import ListDataModel
 import pyqtgraph as pg
 from tqdm import trange
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from .fast_G2_averaging import fast_average_shared_memory
+from ...core.fast_g2_averaging import fast_average_shared_memory
 from sklearn.cluster import (
     KMeans as sk_kmeans,
 )  # Added this import based on the original code's usage

@@ -1,5 +1,5 @@
 from importlib.metadata import version, PackageNotFoundError
-from pyxpcsviewer.xpcs_file import XpcsFile
+from pyxpcsviewer.core.xpcs_file import XpcsFile
 
 # Version handling
 try:

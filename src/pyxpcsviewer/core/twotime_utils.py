@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 from functools import lru_cache
 from multiprocessing import Pool
-from ..fileIO.aps_8idi import key as key_map
+from .fileIO.aps_8idi import key as key_map
 
 key_map = key_map["nexus"]
 

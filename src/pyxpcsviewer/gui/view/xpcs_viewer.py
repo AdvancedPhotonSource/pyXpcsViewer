@@ -13,8 +13,8 @@ from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt, QThread, Signal, qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
 
-from .module.apply_qmap import has_G2_field
-from .viewer_kernel import ViewerKernel
+from ...core.g2_utils import has_G2_field
+from ..control.viewer_kernel import ViewerKernel
 from .viewer_ui import Ui_mainWindow as Ui
 
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -173,8 +173,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         key_fname = os.path.join(self.home_dir, "default_setting.json")
         # copy the default values
         if not os.path.isfile(key_fname):
-            from .default_setting import setting
-
+            setting = {"window_size_w": 1400, "window_size_h": 1200}
             with open(key_fname, "w") as f:
                 json.dump(setting, f, indent=4)
 

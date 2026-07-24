@@ -229,38 +229,3 @@ def regroup_G2(fname, avg_result, qmap_fname=None):
             raise ValueError("Q-maps not found in the HDF5 file.")
     
     return regroup_G2_with_qmap_array(avg_result, sqmap, dqmap)
-
-
-
-def test(fname):
-    """
-    Test the g2 computation by comparing it with existing results in a file.
-
-    Parameters
-    ----------
-    fname : str
-        The path to the HDF5 file containing the test data.
-    """
-    result = {}
-    with h5py.File(fname, "r") as f:
-        for key, field in keymap.items():
-            result[key] = f[field][()]
-            print(key, result[key].shape)
-
-    g2, g2_err = compute_g2(result["sqmap"], result["dqmap"], result["G2"])
-    print(np.max(np.abs(result["g2"] - g2)))
-    print(np.max(np.abs(result["g2_err"] - g2_err)))
-
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(6, 4, figsize=(12, 8))
-    ax = ax.flatten()
-    for n in range(min(len(ax), g2.shape[1])):
-        ax[n].plot(g2[:, n])
-        ax[n].plot(result["g2"][:, n])
-    plt.tight_layout()
-    plt.show()
-
-
-if __name__ == "__main__":
-    fname = "./data/Ia0069_PC10P-15wv-35C_a0006_f004000_r00350_results.hdf"
-    test(fname)

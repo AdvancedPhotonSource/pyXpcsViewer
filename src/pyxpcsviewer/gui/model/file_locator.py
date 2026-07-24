@@ -4,9 +4,9 @@ import os
 import time
 import traceback
 
-from .fileIO.qmap_utils import QMapManager
-from .helper.listmodel import ListDataModel
-from .xpcs_file import XpcsFile as XF
+from ...core.fileIO.qmap_utils import QMapManager
+from .listmodel import ListDataModel
+from ...core.xpcs_file import XpcsFile as XF
 
 logger = logging.getLogger(__name__)
 
