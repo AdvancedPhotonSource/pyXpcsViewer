@@ -10,89 +10,10 @@ import numpy as np
 
 from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .fileIO.qmap_utils import get_qmap
-from .fitting import fit_with_fixed
+from .fitting import double_exp_all, fit_with_fixed, power_law, single_exp_all
 from .twotime_utils import get_c2_stream, get_single_c2_from_hdf
 
 logger = logging.getLogger(__name__)
-
-
-def single_exp_all(x, a, b, c, d):
-    """
-    Single exponential fitting for XPCS-multitau analysis.
-
-    Parameters
-    ----------
-    x : float or ndarray
-        Delay in seconds.
-    a : float
-        Contrast.
-    b : float
-        Characteristic time (tau).
-    c : float
-        Restriction factor.
-    d : float
-        Baseline offset.
-
-    Returns
-    -------
-    float or ndarray
-        Computed value of the single exponential model.
-    """
-    return a * np.exp(-2 * (x / b) ** c) + d
-
-
-def double_exp_all(x, a, b1, c1, d, b2, c2, f):
-    """
-    Double exponential fitting for XPCS-multitau analysis.
-
-    Parameters
-    ----------
-    x : float or ndarray
-        Delay in seconds.
-    a : float
-        Contrast.
-    b1 : float
-        Characteristic time (tau) of the first exponential component.
-    c1 : float
-        Restriction factor for the first component.
-    d : float
-        Baseline offset.
-    b2 : float
-        Characteristic time (tau) of the second exponential component.
-    c2 : float
-        Restriction factor for the second component.
-    f : float
-        Fractional contribution of the first exponential component (0 ≤ f ≤ 1).
-
-    Returns
-    -------
-    float or ndarray
-        Computed value of the double exponential model.
-    """
-    t1 = np.exp(-1 * (x / b1) ** c1) * f
-    t2 = np.exp(-1 * (x / b2) ** c2) * (1 - f)
-    return a * (t1 + t2) ** 2 + d
-
-
-def power_law(x, a, b):
-    """
-    Power-law fitting for diffusion behavior.
-
-    Parameters
-    ----------
-    x : float or ndarray
-        Independent variable, typically time delay (tau).
-    a : float
-        Scaling factor.
-    b : float
-        Power exponent.
-
-    Returns
-    -------
-    float or ndarray
-        Computed value based on the power-law model.
-    """
-    return a * x**b
 
 
 def create_id(fname, label_style=None, simplify_flag=True):
