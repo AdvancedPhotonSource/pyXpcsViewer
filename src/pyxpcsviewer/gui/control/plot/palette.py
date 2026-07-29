@@ -3,10 +3,13 @@
 """Shared colour palettes and marker symbols for pyqtgraph/matplotlib plots.
 
 All palettes here are the matplotlib ``default`` colour cycle
-(https://matplotlib.org/stable/tutorials/colors/colors.html).
+(https://matplotlib.org/stable/tutorials/colors/colors.html), unless noted.
 """
 
-# Hex forms — used by matplotlib and by pyqtgraph ``mkPen(color="#...")``
+# ---------------------------------------------------------------------------
+# Matplotlib default colour cycle (10 colours)
+# ---------------------------------------------------------------------------
+
 COLORS_HEX = (
     "#1f77b4",
     "#ff7f0e",
@@ -20,27 +23,19 @@ COLORS_HEX = (
     "#17becf",
 )
 
-# RGB tuples — used by pyqtgraph ``mkPen(color=(r, g, b))``
-COLORS_RGB = (
-    (31, 119, 180),
-    (255, 127, 14),
-    (44, 160, 44),
-    (214, 39, 40),
-    (148, 103, 189),
-    (140, 86, 75),
-    (227, 119, 194),
-    (127, 127, 127),
-    (188, 189, 34),
-    (23, 190, 207),
-)
 
-# Marker symbols for matplotlib (via :func:`matplot_qt.get_color_marker`)
-MARKERS_MPL = ("o", "v", "^", ">", "<", "s", "p", "h", "*", "+", "d", "x")
+def _hex_to_rgb(hexcolor: str) -> tuple[int, int, int]:
+    """Convert a ``"#rrggbb"`` hex string to an ``(r, g, b)`` tuple."""
+    return (int(hexcolor[1:3], 16), int(hexcolor[3:5], 16), int(hexcolor[5:7], 16))
 
-# Marker symbols for pyqtgraph (via :func:`matplot_qt.get_color_marker`)
-MARKERS_PYG = ("o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x")
 
-# 16-colour RGB palette used by the intensity-vs-time plot (intt)
+COLORS_RGB = tuple(_hex_to_rgb(c) for c in COLORS_HEX)
+
+
+# ---------------------------------------------------------------------------
+# intt palette (16 colours, distinct from the default cycle)
+# ---------------------------------------------------------------------------
+
 INTT_COLORS = (
     (192, 0, 0),
     (0, 176, 80),
@@ -59,3 +54,11 @@ INTT_COLORS = (
     (49, 134, 155),
     (226, 107, 10),
 )
+
+# ---------------------------------------------------------------------------
+# Marker symbols
+# ---------------------------------------------------------------------------
+
+MARKERS_MPL = ("o", "v", "^", ">", "<", "s", "p", "h", "*", "+", "d", "x")
+
+MARKERS_PYG = ("o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x")
