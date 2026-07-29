@@ -52,8 +52,7 @@ def get_g2_stability_data(xf_obj, q_range=None, t_range=None):
         ``(False, None, None, None, None, None)`` if data is invalid.
     """
     if "Multitau" not in xf_obj.atype:
-        return False, None, None, None, None
-
+        return False, None, None, None, None, None
     q, tel, g2, g2_err, qbin_labels, labels = xf_obj.get_g2_stability_data(qrange=q_range, trange=t_range)
     return q, tel, g2, g2_err, qbin_labels, labels
 
@@ -62,7 +61,7 @@ def compute_geometry(g2, plot_type):
     """Compute the number of figures and plot lines for a G2 plot type.
 
     Args:
-        g2: Input G2 data; 2D array with shape (time_delay, q_vals).
+        g2: Input G2 data; list of 2D arrays each with shape (time_delay, q_vals).
         plot_type: One of ``"multiple"``, ``"single"``, or ``"single-combined"``.
 
     Returns:
@@ -78,8 +77,50 @@ def compute_geometry(g2, plot_type):
         num_figs = 1
         num_lines = g2[0].shape[1] * len(g2)
     else:
-        raise ValueError("plot_type not support.")
+        raise ValueError(f"Unsupported plot_type: {plot_type!r}")
     return num_figs, num_lines
+
+
+def _setup_subplots(hdl, num_figs, num_col, y_auto, show_label, stability_legend=False):
+    """Create and configure the subplot grid for G2 plotting.
+
+    Shared helper used by both :func:`pg_plot` and :func:`pg_plot_stability`.
+
+    Args:
+        hdl: Plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
+        num_figs: Number of subplots.
+        num_col: Number of columns in the grid.
+        y_auto: Whether y-axis auto-range is enabled.
+        show_label: Whether to show legends.
+        stability_legend: If ``True``, use the compact legend anchoring
+            from the stability plot variant.
+
+    Returns:
+        List of pyqtgraph PlotItem axes.
+    """
+    col = min(num_figs, num_col)
+    row = (num_figs + col - 1) // col
+
+    hdl.adjust_canvas_size(num_col=col, num_row=row)
+    hdl.clear()
+
+    axes = []
+    for n in range(num_figs):
+        i_col = n % col
+        i_row = n // col
+        t = hdl.addPlot(row=i_row, col=i_col)
+        axes.append(t)
+
+        if show_label:
+            if stability_legend:
+                legend = t.addLegend(labelTextSize="6pt")
+                legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
+            else:
+                t.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
+
+        t.setMouseEnabled(x=False, y=y_auto)
+
+    return axes
 
 
 def pg_plot(
@@ -111,7 +152,7 @@ def pg_plot(
     optional g2 fitting overlay, and baseline subtraction.
 
     Args:
-        hdl: Matplotlib plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
+        hdl: Plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
         xf_list: List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instances (Multitau).
         q_range: Q-value filter ``(q_min, q_max)``.
         t_range: Elapsed-time filter ``(t_min, t_max)``.
@@ -141,31 +182,18 @@ def pg_plot(
         y_range = None
 
     _q, tel, g2, g2_err, labels = get_g2_data(xf_list, q_range=q_range, t_range=t_range)
-    num_figs, _num_lines = compute_geometry(g2, plot_type)
+    num_figs, _ = compute_geometry(g2, plot_type)
 
     num_data, num_qval = len(g2), g2[0].shape[1]
-    # col and rows for the 2d layout
-    col = min(num_figs, num_col)
-    row = (num_figs + col - 1) // col
 
     if len(rows) == 0:
         rows = list(range(len(xf_list)))
 
-    hdl.adjust_canvas_size(num_col=col, num_row=row)
-    hdl.clear()
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
     if t_range:
         t0_range = np.log10(t_range)
-    axes = []
-    for n in range(num_figs):
-        i_col = n % col
-        i_row = n // col
-        t = hdl.addPlot(row=i_row, col=i_col)
-        axes.append(t)
-        if show_label:
-            t.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
 
-        t.setMouseEnabled(x=False, y=y_auto)
+    axes = _setup_subplots(hdl, num_figs, num_col, y_auto, show_label)
 
     for m in range(num_data):
         # default base line to be 1.0; used for non-fitting or fit error cases
@@ -231,7 +259,6 @@ def pg_plot(
                     y_fit,
                     pen=pg.mkPen(color, width=2.5),
                 )
-    return
 
 
 def pg_plot_stability(
@@ -293,32 +320,17 @@ def pg_plot_stability(
 
     _q, tel, g2, g2_err, qbin_labels, labels = get_g2_stability_data(xf_obj, q_range=q_range, t_range=t_range)
 
-    num_figs, _num_lines = compute_geometry(g2, plot_type)
+    num_figs, _ = compute_geometry(g2, plot_type)
 
     num_data, num_qval = len(g2), g2[0].shape[1]
-    # col and rows for the 2d layout
-    col = min(num_figs, num_col)
-    row = (num_figs + col - 1) // col
 
     rows = np.arange(num_data)
 
-    hdl.adjust_canvas_size(num_col=col, num_row=row)
-    hdl.clear()
     # a bug in pyqtgraph; the log scale in x-axis doesn't apply
     if t_range:
         t0_range = np.log10(t_range)
-    axes = []
-    for n in range(num_figs):
-        i_col = n % col
-        i_row = n // col
-        t = hdl.addPlot(row=i_row, col=i_col)
-        axes.append(t)
-        if show_label:
-            # t.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
-            legend = t.addLegend(labelTextSize="6pt")
-            legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
 
-        t.setMouseEnabled(x=False, y=y_auto)
+    axes = _setup_subplots(hdl, num_figs, num_col, y_auto, show_label, stability_legend=True)
 
     for m in range(num_data):
         # default base line to be 1.0; used for non-fitting or fit error cases
@@ -370,8 +382,6 @@ def pg_plot_stability(
             if not t_auto:
                 ax.setRange(xRange=t0_range)
 
-    return
-
 
 def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symbol: str, symbol_size: int = 5) -> None:
     """Plot a single G2 curve with error bars on a pyqtgraph axis.
@@ -403,4 +413,3 @@ def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symb
 
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
-    return
