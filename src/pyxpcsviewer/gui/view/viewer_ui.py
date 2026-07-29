@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'view.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.8.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
     QSplitter, QStatusBar, QTabWidget, QVBoxLayout,
     QWidget)
 
-from .plothandler import (ImageViewDev, ImageViewPlotItem, MplCanvasBarV, PlotWidgetDev)
+from .plothandler import (ImageViewDev, ImageViewPlotItem, PlotWidgetDev)
 from pyqtgraph import (DataTreeWidget, GraphicsLayoutWidget, ImageView, PlotWidget)
 from pyqtgraph.parametertree import ParameterTree
 from . import icons_rc
@@ -40,8 +40,8 @@ class Ui_mainWindow(object):
         mainWindow.setSizePolicy(sizePolicy)
         mainWindow.setMinimumSize(QSize(1024, 0))
         icon = QIcon()
-        icon.addFile(u":/newPrefix/icons8-giraffe-full-body-100.png", QSize(), QIcon.Normal, QIcon.Off)
-        icon.addFile(u":/icons/icons8-giraffe-full-body-100.png", QSize(), QIcon.Normal, QIcon.On)
+        icon.addFile(u":/newPrefix/icons8-giraffe-full-body-100.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u":/icons/icons8-giraffe-full-body-100.png", QSize(), QIcon.Mode.Normal, QIcon.State.On)
         mainWindow.setWindowIcon(icon)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -329,8 +329,8 @@ class Ui_mainWindow(object):
 
         self.line_2 = QFrame(self.groupBox_3)
         self.line_2.setObjectName(u"line_2")
-        self.line_2.setFrameShape(QFrame.VLine)
-        self.line_2.setFrameShadow(QFrame.Sunken)
+        self.line_2.setFrameShape(QFrame.Shape.VLine)
+        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.gridLayout_40.addWidget(self.line_2, 1, 5, 1, 1)
 
@@ -353,8 +353,8 @@ class Ui_mainWindow(object):
 
         self.line = QFrame(self.groupBox_3)
         self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.VLine)
-        self.line.setFrameShadow(QFrame.Sunken)
+        self.line.setFrameShape(QFrame.Shape.VLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.gridLayout_40.addWidget(self.line, 1, 2, 1, 1)
 
@@ -373,8 +373,8 @@ class Ui_mainWindow(object):
 
         self.line_3 = QFrame(self.groupBox_3)
         self.line_3.setObjectName(u"line_3")
-        self.line_3.setFrameShape(QFrame.VLine)
-        self.line_3.setFrameShadow(QFrame.Sunken)
+        self.line_3.setFrameShape(QFrame.Shape.VLine)
+        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.gridLayout_40.addWidget(self.line_3, 1, 11, 1, 1)
 
@@ -1300,17 +1300,20 @@ class Ui_mainWindow(object):
         self.gridLayout_22 = QGridLayout(self.tab_7)
         self.gridLayout_22.setObjectName(u"gridLayout_22")
         self.gridLayout_22.setContentsMargins(0, 0, 0, 0)
-        self.mp_tauq = MplCanvasBarV(self.tab_7)
+        self.mp_tauq = PlotWidget(self.tab_7)
         self.mp_tauq.setObjectName(u"mp_tauq")
-        sizePolicy7.setHeightForWidth(self.mp_tauq.sizePolicy().hasHeightForWidth())
-        self.mp_tauq.setSizePolicy(sizePolicy7)
+        sizePolicy11 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        sizePolicy11.setHorizontalStretch(0)
+        sizePolicy11.setVerticalStretch(1)
+        sizePolicy11.setHeightForWidth(self.mp_tauq.sizePolicy().hasHeightForWidth())
+        self.mp_tauq.setSizePolicy(sizePolicy11)
 
         self.gridLayout_22.addWidget(self.mp_tauq, 0, 0, 1, 1)
 
-        self.mp_tauq_pre = MplCanvasBarV(self.tab_7)
+        self.mp_tauq_pre = GraphicsLayoutWidget(self.tab_7)
         self.mp_tauq_pre.setObjectName(u"mp_tauq_pre")
-        sizePolicy7.setHeightForWidth(self.mp_tauq_pre.sizePolicy().hasHeightForWidth())
-        self.mp_tauq_pre.setSizePolicy(sizePolicy7)
+        sizePolicy11.setHeightForWidth(self.mp_tauq_pre.sizePolicy().hasHeightForWidth())
+        self.mp_tauq_pre.setSizePolicy(sizePolicy11)
 
         self.gridLayout_22.addWidget(self.mp_tauq_pre, 0, 1, 1, 1)
 
@@ -1448,9 +1451,6 @@ class Ui_mainWindow(object):
         self.splitter_4.setOrientation(Qt.Orientation.Vertical)
         self.mp_2t_map = GraphicsLayoutWidget(self.splitter_4)
         self.mp_2t_map.setObjectName(u"mp_2t_map")
-        sizePolicy11 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        sizePolicy11.setHorizontalStretch(0)
-        sizePolicy11.setVerticalStretch(1)
         sizePolicy11.setHeightForWidth(self.mp_2t_map.sizePolicy().hasHeightForWidth())
         self.mp_2t_map.setSizePolicy(sizePolicy11)
         self.mp_2t_map.setMinimumSize(QSize(300, 300))

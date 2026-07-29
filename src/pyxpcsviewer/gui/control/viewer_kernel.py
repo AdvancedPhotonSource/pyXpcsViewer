@@ -203,7 +203,12 @@ class ViewerKernel(FileLocator):
             hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
 
     def plot_tauq_pre(self, hdl=None, rows=None):
-        """Plot g2 fitting parameter pre-view subplots (contrast, tau, stretch, baseline vs q)."""
+        """Plot g2 fitting parameter pre-view subplots (contrast, tau, stretch, baseline vs q).
+
+        Args:
+            hdl: pyqtgraph ``GraphicsLayoutWidget`` to draw on.
+            rows: List of target indices.
+        """
         xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
         short_list = [xf for xf in xf_list if xf.fit_summary is not None]
         tauq.plot_pre(short_list, hdl)
@@ -221,7 +226,7 @@ class ViewerKernel(FileLocator):
         """Run tau-q fitting and plot the results.
 
         Args:
-            hdl: matplotlib plot handler widget.
+            hdl: pyqtgraph ``PlotWidget`` to draw on.
             bounds: Parameter bounds for tau-q fitting.
             rows: List of target indices.
             plot_type: Bitmask controlling axes scales.

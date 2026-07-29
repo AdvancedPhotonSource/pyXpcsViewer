@@ -572,7 +572,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def init_diffusion(self) -> None:
         """Initialize the tau-q pre-view subplot with current target data."""
-        self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre.hdl)
+        self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre)
 
     def plot_diffusion(self, dryrun: bool = False):
         """Plot tau(q) diffusion fitting with optional parameter range configuration.
@@ -602,8 +602,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            msg = self.vk.plot_tauq(hdl=self.mp_tauq.hdl, **kwargs)
-            self.mp_tauq.parent().repaint()
+            msg = self.vk.plot_tauq(hdl=self.mp_tauq, **kwargs)
             self.tauq_msg.clear()
             self.tauq_msg.setData(msg)
             self.tauq_msg.parent().repaint()
