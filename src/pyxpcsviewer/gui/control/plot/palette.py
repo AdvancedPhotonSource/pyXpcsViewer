@@ -39,3 +39,23 @@ MARKERS_MPL = ("o", "v", "^", ">", "<", "s", "p", "h", "*", "+", "d", "x")
 
 # Marker symbols for pyqtgraph (via :func:`matplot_qt.get_color_marker`)
 MARKERS_PYG = ("o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x")
+
+# 16-colour RGB palette used by the intensity-vs-time plot (intt)
+INTT_COLORS = (
+    (192, 0, 0),
+    (0, 176, 80),
+    (0, 32, 96),
+    (255, 0, 0),
+    (0, 176, 240),
+    (0, 32, 96),
+    (255, 164, 0),
+    (146, 208, 80),
+    (0, 112, 192),
+    (112, 48, 160),
+    (54, 96, 146),
+    (150, 54, 52),
+    (118, 147, 60),
+    (96, 73, 122),
+    (49, 134, 155),
+    (226, 107, 10),
+)
