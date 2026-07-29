@@ -24,19 +24,10 @@ COLORS_HEX = (
 )
 
 
-def _hex_to_rgb(hexcolor: str) -> tuple[int, int, int]:
-    """Convert a ``"#rrggbb"`` hex string to an ``(r, g, b)`` tuple."""
-    return (int(hexcolor[1:3], 16), int(hexcolor[3:5], 16), int(hexcolor[5:7], 16))
-
-
-COLORS_RGB = tuple(_hex_to_rgb(c) for c in COLORS_HEX)
-
-
 # ---------------------------------------------------------------------------
-# intt palette — now uses the same default cycle as the rest of the app
+# intt palette — alias, same cycle as the rest of the app
 # ---------------------------------------------------------------------------
 
-# Alias so intt.py imports remain unchanged
 INTT_COLORS = COLORS_HEX
 
 # ---------------------------------------------------------------------------
