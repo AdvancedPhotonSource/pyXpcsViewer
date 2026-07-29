@@ -9,27 +9,7 @@ pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 # pg.setConfigOption("background", 'w')
 logger = logging.getLogger(__name__)
 
-# colors converted from
-# https://matplotlib.org/stable/tutorials/colors/colors.html
-# colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-#           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
-
-colors = (
-    (31, 119, 180),
-    (255, 127, 14),
-    (44, 160, 44),
-    (214, 39, 40),
-    (148, 103, 189),
-    (140, 86, 75),
-    (227, 119, 194),
-    (127, 127, 127),
-    (188, 189, 34),
-    (23, 190, 207),
-)
-
-
-# https://www.geeksforgeeks.org/pyqtgraph-symbols/
-symbols = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
+from .palette import COLORS_RGB as colors, MARKERS_PYG as symbols
 
 
 def get_g2_data(xf_list, q_range=None, t_range=None):

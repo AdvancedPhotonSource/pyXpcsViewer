@@ -186,6 +186,9 @@ class ImageViewDev(ImageView):
         return parameter
 
 
+from .utils import adjust_canvas_size
+
+
 class PlotWidgetDev(GraphicsLayoutWidget):
     """Extended ``GraphicsLayoutWidget`` with dynamic canvas resizing."""
 
@@ -195,19 +198,8 @@ class PlotWidgetDev(GraphicsLayoutWidget):
         self.setBackground("w")
 
     def adjust_canvas_size(self, num_col: int, num_row: int) -> None:
-        """Resize the widget's minimum height to maintain a reasonable aspect ratio for a grid of plots.
-
-        Args:
-            num_col: Number of plot columns in the layout.
-            num_row: Number of plot rows in the layout.
-        """
-        t = self.parent().parent().parent()
-        aspect = 1 / 1.618 if t is None else t.height() / self.width()
-
-        min_size = t.height() - 20
-        width = self.width()
-        canvas_size = max(min_size, int(width / num_col * aspect * num_row))
-        self.setMinimumSize(QtCore.QSize(0, canvas_size))
+        """Resize the widget's minimum height for a *num_col* x *num_row* plot grid."""
+        adjust_canvas_size(self, num_col, num_row)
 
 
 class PieROI(pg.ROI):

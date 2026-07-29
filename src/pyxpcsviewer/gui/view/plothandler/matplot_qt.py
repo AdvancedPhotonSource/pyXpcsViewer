@@ -17,21 +17,13 @@ from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
 # matplotlib.pyplot.style.use(['science', 'no-latex'])
 
-# https://matplotlib.org/stable/api/markers_api.html
-markers = ["o", "v", "^", ">", "<", "s", "p", "h", "*", "+", "d", "x"]
-pg_markers = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
-colors = (
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-    "#9467bd",
-    "#8c564b",
-    "#e377c2",
-    "#7f7f7f",
-    "#bcbd22",
-    "#17becf",
-)
+from ...control.plot.palette import COLORS_HEX, MARKERS_MPL, MARKERS_PYG
+
+from .utils import adjust_canvas_size as _adjust_canvas_size
+
+colors = COLORS_HEX
+markers = MARKERS_MPL
+pg_markers = MARKERS_PYG
 
 
 def get_color_marker(n: int, backend: str = "matplotlib") -> tuple[str, str]:
@@ -213,19 +205,8 @@ class MplCanvas(FigureCanvasQTAgg):
         self.obj = None
 
     def adjust_canvas_size(self, num_col: int, num_row: int) -> None:
-        """Resize the canvas to maintain a good aspect ratio for a grid of subplots.
-
-        Args:
-            num_col: Number of columns in the plot grid.
-            num_row: Number of rows in the plot grid.
-        """
-        t = self.parent().parent().parent()
-        aspect = 1 / 1.618 if t is None else t.height() / self.width()
-
-        min_size = t.height() - 20
-        width = self.width()
-        canvas_size = max(min_size, int(width / num_col * aspect * num_row))
-        self.setMinimumSize(QtCore.QSize(0, canvas_size))
+        """Resize the canvas for a *num_col* x *num_row* plot grid."""
+        _adjust_canvas_size(self, num_col, num_row)
 
     def clear_axes(self) -> None:
         """Clear all axes (single or multi-subplot)."""

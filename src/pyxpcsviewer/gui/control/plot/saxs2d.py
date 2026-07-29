@@ -52,10 +52,6 @@ def plot(
     if not autolevel and vmin is not None and vmax is not None:
         pg_hdl.setLevels(vmin, vmax)
 
-    # Restore intensity levels (if needed)
-    if not autolevel and vmin is not None and vmax is not None:
-        pg_hdl.setLevels(vmin, vmax)
-
     if center is not None:
         pg_hdl.add_roi(sl_type="Center", center=center, label="Center")
 

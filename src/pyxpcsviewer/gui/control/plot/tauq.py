@@ -5,19 +5,10 @@ import warnings
 import numpy as np
 import pyqtgraph as pg
 
-COLORS = [
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-    "#9467bd",
-    "#8c564b",
-    "#e377c2",
-    "#7f7f7f",
-    "#bcbd22",
-    "#17becf",
-]
-MARKERS = ["o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x"]
+from .palette import COLORS_HEX, MARKERS_PYG
+
+COLORS = COLORS_HEX
+MARKERS = MARKERS_PYG
 
 
 def _log_errorbar_coords(
