@@ -16,38 +16,27 @@ keymap = {
 
 
 def has_G2_field(fname):
-    """
-    Check if the G2 field exists in the specified HDF5 file.
+    """Check if the G2 field exists in the specified HDF5 file.
 
-    Parameters
-    ----------
-    fname : str
-        The path to the HDF5 file.
+    Args:
+        fname: Path to the HDF5 file.
 
-    Returns
-    -------
-    bool
-        True if the G2 field exists, False otherwise.
+    Returns:
+        ``True`` if the G2 field exists, ``False`` otherwise.
     """
     with h5py.File(fname, "r", libver="latest") as f:
         return keymap["G2"] in f
 
 
 def average_by_qindex(idx_map, arr):
-    """
-    Calculate the average of an array based on a Q-index map.
+    """Calculate the average of an array based on a Q-index map.
 
-    Parameters
-    ----------
-    idx_map : ndarray
-        An index map where each value represents a Q-index.
-    arr : ndarray
-        A 2D array of values to be averaged. The second dimension size
-        must match the size of the flattened index map.
+    Args:
+        idx_map: An index map where each value represents a Q-index.
+        arr: A 2D array of values to be averaged. The second dimension size
+            must match the size of the flattened index map.
 
-    Returns
-    -------
-    ndarray
+    Returns:
         A 2D array containing the averaged values for each Q-index.
     """
     size = np.max(idx_map) + 1
@@ -67,23 +56,16 @@ def average_by_qindex(idx_map, arr):
 
 
 def compute_g2(sqmap, dqmap, G2):
-    """
-    Compute g2 and its error using static and dynamic ROI maps.
+    """Compute g2 and its error using static and dynamic ROI maps.
 
-    Parameters
-    ----------
-    sqmap : ndarray
-        The static ROI map.
-    dqmap : ndarray
-        The dynamic ROI map.
-    G2 : ndarray
-        The unnormalized G2 data with shape (n_delays, n_channels, img_v, img_h).
+    Args:
+        sqmap: The static ROI map.
+        dqmap: The dynamic ROI map.
+        G2: The unnormalized G2 data with shape ``(n_delays, n_channels, img_v, img_h)``.
 
-    Returns
-    -------
-    tuple of ndarray
-        - g2: The normalized g2 values with shape (n_delays, n_dq).
-        - g2_err: The standard deviation error of g2.
+    Returns:
+        Tuple of ``(g2, g2_err)`` where *g2* is the normalized g2 values
+        with shape ``(n_delays, n_dq)`` and *g2_err* is the standard deviation error.
     """
     # G2 is (N_delay x 3 x IMG_V x IMG_H)
     shape = G2.shape  #
@@ -124,25 +106,16 @@ def compute_g2(sqmap, dqmap, G2):
 
 
 def save_G2_to_file(fname, avg_result):
-    """
-    Update an HDF5 file with averaged results.
+    """Update an HDF5 file with averaged G2 results.
 
-    This is a helper function that writes the averaged G2, g2, and g2_err data
-    to the specified HDF5 file. If the datasets already exist, they are deleted
-    and recreated.
+    Writes the averaged G2, g2, and g2_err data to the specified HDF5 file.
+    If the datasets already exist, they are deleted and recreated.
 
-    Parameters
-    ----------
-    fname : str
-        The path to the HDF5 file to be updated.
-    avg_result : dict
-        A dictionary containing the averaged results. Keys should match those
-        in the keymap (e.g., 'G2', 'g2', 'g2_err'), and values are numpy arrays
-        containing the data to be written.
-
-    Returns
-    -------
-    None
+    Args:
+        fname: Path to the HDF5 file to be updated.
+        avg_result: Dictionary containing the averaged results. Keys should match
+            those in the keymap (e.g., ``'G2'``, ``'g2'``, ``'g2_err'``), and
+            values are numpy arrays containing the data to be written.
     """
     with h5py.File(fname, "a") as f:
         for key, data in avg_result.items():
@@ -154,27 +127,21 @@ def save_G2_to_file(fname, avg_result):
 
 
 def regroup_G2_with_qmap_array(avg_result, sqmap, dqmap):
-    """
-    Compute g2 and g2_err from G2 data using Q-maps and add them to results.
+    """Compute g2 and g2_err from G2 data using Q-maps and add them to results.
 
-    This function takes the unnormalized G2 data from avg_result and computes
-    the normalized g2 and its error using the provided static and dynamic Q-maps.
-    The computed g2 and g2_err are added to the avg_result dictionary.
+    Takes the unnormalized G2 data from avg_result and computes the normalized g2
+    and its error using the provided static and dynamic Q-maps. The computed g2
+    and g2_err are added to the avg_result dictionary.
 
-    Parameters
-    ----------
-    avg_result : dict
-        A dictionary containing at least the 'G2' key with unnormalized G2 data.
-        This dictionary will be modified in-place to include 'g2' and 'g2_err'.
-    sqmap : ndarray
-        The static ROI map used for averaging.
-    dqmap : ndarray
-        The dynamic ROI map used for grouping pixels.
+    Args:
+        avg_result: Dictionary containing at least the ``'G2'`` key with
+            unnormalized G2 data. Modified in-place to include ``'g2'`` and
+            ``'g2_err'``.
+        sqmap: The static ROI map used for averaging.
+        dqmap: The dynamic ROI map used for grouping pixels.
 
-    Returns
-    -------
-    dict
-        The updated avg_result dictionary with 'g2' and 'g2_err' added.
+    Returns:
+        The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
     """
     g2, g2_err = compute_g2(sqmap, dqmap, avg_result["G2"])
     avg_result["g2"] = g2
@@ -183,29 +150,21 @@ def regroup_G2_with_qmap_array(avg_result, sqmap, dqmap):
 
 
 def regroup_G2(fname, avg_result, qmap_fname=None):
-    """
-    Regroup G2 data using Q-maps and update the HDF5 file with all results.
+    """Regroup G2 data using Q-maps and update the HDF5 file with all results.
 
-    This function reads the static and dynamic Q-maps from an HDF5 file,
-    computes g2 and g2_err from the G2 data in avg_result, and adds them
-    to the avg_result dictionary.
+    Reads the static and dynamic Q-maps from an HDF5 file, computes g2 and g2_err
+    from the G2 data in avg_result, and adds them to the avg_result dictionary.
 
-    Parameters
-    ----------
-    fname : str
-        The path to the HDF5 file to be updated with the results.
-    avg_result : dict
-        A dictionary containing at least the 'G2' key with unnormalized G2 data.
-        May also contain other keys like 'saxs2d', 'saxs1d', etc.
-    qmap_fname : str, optional
-        The path to the HDF5 file containing the Q-maps (sqmap and dqmap).
-        If None, the Q-maps are read from the same file as fname.
-        Default is None.
+    Args:
+        fname: Path to the HDF5 file to be updated with the results.
+        avg_result: Dictionary containing at least the ``'G2'`` key with
+            unnormalized G2 data. May also contain other keys like
+            ``'saxs2d'``, ``'saxs1d'``, etc.
+        qmap_fname: Path to the HDF5 file containing the Q-maps (sqmap and dqmap).
+            If ``None``, the Q-maps are read from the same file as *fname*.
 
-    Returns
-    -------
-    dict
-        The updated avg_result dictionary with 'g2' and 'g2_err' added.
+    Returns:
+        The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
     """
     qmap_fname = qmap_fname or fname
 

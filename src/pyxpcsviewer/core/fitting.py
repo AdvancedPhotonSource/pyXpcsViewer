@@ -26,56 +26,35 @@ def single_exp(x: float | np.ndarray, tau: float, bkg: float, cts: float) -> flo
 
 
 def single_exp_all(x, a, b, c, d):
-    """
-    Single exponential fitting for XPCS-multitau analysis.
+    """Single exponential fitting model for XPCS-multitau analysis.
 
-    Parameters
-    ----------
-    x : float or ndarray
-        Delay in seconds.
-    a : float
-        Contrast.
-    b : float
-        Characteristic time (tau).
-    c : float
-        Restriction factor.
-    d : float
-        Baseline offset.
+    Args:
+        x: Delay in seconds.
+        a: Contrast.
+        b: Characteristic time (tau).
+        c: Restriction factor.
+        d: Baseline offset.
 
-    Returns
-    -------
-    float or ndarray
+    Returns:
         Computed value of the single exponential model.
     """
     return a * np.exp(-2 * (x / b) ** c) + d
 
 
 def double_exp_all(x, a, b1, c1, d, b2, c2, f):
-    """
-    Double exponential fitting for XPCS-multitau analysis.
+    """Double exponential fitting model for XPCS-multitau analysis.
 
-    Parameters
-    ----------
-    x : float or ndarray
-        Delay in seconds.
-    a : float
-        Contrast.
-    b1 : float
-        Characteristic time (tau) of the first exponential component.
-    c1 : float
-        Restriction factor for the first component.
-    d : float
-        Baseline offset.
-    b2 : float
-        Characteristic time (tau) of the second exponential component.
-    c2 : float
-        Restriction factor for the second component.
-    f : float
-        Fractional contribution of the first exponential component (0 ≤ f ≤ 1).
+    Args:
+        x: Delay in seconds.
+        a: Contrast.
+        b1: Characteristic time (tau) of the first exponential component.
+        c1: Restriction factor for the first component.
+        d: Baseline offset.
+        b2: Characteristic time (tau) of the second exponential component.
+        c2: Restriction factor for the second component.
+        f: Fractional contribution of the first exponential component (0 ≤ f ≤ 1).
 
-    Returns
-    -------
-    float or ndarray
+    Returns:
         Computed value of the double exponential model.
     """
     t1 = np.exp(-1 * (x / b1) ** c1) * f
@@ -84,21 +63,14 @@ def double_exp_all(x, a, b1, c1, d, b2, c2, f):
 
 
 def power_law(x, a, b):
-    """
-    Power-law fitting for diffusion behavior.
+    """Power-law fitting model for diffusion behavior.
 
-    Parameters
-    ----------
-    x : float or ndarray
-        Independent variable, typically time delay (tau).
-    a : float
-        Scaling factor.
-    b : float
-        Power exponent.
+    Args:
+        x: Independent variable, typically time delay (tau).
+        a: Scaling factor.
+        b: Power exponent.
 
-    Returns
-    -------
-    float or ndarray
+    Returns:
         Computed value based on the power-law model.
     """
     return a * x**b

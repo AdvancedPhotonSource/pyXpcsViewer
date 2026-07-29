@@ -8,8 +8,8 @@ import warnings
 
 import numpy as np
 
-from .fileIO.hdf_reader import get, get_analysis_type, read_metadata_to_dict
-from .fileIO.qmap_utils import get_qmap
+from .file_io.hdf_reader import get, get_analysis_type, read_metadata_to_dict
+from .file_io.qmap_utils import get_qmap
 from .fitting import double_exp_all, fit_with_fixed, power_law, single_exp_all
 from .twotime_utils import get_c2_stream, get_single_c2_from_hdf
 
@@ -17,21 +17,16 @@ logger = logging.getLogger(__name__)
 
 
 def create_id(fname, label_style=None, simplify_flag=True):
-    """
-    Generate a simplified or customized ID string from a filename.
+    """Generate a simplified or customized ID string from a filename.
 
-    Parameters
-    ----------
-    fname : str
-        Input file name, possibly with path and extension.
-    label_style : str or None, optional
-        Comma-separated string of indices to extract specific components from the file name.
-    simplify_flag : bool, optional
-        Whether to simplify the file name by removing leading zeros and stripping suffixes.
+    Args:
+        fname: Input file name, possibly with path and extension.
+        label_style: Comma-separated string of indices to extract specific components
+            from the file name.
+        simplify_flag: Whether to simplify the file name by removing leading zeros
+            and stripping suffixes.
 
-    Returns
-    -------
-    str
+    Returns:
         A simplified or customized ID string derived from the input filename.
     """
     fname = os.path.basename(fname)

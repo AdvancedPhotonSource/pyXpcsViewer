@@ -11,18 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 def put(save_path, result, ftype="nexus", mode="raw"):
-    """
-    save the result to hdf5 file
-    Parameters
-    ----------
-    save_path: str
-        path to save the result
-    result: dict
-        dictionary to save
-    ftype: str
-        file type, 'nexus' or 'aps_8idi'
-    mode: str
-        'raw' or 'alias'
+    """Save result data to an HDF5 file.
+
+    Args:
+        save_path: Path to save the result file.
+        result: Dictionary of datasets to save.
+        ftype: File type — ``"nexus"`` or ``"aps_8idi"``.
+        mode: ``"raw"`` uses the literal key; ``"alias"`` resolves via the key map.
     """
     with h5py.File(save_path, "a") as f:
         for key, val in result.items():
@@ -55,17 +50,12 @@ def get_abs_cs_scale(fname: str, ftype: str = "nexus") -> float | None:
 
 
 def read_metadata_to_dict(file_path):
-    """
-    Reads an HDF5 file and loads its contents into a nested dictionary.
+    """Read an HDF5 file and load its contents into a nested dictionary.
 
-    Parameters
-    ----------
-    file_path : str
-        Path to the HDF5 file.
+    Args:
+        file_path: Path to the HDF5 file.
 
-    Returns
-    -------
-    dict
+    Returns:
         A nested dictionary containing datasets as NumPy arrays.
     """
 
@@ -146,18 +136,14 @@ def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
 
 
 def get_analysis_type(fname, ftype="nexus"):
-    """
-    determine the analysis type of the file
-    Parameters
-    ----------
-    fname: str
-        file name
-    ftype: str
-        file type, 'nexus' or 'legacy'
-    Returns
-    -------
-    tuple
-        analysis type, 'Twotime' or 'Multitau', or both
+    """Determine the analysis type(s) stored in the file.
+
+    Args:
+        fname: Path to the HDF5 file.
+        ftype: File type — ``"nexus"`` or ``"aps_8idi"``.
+
+    Returns:
+        Tuple containing ``"Twotime"`` or ``"Multitau"``, or both.
     """
     c2_prefix = hdf_key[ftype]["c2_prefix"]
     g2_prefix = hdf_key[ftype]["g2"]

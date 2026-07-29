@@ -283,11 +283,16 @@ class QMap:
         return qmap, qmap_unit
 
     def reshape_phi_analysis(self, compressed_data_raw, label, mode="saxs_1d"):
-        """
-        the saxs1d and stability data are compressed. the values of the empty
-        static bins are not saved. this function reshapes the array and fills
-        the empty bins with nan. nanmean is performed to get the correct
-        results;
+        """Reshape compressed SAXS-1D / stability data and fill empty static bins with NaN.
+
+        The SAXS-1D and stability data are compressed by omitting empty static bins.
+        This function expands the array back to the full shape (filling empty bins
+        with NaN) and computes the NaN-mean for correct results.
+
+        Args:
+            compressed_data_raw: Flattened/compressed data array from the HDF5 file.
+            label: Label string for the source dataset.
+            mode: One of ``"saxs_1d"`` or ``"stability"``.
         """
         assert mode in ("saxs_1d", "stability")
         num_samples = compressed_data_raw.size // self.static_index_mapping.size
@@ -335,7 +340,15 @@ class QMap:
 
 
 def get_hash(fname, root_key="/xpcs/qmap"):
-    """Extracts the hash from the HDF5 file."""
+    """Compute and return the content hash for Q-map caching.
+
+    Args:
+        fname: Path to the HDF5 file.
+        root_key: HDF5 group path for the Q-map data.
+
+    Returns:
+        The hash attribute string stored in the Q-map group.
+    """
     with h5py.File(fname, "r") as f:
         return f[root_key].attrs["hash"]
 

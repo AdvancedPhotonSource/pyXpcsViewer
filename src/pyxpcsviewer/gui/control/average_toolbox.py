@@ -17,7 +17,7 @@ from sklearn.cluster import (
 )  # Added this import based on the original code's usage
 
 from ...core.fast_g2_averaging import fast_average_shared_memory
-from ...core.fileIO.hdf_reader import get, put
+from ...core.file_io.hdf_reader import get, put
 from ...core.xpcs_file import XpcsFile as XF
 from ..model.listmodel import ListDataModel
 
@@ -25,15 +25,12 @@ logger = logging.getLogger(__name__)
 
 
 def average_plot_cluster(self, hdl1, num_clusters=2):
-    """
-    Cluster datasets based on min/max of normalized Int_t and visualize them.
+    """Cluster datasets based on min/max of normalized Int_t and visualize them.
 
-    Parameters
-    ----------
-    self : object with fetch and meta
-    hdl1 : UI plot handler
-    num_clusters : int
-        Number of clusters to form
+    Args:
+        self: Object with ``fetch`` and ``meta`` attributes.
+        hdl1: UI plot handler.
+        num_clusters: Number of clusters to form.
     """
     if self.meta["avg_file_list"] != tuple(self.target) or "avg_intt_minmax" not in self.meta:
         logger.info("avg cache not exist")
@@ -59,13 +56,18 @@ def average_plot_cluster(self, hdl1, num_clusters=2):
 
 
 def validate_g2_baseline(g2_data, avg_window=3, avg_qindex=0, avg_blmin=0.95, avg_blmax=1.05):
-    """
-    Check if the G2 baseline in the given Q index falls within a valid range.
+    """Check if the G2 baseline in the given Q index falls within a valid range.
 
-    Returns
-    -------
-    (bool, float)
-        Whether baseline is valid, and the baseline value
+    Args:
+        g2_data: G2 correlation array.
+        avg_window: Number of trailing frames for baseline calculation.
+        avg_qindex: Q-index into the G2 data for baseline evaluation.
+        avg_blmin: Inclusive lower bound for valid baseline.
+        avg_blmax: Inclusive upper bound for valid baseline.
+
+    Returns:
+        Tuple of ``(bool, float)`` indicating whether the baseline is valid
+        and the baseline value.
     """
     idx = avg_qindex if avg_qindex < g2_data.shape[1] else 0
     g2_baseline = np.mean(g2_data[-avg_window:, idx])
@@ -74,33 +76,20 @@ def validate_g2_baseline(g2_data, avg_window=3, avg_qindex=0, avg_blmin=0.95, av
 
 # Helper function for multiprocessing to process a single file
 def _process_single_file(fname, fields, avg_window, avg_qindex, avg_blmin, avg_blmax):
-    """
-    Processes a single file to extract data and validate G2 baseline.
+    """Process a single file to extract data and validate G2 baseline.
+
     This function is designed to be run in a separate process.
 
-    Parameters
-    ----------
-    fname : str
-        Path to the file to process.
-    fields : list
-        List of fields to fetch from the file.
-    avg_window : int
-        Window size for G2 baseline calculation.
-    avg_qindex : int
-        Q-index for G2 baseline calculation.
-    avg_blmin : float
-        Minimum allowed G2 baseline value.
-    avg_blmax : float
-        Maximum allowed G2 baseline value.
+    Args:
+        fname: Path to the file to process.
+        fields: List of fields to fetch from the file.
+        avg_window: Window size for G2 baseline calculation.
+        avg_qindex: Q-index for G2 baseline calculation.
+        avg_blmin: Minimum allowed G2 baseline value.
+        avg_blmax: Maximum allowed G2 baseline value.
 
-    Returns
-    -------
-    tuple
-        A tuple containing:
-        - dict: Processed data for the specified fields (or None if error/invalid).
-        - float: G2 baseline value.
-        - bool: True if the file is valid, False otherwise.
-        - str: Original filename.
+    Returns:
+        Tuple of ``(data_dict, baseline_val, is_valid, original_fname)``.
     """
     try:
         xf = get(fname, fields=fields, mode="alias", ret_type="dict")
@@ -128,9 +117,9 @@ class WorkerSignal(QObject):
 
 
 class AverageToolbox(QtCore.QRunnable):
-    """
-    Background QRunnable for averaging datasets with G2 filtering and progress tracking.
-    Emits signals for progress, status, and individual value feedback.
+    """Background worker for averaging XPCS datasets with G2 filtering and progress tracking.
+
+    Emits Qt signals for progress, status, and individual value feedback.
     """
 
     def __init__(self, flist=None, jid=None) -> None:
@@ -189,7 +178,17 @@ class AverageToolbox(QtCore.QRunnable):
         self.kwargs = kwargs
 
     def check_fields(self, fields):
-        """Check if the required fields are present in the first file."""
+        """Check which required fields are present in the first file.
+
+        Args:
+            fields: List of field names to check.
+
+        Returns:
+            List of field names that exist in the file.
+
+        Raises:
+            AssertionError: If none of the requested fields are found.
+        """
         valid_fields = []
         xf = XF(self.model[0])
         for field in fields:
@@ -211,9 +210,19 @@ class AverageToolbox(QtCore.QRunnable):
         fields=None,
         num_workers=None,
     ):
-        """
-        Run the averaging operation on the dataset list using multiprocessing with
-        ProcessPoolExecutor for parallel processing and G2 filtering and signal emission.
+        """Run the averaging operation on the dataset list using multiprocessing.
+
+        Uses ``ProcessPoolExecutor`` for parallel processing, applies G2 baseline
+        filtering, and emits progress/status signals.
+
+        Args:
+            save_path: Destination path for the averaged HDF5 file.
+            avg_window: Number of trailing frames for baseline calculation.
+            avg_qindex: Q-index into G2 data for baseline evaluation.
+            avg_blmin: Minimum valid G2 baseline value.
+            avg_blmax: Maximum valid G2 baseline value.
+            fields: List of field names to average. Defaults to ``['saxs_2d']``.
+            num_workers: Number of worker processes.
         """
         if fields is None:
             fields = ["saxs_2d"]
@@ -364,7 +373,11 @@ class AverageToolbox(QtCore.QRunnable):
         return final_averaged_data
 
     def initialize_plot(self, hdl):
-        """Initialize scatter plot for g2 baseline values."""
+        """Initialize a scatter plot widget for g2 baseline values.
+
+        Args:
+            hdl: pyqtgraph layout widget to draw on.
+        """
         hdl.clear()
         t = hdl.addPlot()
         t.setLabel("bottom", "Dataset Index")
@@ -377,7 +390,7 @@ class AverageToolbox(QtCore.QRunnable):
         t.setMouseEnabled(x=False, y=False)
 
     def update_plot(self):
-        """Update the baseline plot with current data."""
+        """Update the baseline scatter plot with the current collected data."""
         if self.ax is not None:
             # Only update with the actual collected data points
             self.ax.setData(self.baseline[: self.ptr])

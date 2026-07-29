@@ -6,7 +6,7 @@ import os
 import time
 import traceback
 
-from ...core.fileIO.qmap_utils import QMapManager
+from ...core.file_io.qmap_utils import QMapManager
 from ...core.xpcs_file import XpcsFile as XF
 from .listmodel import ListDataModel
 

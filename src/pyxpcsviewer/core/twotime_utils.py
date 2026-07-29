@@ -6,7 +6,7 @@ from multiprocessing import Pool
 import h5py
 import numpy as np
 
-from .fileIO.aps_8idi import key as key_map
+from .file_io.aps_8idi import key as key_map
 
 key_map = key_map["nexus"]
 
@@ -187,7 +187,16 @@ def get_c2_g2partials_from_hdf(full_path: str) -> dict[str, np.ndarray] | None:
 
 
 def get_c2_stream(full_path, max_size=-1):
-    """Returns (idxlist, generator) where the generator yields C2 streams."""
+    """Return the C2 block index list and a generator yielding C2 blocks.
+
+    Args:
+        full_path: Absolute path to the HDF5 result file.
+        max_size: Maximum dimension for each C2 matrix (``-1`` for no limit).
+
+    Returns:
+        Tuple of ``(idxlist, generator)`` where each yielded value is
+        ``(index_int, c2_array)``.
+    """
     c2_prefix = key_map["c2_prefix"]
 
     with h5py.File(full_path, "r") as f:
