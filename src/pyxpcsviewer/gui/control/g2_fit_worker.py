@@ -26,7 +26,7 @@ class G2FitWorker(QtCore.QRunnable):
     never blocks on ``scipy.optimize.curve_fit``.
     """
 
-    def __init__(self, xf_list, q_range, t_range, bounds, fit_flag, fit_func) -> None:
+    def __init__(self, xf_list, q_range, t_range, bounds, fit_flag, fit_func, executor=None) -> None:
         """Initialize the fitting worker with the files and fit parameters.
 
         Args:
@@ -36,6 +36,10 @@ class G2FitWorker(QtCore.QRunnable):
             bounds: Fitting bounds as ``(lower, upper)``.
             fit_flag: Tuple of bools — ``True`` to fit, ``False`` to hold fixed.
             fit_func: Either ``"single"`` or ``"double"`` exponential model.
+            executor: Optional pre-warmed ``ProcessPoolExecutor`` (see
+                :func:`~pyxpcsviewer.core.fitting.create_fit_pool`) to reuse
+                instead of creating a fresh one. ``None`` falls back to
+                ``fit_g2_batch``'s own fresh-pool-per-call behavior.
         """
         super().__init__()
         self.xf_list = xf_list
@@ -44,6 +48,7 @@ class G2FitWorker(QtCore.QRunnable):
         self.bounds = bounds
         self.fit_flag = fit_flag
         self.fit_func = fit_func
+        self.executor = executor
         self.signals = G2FitSignals()
 
     @Slot()
@@ -58,6 +63,7 @@ class G2FitWorker(QtCore.QRunnable):
             self.q_range,
             self.t_range,
             progress_callback=lambda done, total: self.signals.progress.emit(done, total),
+            executor=self.executor,
         )
         for xf, fit_summary in zip(self.xf_list, results, strict=True):
             xf.fit_summary = fit_summary

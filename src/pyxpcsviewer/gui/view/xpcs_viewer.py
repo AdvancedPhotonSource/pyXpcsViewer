@@ -197,6 +197,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.load_default_setting()
         self.show()
 
+    def closeEvent(self, event) -> None:
+        """Release background resources (e.g. the pre-warmed fit process pool) on window close."""
+        if self.jobs is not None:
+            self.jobs.shutdown()
+        super().closeEvent(event)
+
     def load_default_setting(self) -> None:
         """Set the default window size."""
         self.resize(1400, 1200)

@@ -1,9 +1,12 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
 import logging
+from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
+from PySide6 import QtCore
 
+from ...core.fitting import create_fit_pool
 from .average_toolbox import AverageToolbox
 from .background_job import WorkerSlot
 from .g2_fit_worker import G2FitWorker
@@ -34,6 +37,22 @@ class JobManager:
         self._g2_fit = WorkerSlot()
         self.avg_jid = 0
         self.avg_worker_active = {}
+
+        # Pre-warm the g2 fitting process pool in the background so the first
+        # user-triggered fit doesn't pay the (measured ~100-360ms) pool-creation
+        # cost. Left None until warm-up finishes; submit_g2_fit falls back to
+        # fit_g2_batch's own fresh-pool-per-call behavior until then.
+        self._fit_pool: ProcessPoolExecutor | None = None
+        self.thread_pool.start(QtCore.QRunnable.create(self._warm_up_fit_pool))
+
+    def _warm_up_fit_pool(self) -> None:
+        """Create and warm the persistent fit pool (runs on a QThreadPool worker thread)."""
+        self._fit_pool = create_fit_pool()
+
+    def shutdown(self) -> None:
+        """Release background resources owned by this manager. Call on app exit."""
+        if self._fit_pool is not None:
+            self._fit_pool.shutdown(wait=False, cancel_futures=True)
 
     @property
     def avg_worker(self):
@@ -105,7 +124,7 @@ class JobManager:
             logger.error("no multitau target is selected for g2 fitting")
             return None
 
-        worker = G2FitWorker(xf_list, q_range, t_range, bounds, fit_flag, fit_func)
+        worker = G2FitWorker(xf_list, q_range, t_range, bounds, fit_flag, fit_func, executor=self._fit_pool)
         self._g2_fit.start(self.thread_pool, worker, on_finished=on_finished)
         return worker
 
