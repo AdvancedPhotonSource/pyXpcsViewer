@@ -9,6 +9,7 @@ import pyqtgraph as pg
 from ...core.xpcs_file import XpcsFile
 from ..model.file_locator import FileLocator
 from .average_toolbox import AverageToolbox
+from .g2_fit_worker import G2FitWorker
 from .plot import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ class ViewerKernel(FileLocator):
         self.avg_jid = 0
         self.avg_worker_active = {}
         self.current_dset = None
+        self.g2_fit_worker = None
 
     def reset_meta(self) -> dict:
         """Reset all metadata fields (SAXS-1D background, averaging state)."""
@@ -117,6 +119,10 @@ class ViewerKernel(FileLocator):
     def plot_g2(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
         """Delegate to :func:`.plot.g2mod.pg_plot` for multitau G2 data.
 
+        Draws only — if ``show_fit`` is requested, the fitting itself must
+        already have been run (e.g. via :meth:`submit_g2_fit_job`), since
+        ``pg_plot`` just reads each file's ``fit_summary``.
+
         Returns:
             Tuple of ``(q_values, elapsed_time)`` arrays, or ``(None, None)``.
         """
@@ -127,6 +133,34 @@ class ViewerKernel(FileLocator):
             return q, tel
         else:
             return None, None
+
+    def submit_g2_fit_job(self, q_range, t_range, bounds, fit_flag, fit_func, rows=None):
+        """Create a :class:`G2FitWorker` to fit g2 data for all target files in parallel.
+
+        Args:
+            q_range: ``(q_min, q_max)`` filter or ``None`` for all Q values.
+            t_range: ``(t_min, t_max)`` filter on the elapsed time axis.
+            bounds: Fitting bounds as ``(lower, upper)``.
+            fit_flag: Tuple of bools — ``True`` to fit, ``False`` to hold fixed.
+            fit_func: Either ``"single"`` or ``"double"`` exponential model.
+            rows: List of target indices; ``None`` uses all multitau targets.
+
+        Returns:
+            The :class:`G2FitWorker` instance, or ``None`` if a fit job is
+            already running or no multitau target files are selected.
+        """
+        if self.g2_fit_worker is not None:
+            logger.error("a g2 fitting job is already running")
+            return None
+
+        xf_list = self.get_xf_list(rows=rows, filter_atype="Multitau")
+        if not xf_list:
+            logger.error("no multitau target is selected for g2 fitting")
+            return None
+
+        worker = G2FitWorker(xf_list, q_range, t_range, bounds, fit_flag, fit_func)
+        self.g2_fit_worker = worker
+        return worker
 
     def plot_g2_stability(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
         """Delegate to :func:`.plot.g2mod.pg_plot_stability` for G2 stability display."""

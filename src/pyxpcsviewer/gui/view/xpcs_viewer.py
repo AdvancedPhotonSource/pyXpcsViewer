@@ -859,20 +859,52 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         if dryrun:
             return kwargs
-        else:
-            self.pushButton_4.setDisabled(True)
-            self.pushButton_4.setText("plotting")
-            try:
-                qd, tel = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
-                self.init_g2(qd, tel)
-                if kwargs["show_fit"]:
-                    self.init_diffusion()
-            except Exception as e:
-                logger.error(f"plot g2 failed, {e}")
-                traceback.print_exc()
-            finally:
-                self.pushButton_4.setEnabled(True)
-                self.pushButton_4.setText("plot")
+
+        self.pushButton_4.setDisabled(True)
+        self.pushButton_4.setText("plotting")
+
+        if not kwargs["show_fit"]:
+            self._draw_g2(kwargs)
+            return
+
+        # fitting must run (and finish) before pg_plot can draw the overlay;
+        # run it in the background so the GUI doesn't freeze on curve_fit
+        q_range = None if kwargs["q_auto"] else kwargs["q_range"]
+        t_range = None if kwargs["t_auto"] else kwargs["t_range"]
+        worker = self.vk.submit_g2_fit_job(
+            q_range=q_range,
+            t_range=t_range,
+            bounds=kwargs["bounds"],
+            fit_flag=kwargs["fit_flag"],
+            fit_func=kwargs["fit_func"],
+            rows=kwargs["rows"],
+        )
+        if worker is None:
+            self.pushButton_4.setEnabled(True)
+            self.pushButton_4.setText("plot")
+            return
+
+        worker.signals.finished.connect(lambda: self._on_g2_fit_finished(kwargs))
+        self.thread_pool.start(worker)
+
+    def _draw_g2(self, kwargs: dict) -> None:
+        """Draw the G2 plot (and diffusion tab, if fitting) using already-fit data."""
+        try:
+            qd, tel = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+            self.init_g2(qd, tel)
+            if kwargs["show_fit"]:
+                self.init_diffusion()
+        except Exception as e:
+            logger.error(f"plot g2 failed, {e}")
+            traceback.print_exc()
+        finally:
+            self.pushButton_4.setEnabled(True)
+            self.pushButton_4.setText("plot")
+
+    def _on_g2_fit_finished(self, kwargs: dict) -> None:
+        """Slot: background g2 fitting finished — draw the plot now."""
+        self.vk.g2_fit_worker = None
+        self._draw_g2(kwargs)
 
     def plot_g2_stability(self, dryrun: bool = False):
         """Plot G2 stability (partial G2 vs time) curves for a single file."""

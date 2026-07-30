@@ -11,7 +11,7 @@ import numpy as np
 
 from .file_io.hdf_reader import get, get_analysis_type, read_metadata_to_dict
 from .file_io.qmap_utils import get_qmap
-from .fitting import double_exp_all, fit_with_fixed, power_law, single_exp_all
+from .fitting import build_g2_fit_summary, fit_with_fixed, power_law
 from .twotime_utils import get_c2_stream, get_single_c2_from_hdf
 
 logger = logging.getLogger(__name__)
@@ -777,44 +777,10 @@ class XpcsFile:
         Returns:
             Dictionary with the fitting results.
         """
-        assert len(bounds) == 2
-        if fit_func == "single":
-            assert len(bounds[0]) == 4, "for single exp, the shape of bounds must be (2, 4)"
-            if fit_flag is None:
-                fit_flag = [True for _ in range(4)]
-            func = single_exp_all
-        else:
-            assert len(bounds[0]) == 7, "for single exp, the shape of bounds must be (2, 4)"
-            if fit_flag is None:
-                fit_flag = [True for _ in range(7)]
-            func = double_exp_all
-
         q_val, t_el, g2, sigma, label = self.get_g2_data(qrange=q_range, trange=t_range)
-
-        # set the initial guess
-        p0 = np.array(bounds).mean(axis=0)
-        # tau"s bounds are in log scale, set as the geometric average
-        p0[1] = np.sqrt(bounds[0][1] * bounds[1][1])
-        if fit_func == "double":
-            p0[4] = np.sqrt(bounds[0][4] * bounds[1][4])
-
-        fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5, np.log10(np.max(t_el)) + 0.5, 128)
-
-        fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma, bounds, fit_flag, fit_x, p0=p0)
-
-        self.fit_summary = {
-            "fit_func": fit_func,
-            "fit_val": fit_val,
-            "t_el": t_el,
-            "q_val": q_val,
-            "q_range": str(q_range),
-            "t_range": str(t_range),
-            "bounds": bounds,
-            "fit_flag": str(fit_flag),
-            "fit_line": fit_line,
-            "label": label,
-        }
-
+        self.fit_summary = build_g2_fit_summary(
+            q_val, t_el, g2, sigma, label, bounds, fit_flag, fit_func, q_range, t_range
+        )
         return self.fit_summary
 
     @staticmethod

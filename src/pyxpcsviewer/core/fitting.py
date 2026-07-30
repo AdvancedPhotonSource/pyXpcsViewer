@@ -2,6 +2,8 @@
 # See LICENSE file for details
 import logging
 import traceback
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Any
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -234,3 +236,117 @@ def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
             fit_line.append({"fit_x": fit_x, "fit_y": fit_y, "success": flag, "msg": msg})
 
     return fit_line, fit_val
+
+
+def build_g2_fit_summary(
+    q_val: np.ndarray,
+    t_el: np.ndarray,
+    g2: np.ndarray,
+    sigma: np.ndarray,
+    label: list[str],
+    bounds,
+    fit_flag=None,
+    fit_func: str = "single",
+    q_range=None,
+    t_range=None,
+) -> dict[str, Any]:
+    """Fit every q-bin of one file's g2 data and return a fit_summary dict.
+
+    Pure and picklable (only numpy arrays/primitives in and out), so it can
+    run standalone or inside a worker process via :func:`fit_g2_batch`.
+
+    Args:
+        q_val: Q-values for each fitted bin.
+        t_el: Elapsed-time axis.
+        g2: G2 correlation data, shape (time, q_bins).
+        sigma: Error on *g2*, same shape.
+        label: Per-Q-bin label strings.
+        bounds: Fitting bounds as ``(lower, upper)``.
+        fit_flag: Tuple of bools — ``True`` to fit, ``False`` to hold fixed.
+        fit_func: Either ``"single"`` or ``"double"`` exponential model.
+        q_range: Original Q-range filter, recorded for display only.
+        t_range: Original time-range filter, recorded for display only.
+
+    Returns:
+        Dictionary with the fitting results.
+    """
+    assert len(bounds) == 2
+    if fit_func == "single":
+        assert len(bounds[0]) == 4, "for single exp, the shape of bounds must be (2, 4)"
+        if fit_flag is None:
+            fit_flag = [True for _ in range(4)]
+        func = single_exp_all
+    else:
+        assert len(bounds[0]) == 7, "for double exp, the shape of bounds must be (2, 7)"
+        if fit_flag is None:
+            fit_flag = [True for _ in range(7)]
+        func = double_exp_all
+
+    # set the initial guess
+    p0 = np.array(bounds).mean(axis=0)
+    # tau"s bounds are in log scale, set as the geometric average
+    p0[1] = np.sqrt(bounds[0][1] * bounds[1][1])
+    if fit_func == "double":
+        p0[4] = np.sqrt(bounds[0][4] * bounds[1][4])
+
+    fit_x = np.logspace(np.log10(np.min(t_el)) - 0.5, np.log10(np.max(t_el)) + 0.5, 128)
+
+    fit_line, fit_val = fit_with_fixed(func, t_el, g2, sigma, bounds, fit_flag, fit_x, p0=p0)
+
+    return {
+        "fit_func": fit_func,
+        "fit_val": fit_val,
+        "t_el": t_el,
+        "q_val": q_val,
+        "q_range": str(q_range),
+        "t_range": str(t_range),
+        "bounds": bounds,
+        "fit_flag": str(fit_flag),
+        "fit_line": fit_line,
+        "label": label,
+    }
+
+
+def fit_g2_batch(
+    file_inputs: list[tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str]]],
+    bounds,
+    fit_flag=None,
+    fit_func: str = "single",
+    q_range=None,
+    t_range=None,
+    max_workers: int | None = None,
+    progress_callback=None,
+) -> list[dict[str, Any] | None]:
+    """Fit g2 data for multiple files in parallel using a process pool.
+
+    Args:
+        file_inputs: List of ``(q_val, t_el, g2, sigma, label)`` tuples, one
+            per file — i.e. each file's ``XpcsFile.get_g2_data()`` return value.
+        bounds: Fitting bounds as ``(lower, upper)``, shared across all files.
+        fit_flag: Tuple of bools — ``True`` to fit, ``False`` to hold fixed.
+        fit_func: Either ``"single"`` or ``"double"`` exponential model.
+        q_range: Original Q-range filter, recorded for display only.
+        t_range: Original time-range filter, recorded for display only.
+        max_workers: Forwarded to ``ProcessPoolExecutor`` (``None`` picks a default).
+        progress_callback: Optional ``callable(done, total)`` invoked as each
+            file's fit completes.
+
+    Returns:
+        List of fit_summary dicts (``None`` for any file whose fit raised),
+        in the same order as *file_inputs*.
+    """
+    results: list[dict[str, Any] | None] = [None] * len(file_inputs)
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(build_g2_fit_summary, *args, bounds, fit_flag, fit_func, q_range, t_range): idx
+            for idx, args in enumerate(file_inputs)
+        }
+        for done, future in enumerate(as_completed(futures), start=1):
+            idx = futures[future]
+            try:
+                results[idx] = future.result()
+            except Exception:
+                logger.exception("g2 fit failed for file index %d", idx)
+            if progress_callback is not None:
+                progress_callback(done, len(file_inputs))
+    return results

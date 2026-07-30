@@ -163,15 +163,18 @@ def pg_plot(
         num_col: Number of columns in the subplot grid.
         rows: Row indices to display (default all).
         offset: Vertical log-offset per file for stacking.
-        show_fit: Overlay g2 fitting curves.
+        show_fit: Overlay g2 fitting curves. Fitting itself must already have
+            been run (e.g. via a prior ``XpcsFile.fit_g2()``/``G2FitWorker``
+            call) — this function only reads ``xf.fit_summary``, it does not fit.
         show_label: Show legend with file labels.
-        bounds: Parameter bounds for g2 fitting.
-        fit_flag: Boolean flags for free/fixed fit parameters.
+        bounds: Not used here — kept for signature symmetry with the fitting
+            step's kwargs (see ``show_fit``).
+        fit_flag: Not used here — see ``bounds``.
         plot_type: Layout mode — ``"multiple"``, ``"single"``, or ``"single-combined"``.
         subtract_baseline: Subtract the fitted baseline from each curve.
         marker_size: Diameter of scatter markers in points.
         label_size: Ignored (reserved for future use).
-        fit_func: Fitting model — ``"single"`` or ``"double"`` exponential.
+        fit_func: Not used here — see ``bounds``.
         **kwargs: Reserved for future extensions.
     """
     if q_auto:
@@ -198,11 +201,16 @@ def pg_plot(
     for m in range(num_data):
         # default base line to be 1.0; used for non-fitting or fit error cases
         baseline_offset = np.ones(num_qval)
-        if show_fit:
-            fit_summary = xf_list[m].fit_g2(q_range, t_range, bounds, fit_flag, fit_func)
-            # make sure the fitting is successful
-            if fit_summary is not None and subtract_baseline and fit_summary["fit_line"][n].get("success", False):
-                baseline_offset = fit_summary["fit_val"][:, 0, 3]
+        # fitting is expected to have already run (see G2FitWorker / XpcsFile.fit_g2)
+        fit_summary = xf_list[m].fit_summary if show_fit else None
+        if fit_summary is not None and subtract_baseline:
+            # use the fitted baseline only for q-bins where fitting succeeded
+            baseline_offset = np.array(
+                [
+                    fit_summary["fit_val"][n, 0, 3] if fit_summary["fit_line"][n].get("success", False) else 1.0
+                    for n in range(num_qval)
+                ]
+            )
 
         for n in range(num_qval):
             color = colors[rows[m] % len(colors)]
