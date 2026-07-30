@@ -172,7 +172,7 @@ class ViewerKernel(FileLocator):
                 name=f"{qbin=}",
                 symbolSize=3,
                 symbolPen=pen,
-                symbolBrush=pg.mkBrush("t"),  # transparent fill → hollow markers
+                symbolBrush=None,  # no fill → hollow markers
             )
 
             g2_hdl.setLogMode(x=True, y=None)
