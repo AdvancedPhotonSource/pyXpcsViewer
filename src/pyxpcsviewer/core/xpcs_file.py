@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import warnings
+from functools import cached_property
 
 import numpy as np
 
@@ -78,12 +79,11 @@ class XpcsFile:
     XpcsFile is a class that wraps an Xpcs analysis hdf file;
     """
 
-    def __init__(self, fname: str, fields=None, label_style=None, qmap_manager=None):
+    def __init__(self, fname: str, label_style=None, qmap_manager=None):
         """Open an XPCS result HDF5 file and lazily load core datasets.
 
         Args:
             fname: Absolute path to the HDF5 result file.
-            fields: Extra field names to preload beyond the defaults.
             label_style: Comma-separated indices for deriving a short file ID.
             qmap_manager: Optional :class:`QMapManager` to share Q-map caches.
         """
@@ -94,16 +94,35 @@ class XpcsFile:
             self.qmap = qmap_manager.get_qmap(self.fname)
         self.atype = get_analysis_type(self.fname)
         self.label = self.update_label(label_style)
-        payload_dictionary = self.load_data(fields)
-        self.__dict__.update(payload_dictionary)
+
+        payload = self.load_data()
+
+        # present regardless of analysis type
+        self.saxs_1d: dict[str, np.ndarray] = payload.pop("saxs_1d")
+        self.Iqp: np.ndarray = payload.pop("Iqp")
+        self.Int_t: np.ndarray = payload.pop("Int_t")
+        self.t0: float = payload.pop("t0")
+        self.t1: float = payload.pop("t1")
+        self.start_time: str = payload.pop("start_time")
+        self.abs_cross_section_scale: float = payload.pop("abs_cross_section_scale")
+
+        # only present for Multitau files
+        self.tau: np.ndarray | None = payload.pop("tau", None)
+        self.g2: np.ndarray | None = payload.pop("g2", None)
+        self.g2_err: np.ndarray | None = payload.pop("g2_err", None)
+        self.t_el: np.ndarray | None = payload.pop("t_el", None)
+        self.g2_t0: float | None = payload.pop("g2_t0", None)
+
+        # only present for Twotime files
+        self.c2_g2: np.ndarray | None = payload.pop("c2_g2", None)
+        self.c2_g2_segments: np.ndarray | None = payload.pop("c2_g2_segments", None)
+        self.c2_processed_bins: np.ndarray | None = payload.pop("c2_processed_bins", None)
+        self.c2_t0: float | None = payload.pop("c2_t0", None)
+
         self.hdf_info = None
         self.fit_summary = None
         self.c2_all_data = None
         self.c2_kwargs = None
-        # label is a short string to describe the file/filename
-        # place holder for self.saxs_2d;
-        self.saxs_2d_data = None
-        self.saxs_2d_log_data = None
 
     def update_label(self, label_style) -> str:
         """Re-derive the short label from the current filename.
@@ -165,17 +184,14 @@ class XpcsFile:
         try:
             get(self.fname, [field], "alias", ftype="nexus")
             return True
-        except Exception:
+        except (KeyError, ValueError):
             return False
 
-    def load_data(self, extra_fields: list[str] | None = None) -> dict:
-        """Load default (and optional extra) datasets from the HDF5 file.
+    def load_data(self) -> dict:
+        """Load the default datasets for this file's analysis type from the HDF5 file.
 
         Handles g2_err correction, time-step multiplication, and Q-map reshaping
         for SAXS 1D / stability data before returning everything as a flat dict.
-
-        Args:
-            extra_fields: Additional field names to include beyond the defaults.
 
         Returns:
             Dict of loaded dataset values keyed by their semantic names.
@@ -193,13 +209,6 @@ class XpcsFile:
                 "c2_stride_frame",
                 "c2_avg_frame",
             ]
-
-        # append other extra fields, eg "G2", "IP", "IF"
-        if isinstance(extra_fields, list):
-            fields += extra_fields
-
-        # avoid duplicated keys
-        fields = list(set(fields))
 
         ret = get(self.fname, fields, "alias", ftype="nexus")
 
@@ -223,81 +232,125 @@ class XpcsFile:
         ret["abs_cross_section_scale"] = 1.0
         return ret
 
-    def __getattr__(self, key: str):
-        """Attribute fallback that delegates to :attr:`qmap`, SAXS-2D lazy load, FFTs, or partial G2 datasets.
+    # -- Q-map delegation -------------------------------------------------
+    # Plain (uncached) properties: self.qmap is assigned once in __init__
+    # and never reassigned, so each access is just one extra attribute hop.
 
-        This method is only invoked when normal attribute lookup fails. It first checks for
-        Q-map attributes, then lazily loads the large SAXS 2D array and its log variant,
-        computes an intensity FFT on demand, and finally falls back to ``__dict__`` contents.
+    @property
+    def sqlist(self) -> np.ndarray:
+        return self.qmap.sqlist
 
-        Args:
-            key: Attribute name being accessed.
+    @property
+    def dqlist(self) -> np.ndarray:
+        return self.qmap.dqlist
 
-        Returns:
-            The requested attribute value.
+    @property
+    def dqmap(self) -> np.ndarray:
+        return self.qmap.dqmap
 
-        Raises:
-            KeyError: If *key* is not found in the qmap or instance dict.
-        """
-        # keys from qmap
-        if key in [
-            "sqlist",
-            "dqlist",
-            "dqmap",
-            "sqmap",
-            "mask",
-            "bcx",
-            "bcy",
-            "det_dist",
-            "pixel_size",
-            "X_energy",
-            "splist",
-            "dplist",
-            "static_num_pts",
-            "dynamic_num_pts",
-            "map_names",
-            "map_units",
-            "get_qbin_label",
-        ]:
-            return self.qmap.__dict__[key]
-        # delayed loading of saxs_2d due to its large size
-        elif key == "saxs_2d":
-            if self.saxs_2d_data is None:
-                ret = get(self.fname, ["saxs_2d"], "alias", ftype="nexus")
-                self.saxs_2d_data = ret["saxs_2d"]
-            return self.saxs_2d_data
-        elif key == "saxs_2d_log":
-            if self.saxs_2d_log_data is None:
-                saxs = np.copy(self.saxs_2d)
-                roi = saxs > 0
-                if np.sum(roi) == 0:
-                    self.saxs_2d_log_data = np.zeros_like(saxs, dtype=np.uint8)
-                else:
-                    min_val = np.min(saxs[roi])
-                    saxs[~roi] = min_val
-                    self.saxs_2d_log_data = np.log10(saxs).astype(np.float32)
-            return self.saxs_2d_log_data
-        elif key == "Int_t_fft":
-            y = np.abs(np.fft.fft(self.Int_t[1]))
-            x = np.arange(y.size) / (y.size * self.t0)
-            x = x[0 : y.size // 2]
-            y = y[0 : y.size // 2]
-            y[0] = 0
-            return np.stack((x, y), axis=1).astype(np.float32).T
-        elif key in ["g2_partial", "g2_partial_err", "g2_partial_labels", "G2"]:
-            if key not in self.__dict__:
-                try:
-                    ret = get(self.fname, [key], "alias", ftype="nexus")
-                    self.__dict__[key] = ret[key]
-                except Exception as e:
-                    self.__dict__[key] = None
-                    logger.warning("cannot load %s due to %s", key, str(e))
+    @property
+    def sqmap(self) -> np.ndarray:
+        return self.qmap.sqmap
 
-            return self.__dict__[key]
-        elif key in self.__dict__:
-            return self.__dict__[key]
-        else:
-            raise KeyError(f"key [{key}] not found")
+    @property
+    def mask(self) -> np.ndarray:
+        return self.qmap.mask
+
+    @property
+    def bcx(self) -> float:
+        return self.qmap.bcx
+
+    @property
+    def bcy(self) -> float:
+        return self.qmap.bcy
+
+    @property
+    def det_dist(self) -> float:
+        return self.qmap.det_dist
+
+    @property
+    def pixel_size(self) -> float:
+        return self.qmap.pixel_size
+
+    @property
+    def X_energy(self) -> float:
+        return self.qmap.X_energy
+
+    @property
+    def splist(self) -> np.ndarray:
+        return self.qmap.splist
+
+    @property
+    def dplist(self) -> np.ndarray:
+        return self.qmap.dplist
+
+    @property
+    def static_num_pts(self) -> np.ndarray:
+        return self.qmap.static_num_pts
+
+    @property
+    def dynamic_num_pts(self) -> np.ndarray:
+        return self.qmap.dynamic_num_pts
+
+    @property
+    def map_names(self) -> list[str]:
+        return self.qmap.map_names
+
+    @property
+    def map_units(self) -> list[str]:
+        return self.qmap.map_units
+
+    # -- Lazily loaded / derived data --------------------------------------
+
+    @cached_property
+    def saxs_2d(self) -> np.ndarray:
+        """Full 2D detector image, read from disk on first access only."""
+        return get(self.fname, ["saxs_2d"], "alias", ftype="nexus")["saxs_2d"]
+
+    @cached_property
+    def saxs_2d_log(self) -> np.ndarray:
+        """Log10 of :attr:`saxs_2d`, with non-positive pixels clamped to the image minimum."""
+        saxs = np.copy(self.saxs_2d)
+        roi = saxs > 0
+        if not np.any(roi):
+            return np.zeros_like(saxs, dtype=np.uint8)
+        min_val = np.min(saxs[roi])
+        saxs[~roi] = min_val
+        return np.log10(saxs).astype(np.float32)
+
+    @cached_property
+    def Int_t_fft(self) -> np.ndarray:
+        """FFT magnitude spectrum of the intensity-vs-time trace."""
+        y = np.abs(np.fft.fft(self.Int_t[1]))
+        x = np.arange(y.size) / (y.size * self.t0)
+        x = x[: y.size // 2]
+        y = y[: y.size // 2]
+        y[0] = 0
+        return np.stack((x, y), axis=1).astype(np.float32).T
+
+    def _load_optional_field(self, key: str) -> np.ndarray | None:
+        """Fetch *key* from the HDF5 file, or ``None`` if this file doesn't have it."""
+        try:
+            return get(self.fname, [key], "alias", ftype="nexus")[key]
+        except (KeyError, ValueError) as e:
+            logger.warning("cannot load %s due to %s", key, e)
+            return None
+
+    @cached_property
+    def G2(self) -> np.ndarray | None:
+        return self._load_optional_field("G2")
+
+    @cached_property
+    def g2_partial(self) -> np.ndarray | None:
+        return self._load_optional_field("g2_partial")
+
+    @cached_property
+    def g2_partial_err(self) -> np.ndarray | None:
+        return self._load_optional_field("g2_partial_err")
+
+    @cached_property
+    def g2_partial_labels(self) -> np.ndarray | None:
+        return self._load_optional_field("g2_partial_labels")
 
     def get_info_at_position(self, x: int, y: int) -> str | None:
         """Return a formatted string with scattering intensity and Q-map values at *(x, y)*.
@@ -357,6 +410,7 @@ class XpcsFile:
             Tuple of ``(q_values, t_elapsed, g2_array, g2_err_array, qbin_labels, frame_labels)``.
         """
         assert "Multitau" in self.atype, "only multitau is supported"
+        assert self.g2_partial is not None and self.g2_partial_err is not None and self.t_el is not None
         # qrange can be None
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2_partial[:, :, qindex_selected]
@@ -387,6 +441,7 @@ class XpcsFile:
         """
         assert target in ["G2", "IP", "IF", "g2_per_pixel"]
         G2 = self.G2
+        assert G2 is not None
         delay_index = min(delay_index, G2.shape[0] - 1)
 
         if target in ["G2", "IP", "IF"]:
@@ -413,6 +468,7 @@ class XpcsFile:
             Tuple of ``(q_values, t_elapsed, g2_array, g2_err_array, labels)``.
         """
         assert "Multitau" in self.atype, "only multitau is supported"
+        assert self.g2 is not None and self.g2_err is not None and self.t_el is not None
         # qrange can be None
         qindex_selected, qvalues = self.qmap.get_qbin_in_qrange(qrange, zero_based=True)
         g2 = self.g2[:, qindex_selected]
@@ -513,13 +569,14 @@ class XpcsFile:
 
     def get_twotime_qbin_labels(self) -> list[str]:
         """Generate human-readable labels for each C2-processed Q-bin."""
+        assert self.c2_processed_bins is not None, "only twotime is supported"
         qbin_labels = []
         for qbin in self.c2_processed_bins.tolist():
             qbin_labels.append(self.get_qbin_label(qbin, append_qbin=True))
         return qbin_labels
 
     def get_cropped_qmap(self, target: str = "dqmap", enabled: bool = True) -> np.ndarray:
-        """Return the cropped Q-map (or S-map) array limited to valid detector pixels.
+        """Delegate to :meth:`QMap.get_cropped_qmap` for this file's Q-map.
 
         Args:
             target: Either ``"dqmap"`` or ``"sqmap"``.
@@ -528,14 +585,7 @@ class XpcsFile:
         Returns:
             2D Numpy array cropped to the active region.
         """
-        assert target in ["dqmap", "sqmap"]
-        obj = getattr(self, target).copy()
-        if enabled:
-            idx = np.nonzero(obj >= 1)
-            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
-            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
-            obj = obj[sl_v, sl_h]
-        return obj
+        return self.qmap.get_cropped_qmap(target, enabled)
 
     def get_offseted_g2(self, normalization: bool = False) -> np.ndarray:
         """Return a copy of the multitau G2 data with optional baseline offset.
@@ -547,6 +597,7 @@ class XpcsFile:
         Returns:
             Offset- or normalised G2 array.
         """
+        assert self.g2 is not None, "only multitau is supported"
         g2 = self.g2.copy()
         if normalization:
             g2_baseline = g2[0]
@@ -609,32 +660,8 @@ class XpcsFile:
         Returns:
             Tuple of ``(dqmap_display, saxs_2d_background, selected_qbin_index)``.
         """
-        # emphasize the beamstop region which has qindex = 0;
         saxs = self.saxs_2d_log if scale == "log" else self.saxs_2d
-
-        dqmap = self.get_cropped_qmap(target="dqmap", enabled=auto_crop)
-
-        qindex_max = np.max(dqmap)
-        dqlist = np.unique(dqmap)[1:]
-        dqmap = dqmap.astype(np.float32)
-        dqmap[dqmap == 0] = np.nan
-
-        dqmap_disp = np.flipud(np.copy(dqmap))
-
-        dq_bin = None
-        if highlight_xy is not None:
-            x, y = highlight_xy
-            if x >= 0 and y >= 0 and x < dqmap.shape[1] and y < dqmap.shape[0]:
-                dq_bin = dqmap_disp[y, x]
-        elif selection is not None:
-            dq_bin = dqlist[selection]
-
-        if dq_bin is not None and dq_bin != np.nan and dq_bin > 0:
-            # highlight the selected qbin if it's valid
-            dqmap_disp[dqmap_disp == dq_bin] = qindex_max + 1
-            selection = np.where(dqlist == dq_bin)[0][0]
-        else:
-            selection = None
+        dqmap_disp, selection = self.qmap.get_display_dqmap(auto_crop, highlight_xy, selection)
         return dqmap_disp, saxs, selection
 
     def get_twotime_c2(
@@ -650,6 +677,7 @@ class XpcsFile:
         Returns:
             Dict with keys ``c2_mat``, ``delta_t``, ``acquire_period``, etc.
         """
+        assert self.c2_processed_bins is not None, "only twotime is supported"
         dq_processed = tuple(self.c2_processed_bins.tolist())
         assert selection >= 0 and selection < len(dq_processed), f"selection {selection} out of range {dq_processed}"
         config = (selection, correct_diag, max_size)
@@ -981,14 +1009,3 @@ class XpcsFile:
         for n in range(Iq.shape[0] - 1):
             header += f" Intensity_phi{n + 1:03d}"
         np.savetxt(fname, np.vstack([q, Iq]).T, header=header)
-
-
-def test1():
-    """Quick smoke-test script: load an example file and call ``plot_saxs2d``."""
-    cwd = "../../../xpcs_data"
-    af = XpcsFile(fname="N077_D100_att02_0128_0001-100000.hdf", cwd=cwd)
-    af.plot_saxs2d()
-
-
-if __name__ == "__main__":
-    test1()

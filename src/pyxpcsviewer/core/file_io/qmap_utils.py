@@ -40,6 +40,29 @@ class QMap:
     computed q-value arrays (qx, qy, phi, alpha).
     """
 
+    # Populated dynamically by load_dataset() (self.__dict__.update(info));
+    # declared here so static type checkers/IDEs know these attributes exist.
+    mask: np.ndarray
+    dqmap: np.ndarray
+    sqmap: np.ndarray
+    dqlist: np.ndarray
+    sqlist: np.ndarray
+    dplist: np.ndarray
+    splist: np.ndarray
+    bcx: float
+    bcy: float
+    X_energy: float
+    static_index_mapping: np.ndarray
+    dynamic_index_mapping: np.ndarray
+    pixel_size: float
+    det_dist: float
+    dynamic_num_pts: np.ndarray
+    static_num_pts: np.ndarray
+    map_names: list[str]
+    map_units: list[str]
+    k0: float
+    is_loaded: bool
+
     def __init__(self, fname=None, root_key="/xpcs/qmap"):
         """Initialize and load Q-map datasets from *fname*.
 
@@ -238,6 +261,67 @@ class QMap:
         if not zero_based:
             qbin_list = [idx + 1 for idx in qbin_list]
         return qbin_list
+
+    def get_cropped_qmap(self, target: str = "dqmap", enabled: bool = True) -> np.ndarray:
+        """Return the cropped Q-map (or S-map) array limited to valid detector pixels.
+
+        Args:
+            target: Either ``"dqmap"`` or ``"sqmap"``.
+            enabled: If ``True``, crop to the bounding box of non-zero entries.
+
+        Returns:
+            2D Numpy array cropped to the active region.
+        """
+        assert target in ["dqmap", "sqmap"]
+        obj = getattr(self, target).copy()
+        if enabled:
+            idx = np.nonzero(obj >= 1)
+            sl_v = slice(np.min(idx[0]), np.max(idx[0]) + 1)
+            sl_h = slice(np.min(idx[1]), np.max(idx[1]) + 1)
+            obj = obj[sl_v, sl_h]
+        return obj
+
+    def get_display_dqmap(
+        self,
+        auto_crop: bool = True,
+        highlight_xy: tuple[int, int] | None = None,
+        selection: int | None = None,
+    ) -> tuple[np.ndarray, int | None]:
+        """Build a display-ready dqmap, optionally highlighting one Q-bin.
+
+        Args:
+            auto_crop: Crop the Q-map to its active bounding box.
+            highlight_xy: Pixel coordinates whose q-bin will be highlighted.
+            selection: Direct q-bin index to highlight (mutually exclusive with *highlight_xy*).
+
+        Returns:
+            Tuple of ``(dqmap_display, selected_qbin_index)``.
+        """
+        # emphasize the beamstop region which has qindex = 0;
+        dqmap = self.get_cropped_qmap(target="dqmap", enabled=auto_crop)
+
+        qindex_max = np.max(dqmap)
+        dqlist = np.unique(dqmap)[1:]
+        dqmap = dqmap.astype(np.float32)
+        dqmap[dqmap == 0] = np.nan
+
+        dqmap_disp = np.flipud(np.copy(dqmap))
+
+        dq_bin = None
+        if highlight_xy is not None:
+            x, y = highlight_xy
+            if x >= 0 and y >= 0 and x < dqmap.shape[1] and y < dqmap.shape[0]:
+                dq_bin = dqmap_disp[y, x]
+        elif selection is not None:
+            dq_bin = dqlist[selection]
+
+        if dq_bin is not None and dq_bin != np.nan and dq_bin > 0:
+            # highlight the selected qbin if it's valid
+            dqmap_disp[dqmap_disp == dq_bin] = qindex_max + 1
+            selection = np.where(dqlist == dq_bin)[0][0]
+        else:
+            selection = None
+        return dqmap_disp, selection
 
     def compute_qmap(self) -> tuple[dict, dict]:
         """Compute q-value arrays from detector geometry (pixel positions, beam center, energy).
