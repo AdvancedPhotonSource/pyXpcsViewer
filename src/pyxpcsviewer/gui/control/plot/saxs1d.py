@@ -102,30 +102,6 @@ def get_pyqtgraph_anchor_params(loc, padding=10):
         raise ValueError(f"Invalid or unsupported Matplotlib location string: '{loc}'")
 
 
-def offset_intensity(Iq, n, plot_offset=None, yscale=None):
-    """
-    offset the intensity accordingly in both linear and log scale
-    """
-    if yscale == "linear":
-        offset = -1 * plot_offset * n * np.max(Iq)
-        Iq = offset + Iq
-
-    elif yscale == "log":
-        offset = 10 ** (plot_offset * n)
-        Iq = Iq / offset
-    return Iq
-
-
-def switch_line_builder(hdl, lb_type: str | None = None) -> None:
-    """Switch the active line-builder type on a matplotlib ``PlotHandler``.
-
-    Args:
-        hdl: Matplotlib plot handler widget.
-        lb_type: Line-builder identifier string.
-    """
-    hdl.link_line_builder(lb_type)
-
-
 def plot_line_with_marker(plot_item, x, y, index, label, alpha_val, marker_size=6, log_x=False, log_y=False):
     """Plot a SAXS 1D line with aligned scatter markers (handles both linear and log scales).
 
