@@ -101,6 +101,24 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         for _, v in tab_mapping.items():
             self.plot_kwargs_record[v] = {}
 
+        # explicit tab -> plot method table for update_plot(); every
+        # plot_<tab> method follows the same (dryrun: bool) -> dict | None
+        # contract. "average" is handled separately by update_plot itself.
+        self._tab_plotters = {
+            "saxs_2d": self.plot_saxs_2d,
+            "saxs_1d": self.plot_saxs_1d,
+            "stability": self.plot_stability,
+            "intensity_t": self.plot_intensity_t,
+            "g2": self.plot_g2,
+            "diffusion": self.plot_diffusion,
+            "twotime": self.plot_twotime,
+            "qmap": self.plot_qmap,
+            "metadata": self.plot_metadata,
+            "g2map": self.plot_g2map,
+            "g2_stability": self.plot_g2_stability,
+            "G2_regroup": self.plot_G2_regroup,
+        }
+
         self.thread_pool = QtCore.QThreadPool()
         logger.info("Maximal threads: %d", self.thread_pool.maxThreadCount())
 
@@ -191,7 +209,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         tab_name = tab_mapping[idx]
         if tab_name == "average":
             return
-        func = getattr(self, "plot_" + tab_name)
+        func = self._tab_plotters[tab_name]
         try:
             kwargs = func(dryrun=True)
             if not kwargs:
