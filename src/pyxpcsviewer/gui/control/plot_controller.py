@@ -7,7 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 
 from ...core.xpcs_file import XpcsFile
-from .plot import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
+from .plot import g2_mod, intt, saxs_1d, saxs_2d, stability, tauq, twotime
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ class PlotController:
         return tree
 
     def plot_g2(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
-        """Delegate to :func:`.plot.g2mod.pg_plot` for multitau G2 data.
+        """Delegate to :func:`.plot.g2_mod.pg_plot` for multitau G2 data.
 
         Draws only — if ``show_fit`` is requested, the fitting itself must
         already have been run (e.g. via :meth:`JobManager.submit_g2_fit`),
@@ -109,18 +109,18 @@ class PlotController:
         """
         xf_list = self.model.get_xf_list(rows=rows, filter_atype="Multitau")
         if xf_list:
-            g2mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs)
-            q, tel, *_unused = g2mod.get_g2_data(xf_list)
+            g2_mod.pg_plot(handler, xf_list, q_range, t_range, y_range, rows=rows, **kwargs)
+            q, tel, *_unused = g2_mod.get_g2_data(xf_list)
             return q, tel
         else:
             return None, None
 
     def plot_g2_stability(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
-        """Delegate to :func:`.plot.g2mod.pg_plot_stability` for G2 stability display."""
+        """Delegate to :func:`.plot.g2_mod.pg_plot_stability` for G2 stability display."""
         xf_obj = self.model.get_xf_list(rows=rows, filter_atype="Multitau")[0]
         if xf_obj and xf_obj.g2_partial is not None:
-            g2mod.pg_plot_stability(handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs)
-            q, tel, *_unused = g2mod.get_g2_data([xf_obj])
+            g2_mod.pg_plot_stability(handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs)
+            q, tel, *_unused = g2_mod.get_g2_data([xf_obj])
             return q, tel
         else:
             return None, None
@@ -253,22 +253,22 @@ class PlotController:
             return xf[0].get_info_at_position(x, y)
 
     def plot_saxs_2d(self, *args, rows=None, **kwargs):
-        """Delegate SAXS-2D plotting to :func:`.plot.saxs2d.plot`."""
+        """Delegate SAXS-2D plotting to :func:`.plot.saxs_2d.plot`."""
         xf_list = self.model.get_xf_list(rows)[0:1]
         if xf_list:
-            saxs2d.plot(xf_list[0], *args, **kwargs)
+            saxs_2d.plot(xf_list[0], *args, **kwargs)
 
     def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
-        """Delegate SAXS 1D plotting to :func:`.plot.saxs1d.pg_plot`.
+        """Delegate SAXS 1D plotting to :func:`.plot.saxs_1d.pg_plot`.
 
         Args:
             pg_hdl: pyqtgraph plot handler (unused when only matplotlib is available).
             mp_hdl: Matplotlib plot handler widget.
-            **kwargs: Passed to ``saxs1d.pg_plot``.
+            **kwargs: Passed to ``saxs_1d.pg_plot``.
         """
         xf_list = self.model.get_xf_list()
         if xf_list:
-            saxs1d.pg_plot(xf_list, mp_hdl, bkg_file=self.saxs1d_bkg_xf, **kwargs)
+            saxs_1d.pg_plot(xf_list, mp_hdl, bkg_file=self.saxs1d_bkg_xf, **kwargs)
 
     def export_saxs_1d(self, pg_hdl, folder: str) -> None:
         """Export SAXS 1D data (ROI-extracted and full) to text files.
@@ -286,7 +286,7 @@ class PlotController:
     def switch_saxs1d_line(self, mp_hdl, lb_type):
         """Toggle the active matplotlib line-builder type (currently a no-op placeholder)."""
         pass
-        # saxs1d.switch_line_builder(mp_hdl, lb_type)
+        # saxs_1d.switch_line_builder(mp_hdl, lb_type)
 
     def savefile_G2_regroup(self, rows=None, **kwargs) -> bool | None:
         """Save regrouped G2 data to a new file.

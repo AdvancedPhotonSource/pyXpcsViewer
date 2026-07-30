@@ -19,7 +19,7 @@ from sklearn.cluster import (
 from ...core.fast_g2_averaging import fast_average_shared_memory
 from ...core.file_io.hdf_reader import get, put
 from ...core.xpcs_file import XpcsFile as XF
-from ..model.listmodel import ListDataModel
+from ..model.list_model import ListDataModel
 
 logger = logging.getLogger(__name__)
 

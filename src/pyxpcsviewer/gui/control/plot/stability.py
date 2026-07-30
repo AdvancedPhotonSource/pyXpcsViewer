@@ -1,6 +1,6 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
-from .saxs1d import get_pyqtgraph_anchor_params, plot_line_with_marker
+from .saxs_1d import get_pyqtgraph_anchor_params, plot_line_with_marker
 
 
 def plot(

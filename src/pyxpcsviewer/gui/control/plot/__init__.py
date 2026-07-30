@@ -1,12 +1,12 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
-from . import g2mod, intt, saxs1d, saxs2d, stability, tauq, twotime
+from . import g2_mod, intt, saxs_1d, saxs_2d, stability, tauq, twotime
 
 __all__ = [
-    "g2mod",
+    "g2_mod",
     "intt",
-    "saxs1d",
-    "saxs2d",
+    "saxs_1d",
+    "saxs_2d",
     "stability",
     "tauq",
     "twotime",
