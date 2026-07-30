@@ -3,7 +3,7 @@
 import numpy as np
 import pyqtgraph as pg
 
-from .palette import INTT_COLORS as colors
+from .palette import COLORS_HEX as colors
 
 
 def smooth_data(fc, window: int = 1, sampling: int = 1) -> tuple[np.ndarray, np.ndarray]:
