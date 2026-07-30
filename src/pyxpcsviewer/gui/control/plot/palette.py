@@ -31,3 +31,18 @@ COLORS_HEX = (
 MARKERS_MPL = ("o", "v", "^", ">", "<", "s", "p", "h", "*", "+", "d", "x")
 
 MARKERS_PYG = ("o", "t", "t1", "t2", "t3", "s", "p", "h", "star", "+", "d", "x")
+
+
+def get_color_marker(n: int, backend: str = "pyqtgraph") -> tuple[str, str]:
+    """Return a colour and marker symbol for the n-th data series.
+
+    Args:
+        n: Series index (modulo-cycled through the palette).
+        backend: ``"matplotlib"`` or ``"pyqtgraph"`` — selects the marker set.
+
+    Returns:
+        Tuple of ``(colour_hex, marker_str)``.
+    """
+    mk = MARKERS_MPL[n % len(MARKERS_MPL)] if backend == "matplotlib" else MARKERS_PYG[n % len(MARKERS_PYG)]
+    cl = COLORS_HEX[n % len(COLORS_HEX)]
+    return (cl, mk)

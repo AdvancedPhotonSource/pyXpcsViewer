@@ -3,7 +3,7 @@
 import numpy as np
 import pyqtgraph as pg
 
-from ...view.plothandler.matplot_qt import get_color_marker
+from .palette import get_color_marker
 
 pg.setConfigOption("background", "w")
 
