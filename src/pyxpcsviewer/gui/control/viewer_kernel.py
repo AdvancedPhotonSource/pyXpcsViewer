@@ -85,7 +85,7 @@ class ViewerKernel(FileLocator):
         """
         base_fname = os.path.basename(fname)
         self.meta["saxs1d_bkg_fname"] = base_fname
-        self.meta["saxs1d_bkg_xf"] = XpcsFile(fname)
+        self.meta["saxs1d_bkg_xf"] = XpcsFile(fname, qmap_manager=self.qmap_manager)
 
     def get_pg_tree(self, rows: list[int] | None = None) -> pg.DataTreeWidget | None:
         """Return a pyqtgraph DataTreeWidget for the first target file.
@@ -172,7 +172,7 @@ class ViewerKernel(FileLocator):
                 name=f"{qbin=}",
                 symbolSize=3,
                 symbolPen=pen,
-                symbolBrush=pg.mkBrush(color=(*color, 0)),
+                symbolBrush=pg.mkBrush("t"),  # transparent fill → hollow markers
             )
 
             g2_hdl.setLogMode(x=True, y=None)

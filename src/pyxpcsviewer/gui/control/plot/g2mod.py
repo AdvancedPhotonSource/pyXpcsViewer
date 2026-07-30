@@ -408,7 +408,7 @@ def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symb
         name=label,
         symbolSize=symbol_size,
         symbolPen=pen,
-        symbolBrush=pg.mkBrush(color=(*color, 0)),
+        symbolBrush=pg.mkBrush("t"),  # transparent fill → hollow markers
     )
 
     ax.setLogMode(x=True, y=None)
