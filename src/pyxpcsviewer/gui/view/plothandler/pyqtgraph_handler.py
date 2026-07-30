@@ -1,13 +1,9 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
-import builtins
-import contextlib
-
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph import GraphicsLayoutWidget, ImageView, QtCore, QtGui
-
-from .utils import adjust_canvas_size
+from PySide6.QtCore import QSize
 
 pg.setConfigOptions(imageAxisOrder="row-major")
 
@@ -53,17 +49,12 @@ class ImageViewDev(ImageView):
     def clear(self) -> None:
         """Clear all images, remove ROIs, and reset viewbox limits."""
         super().clear()
-
         self.remove_rois()
         self.reset_limits()
-        # incase the signal isn't connected to anything.
-        with contextlib.suppress(builtins.BaseException):
-            self.scene.sigMouseMoved.disconnect()
 
     def add_roi(
         self,
         cen=None,
-        num_edges=None,
         radius=60,
         color: str = "r",
         sl_type: str = "Pie",
@@ -77,7 +68,6 @@ class ImageViewDev(ImageView):
 
         Args:
             cen: Centroid pixel coordinates for the ROI.
-            num_edges: Ignored (reserved).
             radius: Radius in pixels.
             color: PySide colour string.
             sl_type: ROI shape — ``"Circle"``, ``"Line"``, ``"Pie"``, or ``"Center"``.
@@ -136,7 +126,7 @@ class ImageViewDev(ImageView):
         self.roi_record[label] = new_roi
         self.addItem(new_roi)
         if sl_type != "Center":
-            new_roi.sigRemoveRequested.connect(lambda: self.remove_roi(label))
+            new_roi.sigRemoveRequested.connect(lambda lb=label: self.remove_roi(lb))
         return label
 
     def remove_rois(self, filter_str: str | None = None) -> None:
@@ -188,6 +178,24 @@ class ImageViewDev(ImageView):
         return parameter
 
 
+def _adjust_canvas_size(widget, num_col: int, num_row: int) -> None:
+    """Resize a widget's minimum height to fit a ``num_col`` x ``num_row`` plot grid.
+
+    The target aspect ratio is the golden-ratio conjugate (1 / φ ≈ 0.618).
+    """
+    t = widget.parent().parent().parent()
+    if t is not None:
+        aspect = t.height() / widget.width()
+        min_size = t.height() - 20
+    else:
+        aspect = 1 / 1.618
+        min_size = widget.height() - 20
+
+    width = widget.width()
+    canvas_size = max(min_size, int(width / num_col * aspect * num_row))
+    widget.setMinimumSize(QSize(0, canvas_size))
+
+
 class PlotWidgetDev(GraphicsLayoutWidget):
     """Extended ``GraphicsLayoutWidget`` with dynamic canvas resizing."""
 
@@ -198,7 +206,7 @@ class PlotWidgetDev(GraphicsLayoutWidget):
 
     def adjust_canvas_size(self, num_col: int, num_row: int) -> None:
         """Resize the widget's minimum height for a *num_col* x *num_row* plot grid."""
-        adjust_canvas_size(self, num_col, num_row)
+        _adjust_canvas_size(self, num_col, num_row)
 
 
 class PieROI(pg.ROI):
@@ -220,7 +228,7 @@ class PieROI(pg.ROI):
             **args: Extra keyword arguments forwarded to :class:`pg.ROI`.
         """
         cen = (pos[0], pos[1] - size / 2.0)
-        pg.ROI.__init__(self, cen, [size, size], aspectLocked=False, **args)
+        super().__init__(cen, [size, size], aspectLocked=False, **args)
         # _updateView is a rendering method inherited; used here to force
         # update the view
         self.sigRegionChanged.connect(self._updateView)
