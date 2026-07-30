@@ -148,7 +148,7 @@ class QMap:
         else:
             qmap, qmap_units = self.qmap, self.qmap_units
             result = ""
-            for key in self.qmap.keys():
+            for key in self.qmap:
                 if key in ["q", "qy", "phi", "alpha", "x", "y"]:
                     result += f" {key}={qmap[key][y, x]:.3f} {qmap_units[key]},"
                 elif key in ["qx", "qr"]:
@@ -219,10 +219,11 @@ class QMap:
             qrange = None
 
         qlist = np.tile(self.dqlist[:, np.newaxis], self.dynamic_num_pts[1])
-        if qrange is None:
-            qselected = np.ones_like(qlist, dtype=bool)
-        else:
-            qselected = (qlist >= qrange[0]) * (qlist <= qrange[1])
+        qselected = (
+            np.ones_like(qlist, dtype=bool)
+            if qrange is None
+            else (qlist >= qrange[0]) * (qlist <= qrange[1])
+        )
         qselected = qselected.flatten()
         if np.sum(qselected) == 0:
             qselected = np.ones_like(qlist, dtype=bool).flatten()
@@ -396,8 +397,8 @@ class QMap:
             if shape[2] > 1:
                 saxs1d = np.concatenate([avg[..., None], full_data], axis=-1)
                 saxs1d = saxs1d[0].T  # shape: (num_lines + 1, num_q)
-                labels = [label + "_%d" % (n + 1) for n in range(shape[2])]
-                labels = [label] + labels
+                labels = [f"{label}_{n + 1}" for n in range(shape[2])]
+                labels = [label, *labels]
             else:
                 saxs1d = avg.reshape(1, -1)  # shape: (1, num_q)
                 labels = [label]
@@ -454,15 +455,15 @@ def test_qmap_manager():
     """Smoke-test: load three Q-maps and print elapsed time."""
     import time
 
-    for i in range(5):
+    for _i in range(5):
         t0 = time.perf_counter()
-        qmap = get_qmap(
+        _ = get_qmap(
             "/net/s8iddata/export/8-id-ECA/MQICHU/projects/2025_0223_boost_corr_nexus/cluster_results1/Z1113_Sanjeeva-h60_a0004_t0600_f008000_r00003_results.hdf"
         )
-        qmap = get_qmap(
+        _ = get_qmap(
             "/net/s8iddata/export/8-id-ECA/MQICHU/projects/2025_0223_boost_corr_nexus/cluster_results1/Z1113_Sanjeeva-h60_a0004_t0600_f008000_r00003_results2.hdf"
         )
-        qmap = get_qmap(
+        _ = get_qmap(
             "/net/s8iddata/export/8-id-ECA/MQICHU/projects/2025_0223_boost_corr_nexus/cluster_results1/Z1113_Sanjeeva-h60_a0004_t0600_f008000_r00003_results3.hdf"
         )
         t1 = time.perf_counter()

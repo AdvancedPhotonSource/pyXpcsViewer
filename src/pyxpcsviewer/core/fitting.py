@@ -131,7 +131,7 @@ def fit_xpcs(tel, qd, g2, g2_err, b):
         try:
             popt, pcov = curve_fit(single_exp, tel, g2[:, n], p0=p0_guess, sigma=err, bounds=b)
             fit_val[n, 1:4], fit_val[n, 4:7] = popt, np.sqrt(np.diag(pcov))
-        except:
+        except Exception:
             # fit_val[n, 1:4], fit_val[n, 4:7] = popt, np.sqrt(np.diag(pcov))
             result = {
                 "err_msg": "q_index %2d:" + str(traceback.format_exc()),
@@ -199,10 +199,7 @@ def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
     # process boundaries and initial values
     bounds_fit = bounds[:, fit_flag]
     # doing a simple average to get the initial guess;
-    if p0 is None:
-        p0 = np.mean(bounds_fit, axis=0)
-    else:
-        p0 = np.array(p0)[fit_flag]
+    p0 = np.mean(bounds_fit, axis=0) if p0 is None else np.array(p0)[fit_flag]
 
     fit_val = np.zeros((y.shape[1], 2, num_args))
 
@@ -212,7 +209,7 @@ def fit_with_fixed(base_func, x, y, sigma, bounds, fit_flag, fit_x, p0=None):
         try:
             popt, pcov = curve_fit(func, x, y[:, n], p0=p0, sigma=sigma[:, n], bounds=bounds_fit)
         except (Exception, RuntimeError, ValueError, Warning):
-            msg = "Fitting failed: %s" % traceback.format_exc()
+            msg = f"Fitting failed: {traceback.format_exc()}"
             logger.info(msg)
             flag = False
             fit_val[n, 0, fit_flag] = p0

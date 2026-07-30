@@ -5,7 +5,8 @@ import logging
 import numpy as np
 import pyqtgraph as pg
 
-from .palette import COLORS_HEX as colors, MARKERS_PYG as symbols
+from .palette import COLORS_HEX as colors
+from .palette import MARKERS_PYG as symbols
 
 pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 # pg.setConfigOption("background", 'w')

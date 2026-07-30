@@ -88,7 +88,7 @@ def find_first_valid_file_and_dims(
     logging.info("Searching for a valid file to determine array shapes for memory allocation...")
     for fname in flist:
         try:
-            valid, g2_baseline = is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax)
+            valid, _g2_baseline = is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax)
             if valid:
                 logging.info(f"Found valid file: {os.path.basename(fname)}")
                 with h5py.File(fname, "r", libver="latest") as fhdl:
@@ -122,9 +122,9 @@ def worker_process_chunk(args_tuple):
         avg_blmin,
         avg_blmax,
         h5_cache_size_mb,
-        verbose,
+        _verbose,
         nonzero_G2,
-        always_valid,
+        _always_valid,
     ) = worker_args
 
     logger = logging.getLogger(f"Worker-{worker_id:02d}")
@@ -148,10 +148,10 @@ def worker_process_chunk(args_tuple):
     skipped_files_in_chunk = []
     h5_cache_size_bytes = h5_cache_size_mb * 1024**2
 
-    for i, fname in enumerate(flist_chunk):
+    for _i, fname in enumerate(flist_chunk):
         file_basename = os.path.basename(fname)
         try:
-            valid, g2_baseline = is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax)
+            valid, _g2_baseline = is_valid_file(fname, avg_window, avg_qindex, avg_blmin, avg_blmax)
             if valid:
                 if first_valid_file_in_chunk is None:
                     first_valid_file_in_chunk = fname
@@ -179,7 +179,7 @@ def worker_process_chunk(args_tuple):
                             shm_arr += fhdl[keymap[skey]][()]
                     local_valid_files += 1
             else:
-                skipped_files_in_chunk.append((file_basename, g2_baseline))
+                skipped_files_in_chunk.append((file_basename, _g2_baseline))
         except Exception:
             skipped_files_in_chunk.append((file_basename, -1.0))
 
@@ -286,7 +286,7 @@ def fast_average_shared_memory(
     all_shm_blocks = []
     total_mem_gb = 0
     _report_status("Allocating shared memory blocks for worker results...")
-    for i in range(num_workers):
+    for _i in range(num_workers):
         worker_shm_metas = {}
         worker_shm_blocks = {}
         for key in shapes:
@@ -340,10 +340,7 @@ def fast_average_shared_memory(
 
             total_files = len(flist)
             # Only show tqdm if no callback is provided
-            if progress_callback is None:
-                pbar = tqdm.tqdm(total=total_files, desc="Processing Files")
-            else:
-                pbar = None
+            pbar = tqdm.tqdm(total=total_files, desc="Processing Files") if progress_callback is None else None
 
             while not result_async.ready():
                 current = progress_counter.value
@@ -416,7 +413,9 @@ def fast_average_shared_memory(
                     valid_counts_clipped = np.clip(valid_counts, a_min=1.0, a_max=None)
                     avg_result[key] = value / valid_counts_clipped
                     logging.info(
-                        f"G2 averaging: using per-pixel valid counts (min: {valid_counts.min()}, max: {valid_counts.max()}, mean: {valid_counts.mean():.2f})"
+                        f"G2 averaging: using per-pixel valid counts "
+                        f"(min: {valid_counts.min()}, max: {valid_counts.max()}, "
+                        f"mean: {valid_counts.mean():.2f})"
                     )
                 elif key == "G2_count":
                     # Don't include the count array in the final result
@@ -456,7 +455,7 @@ def fast_average_shared_memory(
 
         if all_skipped_files:
             _report_status(f"Skipped {len(all_skipped_files)} files.")
-            for i, (fname, baseline) in enumerate(all_skipped_files[:5]):
+            for _i, (fname, baseline) in enumerate(all_skipped_files[:5]):
                 status = f"baseline {baseline:.4f}" if baseline != -1.0 else "read error"
                 logging.info(f"  - Example Skipped: {fname} ({status})")
             if len(all_skipped_files) > 5:
@@ -484,7 +483,9 @@ def main():
     )
     parser.add_argument(
         "input_path",
-        help="A text file with a list of input HDF files (one per line), a folder containing *_result.hdf files, OR a path prefix (e.g., /path/to/folder/my_prefix to match my_prefix* files).",
+        help="A text file with a list of input HDF files (one per line), "
+        "a folder containing *_result.hdf files, OR a path prefix "
+        "(e.g., /path/to/folder/my_prefix to match my_prefix* files).",
     )
     parser.add_argument("-o", "--output", default="averaged_results.hdf", help="Output file name.")
     parser.add_argument(

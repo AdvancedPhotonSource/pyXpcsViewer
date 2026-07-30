@@ -200,9 +200,10 @@ class XpcsFile:
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
 
         if "Multitau" in self.atype:
-            fields = fields + ["tau", "g2", "g2_err", "stride_frame", "avg_frame"]
+            fields = [*fields, "tau", "g2", "g2_err", "stride_frame", "avg_frame"]
         if "Twotime" in self.atype:
-            fields = fields + [
+            fields = [
+                *fields,
                 "c2_g2",
                 "c2_g2_segments",
                 "c2_processed_bins",
@@ -743,7 +744,7 @@ class XpcsFile:
             for n in range(val.shape[0]):
                 temp = []
                 for m in range(len(prefix)):
-                    temp.append("%s = %f ± %f" % (prefix[m], val[n, 0, m], val[n, 1, m]))
+                    temp.append(f"{prefix[m]} = {val[n, 0, m]:f} ± {val[n, 1, m]:f}")
                 msg.append(", ".join(temp))
             result["fit_val"] = np.array(msg)
 
@@ -752,12 +753,7 @@ class XpcsFile:
                 result = "tauq fitting is not available"
             else:
                 v = self.fit_summary["tauq_fit_val"]
-                result = "a = %e ± %e; b = %f ± %f" % (
-                    v[0, 0],
-                    v[1, 0],
-                    v[0, 1],
-                    v[1, 1],
-                )
+                result = f"a = {v[0, 0]:e} ± {v[1, 0]:e}; b = {v[0, 1]:f} ± {v[1, 1]:f}"
         else:
             raise ValueError("mode not supported.")
 
@@ -802,10 +798,7 @@ class XpcsFile:
             data = g2_err[:, n]
             idx = data > threshold
             # avoid averaging of empty slice
-            if np.sum(idx) > 0:
-                avg = np.mean(data[idx])
-            else:
-                avg = threshold
+            avg = np.mean(data[idx]) if np.sum(idx) > 0 else threshold
             g2_err_mod[np.logical_not(idx), n] = avg
 
         return g2_err_mod
@@ -957,15 +950,10 @@ class XpcsFile:
             None. Creates one file per ROI plus a combined ``saxs1d.txt`` file.
         """
         # export ROI
-        idx = 0
-        for roi in roi_list:
+        for idx, roi in enumerate(roi_list, start=0):
             fname = os.path.join(folder, self.label + "_" + roi["sl_type"] + f"_{idx:03d}.txt")
-            idx += 1
             x, y = self.get_roi_data(roi)
-            if roi["sl_type"] == "Ring":
-                header = "phi(degree) Intensity"
-            else:
-                header = "q(1/Angstron) Intensity"
+            header = "phi(degree) Intensity" if roi["sl_type"] == "Ring" else "q(1/Angstron) Intensity"
             np.savetxt(fname, np.vstack([x, y]).T, header=header)
 
         # export all saxs1d

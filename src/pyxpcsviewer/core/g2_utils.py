@@ -69,7 +69,7 @@ def compute_g2(sqmap, dqmap, G2):
     """
     # G2 is (N_delay x 3 x IMG_V x IMG_H)
     shape = G2.shape  #
-    n_delays, n_channels, img_v, img_h = shape
+    n_delays, n_channels, _, _ = shape
     G2 = G2.reshape(n_delays, n_channels, -1)
     sqmap = sqmap.ravel()
     dqmap = dqmap.ravel()

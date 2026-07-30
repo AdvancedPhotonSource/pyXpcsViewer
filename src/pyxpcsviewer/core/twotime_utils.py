@@ -107,9 +107,9 @@ def get_all_c2_from_hdf(
         result = [read_single_c2(args) for args in args_list]
 
     c2_all = np.array([res[0] for res in result])
-    sampling_rate_all = set([res[1] for res in result])
+    sampling_rate_all = {res[1] for res in result}
     assert len(sampling_rate_all) == 1, f"Sampling rate not consistent {sampling_rate_all}"
-    sampling_rate = list(sampling_rate_all)[0]
+    sampling_rate = next(iter(sampling_rate_all))
     c2_result = {
         "c2_all": c2_all,
         "delta_t": 1.0 * sampling_rate,  # put absolute time in xpcs_file
@@ -200,15 +200,12 @@ def get_c2_stream(full_path, max_size=-1):
     c2_prefix = key_map["c2_prefix"]
 
     with h5py.File(full_path, "r") as f:
-        if c2_prefix in f:
-            idxlist = list(f[c2_prefix])  # Extract the list of indices
-        else:
-            idxlist = []  # Return empty list if prefix is missing
+        idxlist = list(f[c2_prefix]) if c2_prefix in f else []
 
     def generator():
         """Yield ``(index_int, c2_array)`` tuples for every C2 block in the file."""
         for idx in idxlist:  # Use idxlist for iteration
-            c2, sampling_rate = read_single_c2((full_path, idx, max_size, True))
+            c2, _sampling_rate = read_single_c2((full_path, idx, max_size, True))
             yield int(idx[3:]), c2
 
     return idxlist, generator()
