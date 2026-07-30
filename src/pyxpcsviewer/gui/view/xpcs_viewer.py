@@ -14,7 +14,9 @@ from PySide6.QtCore import Qt, qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
 
 from ...core.g2_utils import has_G2_field
-from ..control.viewer_kernel import ViewerKernel
+from ..control.job_manager import JobManager
+from ..control.plot_controller import PlotController
+from ..model.file_locator import FileLocator
 from .viewer_ui import Ui_mainWindow as Ui
 
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -80,8 +82,10 @@ def create_param_tree(data_dict):
 class XpcsViewer(QtWidgets.QMainWindow, Ui):
     """Main application window for the pyXPCSViewer GUI.
 
-    Combines the generated Qt UI (:class:`Ui_mainWindow`) with controller logic
-    via :class:`~pyxpcsviewer.gui.control.viewer_kernel.ViewerKernel`.
+    Combines the generated Qt UI (:class:`Ui_mainWindow`) with the model/
+    controllers: ``self.model`` (:class:`~pyxpcsviewer.gui.model.file_locator.FileLocator`),
+    ``self.plots`` (:class:`~pyxpcsviewer.gui.control.plot_controller.PlotController`),
+    and ``self.jobs`` (:class:`~pyxpcsviewer.gui.control.job_manager.JobManager`).
     """
 
     def __init__(self, path=None, label_style=None):
@@ -122,7 +126,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.thread_pool = QtCore.QThreadPool()
         logger.info("Maximal threads: %d", self.thread_pool.maxThreadCount())
 
-        self.vk = None
+        self.model = None
+        self.plots = None
+        self.jobs = None
         # list widget models
         self.source_model = None
         self.target_model = None
@@ -214,7 +220,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             kwargs = func(dryrun=True)
             if not kwargs:
                 return
-            kwargs["target_timestamp"] = self.vk.timestamp
+            kwargs["target_timestamp"] = self.model.timestamp
             if self.plot_kwargs_record[tab_name] != kwargs:
                 self.plot_kwargs_record[tab_name] = kwargs
                 func(dryrun=False)
@@ -270,7 +276,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         if dryrun:
             return kwargs
-        self.vk.plot_g2map(
+        self.plots.plot_g2map(
             self.g2map_all_img,
             self.widget_g2map_qmap,
             self.widget_g2map_profile_plot,
@@ -286,7 +292,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.label_G2_external_qmapfname.setText(f)
 
     def savefile_G2_regroup(self):
-        """Prompt the user to choose a save location and delegate to :meth:`ViewerKernel.savefile_G2_regroup`."""
+        """Prompt the user to choose a save location and delegate to :meth:`PlotController.savefile_G2_regroup`."""
         kwargs = {
             "rows": self.get_selected_rows(),
         }
@@ -302,14 +308,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             kwargs["save_fname"] = None
 
-        flag = self.vk.savefile_G2_regroup(**kwargs)
+        flag = self.plots.savefile_G2_regroup(**kwargs)
         if flag:
             QMessageBox.information(self, "Save G2 regrouping", "G2 regrouping saved successfully.")
         else:
             QMessageBox.critical(self, "Save G2 regrouping", "Failed to save G2 regrouping.")
 
     def process_G2_regroup(self) -> None:
-        """Re-group G2 correlations using internal, external, or drawn Q-map (delegates to ``self.vk``)."""
+        """Re-group G2 correlations using internal, external, or drawn Q-map (delegates to ``self.plots``)."""
         kwargs = {
             "rows": self.get_selected_rows(),
         }
@@ -335,10 +341,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             raise NotImplementedError("draw qmap is not implemented yet")
             return
 
-        self.vk.process_G2_regroup(**kwargs)
+        self.plots.process_G2_regroup(**kwargs)
 
         g2_plot_kwargs = self.plot_g2(dryrun=True)
-        self.vk.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
+        self.plots.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
 
     def plot_G2_regroup(self, dryrun: bool = False) -> dict | None:
         """Display the G2 correlation data from regrouped results (or returns kwargs in dry-run mode)."""
@@ -357,7 +363,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
 
-        if not has_G2_field(self.vk.target[kwargs["rows"][0]]):
+        if not has_G2_field(self.model.target[kwargs["rows"][0]]):
             QMessageBox.critical(self, "No G2 data found", "No G2 data found in the selected dataset.")
             return
 
@@ -365,7 +371,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.progress.setWindowModality(Qt.WindowModal)  # Blocks interaction with main window
         self.progress.setRange(0, 0)  # Setting 0,0 makes it an infinite "spinner"
         self.progress.show()
-        self.vk.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
+        self.plots.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
         self.progress.close()
 
         return
@@ -375,9 +381,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {"rows": self.get_selected_rows()}
         if dryrun:
             return kwargs
-        if len(self.vk.target) == 0:
+        if len(self.model.target) == 0:
             return
-        msg = self.vk.get_xf_list(**kwargs)[0].get_hdf_info()
+        msg = self.model.get_xf_list(**kwargs)[0].get_hdf_info()
         hdf_info_data = create_param_tree(msg)
         hdf_params = Parameter.create(name="Settings", type="group", children=hdf_info_data)
         self.hdf_info.setParameters(hdf_params, showTop=True)
@@ -388,7 +394,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             mouse_point = self.pg_saxs.getView().mapSceneToView(pos)
             x, y = int(mouse_point.x()), int(mouse_point.y())
             rows = self.get_selected_rows()
-            payload = self.vk.get_info_at_mouse(rows, x, y)
+            payload = self.plots.get_info_at_mouse(rows, x, y)
             if payload:
                 self.saxs2d_display.setText(payload)
 
@@ -415,7 +421,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            self.vk.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
+            self.plots.plot_saxs_2d(pg_hdl=self.pg_saxs, **kwargs)
 
     def plot_saxs_1d(self, dryrun: bool = False):
         """Display SAXS 1D intensity curves with optional normalization and offset."""
@@ -443,7 +449,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            self.vk.plot_saxs_1d(self.pg_saxs, self.mp_saxs, **kwargs)
+            self.plots.plot_saxs_1d(self.pg_saxs, self.mp_saxs, **kwargs)
             # adjust the line behavior
             self.switch_saxs1d_line()
 
@@ -451,16 +457,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         """Switch the matplotlib line-builder mode (slope/hline)."""
         lb_type = self.saxs1d_lb_type.currentIndex()
         lb_type = [None, "slope", "hline"][lb_type]
-        self.vk.switch_saxs1d_line(self.mp_saxs, lb_type)
+        self.plots.switch_saxs1d_line(self.mp_saxs, lb_type)
 
     def saxs1d_export(self) -> None:
-        """Export SAXS-1D ROI data to the user-selected folder via :meth:`ViewerKernel.export_saxs_1d`."""
+        """Export SAXS-1D ROI data to the user-selected folder via :meth:`PlotController.export_saxs_1d`."""
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, caption="select a folder to export SAXS profiles")
 
         if folder in [None, ""]:
             return
 
-        self.vk.export_saxs_1d(self.pg_saxs, folder)
+        self.plots.export_saxs_1d(self.pg_saxs, folder)
 
     def init_twotime_plot_handler(self) -> None:
         """Create the two-time analysis display widgets: SAXS background, Q-map overlay."""
@@ -526,7 +532,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         }
         if dryrun:
             return kwargs
-        self.vk.plot_qmap(self.pg_qmap, **kwargs)
+        self.plots.plot_qmap(self.pg_qmap, **kwargs)
 
     def plot_twotime(self, dryrun: bool = False, highlight_xy=None):
         """Display two-time correlation (C2) maps alongside SAXS-2D background.
@@ -549,7 +555,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
-        new_labels = self.vk.plot_twotime(self.mp_2t_hdls, **kwargs)
+        new_labels = self.plots.plot_twotime(self.mp_2t_hdls, **kwargs)
         if new_labels is not None:
             self.comboBox_twotime_selection.clear()
             self.comboBox_twotime_selection.addItems(new_labels)
@@ -558,7 +564,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def show_dataset(self) -> None:
         """Open a pop-up :class:`~pyqtgraph.DataTreeWidget` showing the first target file's data tree."""
         rows = self.get_selected_rows()
-        self.tree = self.vk.get_pg_tree(rows)
+        self.tree = self.plots.get_pg_tree(rows)
         if self.tree:
             self.tree.show()
 
@@ -573,7 +579,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            self.vk.plot_stability(self.mp_stab, **kwargs)
+            self.plots.plot_stability(self.mp_stab, **kwargs)
 
     def plot_intensity_t(self, dryrun: bool = False):
         """Plot intensity-vs-time curves with optional Fourier spectrum and zoom view."""
@@ -586,11 +592,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            self.vk.plot_intt(self.pg_intt, **kwargs)
+            self.plots.plot_intt(self.pg_intt, **kwargs)
 
     def init_diffusion(self) -> None:
         """Initialize the tau-q pre-view subplot with current target data."""
-        self.vk.plot_tauq_pre(hdl=self.mp_tauq_pre)
+        self.plots.plot_tauq_pre(hdl=self.mp_tauq_pre)
 
     def plot_diffusion(self, dryrun: bool = False):
         """Plot tau(q) diffusion fitting with optional parameter range configuration.
@@ -620,7 +626,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if dryrun:
             return kwargs
         else:
-            msg = self.vk.plot_tauq(hdl=self.mp_tauq, **kwargs)
+            msg = self.plots.plot_tauq(hdl=self.mp_tauq, **kwargs)
             self.tauq_msg.clear()
             self.tauq_msg.setData(msg)
             self.tauq_msg.parent().repaint()
@@ -633,7 +639,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         ]
         if os.path.isfile(f):
             self.le_bkg_fname.setText(f)
-            self.vk.select_bkgfile(f)
+            self.plots.select_bkgfile(f)
         else:
             return
 
@@ -653,14 +659,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def init_average(self) -> None:
         """Initialize the average tab settings based on available G2 fields and target files."""
-        if len(self.vk.target) > 0:
+        if len(self.model.target) > 0:
             save_path = self.avg_save_path.text()
             if save_path == "":
                 self.avg_save_path.setText(self.work_dir.text())
             else:
                 logger.info("use the previous save path")
 
-            has_G2 = all(has_G2_field(x) for x in self.vk.target)
+            has_G2 = all(has_G2_field(x) for x in self.model.target)
             if has_G2:
                 logger.info("G2 field is available for averaging")
                 self.bx_avg_G2IPIF.setEnabled(True)
@@ -670,12 +676,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 self.bx_avg_G2IPIF.setChecked(False)
 
             save_name = self.avg_save_name.text()
-            save_name = "Average_" + os.path.basename(self.vk.target[0])
+            save_name = "Average_" + os.path.basename(self.model.target[0])
             self.avg_save_name.setText(save_name)
 
     def submit_job(self) -> None:
         """Submit an average job to the thread pool with user-configured options."""
-        if len(self.vk.target) < 2:
+        if len(self.model.target) < 2:
             self.statusbar.showMessage("select at least 2 files for averaging", 1000)
             return
 
@@ -752,21 +758,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_submit_job.setEnabled(False)
         self.btn_submit_job.setText("Running...")
 
-        self.vk.submit_job(**kwargs)
-        # the target_average has been reset
-        self.update_box(self.vk.target, mode="target")
-        worker = self.vk.avg_worker
-        if worker.status == "finished":
-            self.statusbar.showMessage("this job has finished", 1000)
+        worker = self.jobs.submit_average(on_finished=self.avg_job_finished, **kwargs)
+        if worker is None:
+            self.btn_submit_job.setEnabled(True)
+            self.btn_submit_job.setText("Submit")
             return
-        elif worker.status == "running":
-            self.statusbar.showMessage("this job is running.", 1000)
-            return
-
-        worker.signals.values.connect(self.vk.update_avg_values)
-        worker.signals.finished.connect(self.avg_job_finished)
-        self.thread_pool.start(worker)
-        self.vk.avg_worker_active[worker.jid] = None
+        # the target list has been reset by submit_average
+        self.update_box(self.model.target, mode="target")
         self.update_avg_info()
 
     def avg_job_finished(self, success: bool) -> None:
@@ -775,8 +773,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.statusbar.showMessage("average job finished", 5000)
         else:
             self.statusbar.showMessage("average job failed", 5000)
-        self.vk.avg_worker_active = {}
-        self.vk.avg_worker = None
+        self.jobs.avg_worker_active = {}
         self.btn_submit_job.setEnabled(True)
         self.btn_submit_job.setText("Submit")
 
@@ -791,17 +788,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         except Exception:
             pass
 
-        worker = self.vk.avg_worker
+        worker = self.jobs.avg_worker
         worker.initialize_plot(self.mp_avg_g2)
-        self.timer.timeout.connect(self.vk.update_avg_info())
+        self.timer.timeout.connect(self.jobs.update_avg_info)
         self.timer.start()
 
     # def avg_kill_job(self):
     #     index = self.avg_job_table.currentIndex().row()
-    #     if index < 0 or index >= len(self.vk.avg_worker):
+    #     if index < 0 or index >= len(self.jobs.avg_worker):
     #         self.statusbar.showMessage("select a job to kill", 1000)
     #         return
-    #     worker = self.vk.avg_worker[index]
+    #     worker = self.jobs.avg_worker[index]
     #     if worker.status != "running":
     #         self.statusbar.showMessage("the selected job isn's running", 1000)
     #         return
@@ -810,15 +807,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def show_g2_fit_summary_func(self) -> None:
         """Open a pop-up data tree widget showing per-file g2 fitting results."""
         rows = self.get_selected_rows()
-        self.tree = self.vk.get_fitting_tree(rows)
+        self.tree = self.plots.get_fitting_tree(rows)
         self.tree.show()
 
     # def show_avg_jobinfo(self):
     #     index = self.avg_job_table.currentIndex().row()
-    #     if index < 0 or index >= len(self.vk.avg_worker):
+    #     if index < 0 or index >= len(self.jobs.avg_worker):
     #         logger.info("select a job to show it's settting")
     #         return
-    #     worker = self.vk.avg_worker[index]
+    #     worker = self.jobs.avg_worker[index]
     #     self.tree = worker.get_pg_tree()
     #     self.tree.show()
 
@@ -889,12 +886,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # run it in the background so the GUI doesn't freeze on curve_fit
         q_range = None if kwargs["q_auto"] else kwargs["q_range"]
         t_range = None if kwargs["t_auto"] else kwargs["t_range"]
-        worker = self.vk.submit_g2_fit_job(
+        worker = self.jobs.submit_g2_fit(
             q_range=q_range,
             t_range=t_range,
             bounds=kwargs["bounds"],
             fit_flag=kwargs["fit_flag"],
             fit_func=kwargs["fit_func"],
+            on_finished=lambda: self._on_g2_fit_finished(kwargs),
             rows=kwargs["rows"],
         )
         if worker is None:
@@ -902,13 +900,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.pushButton_4.setText("plot")
             return
 
-        worker.signals.finished.connect(lambda: self._on_g2_fit_finished(kwargs))
-        self.thread_pool.start(worker)
-
     def _draw_g2(self, kwargs: dict) -> None:
         """Draw the G2 plot (and diffusion tab, if fitting) using already-fit data."""
         try:
-            qd, tel = self.vk.plot_g2(handler=self.mp_g2, **kwargs)
+            qd, tel = self.plots.plot_g2(handler=self.mp_g2, **kwargs)
             self.init_g2(qd, tel)
             if kwargs["show_fit"]:
                 self.init_diffusion()
@@ -921,7 +916,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def _on_g2_fit_finished(self, kwargs: dict) -> None:
         """Slot: background g2 fitting finished — draw the plot now."""
-        self.vk.g2_fit_worker = None
         self._draw_g2(kwargs)
 
     def plot_g2_stability(self, dryrun: bool = False):
@@ -949,7 +943,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.pushButton_5.setDisabled(True)
             self.pushButton_5.setText("plotting")
             try:
-                qd, tel = self.vk.plot_g2_stability(handler=self.mp_g2_stability, **kwargs)
+                qd, tel = self.plots.plot_g2_stability(handler=self.mp_g2_stability, **kwargs)
                 self.init_g2(qd, tel)
                 # if kwargs["show_fit"]:
                 #     self.init_diffusion()
@@ -961,7 +955,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def export_g2(self) -> None:
         """Placeholder — currently a no-op."""
-        self.vk.export_g2()
+        self.plots.export_g2()
 
     def reload_source(self) -> None:
         """Re-scan the current directory and refresh the source file list."""
@@ -969,16 +963,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_11.setDisabled(True)
         self.pushButton_11.parent().repaint()
         path = self.work_dir.text()
-        self.vk.build(path=path, sort_method=self.sort_method.currentText())
+        self.model.build(path=path, sort_method=self.sort_method.currentText())
         self.pushButton_11.setText("reload")
         self.pushButton_11.setEnabled(True)
         self.pushButton_11.parent().repaint()
 
-        self.update_box(self.vk.source, mode="source")
+        self.update_box(self.model.source, mode="source")
         self.apply_filter_to_source()
 
     def load_path(self, path=None, debug: bool = False) -> None:
-        """Load a directory path, initialize the ViewerKernel, and reload the source list.
+        """Load a directory path, initialize the model/controllers, and reload the source list.
 
         Args:
             path: Directory path to load; opens a file dialog if ``None``/``False``.
@@ -1001,16 +995,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.work_dir.setText(folder)
 
-        if self.vk is None:
-            self.vk = ViewerKernel(folder, self.statusbar)
+        if self.model is None:
+            self.model = FileLocator(folder)
+            self.plots = PlotController(self.model)
+            self.jobs = JobManager(self.model, self.thread_pool)
         else:
-            self.vk.set_path(folder)
-            self.vk.clear()
+            self.model.set_path(folder)
+            self.model.clear()
 
         self.reload_source()
-        # self.avg_job_table.setModel(self.vk.avg_worker)
-        self.source_model = self.vk.source
-        self.update_box(self.vk.source, mode="source")
+        # self.avg_job_table.setModel(self.jobs.avg_worker)
+        self.source_model = self.model.source
+        self.update_box(self.model.source, mode="source")
 
     def update_box(self, file_list, mode: str = "source") -> None:
         """Update a source or target list widget with the given :class:`ListDataModel`.
@@ -1055,9 +1051,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         tab_id = self.tabWidget.currentIndex()
         tab_name = tab_mapping[tab_id]
         preload = tab_name != "average"
-        self.vk.add_target(target, preload=preload)
+        self.model.add_target(target, preload=preload)
         self.list_view_source.clearSelection()
-        self.update_box(self.vk.target, mode="target")
+        self.update_box(self.model.target, mode="target")
 
         if tab_name == "average":
             self.init_average()
@@ -1067,9 +1063,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def reorder_target(self, direction: str = "up") -> None:
         """Reorder a single target entry up or down in the target list."""
         rows = self.get_selected_rows()
-        if len(rows) != 1 or len(self.vk.target) <= 1:
+        if len(rows) != 1 or len(self.model.target) <= 1:
             return
-        idx = self.vk.reorder_target(rows[0], direction)
+        idx = self.model.reorder_target(rows[0], direction)
         self.list_view_target.setCurrentIndex(idx)
         self.list_view_target.repaint()
         self.update_plot()
@@ -1079,21 +1075,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         """Remove selected files from the target list and update the UI."""
         rmv_list = []
         for index in self.list_view_target.selectedIndexes():
-            rmv_list.append(self.vk.target[index.row()])
+            rmv_list.append(self.model.target[index.row()])
 
-        self.vk.remove_target(rmv_list)
+        self.model.remove_target(rmv_list)
         # clear selection to avoid the bug: when the last one is selected, then
         # the list will out of bounds
         self.clear_target_selection()
 
         # if all files are removed; then go to state 1
-        if self.vk.target in [[], None] or len(self.vk.target) == 0:
+        if self.model.target in [[], None] or len(self.model.target) == 0:
             self.reset_gui()
-        self.update_box(self.vk.target, mode="target")
+        self.update_box(self.model.target, mode="target")
 
     def reset_gui(self) -> None:
         """Reset the kernel and clear all plot widgets and input fields."""
-        self.vk.reset_kernel()
+        self.model.clear_target()
+        self.plots.reset()
         for x in [
             # self.pg_saxs,
             self.pg_intt,
@@ -1110,8 +1107,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         min_length = 1
         val = self.filter_str.text()
         if len(val) == 0:
-            self.source_model = self.vk.source
-            self.update_box(self.vk.source, mode="source")
+            self.source_model = self.model.source
+            self.update_box(self.model.source, mode="source")
             return
         # avoid searching when the filter lister is too short
         if len(val) < min_length:
@@ -1119,8 +1116,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             return
 
         filter_type = ["prefix", "substr"][self.filter_type.currentIndex()]
-        self.vk.search(val, filter_type)
-        self.source_model = self.vk.source_search
+        self.model.search(val, filter_type)
+        self.source_model = self.model.source_search
         self.update_box(self.source_model, mode="source")
         self.list_view_source.selectAll()
 
