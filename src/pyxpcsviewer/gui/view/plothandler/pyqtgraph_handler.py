@@ -7,6 +7,8 @@ import numpy as np
 import pyqtgraph as pg
 from pyqtgraph import GraphicsLayoutWidget, ImageView, QtCore, QtGui
 
+from .utils import adjust_canvas_size
+
 pg.setConfigOptions(imageAxisOrder="row-major")
 
 
@@ -184,9 +186,6 @@ class ImageViewDev(ImageView):
                 temp = roi.get_parameter()
                 parameter.append(temp)
         return parameter
-
-
-from .utils import adjust_canvas_size
 
 
 class PlotWidgetDev(GraphicsLayoutWidget):

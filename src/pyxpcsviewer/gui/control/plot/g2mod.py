@@ -5,11 +5,11 @@ import logging
 import numpy as np
 import pyqtgraph as pg
 
+from .palette import COLORS_HEX as colors, MARKERS_PYG as symbols
+
 pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
 # pg.setConfigOption("background", 'w')
 logger = logging.getLogger(__name__)
-
-from .palette import COLORS_HEX as colors, MARKERS_PYG as symbols
 
 
 def get_g2_data(xf_list, q_range=None, t_range=None):
