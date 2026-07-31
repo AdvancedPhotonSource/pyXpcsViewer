@@ -31,7 +31,7 @@ def main() -> int:
     )
     # Determine the directory to monitor
     argparser.add_argument(
-        "--label_style",
+        "--label-style",
         type=str,
         help="underscore-separated filename-segment indices for building a short label, "
         "e.g. '0_2' (default: simplified filename)",
