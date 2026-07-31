@@ -44,10 +44,22 @@ Tests:
 pytest
 ```
 
-Note: `tests/test_pyxpcsviewer.py` is an unmodified cookiecutter stub — it imports `pyxpcsviewer.pyxpcsviewer`,
-which does not exist, and has no real assertions. There is currently no working test suite and no CI workflow
-that runs tests (`.github/workflows/` only has a PyPI-publish-on-tag workflow). `tox.ini` is likewise stale
-(references `py36`/`py37`/`setup.py test`) and is not part of the real dev workflow.
+There is a real test suite under `tests/`: `test_fitting.py`, `test_g2_bounds_init.py`, `test_g2_mod.py`,
+`test_view_utils.py`, and `test_xpcs_viewer_smoke.py` (the latter two `pytest.importorskip("PySide6")` and set
+`QT_QPA_PLATFORM=offscreen` to construct real Qt widgets headlessly). `test_pyxpcsviewer.py` is still an
+unmodified cookiecutter stub (imports the nonexistent `pyxpcsviewer.pyxpcsviewer`, no real assertions) —
+harmless, but don't treat it as a template for new tests.
+
+`test_real_data.py` exercises real XPCS result files through `hdf_reader`/`XpcsFile` (one Multitau-only file,
+one Twotime-only file, one with both). Fixtures live in `tests/conftest.py` and resolve paths under
+`tests/data/`, which is a symlink to a scratch location (`/scratch/MQICHU/Datasets/xpcs/pyxpcsviewer_test_data`
+on the primary dev machine) — the real `.hdf` files are intentionally not tracked in git (`tests/data` is
+gitignored). The fixtures `pytest.skip` per-file if the target is missing, so the suite still runs clean
+without the data present; only `test_real_data.py`'s cases actually need it.
+
+There is still no CI workflow that runs tests — `.github/workflows/` only has `publish-pypi.yml` (PyPI publish
+on tag) and `build-releases.yml` (PyInstaller/AppImage builds on tag). `tox.ini` is likewise stale (references
+`py36`/`py37`/`setup.py test`) and is not part of the real dev workflow.
 
 ### Regenerating the Qt UI
 
