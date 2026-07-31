@@ -288,9 +288,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         ):
             widget.setBackground("w")
 
-        # ImageView instances don't have setBackground() — set on the ViewBox
-        self.widget_g2map_qmap.getView().setBackgroundColor("w")
-        self.pg_saxs.getView().setBackgroundColor("w")
+        # ImageView instances: set the main ViewBox and the HistogramLUTItem's
+        # graphicsView (the vertical colour-bar strip on the side) to white.
+        for iv in (
+            self.widget_g2map_qmap,
+            self.pg_saxs,
+        ):
+            iv.getView().setBackgroundColor("w")
+            iv.ui.graphicsView.setBackground("w")
+
+        # mp_2t (ImageViewPlotItem) — also has a HistogramLUTItem graphicsView
+        # (already set in init_twotime_plot_handler, but belt-and-suspenders here too)
+        self.mp_2t.ui.graphicsView.setBackground("w")
 
     def plot_g2map(self, dryrun: bool = False) -> dict | None:
         """Display the G2 correlation image with Q-map overlay and profile trace.
