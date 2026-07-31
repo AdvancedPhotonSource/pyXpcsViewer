@@ -134,6 +134,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.source_model = None
         self.target_model = None
         self.timer = QtCore.QTimer()
+        # g2 tau-bound (g2_bmin/g2_bmax) auto-population is a one-shot per
+        # target list: True once it's been set for the current (non-empty)
+        # target list, so later replots/reselections don't clobber a
+        # manually-tightened bound. Unlocked again in add_target() whenever
+        # the list starts out empty.
+        self._g2_bounds_initialized = False
 
         if path is not None:
             self.start_wd = path
@@ -882,9 +888,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             """Format a float in scientific notation."""
             return f"{x:.2e}"
 
-        self.g2_bmin.setValue(t_min / 20)
-        # self.g2_bmax.setText(to_e(t_max * 10))
-        self.g2_bmax.setValue(t_max * 10)
+        if not self._g2_bounds_initialized:
+            self.g2_bmin.setValue(t_min / 20)
+            self.g2_bmax.setValue(t_max * 10)
+            self._g2_bounds_initialized = True
 
         if t_auto:
             self.g2_tmin.setText(to_e(t_min / 1.1))
@@ -1094,6 +1101,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 target.append(val)
         if target == []:
             return
+
+        if len(self.model.target) == 0:
+            self._g2_bounds_initialized = False
 
         tab_id = self.tabWidget.currentIndex()
         tab_name = tab_mapping[tab_id]
