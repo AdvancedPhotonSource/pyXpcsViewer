@@ -538,7 +538,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 # need to convert to 0-255 range for pyqtgraph ColorMap
                 cmap = pg.ColorMap(positions, colors * 255)
             colorbar = plot_item.addColorBar(image_item, colorMap=cmap)
-            colorbar.setBackground("w")
             self.mp_2t_hdls[labels[n]] = image_item
             self.mp_2t_hdls[labels[n] + "_colorbar"] = colorbar
 
