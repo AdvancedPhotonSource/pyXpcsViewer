@@ -16,10 +16,10 @@ from sklearn.cluster import (
     KMeans as sk_kmeans,
 )  # Added this import based on the original code's usage
 
-from ...core.fast_g2_averaging import fast_average_shared_memory
-from ...core.file_io.hdf_reader import get, put
-from ...core.xpcs_file import XpcsFile as XF
-from ..model.list_model import ListDataModel
+from pyxpcsviewer.core.fast_g2_averaging import fast_average_shared_memory
+from pyxpcsviewer.core.file_io.hdf_reader import get, put
+from pyxpcsviewer.core.xpcs_file import XpcsFile as XF
+from pyxpcsviewer.gui.model.list_model import ListDataModel
 
 logger = logging.getLogger(__name__)
 

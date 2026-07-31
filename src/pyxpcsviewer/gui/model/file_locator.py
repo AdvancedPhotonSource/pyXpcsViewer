@@ -6,8 +6,9 @@ import os
 import time
 import traceback
 
-from ...core.file_io.qmap_utils import QMapManager
-from ...core.xpcs_file import XpcsFile as XF
+from pyxpcsviewer.core.file_io.qmap_utils import QMapManager
+from pyxpcsviewer.core.xpcs_file import XpcsFile as XF
+
 from .list_model import ListDataModel
 
 logger = logging.getLogger(__name__)

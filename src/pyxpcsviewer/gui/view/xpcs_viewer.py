@@ -13,10 +13,11 @@ from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt, qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
 
-from ...core.g2_utils import has_G2_field
-from ..control.job_manager import JobManager
-from ..control.plot_controller import PlotController
-from ..model.file_locator import FileLocator
+from pyxpcsviewer.core.g2_utils import has_G2_field
+from pyxpcsviewer.gui.control.job_manager import JobManager
+from pyxpcsviewer.gui.control.plot_controller import PlotController
+from pyxpcsviewer.gui.model.file_locator import FileLocator
+
 from .viewer_ui import Ui_mainWindow as Ui
 
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -279,12 +280,12 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         that the generated UI creates without any background.
         """
         for widget in (
-            self.mp_saxs,            # SAXS 1D tab (PlotWidget)
-            self.mp_stab,            # Stability tab (PlotWidget)
-            self.mp_tauq,            # Tau-q tab (PlotWidget)
-            self.mp_tauq_pre,        # Tau-q pre tab (GraphicsLayoutWidget)
-            self.pg_intt,            # Intensity vs Time (GraphicsLayoutWidget)
-            self.widget_g2map_all,   # G2-map image (GraphicsLayoutWidget)
+            self.mp_saxs,  # SAXS 1D tab (PlotWidget)
+            self.mp_stab,  # Stability tab (PlotWidget)
+            self.mp_tauq,  # Tau-q tab (PlotWidget)
+            self.mp_tauq_pre,  # Tau-q pre tab (GraphicsLayoutWidget)
+            self.pg_intt,  # Intensity vs Time (GraphicsLayoutWidget)
+            self.widget_g2map_all,  # G2-map image (GraphicsLayoutWidget)
             self.widget_g2map_profile,  # G2-map profile (GraphicsLayoutWidget)
         ):
             widget.setBackground("w")
@@ -292,11 +293,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # ImageView instances: set the main ViewBox and the embedded HistogramLUTItem's
         # ViewBox (the vertical colour-bar / histogram strip on the side) to white.
         for iv in (
-            self.pg_saxs,             # SAXS 2D tab (ImageViewDev)
-            self.pg_qmap,             # QMap tab (ImageView)
-            self.widget_g2map_qmap,   # G2-map qmap (ImageView)
-            self.pg_regroup_G2,       # G2 Regroup tab (ImageView)
-            self.mp_2t,               # Two Time tab (ImageViewPlotItem)
+            self.pg_saxs,  # SAXS 2D tab (ImageViewDev)
+            self.pg_qmap,  # QMap tab (ImageView)
+            self.widget_g2map_qmap,  # G2-map qmap (ImageView)
+            self.pg_regroup_G2,  # G2 Regroup tab (ImageView)
+            self.mp_2t,  # Two Time tab (ImageViewPlotItem)
         ):
             # iv.getView() is a ViewBox for plain ImageView, but a PlotItem for
             # ImageViewPlotItem (mp_2t) — PlotItem has no setBackgroundColor of

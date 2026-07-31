@@ -5,7 +5,7 @@ import logging
 from PySide6 import QtCore
 from PySide6.QtCore import QObject, Slot
 
-from ...core.fitting import fit_g2_batch
+from pyxpcsviewer.core.fitting import fit_g2_batch
 
 logger = logging.getLogger(__name__)
 

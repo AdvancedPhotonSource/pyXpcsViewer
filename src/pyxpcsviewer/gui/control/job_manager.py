@@ -6,7 +6,8 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 from PySide6 import QtCore
 
-from ...core.fitting import create_fit_pool
+from pyxpcsviewer.core.fitting import create_fit_pool
+
 from .average_toolbox import AverageToolbox
 from .background_job import WorkerSlot
 from .g2_fit_worker import G2FitWorker

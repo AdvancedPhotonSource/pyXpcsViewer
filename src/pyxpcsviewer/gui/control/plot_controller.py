@@ -6,7 +6,8 @@ import os
 import numpy as np
 import pyqtgraph as pg
 
-from ...core.xpcs_file import XpcsFile
+from pyxpcsviewer.core.xpcs_file import XpcsFile
+
 from .plot import g2_mod, intt, saxs_1d, saxs_2d, stability, tauq, twotime
 
 logger = logging.getLogger(__name__)
