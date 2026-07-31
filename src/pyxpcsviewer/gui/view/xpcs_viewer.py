@@ -264,6 +264,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # Optional: colorbar
         hist = pg.HistogramLUTItem()
         hist.setImageItem(self.g2map_all_img)
+        hist.ui.graphicsView.setBackground("w")
         self.widget_g2map_all.addItem(hist, row=0, col=1)
         # Optional: apply a matplotlib colormap
         cmap = pg.colormap.getFromMatplotlib("viridis")
@@ -291,15 +292,14 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # ImageView instances: set the main ViewBox and the HistogramLUTItem's
         # graphicsView (the vertical colour-bar strip on the side) to white.
         for iv in (
-            self.widget_g2map_qmap,
-            self.pg_saxs,
+            self.pg_saxs,             # SAXS 2D tab (ImageViewDev)
+            self.pg_qmap,             # QMap tab (ImageView)
+            self.widget_g2map_qmap,   # G2-map qmap (ImageView)
+            self.pg_regroup_G2,       # G2 Regroup tab (ImageView)
+            self.mp_2t,               # Two Time tab (ImageViewPlotItem)
         ):
             iv.getView().setBackgroundColor("w")
             iv.ui.graphicsView.setBackground("w")
-
-        # mp_2t (ImageViewPlotItem) — also has a HistogramLUTItem graphicsView
-        # (already set in init_twotime_plot_handler, but belt-and-suspenders here too)
-        self.mp_2t.ui.graphicsView.setBackground("w")
 
     def plot_g2map(self, dryrun: bool = False) -> dict | None:
         """Display the G2 correlation image with Q-map overlay and profile trace.
@@ -538,6 +538,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
                 # need to convert to 0-255 range for pyqtgraph ColorMap
                 cmap = pg.ColorMap(positions, colors * 255)
             colorbar = plot_item.addColorBar(image_item, colorMap=cmap)
+            colorbar.ui.graphicsView.setBackground("w")
             self.mp_2t_hdls[labels[n]] = image_item
             self.mp_2t_hdls[labels[n] + "_colorbar"] = colorbar
 
