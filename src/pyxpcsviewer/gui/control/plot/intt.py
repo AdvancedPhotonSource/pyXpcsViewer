@@ -43,14 +43,16 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
         xlabel: Label for the x-axis. Defaults to ``"Frame Index"``.
         **kwargs: Passed to :func:`smooth_data` for averaging / sampling.
     """
+    pg_hdl.clear()
+    if not xf_list:
+        return
+
     data = []
     for fc in xf_list:
         x, y = smooth_data(fc, **kwargs)
         if xlabel != "Frame Index":
             x = x * fc.t0
         data.append([x, y])
-
-    pg_hdl.clear()
 
     t = pg_hdl.addPlot(colspan=2)
     t.addLegend(offset=(-1, 1), labelTextSize="8pt", verSpacing=-10)

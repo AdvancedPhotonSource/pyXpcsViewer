@@ -119,7 +119,8 @@ class PlotController:
 
     def plot_g2_stability(self, handler, q_range, t_range, y_range, rows=None, **kwargs):
         """Delegate to :func:`.plot.g2_mod.pg_plot_stability` for G2 stability display."""
-        xf_obj = self.model.get_xf_list(rows=rows, filter_atype="Multitau")[0]
+        xf_list = self.model.get_xf_list(rows=rows, filter_atype="Multitau")
+        xf_obj = xf_list[0] if xf_list else None
         if xf_obj and xf_obj.g2_partial is not None:
             g2_mod.pg_plot_stability(handler, xf_obj, q_range, t_range, y_range, rows=rows, **kwargs)
             q, tel, *_unused = g2_mod.get_g2_data([xf_obj])
@@ -138,7 +139,8 @@ class PlotController:
             qbin: Column index in the G2 array to extract for the trace.
             normalization: Apply baseline normalisation before display.
         """
-        xf_obj = self.model.get_xf_list(rows=rows)[0]
+        xf_list = self.model.get_xf_list(rows=rows)
+        xf_obj = xf_list[0] if xf_list else None
         if xf_obj:
             g2map_hdl.setImage(xf_obj.get_offseted_g2(normalization).T)
             dqmap = xf_obj.get_cropped_qmap("dqmap")
@@ -397,8 +399,10 @@ class PlotController:
             rows: List of target indices; uses the first multitau target.
             **kwargs: Passed to :func:`.plot.stability.plot`.
         """
-        xf_obj = self.model.get_xf_list(rows)[0]
-        stability.plot(xf_obj, mp_hdl, **kwargs)
+        xf_list = self.model.get_xf_list(rows)
+        if not xf_list:
+            return
+        stability.plot(xf_list[0], mp_hdl, **kwargs)
 
     def export_g2(self) -> None:
         """Placeholder — currently a no-op."""

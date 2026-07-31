@@ -229,6 +229,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         tab_name = tab_mapping[idx]
         if tab_name == "average":
             return
+        if len(self.model.target) == 0:
+            return
         func = self._tab_plotters[tab_name]
         try:
             kwargs = func(dryrun=True)
