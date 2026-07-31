@@ -63,14 +63,12 @@ class QMap:
     k0: float
     is_loaded: bool
 
-    def __init__(self, fname=None, root_key="/xpcs/qmap"):
+    def __init__(self, fname=None):
         """Initialize and load Q-map datasets from *fname*.
 
         Args:
             fname: Path to the HDF5 result file.
-            root_key: HDF5 group path for Q-map data.
         """
-        self.root_key = root_key
         self.fname = fname
         self.load_dataset()
         self.extent = self.get_detector_extent()
@@ -194,7 +192,7 @@ class QMap:
             Formatted label string, or ``"invalid qbin"`` if out of range.
         """
         qbin_absolute = self.dynamic_index_mapping[qbin - 1]
-        if qbin_absolute < 0 or qbin_absolute > len(self.qbin_labels):
+        if qbin_absolute < 0 or qbin_absolute >= len(self.qbin_labels):
             return "invalid qbin"
         else:
             label = self.qbin_labels[qbin_absolute]
@@ -316,7 +314,7 @@ class QMap:
         elif selection is not None:
             dq_bin = dqlist[selection]
 
-        if dq_bin is not None and dq_bin != np.nan and dq_bin > 0:
+        if dq_bin is not None and not np.isnan(dq_bin) and dq_bin > 0:
             # highlight the selected qbin if it's valid
             dqmap_disp[dqmap_disp == dq_bin] = qindex_max + 1
             selection = np.where(dqlist == dq_bin)[0][0]
