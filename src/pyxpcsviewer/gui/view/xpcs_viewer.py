@@ -278,18 +278,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         that the generated UI creates without any background.
         """
         for widget in (
-            self.mp_saxs,       # SAXS 1D tab (PlotWidget)
-            self.mp_stab,       # Stability tab (PlotWidget)
-            self.mp_tauq,       # Tau-q tab (PlotWidget)
-            self.mp_tauq_pre,   # Tau-q pre tab (GraphicsLayoutWidget)
-            self.pg_intt,       # Intensity vs Time (GraphicsLayoutWidget)
-            self.widget_g2map_all,    # G2-map image (GraphicsLayoutWidget)
+            self.mp_saxs,            # SAXS 1D tab (PlotWidget)
+            self.mp_stab,            # Stability tab (PlotWidget)
+            self.mp_tauq,            # Tau-q tab (PlotWidget)
+            self.mp_tauq_pre,        # Tau-q pre tab (GraphicsLayoutWidget)
+            self.pg_intt,            # Intensity vs Time (GraphicsLayoutWidget)
+            self.widget_g2map_all,   # G2-map image (GraphicsLayoutWidget)
             self.widget_g2map_profile,  # G2-map profile (GraphicsLayoutWidget)
-            self.widget_g2map_qmap,     # G2-map qmap (ImageView)
         ):
             widget.setBackground("w")
 
-        # SAXS 2D tab: ImageViewDev — set on the internal ViewBox
+        # ImageView instances don't have setBackground() — set on the ViewBox
+        self.widget_g2map_qmap.getView().setBackgroundColor("w")
         self.pg_saxs.getView().setBackgroundColor("w")
 
     def plot_g2map(self, dryrun: bool = False) -> dict | None:
