@@ -94,7 +94,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         Args:
             path: Starting directory for file browsing.
-            label_style: Comma-separated index string for deriving short file labels.
+            label_style: Underscore-separated index string for deriving short file labels.
         """
         super().__init__()
         self.setupUi(self)
@@ -1052,7 +1052,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.work_dir.setText(folder)
 
         if self.model is None:
-            self.model = FileLocator(folder)
+            self.model = FileLocator(folder, label_style=self.label_style)
             self.plots = PlotController(self.model)
             self.jobs = JobManager(self.model, self.thread_pool)
         else:
@@ -1392,7 +1392,7 @@ def main_gui(path=None, label_style=None) -> int:
 
     Args:
         path: Starting directory for file browsing; opens user's home if ``None``.
-        label_style: Comma-separated index string for deriving short file labels.
+        label_style: Underscore-separated index string for deriving short file labels.
 
     Returns:
         The Qt application exit code.

@@ -30,7 +30,13 @@ def main() -> int:
         help="positional path to the result folder",
     )
     # Determine the directory to monitor
-    argparser.add_argument("--label_style", type=str, help="label style", default=None)
+    argparser.add_argument(
+        "--label_style",
+        type=str,
+        help="underscore-separated filename-segment indices for building a short label, "
+        "e.g. '0_2' (default: simplified filename)",
+        default=None,
+    )
 
     args = argparser.parse_args()
     if args.positional_path is not None:

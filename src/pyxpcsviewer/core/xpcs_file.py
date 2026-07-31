@@ -22,7 +22,7 @@ def create_id(fname, label_style=None, simplify_flag=True):
 
     Args:
         fname: Input file name, possibly with path and extension.
-        label_style: Comma-separated string of indices to extract specific components
+        label_style: Underscore-separated string of indices to extract specific components
             from the file name.
         simplify_flag: Whether to simplify the file name by removing leading zeros
             and stripping suffixes.
@@ -42,7 +42,7 @@ def create_id(fname, label_style=None, simplify_flag=True):
         return fname
 
     try:
-        selection = [int(x.strip()) for x in label_style.split(",")]
+        selection = [int(x.strip()) for x in label_style.split("_")]
         if not selection:
             warnings.warn(
                 "Empty label_style selection. Returning simplified filename.",
@@ -51,7 +51,7 @@ def create_id(fname, label_style=None, simplify_flag=True):
             return fname
     except ValueError:
         warnings.warn(
-            "Invalid label_style format. Must be comma-separated integers.",
+            "Invalid label_style format. Must be underscore-separated integers.",
             stacklevel=2,
         )
         return fname
@@ -84,7 +84,7 @@ class XpcsFile:
 
         Args:
             fname: Absolute path to the HDF5 result file.
-            label_style: Comma-separated indices for deriving a short file ID.
+            label_style: Underscore-separated indices for deriving a short file ID.
             qmap_manager: Optional :class:`QMapManager` to share Q-map caches.
         """
         self.fname = fname
@@ -128,7 +128,7 @@ class XpcsFile:
         """Re-derive the short label from the current filename.
 
         Args:
-            label_style: Comma-separated indices for ID generation.
+            label_style: Underscore-separated indices for ID generation.
 
         Returns:
             The newly computed label string.

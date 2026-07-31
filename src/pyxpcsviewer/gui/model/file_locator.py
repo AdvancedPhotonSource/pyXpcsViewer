@@ -31,13 +31,17 @@ class FileLocator:
     """Locate XPCS result files, manage source/target lists, and cache loaded
     :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` objects."""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, label_style: str | None = None):
         """Initialize with a data directory path.
 
         Args:
             path: Directory containing ``*_result.hdf`` or ``*_result.h5`` files.
+            label_style: Underscore-separated indices forwarded to each
+                :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` for short label
+                generation.
         """
         self.path = path
+        self.label_style = label_style
         self.source = ListDataModel()
         self.source_search = ListDataModel()
         self.target = ListDataModel()
@@ -79,7 +83,7 @@ class FileLocator:
             # full_fname = os.path.join(self.path, self.target[n])
             full_fname = self.target[n]
             if full_fname not in self.cache:
-                xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
+                xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager, label_style=self.label_style)
                 self.cache[full_fname] = xf_obj
             xf_obj = self.cache[full_fname]
             if xf_obj.fit_summary is None and filter_fitted:
@@ -98,7 +102,9 @@ class FileLocator:
         Returns:
             List of strings describing the HDF5 structure.
         """
-        xf_obj = create_xpcs_dataset(os.path.join(self.path, fname), qmap_manager=self.qmap_manager)
+        xf_obj = create_xpcs_dataset(
+            os.path.join(self.path, fname), qmap_manager=self.qmap_manager, label_style=self.label_style
+        )
         return xf_obj.get_hdf_info(filter_str)
 
     def add_target(self, alist: list[str], threshold: int = 256, preload: bool = True) -> None:
@@ -120,7 +126,7 @@ class FileLocator:
                 full_fname = os.path.join(self.path, fname)
                 if full_fname in self.target:
                     continue
-                xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager)
+                xf_obj = create_xpcs_dataset(full_fname, qmap_manager=self.qmap_manager, label_style=self.label_style)
                 if xf_obj is not None:
                     self.target.append(full_fname)
                     self.cache[full_fname] = xf_obj
