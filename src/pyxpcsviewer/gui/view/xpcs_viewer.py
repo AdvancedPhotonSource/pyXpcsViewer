@@ -1142,6 +1142,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # if all files are removed; then go to state 1
         if self.model.target in [[], None] or len(self.model.target) == 0:
             self.reset_gui()
+        else:
+            self.update_plot()
         self.update_box(self.model.target, mode="target")
 
     def reset_gui(self) -> None:
@@ -1149,14 +1151,26 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.model.clear_target()
         self.plots.reset()
         for x in [
-            # self.pg_saxs,
+            self.pg_saxs,
             self.pg_intt,
             self.mp_tauq,
+            self.mp_tauq_pre,
             self.mp_g2,
             self.mp_saxs,
             self.mp_stab,
+            self.pg_qmap,
+            self.widget_g2map_qmap,
+            self.pg_regroup_G2,
+            self.hdf_info,
         ]:
             x.clear()
+        self.g2map_all_img.clear()
+        self.widget_g2map_profile_plot.clear()
+        if self.mp_2t_hdls is not None:
+            self.mp_2t_hdls["saxs"].clear()
+            self.mp_2t_hdls["dqmap"].clear()
+            self.mp_2t_hdls["c2g2"].clear()
+            self.mp_2t_hdls["tt"].clear()
         self.le_bkg_fname.clear()
 
     def apply_filter_to_source(self) -> None:
