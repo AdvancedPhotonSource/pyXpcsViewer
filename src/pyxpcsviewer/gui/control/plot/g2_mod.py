@@ -223,7 +223,7 @@ def pg_plot(
             y_err = g2_err[m][:, n]
 
             pg_plot_one_g2(
-                ax, x, y, y_err, color, label=label, symbol=symbol,
+                ax, x, y, y_err, color, label=label, symbol=symbol, symbol_size=marker_size,
             )
             ax.setLabel("bottom", "tau (s)")
             ax.setLabel("left", "g2")
@@ -333,7 +333,7 @@ def pg_plot_stability(
             y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
             y_err = g2_err[m][:, n]
 
-            pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
+            pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol, symbol_size=marker_size)
             ax.setLabel("bottom", "tau (s)")
             ax.setLabel("left", "g2")
 
