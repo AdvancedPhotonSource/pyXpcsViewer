@@ -3,7 +3,7 @@
 import numpy as np
 import pyqtgraph as pg
 
-from .palette import COLORS_HEX as colors
+from .palette import get_color_marker
 
 
 def smooth_data(fc, window: int = 1, sampling: int = 1) -> tuple[np.ndarray, np.ndarray]:
@@ -67,10 +67,11 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
     tz.setDownsampling(mode="peak")
 
     for n in range(len(data)):
+        color, _ = get_color_marker(n, backend="pyqtgraph")
         t.plot(
             data[n][0],
             data[n][1],
-            pen=pg.mkPen(colors[n % len(colors)], width=1),
+            pen=pg.mkPen(color, width=1),
             name=xf_list[n].label,
         )
     t.setTitle(f"Intensity vs {xlabel}")
@@ -88,13 +89,15 @@ def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):
 
     for n in range(len(data)):
         x, y = xf_list[n].Int_t_fft
-        tf.plot(x, y, pen=pg.mkPen(colors[n % len(colors)], width=1), name=xf_list[n].label)
+        color, _ = get_color_marker(n, backend="pyqtgraph")
+        tf.plot(x, y, pen=pg.mkPen(color, width=1), name=xf_list[n].label)
 
     for n in range(len(data)):
+        color, _ = get_color_marker(n, backend="pyqtgraph")
         tz.plot(
             data[n][0],
             data[n][1],
-            pen=pg.mkPen(colors[n % len(colors)], width=1),
+            pen=pg.mkPen(color, width=1),
             name=xf_list[n].label,
         )
 

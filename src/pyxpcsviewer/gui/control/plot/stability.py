@@ -8,7 +8,6 @@ def plot(
     pg_hdl,
     plot_type: int = 2,
     plot_norm: int = 0,
-    legend=None,
     title: str | None = None,
     loc: str = "upper right",
     **kwargs,
@@ -20,7 +19,6 @@ def plot(
         pg_hdl: pyqtgraph ``PlotWidget`` to draw on.
         plot_type: Bitmask controlling axes — bit 0 = x-log, bits 1-2 = y-log.
         plot_norm: Normalisation index (0=None, 1=q², 2=q⁴, 3=I₀).
-        legend: Existing legend object to anchor (re-created if ``None``).
         title: Plot title shown as the file label.
         loc: Anchor position for the legend box.
         **kwargs: Ignored (reserved for future extensions).

@@ -8,8 +8,6 @@ import pyqtgraph as pg
 from .palette import COLORS_HEX as colors
 from .palette import MARKERS_PYG as symbols
 
-pg.setConfigOption("foreground", pg.mkColor(80, 80, 80))
-# pg.setConfigOption("background", 'w')
 logger = logging.getLogger(__name__)
 
 
@@ -58,43 +56,34 @@ def get_g2_stability_data(xf_obj, q_range=None, t_range=None):
     return q, tel, g2, g2_err, qbin_labels, labels
 
 
-def compute_geometry(g2, plot_type):
-    """Compute the number of figures and plot lines for a G2 plot type.
+def _num_subplots(g2, plot_type: str) -> int:
+    """Return the number of subplots required for the given plot type.
 
     Args:
-        g2: Input G2 data; list of 2D arrays each with shape (time_delay, q_vals).
-        plot_type: One of ``"multiple"``, ``"single"``, or ``"single-combined"``.
+        g2: List of 2D G2 arrays, each with shape (time_delay, q_vals).
+        plot_type: ``"multiple"``, ``"single"``, or ``"single-combined"``.
 
     Returns:
-        Tuple of ``(number_of_figures, number_of_lines)``.
+        Number of subplots (axes) to create.
     """
     if plot_type == "multiple":
-        num_figs = g2[0].shape[1]
-        num_lines = len(g2)
+        return g2[0].shape[1]
     elif plot_type == "single":
-        num_figs = len(g2)
-        num_lines = g2[0].shape[1]
+        return len(g2)
     elif plot_type == "single-combined":
-        num_figs = 1
-        num_lines = g2[0].shape[1] * len(g2)
-    else:
-        raise ValueError(f"Unsupported plot_type: {plot_type!r}")
-    return num_figs, num_lines
+        return 1
+    raise ValueError(f"Unsupported plot_type: {plot_type!r}")
 
 
-def _setup_subplots(hdl, num_figs, num_col, y_auto, show_label, stability_legend=False):
+def _setup_subplots(hdl, num_figs, num_col, y_auto, stability_legend=False):
     """Create and configure the subplot grid for G2 plotting.
-
-    Shared helper used by both :func:`pg_plot` and :func:`pg_plot_stability`.
 
     Args:
         hdl: Plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
         num_figs: Number of subplots.
         num_col: Number of columns in the grid.
         y_auto: Whether y-axis auto-range is enabled.
-        show_label: Whether to show legends.
-        stability_legend: If ``True``, use the compact legend anchoring
-            from the stability plot variant.
+        stability_legend: If ``True``, use compact legend anchoring.
 
     Returns:
         List of pyqtgraph PlotItem axes.
@@ -107,22 +96,23 @@ def _setup_subplots(hdl, num_figs, num_col, y_auto, show_label, stability_legend
 
     axes = []
     for n in range(num_figs):
-        i_col = n % col
-        i_row = n // col
-        t = hdl.addPlot(row=i_row, col=i_col)
-        axes.append(t)
+        ax = hdl.addPlot(row=n // col, col=n % col)
+        axes.append(ax)
 
-        if show_label:
-            if stability_legend:
-                legend = t.addLegend(labelTextSize="6pt")
-                legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
-            else:
-                t.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
+        if stability_legend:
+            legend = ax.addLegend(labelTextSize="6pt")
+            legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
+        else:
+            ax.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
 
-        t.setMouseEnabled(x=False, y=y_auto)
+        ax.setMouseEnabled(x=False, y=y_auto)
 
     return axes
 
+
+# ---------------------------------------------------------------------------
+# Public entry points
+# ---------------------------------------------------------------------------
 
 def pg_plot(
     hdl,
@@ -186,74 +176,58 @@ def pg_plot(
         y_range = None
 
     _q, tel, g2, g2_err, labels = get_g2_data(xf_list, q_range=q_range, t_range=t_range)
-    num_figs, _ = compute_geometry(g2, plot_type)
-
-    num_data, num_qval = len(g2), g2[0].shape[1]
+    num_figs = _num_subplots(g2, plot_type)
 
     if len(rows) == 0:
         rows = list(range(len(xf_list)))
 
-    # a bug in pyqtgraph; the log scale in x-axis doesn't apply
-    if t_range:
-        t0_range = np.log10(t_range)
+    # pyqtgraph bug: log scale on x-axis doesn't apply to setRange directly
+    t0_range = np.log10(t_range) if t_range else None
 
     axes = _setup_subplots(hdl, num_figs, num_col, y_auto, show_label)
 
-    for m in range(num_data):
-        # default base line to be 1.0; used for non-fitting or fit error cases
+    num_qval = g2[0].shape[1]
+
+    for m in range(len(xf_list)):
+        # Baseline: 1.0 by default, or the fitted baseline where fitting succeeded
         baseline_offset = np.ones(num_qval)
-        # fitting is expected to have already run (see G2FitWorker / XpcsFile.fit_g2)
         fit_summary = xf_list[m].fit_summary if show_fit else None
         if fit_summary is not None and subtract_baseline:
-            # use the fitted baseline only for q-bins where fitting succeeded
             baseline_offset = np.array(
                 [
-                    fit_summary["fit_val"][n, 0, 3] if fit_summary["fit_line"][n].get("success", False) else 1.0
-                    for n in range(num_qval)
+                    fit_summary["fit_val"][nn, 0, 3]
+                    if fit_summary["fit_line"][nn].get("success", False)
+                    else 1.0
+                    for nn in range(num_qval)
                 ]
             )
 
         for n in range(num_qval):
             color = colors[rows[m] % len(colors)]
-            label = None
             if plot_type == "multiple":
                 ax = axes[n]
-                title = labels[m][n]
                 label = xf_list[m].label
                 if m == 0:
-                    ax.setTitle(title)
+                    ax.setTitle(labels[m][n])
             elif plot_type == "single":
                 ax = axes[m]
-                # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
-                title = xf_list[m].label
-                # label = labels[m][n]
-                ax.setTitle(title)
-            elif plot_type == "single-combined":
+                ax.setTitle(xf_list[m].label)
+            else:  # single-combined
                 ax = axes[0]
                 label = xf_list[m].label + labels[m][n]
 
-            ax.setLabel("bottom", "tau (s)")
-            ax.setLabel("left", "g2")
-
             symbol = symbols[rows[m] % len(symbols)]
-
             x = tel[m]
-            # normalize baseline
             y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
             y_err = g2_err[m][:, n]
 
             pg_plot_one_g2(
-                ax,
-                x,
-                y,
-                y_err,
-                color,
-                label=label,
-                symbol=symbol,
-                symbol_size=marker_size,
+                ax, x, y, y_err, color, label=label, symbol=symbol,
             )
-            # if t_range is not None:
+            ax.setLabel("bottom", "tau (s)")
+            ax.setLabel("left", "g2")
+
             if not y_auto:
                 ax.setRange(yRange=y_range)
             if not t_auto:
@@ -261,12 +235,12 @@ def pg_plot(
 
             if show_fit and fit_summary is not None and fit_summary["fit_line"][n].get("success", False):
                 y_fit = fit_summary["fit_line"][n]["fit_y"] + m * offset
-                # normalize baseline
                 y_fit = y_fit - baseline_offset[n] + 1.0
+                fit_color = colors[n % len(colors)] if plot_type == "single" else colors[rows[m] % len(colors)]
                 ax.plot(
                     fit_summary["fit_line"][n]["fit_x"],
                     y_fit,
-                    pen=pg.mkPen(color, width=2.5),
+                    pen=pg.mkPen(fit_color, width=2.5),
                 )
 
 
@@ -328,64 +302,41 @@ def pg_plot_stability(
         y_range = None
 
     _q, tel, g2, g2_err, qbin_labels, labels = get_g2_stability_data(xf_obj, q_range=q_range, t_range=t_range)
+    num_figs = _num_subplots(g2, plot_type)
 
-    num_figs, _ = compute_geometry(g2, plot_type)
-
-    num_data, num_qval = len(g2), g2[0].shape[1]
-
-    rows = np.arange(num_data)
-
-    # a bug in pyqtgraph; the log scale in x-axis doesn't apply
-    if t_range:
-        t0_range = np.log10(t_range)
+    t0_range = np.log10(t_range) if t_range else None
 
     axes = _setup_subplots(hdl, num_figs, num_col, y_auto, show_label, stability_legend=True)
 
-    for m in range(num_data):
-        # default base line to be 1.0; used for non-fitting or fit error cases
-        baseline_offset = np.ones(num_qval)
+    num_qval = g2[0].shape[1]
+    row_indices = np.arange(len(g2))
+    baseline_offset = np.ones(num_qval)
 
+    for m in range(len(g2)):
         for n in range(num_qval):
-            color = colors[rows[m] % len(colors)]
-            label = None
             if plot_type == "multiple":
                 ax = axes[n]
-                title = qbin_labels[n]
+                color = colors[row_indices[m] % len(colors)]
                 label = f"frame={int(labels[m])}"
                 if m == 0:
-                    ax.setTitle(title)
+                    ax.setTitle(qbin_labels[n])
             elif plot_type == "single":
                 ax = axes[m]
-                # overwrite color; use the same color for the same set;
                 color = colors[n % len(colors)]
-                title = labels[m]
-                # label = labels[m][n]
-                ax.setTitle(title)
-            elif plot_type == "single-combined":
+                ax.setTitle(str(labels[m]))
+            else:  # single-combined
                 ax = axes[0]
                 label = labels[m] + labels[m][n]
 
-            ax.setLabel("bottom", "tau (s)")
-            ax.setLabel("left", "g2")
-
-            symbol = symbols[rows[m] % len(symbols)]
-
+            symbol = symbols[row_indices[m] % len(symbols)]
             x = tel
-            # normalize baseline
             y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
             y_err = g2_err[m][:, n]
 
-            pg_plot_one_g2(
-                ax,
-                x,
-                y,
-                y_err,
-                color,
-                label=label,
-                symbol=symbol,
-                symbol_size=marker_size,
-            )
-            # if t_range is not None:
+            pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol)
+            ax.setLabel("bottom", "tau (s)")
+            ax.setLabel("left", "g2")
+
             if not y_auto:
                 ax.setRange(yRange=y_range)
             if not t_auto:
@@ -406,9 +357,8 @@ def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symb
         symbol_size: Diameter of markers in points.
     """
     pen = pg.mkPen(color=color, width=2)
-
     line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
-    pen = pg.mkPen(color=color, width=1)
+
     ax.plot(
         x,
         y,
@@ -416,9 +366,9 @@ def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symb
         symbol=symbol,
         name=label,
         symbolSize=symbol_size,
-        symbolPen=pen,
+        symbolPen=pg.mkPen(color=color, width=1),
         symbolBrush=None,  # no fill → hollow markers
     )
-
     ax.setLogMode(x=True, y=None)
     ax.addItem(line)
+

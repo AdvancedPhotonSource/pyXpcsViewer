@@ -5,10 +5,7 @@ import warnings
 import numpy as np
 import pyqtgraph as pg
 
-from .palette import COLORS_HEX, MARKERS_PYG
-
-COLORS = COLORS_HEX
-MARKERS = MARKERS_PYG
+from .palette import get_color_marker
 
 
 def _log_errorbar_coords(
@@ -31,6 +28,43 @@ def _log_errorbar_coords(
         lower = np.log10(y - e)
     bottom = np.where(np.isfinite(lower), y_disp - lower, 0.0)
     return x_disp, y_disp, top, bottom
+
+
+def _plot_scatter_with_errors(
+    ax,
+    x: np.ndarray,
+    y: np.ndarray,
+    e: np.ndarray,
+    idx: int,
+    *,
+    log_x: bool = False,
+    log_y: bool = False,
+    symbol_size: int = 3,
+    label: str | None = None,
+) -> None:
+    """Plot scatter markers with log-aware error bars on *ax*.
+
+    Args:
+        ax: pyqtgraph ``PlotItem`` to draw on.
+        x, y, e: Data arrays (same length).
+        idx: Series index used to look up colour and marker from the palette.
+        log_x / log_y: Whether the axis uses a log scale.
+        symbol_size: Marker diameter in points.
+        label: Legend label (``None`` → no entry).
+    """
+    color, marker = get_color_marker(idx, backend="pyqtgraph")
+    ax.plot(
+        x,
+        y,
+        pen=None,
+        symbol=marker,
+        symbolSize=symbol_size,
+        symbolBrush=pg.mkBrush(255, 255, 255, 128),
+        symbolPen=pg.mkPen(color=color, width=1),
+        name=label,
+    )
+    x_err, y_err, top, bottom = _log_errorbar_coords(x, y, e, log_x, log_y)
+    ax.addItem(pg.ErrorBarItem(x=x_err, y=y_err, top=top, bottom=bottom, pen=color))
 
 
 def plot(
@@ -64,31 +98,19 @@ def plot(
         y = y[valid_idx]
         e = e[valid_idx]
 
-        color = COLORS[n % len(COLORS)]
-        marker = MARKERS[n % len(MARKERS)]
-
-        hdl.plot(
-            x, y,
-            pen=None,
-            symbol=marker,
-            symbolSize=3,
-            symbolBrush=pg.mkBrush(255, 255, 255, 128),
-            symbolPen=pg.mkPen(color=color, width=1),
-            name=xf.label,
+        _plot_scatter_with_errors(
+            hdl, x, y, e, n, log_x=log_x, log_y=log_y, label=xf.label
         )
 
-        x_err, y_err, top, bottom = _log_errorbar_coords(x, y, e, log_x, log_y)
-        hdl.addItem(pg.ErrorBarItem(x=x_err, y=y_err, top=top, bottom=bottom, pen=color))
-
         if xf.fit_summary.get("tauq_success", False):
+            color, _ = get_color_marker(n, backend="pyqtgraph")
             fit_x = xf.fit_summary["tauq_fit_line"]["fit_x"]
-            fit_y = xf.fit_summary["tauq_fit_line"]["fit_y"]
-            hdl.plot(fit_x, fit_y / s, pen=color)
+            fit_y = xf.fit_summary["tauq_fit_line"]["fit_y"] / s
+            hdl.plot(fit_x, fit_y, pen=color)
 
     hdl.setLabel("bottom", "q (Å⁻¹)")
     hdl.setLabel("left", "τ (s)")
     hdl.addLegend()
-
     hdl.setLogMode(x=log_x, y=log_y)
 
 
@@ -114,27 +136,12 @@ def plot_pre(xf_list, hdl) -> None:
         plots.append(plot_item)
 
     for idx, xf in enumerate(xf_list):
-        color = COLORS[idx % len(COLORS)]
-        marker = MARKERS[idx % len(MARKERS)]
-
         for n in range(4):
             x = xf.fit_summary["q_val"]
             y = xf.fit_summary["fit_val"][:, 0, n]
             e = xf.fit_summary["fit_val"][:, 1, n]
-
-            plots[n].plot(
-                x, y,
-                pen=None,
-                symbol=marker,
-                symbolSize=3,
-                symbolBrush=pg.mkBrush(255, 255, 255, 128),
-                symbolPen=pg.mkPen(color=color, width=1),
-            )
-            x_err, y_err, top, bottom = _log_errorbar_coords(
-                x, y, e, log_x=False, log_y=yscales[n] == "log"
-            )
-            plots[n].addItem(
-                pg.ErrorBarItem(x=x_err, y=y_err, top=top, bottom=bottom, pen=color)
+            _plot_scatter_with_errors(
+                plots[n], x, y, e, idx, log_y=yscales[n] == "log"
             )
 
     last = xf_list[-1] if xf_list else None
@@ -153,12 +160,11 @@ def plot_pre(xf_list, hdl) -> None:
                 y_lo, y_hi = np.log10(y_lo), np.log10(y_hi)
             plots[n].setYRange(y_lo, y_hi)
 
-            hlines_y = [ymin, ymax]
-            hlines_pen = [pg.mkPen("b", width=1), pg.mkPen("g", width=1)]
-            hlines_label = ["lower bound", "upper bound"]
-            for y_val, pen, lbl in zip(hlines_y, hlines_pen, hlines_label, strict=True):
+            for y_val, pen_color, lbl in zip(
+                (ymin, ymax), ("b", "g"), ("lower bound", "upper bound"), strict=True
+            ):
                 plots[n].plot(
                     [xmin, xmax], [y_val, y_val],
-                    pen=pen,
+                    pen=pg.mkPen(pen_color, width=1),
                     name=lbl,
                 )

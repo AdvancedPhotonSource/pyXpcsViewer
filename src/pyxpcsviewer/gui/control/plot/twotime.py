@@ -5,8 +5,6 @@ import pyqtgraph as pg
 
 from .palette import COLORS_HEX
 
-PG_COLORS = COLORS_HEX
-
 
 def plot_twotime(
     xfile,
@@ -89,7 +87,7 @@ def plot_twotime_g2(hdl, c2_result) -> None:
     hdl["c2g2"].plot(
         x=xaxis[1:],
         y=g2_full[1:],
-        pen=pg.mkPen(color=PG_COLORS[-1], width=4),
+        pen=pg.mkPen(color=COLORS_HEX[-1], width=4),
         name="g2_full",
     )
     for n in range(g2_partial.shape[0]):
@@ -97,7 +95,7 @@ def plot_twotime_g2(hdl, c2_result) -> None:
         hdl["c2g2"].plot(
             x=xaxis[1:],
             y=g2_partial[n][1:],
-            pen=pg.mkPen(color=PG_COLORS[n], width=1),
+            pen=pg.mkPen(color=COLORS_HEX[n], width=1),
             name=f"g2_partial_{n}",
         )
     hdl["c2g2"].setLogMode(x=True, y=False)
