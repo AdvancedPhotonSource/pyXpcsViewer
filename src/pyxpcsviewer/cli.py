@@ -34,7 +34,8 @@ def main() -> int:
         "--label-style",
         type=str,
         help="underscore-separated filename-segment indices for building a short label, "
-        "e.g. '0_2' (default: simplified filename)",
+        "e.g. '0_2' on 'A001_Silica_D100_att0_Rq0_00001_results.hdf' gives 'A001_D100' "
+        "(default: simplified filename)",
         default=None,
     )
 
