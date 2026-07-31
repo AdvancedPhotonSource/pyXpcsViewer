@@ -156,6 +156,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.mp_2t_hdls = None
         self.init_twotime_plot_handler()
         self.init_g2map_handler()
+        self._set_plot_backgrounds()
         self.pushButton_plot_g2map.clicked.connect(self.plot_g2map)
 
         # self.avg_job_pop.clicked.connect(self.remove_avg_job)
@@ -268,6 +269,28 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         cmap = pg.colormap.getFromMatplotlib("viridis")
         self.g2map_all_img.setLookupTable(cmap.getLookupTable())
         hist.gradient.setColorMap(cmap)
+
+    def _set_plot_backgrounds(self) -> None:
+        """Force white backgrounds on all plot widgets.
+
+        PlotWidgetDev already sets white in its own __init__, so this only
+        covers the raw PlotWidget / GraphicsLayoutWidget / ImageView instances
+        that the generated UI creates without any background.
+        """
+        for widget in (
+            self.mp_saxs,       # SAXS 1D tab (PlotWidget)
+            self.mp_stab,       # Stability tab (PlotWidget)
+            self.mp_tauq,       # Tau-q tab (PlotWidget)
+            self.mp_tauq_pre,   # Tau-q pre tab (GraphicsLayoutWidget)
+            self.pg_intt,       # Intensity vs Time (GraphicsLayoutWidget)
+            self.widget_g2map_all,    # G2-map image (GraphicsLayoutWidget)
+            self.widget_g2map_profile,  # G2-map profile (GraphicsLayoutWidget)
+            self.widget_g2map_qmap,     # G2-map qmap (ImageView)
+        ):
+            widget.setBackground("w")
+
+        # SAXS 2D tab: ImageViewDev — set on the internal ViewBox
+        self.pg_saxs.getView().setBackgroundColor("w")
 
     def plot_g2map(self, dryrun: bool = False) -> dict | None:
         """Display the G2 correlation image with Q-map overlay and profile trace.
