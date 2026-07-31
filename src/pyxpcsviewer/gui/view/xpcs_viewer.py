@@ -264,7 +264,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # Optional: colorbar
         hist = pg.HistogramLUTItem()
         hist.setImageItem(self.g2map_all_img)
-        hist.ui.graphicsView.setBackground("w")
+        hist.vb.setBackgroundColor("w")
         self.widget_g2map_all.addItem(hist, row=0, col=1)
         # Optional: apply a matplotlib colormap
         cmap = pg.colormap.getFromMatplotlib("viridis")
@@ -289,8 +289,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         ):
             widget.setBackground("w")
 
-        # ImageView instances: set the main ViewBox and the HistogramLUTItem's
-        # graphicsView (the vertical colour-bar strip on the side) to white.
+        # ImageView instances: set the main ViewBox and the embedded HistogramLUTItem's
+        # ViewBox (the vertical colour-bar / histogram strip on the side) to white.
         for iv in (
             self.pg_saxs,             # SAXS 2D tab (ImageViewDev)
             self.pg_qmap,             # QMap tab (ImageView)
@@ -299,7 +299,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.mp_2t,               # Two Time tab (ImageViewPlotItem)
         ):
             iv.getView().setBackgroundColor("w")
-            iv.ui.graphicsView.setBackground("w")
+            # pyqtgraph 0.14.0: ImageView.ui.histogram is a HistogramLUTItem with .vb (ViewBox)
+            iv.ui.histogram.vb.setBackgroundColor("w")
 
     def plot_g2map(self, dryrun: bool = False) -> dict | None:
         """Display the G2 correlation image with Q-map overlay and profile trace.
