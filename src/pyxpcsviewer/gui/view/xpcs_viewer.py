@@ -298,9 +298,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.pg_regroup_G2,       # G2 Regroup tab (ImageView)
             self.mp_2t,               # Two Time tab (ImageViewPlotItem)
         ):
-            iv.getView().setBackgroundColor("w")
-            # pyqtgraph 0.14.0: ImageView.ui.histogram is a HistogramLUTItem with .vb (ViewBox)
-            iv.ui.histogram.vb.setBackgroundColor("w")
+            # iv.getView() is a ViewBox for plain ImageView, but a PlotItem for
+            # ImageViewPlotItem (mp_2t) — PlotItem has no setBackgroundColor of
+            # its own, so reach into its wrapped ViewBox via .vb when present.
+            view = iv.getView()
+            vb = view.vb if hasattr(view, "vb") else view
+            vb.setBackgroundColor("w")
+            # iv.ui.histogram is a HistogramLUTWidget: a GraphicsView (own scene/
+            # background) wrapping a HistogramLUTItem. Its inner .vb has no
+            # background of its own by default (transparent), so whitening the
+            # enclosing widget's scene is sufficient -- no need to also touch .vb.
+            iv.ui.histogram.setBackground("w")
 
     def plot_g2map(self, dryrun: bool = False) -> dict | None:
         """Display the G2 correlation image with Q-map overlay and profile trace.
@@ -547,7 +555,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         self.mp_2t_hdls["dqmap"].mouseClickEvent = self.pick_twotime_index
         self.mp_2t_hdls["saxs"].mouseClickEvent = self.pick_twotime_index
-        # self.mp_2t.getView().setBackgroundColor('w')
         self.mp_2t.ui.graphicsView.setBackground("w")
         self.mp_2t_hdls["tt"] = self.mp_2t
         self.mp_2t_hdls["tt"].view.invertY(False)
