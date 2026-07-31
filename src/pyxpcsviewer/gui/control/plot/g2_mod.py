@@ -75,7 +75,7 @@ def _num_subplots(g2, plot_type: str) -> int:
     raise ValueError(f"Unsupported plot_type: {plot_type!r}")
 
 
-def _setup_subplots(hdl, num_figs, num_col, y_auto, stability_legend=False):
+def _setup_subplots(hdl, num_figs, num_col, y_auto, show_label=True, stability_legend=False):
     """Create and configure the subplot grid for G2 plotting.
 
     Args:
@@ -83,7 +83,8 @@ def _setup_subplots(hdl, num_figs, num_col, y_auto, stability_legend=False):
         num_figs: Number of subplots.
         num_col: Number of columns in the grid.
         y_auto: Whether y-axis auto-range is enabled.
-        stability_legend: If ``True``, use compact legend anchoring.
+        show_label: Whether to add a legend to each subplot at all.
+        stability_legend: If ``True`` (and *show_label*), use compact legend anchoring.
 
     Returns:
         List of pyqtgraph PlotItem axes.
@@ -99,11 +100,12 @@ def _setup_subplots(hdl, num_figs, num_col, y_auto, stability_legend=False):
         ax = hdl.addPlot(row=n // col, col=n % col)
         axes.append(ax)
 
-        if stability_legend:
-            legend = ax.addLegend(labelTextSize="6pt")
-            legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
-        else:
-            ax.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
+        if show_label:
+            if stability_legend:
+                legend = ax.addLegend(labelTextSize="6pt")
+                legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
+            else:
+                ax.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
 
         ax.setMouseEnabled(x=False, y=y_auto)
 
