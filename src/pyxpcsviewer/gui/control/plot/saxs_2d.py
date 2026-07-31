@@ -1,5 +1,8 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
+from .view_utils import apply_zoom_limit
+
+
 def plot(
     xfile,
     pg_hdl=None,
@@ -43,6 +46,7 @@ def plot(
 
     # Set new image
     pg_hdl.setImage(img, autoLevels=autolevel, autoRange=do_autorange)
+    apply_zoom_limit(pg_hdl, img.shape)
 
     # Restore view range if we skipped auto-ranging
     if not do_autorange:

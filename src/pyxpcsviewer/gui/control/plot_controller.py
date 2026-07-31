@@ -9,6 +9,7 @@ import pyqtgraph as pg
 from pyxpcsviewer.core.xpcs_file import XpcsFile
 
 from .plot import g2_mod, intt, saxs_1d, saxs_2d, stability, tauq, twotime
+from .plot.view_utils import apply_zoom_limit
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,9 @@ class PlotController:
         xf_obj = self.model.get_xf_list(rows=rows)[0]
         if xf_obj:
             g2map_hdl.setImage(xf_obj.get_offseted_g2(normalization).T)
-            qmap_hdl.setImage(xf_obj.get_cropped_qmap("dqmap"))
+            dqmap = xf_obj.get_cropped_qmap("dqmap")
+            qmap_hdl.setImage(dqmap)
+            apply_zoom_limit(qmap_hdl, dqmap.shape)
 
             g2_hdl.clear()
             color = (0, 128, 255)
@@ -180,14 +183,19 @@ class PlotController:
         """
         xf_list = self.model.get_xf_list(rows=rows)
         if xf_list:
+            value = None
             if target == "scattering":
                 value = np.log10(xf_list[0].saxs_2d + 1)
                 vmin, vmax = np.percentile(value, (2, 98))
                 hdl.setImage(value, levels=(vmin, vmax))
             elif target == "dynamic_roi_map":
-                hdl.setImage(xf_list[0].dqmap)
+                value = xf_list[0].dqmap
+                hdl.setImage(value)
             elif target == "static_roi_map":
-                hdl.setImage(xf_list[0].sqmap)
+                value = xf_list[0].sqmap
+                hdl.setImage(value)
+            if value is not None:
+                apply_zoom_limit(hdl, value.shape)
             hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
 
     def plot_tauq_pre(self, hdl=None, rows=None):
@@ -344,6 +352,7 @@ class PlotController:
             G2_data = np.clip(G2_data, vmin, vmax)
 
         hdl.setImage(G2_data, levels=(vmin, vmax))
+        apply_zoom_limit(hdl, G2_data.shape)
         hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
         return
 

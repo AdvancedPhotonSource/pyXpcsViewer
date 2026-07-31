@@ -4,6 +4,7 @@ import numpy as np
 import pyqtgraph as pg
 
 from .palette import COLORS_HEX
+from .view_utils import apply_zoom_limit
 
 
 def plot_twotime(
@@ -57,6 +58,7 @@ def plot_twotime(
 
     hdl["tt"].imageItem.setScale(delta_t)
     hdl["tt"].setImage(c2, autoRange=True)
+    apply_zoom_limit(hdl["tt"], c2.shape, scale=delta_t)
 
     cmap = pg.colormap.getFromMatplotlib(cmap)
     hdl["tt"].setColorMap(cmap)
