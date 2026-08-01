@@ -2,6 +2,7 @@
 # See LICENSE file for details
 import logging
 import os
+import platform
 import sys
 import traceback
 
@@ -1404,6 +1405,8 @@ def main_gui(path=None, label_style=None) -> int:
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
     app = QtWidgets.QApplication([])
+    if platform.system() == "Windows":
+        app.setStyle("Fusion")
     window = XpcsViewer(path=path, label_style=label_style)
     window.show()
     app.exec_()
