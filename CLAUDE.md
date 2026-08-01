@@ -57,9 +57,8 @@ on the primary dev machine) — the real `.hdf` files are intentionally not trac
 gitignored). The fixtures `pytest.skip` per-file if the target is missing, so the suite still runs clean
 without the data present; only `test_real_data.py`'s cases actually need it.
 
-There is still no CI workflow that runs tests — `.github/workflows/` only has `publish-pypi.yml` (PyPI publish
-on tag) and `build-releases.yml` (PyInstaller/AppImage builds on tag). `tox.ini` is likewise stale (references
-`py36`/`py37`/`setup.py test`) and is not part of the real dev workflow.
+There is still no CI workflow that runs tests — `.github/workflows/` only has `publish-pypi.yml`, which builds
+the sdist/wheel and publishes to PyPI on tag push. There is no PyInstaller/AppImage build workflow in the repo.
 
 ### Regenerating the Qt UI
 
