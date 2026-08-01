@@ -34,6 +34,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+!/pyxpcsviewer.spec
 
 # Installer logs
 pip-log.txt
@@ -148,5 +149,9 @@ cython_debug/
 .idea
 .loglogin
 .vscode
-core
 .DS_Store
+
+# Real XPCS result files for tests/conftest.py fixtures (see test_real_data.py)
+# -- large binary files, kept local only (symlinked to a scratch location);
+# tests skip gracefully if absent. No trailing slash: also matches the symlink.
+tests/data

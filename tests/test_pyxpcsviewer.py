@@ -2,10 +2,7 @@
 
 """Tests for `pyxpcsviewer` package."""
 
-
 import unittest
-
-from pyxpcsviewer import pyxpcsviewer
 
 
 class TestPyxpcsviewer(unittest.TestCase):

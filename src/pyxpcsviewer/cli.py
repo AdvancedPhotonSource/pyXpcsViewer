@@ -1,24 +1,28 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 """Console script for pyxpcsviewer."""
 
 import argparse
 import sys
 
 
-def main():
+def main() -> int:
+    """Entry point for the pyxpcsviewer CLI.
+
+    Parses command-line arguments and launches the GUI with the
+    specified data directory.
+
+    Returns:
+        Exit code for sys.exit().
+    """
     from pyxpcsviewer import __version__
-    from pyxpcsviewer.xpcs_viewer import main_gui
+    from pyxpcsviewer.gui.view.xpcs_viewer import main_gui
 
-    argparser = argparse.ArgumentParser(
-        description="pyXpcsViewer: a GUI tool for XPCS data analysis"
-    )
+    argparser = argparse.ArgumentParser(description="pyXpcsViewer: a GUI tool for XPCS data analysis")
 
-    argparser.add_argument(
-        "--version", action="version", version=f"pyxpcsviewer: {__version__}"
-    )
+    argparser.add_argument("--version", action="version", version=f"pyxpcsviewer: {__version__}")
 
-    argparser.add_argument(
-        "--path", type=str, help="path to the result folder", default="./"
-    )
+    argparser.add_argument("--path", type=str, help="path to the result folder", default="./")
     argparser.add_argument(
         "positional_path",
         nargs="?",
@@ -26,7 +30,14 @@ def main():
         help="positional path to the result folder",
     )
     # Determine the directory to monitor
-    argparser.add_argument("--label_style", type=str, help="label style", default=None)
+    argparser.add_argument(
+        "--label-style",
+        type=str,
+        help="underscore-separated filename-segment indices for building a short label, "
+        "e.g. '0_2' on 'A001_Silica_D100_att0_Rq0_00001_results.hdf' gives 'A001_D100' "
+        "(default: simplified filename)",
+        default=None,
+    )
 
     args = argparser.parse_args()
     if args.positional_path is not None:

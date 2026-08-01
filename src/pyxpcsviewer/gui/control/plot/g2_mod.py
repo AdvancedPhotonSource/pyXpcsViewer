@@ -1,0 +1,376 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
+import logging
+
+import numpy as np
+import pyqtgraph as pg
+
+from .palette import COLORS_HEX as colors
+from .palette import MARKERS_PYG as symbols
+
+logger = logging.getLogger(__name__)
+
+
+def get_g2_data(xf_list, q_range=None, t_range=None):
+    """Extract G2 data arrays from a list of ``XpcsFile`` objects, optionally filtered by Q and time ranges.
+
+    Args:
+        xf_list: List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instances (must contain ``Multitau`` data).
+        q_range: Optional ``(q_min, q_max)`` filter.
+        t_range: Optional ``(t_min, t_max)`` filter on the elapsed time axis.
+
+    Returns:
+        Tuple of ``(q_values, tel, g2, g2_err, labels)`` for each file, or
+        ``(False, None, None, None, None)`` if any file lacks ``Multitau`` data.
+    """
+    for xf in xf_list:
+        if "Multitau" not in xf.atype:
+            return False, None, None, None, None
+
+    q, tel, g2, g2_err, labels = [], [], [], [], []
+    for fc in xf_list:
+        _q, _tel, _g2, _g2_err, _labels = fc.get_g2_data(qrange=q_range, trange=t_range)
+        q.append(_q)
+        tel.append(_tel)
+        g2.append(_g2)
+        g2_err.append(_g2_err)
+        labels.append(_labels)
+    return q, tel, g2, g2_err, labels
+
+
+def get_g2_stability_data(xf_obj, q_range=None, t_range=None):
+    """Extract G2 stability data (from ``g2_partial``) for a single multitau file.
+
+    Args:
+        xf_obj: An :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instance with ``Multitau`` data.
+        q_range: Optional ``(q_min, q_max)`` filter.
+        t_range: Optional ``(t_min, t_max)`` filter on the elapsed time axis.
+
+    Returns:
+        Tuple of ``(q_values, tel, g2, g2_err, qbin_labels, labels)`` or
+        ``(False, None, None, None, None, None)`` if data is invalid.
+    """
+    if "Multitau" not in xf_obj.atype:
+        return False, None, None, None, None, None
+    q, tel, g2, g2_err, qbin_labels, labels = xf_obj.get_g2_stability_data(qrange=q_range, trange=t_range)
+    return q, tel, g2, g2_err, qbin_labels, labels
+
+
+def _num_subplots(g2, plot_type: str) -> int:
+    """Return the number of subplots required for the given plot type.
+
+    Args:
+        g2: List of 2D G2 arrays, each with shape (time_delay, q_vals).
+        plot_type: ``"multiple"``, ``"single"``, or ``"single-combined"``.
+
+    Returns:
+        Number of subplots (axes) to create.
+    """
+    if plot_type == "multiple":
+        return g2[0].shape[1]
+    elif plot_type == "single":
+        return len(g2)
+    elif plot_type == "single-combined":
+        return 1
+    raise ValueError(f"Unsupported plot_type: {plot_type!r}")
+
+
+def _setup_subplots(hdl, num_figs, num_col, y_auto, show_label=True, stability_legend=False):
+    """Create and configure the subplot grid for G2 plotting.
+
+    Args:
+        hdl: Plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
+        num_figs: Number of subplots.
+        num_col: Number of columns in the grid.
+        y_auto: Whether y-axis auto-range is enabled.
+        show_label: Whether to add a legend to each subplot at all.
+        stability_legend: If ``True`` (and *show_label*), use compact legend anchoring.
+
+    Returns:
+        List of pyqtgraph PlotItem axes.
+    """
+    col = min(num_figs, num_col)
+    row = (num_figs + col - 1) // col
+
+    hdl.adjust_canvas_size(num_col=col, num_row=row)
+    hdl.clear()
+
+    axes = []
+    for n in range(num_figs):
+        ax = hdl.addPlot(row=n // col, col=n % col)
+        axes.append(ax)
+
+        if show_label:
+            if stability_legend:
+                legend = ax.addLegend(labelTextSize="6pt")
+                legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(0, 0))
+            else:
+                ax.addLegend(offset=(-1, 1), labelTextSize="9pt", verSpacing=-10)
+
+        ax.setMouseEnabled(x=False, y=y_auto)
+
+    return axes
+
+
+# ---------------------------------------------------------------------------
+# Public entry points
+# ---------------------------------------------------------------------------
+
+def pg_plot(
+    hdl,
+    xf_list,
+    q_range,
+    t_range,
+    y_range,
+    y_auto=False,
+    q_auto=False,
+    t_auto=False,
+    num_col=4,
+    rows=None,
+    offset=0,
+    show_fit=False,
+    show_label=False,
+    bounds=None,
+    fit_flag=None,
+    plot_type: str = "multiple",
+    subtract_baseline=True,
+    marker_size=5,
+    label_size=4,
+    fit_func="single",
+    **kwargs,
+):
+    """Plot multitau G2 curves in a multi-panel pyqtgraph layout.
+
+    Supports ``"multiple"``, ``"single"``, and ``"single-combined"`` layouts,
+    optional g2 fitting overlay, and baseline subtraction.
+
+    Args:
+        hdl: Plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
+        xf_list: List of :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instances (Multitau).
+        q_range: Q-value filter ``(q_min, q_max)``.
+        t_range: Elapsed-time filter ``(t_min, t_max)``.
+        y_range: Fixed Y-axis range for all subplots.
+        y_auto: Allow auto-range on the y-axis.
+        q_auto: Override *q_range* with ``None`` (no Q filter).
+        t_auto: Override *t_range* with ``None`` (no time filter).
+        num_col: Number of columns in the subplot grid.
+        rows: Row indices to display (default all).
+        offset: Vertical log-offset per file for stacking.
+        show_fit: Overlay g2 fitting curves. Fitting itself must already have
+            been run (e.g. via a prior ``XpcsFile.fit_g2()``/``G2FitWorker``
+            call) — this function only reads ``xf.fit_summary``, it does not fit.
+        show_label: Show legend with file labels.
+        bounds: Not used here — kept for signature symmetry with the fitting
+            step's kwargs (see ``show_fit``).
+        fit_flag: Not used here — see ``bounds``.
+        plot_type: Layout mode — ``"multiple"``, ``"single"``, or ``"single-combined"``.
+        subtract_baseline: Subtract the fitted baseline from each curve.
+        marker_size: Diameter of scatter markers in points.
+        label_size: Ignored (reserved for future use).
+        fit_func: Not used here — see ``bounds``.
+        **kwargs: Reserved for future extensions.
+    """
+    if q_auto:
+        q_range = None
+    if t_auto:
+        t_range = None
+    if y_auto:
+        y_range = None
+
+    _q, tel, g2, g2_err, labels = get_g2_data(xf_list, q_range=q_range, t_range=t_range)
+    num_figs = _num_subplots(g2, plot_type)
+
+    if len(rows) == 0:
+        rows = list(range(len(xf_list)))
+
+    # pyqtgraph bug: log scale on x-axis doesn't apply to setRange directly
+    t0_range = np.log10(t_range) if t_range else None
+
+    axes = _setup_subplots(hdl, num_figs, num_col, y_auto, show_label)
+
+    num_qval = g2[0].shape[1]
+
+    for m in range(len(xf_list)):
+        # Baseline: 1.0 by default, or the fitted baseline where fitting succeeded
+        baseline_offset = np.ones(num_qval)
+        fit_summary = xf_list[m].fit_summary if show_fit else None
+        if fit_summary is not None and subtract_baseline:
+            baseline_offset = np.array(
+                [
+                    fit_summary["fit_val"][nn, 0, 3]
+                    if fit_summary["fit_line"][nn].get("success", False)
+                    else 1.0
+                    for nn in range(num_qval)
+                ]
+            )
+
+        for n in range(num_qval):
+            color = colors[rows[m] % len(colors)]
+            if plot_type == "multiple":
+                ax = axes[n]
+                label = xf_list[m].label
+                if m == 0:
+                    ax.setTitle(labels[m][n])
+            elif plot_type == "single":
+                ax = axes[m]
+                color = colors[n % len(colors)]
+                ax.setTitle(xf_list[m].label)
+            else:  # single-combined
+                ax = axes[0]
+                label = xf_list[m].label + labels[m][n]
+
+            symbol = symbols[rows[m] % len(symbols)]
+            x = tel[m]
+            y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
+            y_err = g2_err[m][:, n]
+
+            pg_plot_one_g2(
+                ax, x, y, y_err, color, label=label, symbol=symbol, symbol_size=marker_size,
+            )
+            ax.setLabel("bottom", "tau (s)")
+            ax.setLabel("left", "g2")
+
+            if not y_auto:
+                ax.setRange(yRange=y_range)
+            if not t_auto:
+                ax.setRange(xRange=t0_range)
+
+            if show_fit and fit_summary is not None and fit_summary["fit_line"][n].get("success", False):
+                y_fit = fit_summary["fit_line"][n]["fit_y"] + m * offset
+                y_fit = y_fit - baseline_offset[n] + 1.0
+                fit_color = colors[n % len(colors)] if plot_type == "single" else colors[rows[m] % len(colors)]
+                ax.plot(
+                    fit_summary["fit_line"][n]["fit_x"],
+                    y_fit,
+                    pen=pg.mkPen(fit_color, width=2.5),
+                )
+
+
+def pg_plot_stability(
+    hdl,
+    xf_obj,
+    q_range,
+    t_range,
+    y_range,
+    y_auto=False,
+    q_auto=False,
+    t_auto=False,
+    num_col=4,
+    rows=None,
+    offset=0,
+    show_fit=False,
+    show_label=False,
+    bounds=None,
+    fit_flag=None,
+    plot_type: str = "multiple",
+    subtract_baseline=True,
+    marker_size=5,
+    label_size=4,
+    fit_func="single",
+    **kwargs,
+):
+    """Plot G2 stability curves from ``g2_partial`` for a single file.
+
+    Similar to :func:`pg_plot` but works on partial G2 data and does not attempt fitting.
+
+    Args:
+        hdl: Plot handler supporting ``addPlot``, ``adjust_canvas_size``, ``clear``.
+        xf_obj: A single :class:`~pyxpcsviewer.core.xpcs_file.XpcsFile` instance (Multitau).
+        q_range: Q-value filter ``(q_min, q_max)``.
+        t_range: Elapsed-time filter ``(t_min, t_max)``.
+        y_range: Fixed Y-axis range for all subplots.
+        y_auto: Allow auto-range on the y-axis.
+        q_auto: Override *q_range* with ``None``.
+        t_auto: Override *t_range* with ``None``.
+        num_col: Number of columns in the subplot grid.
+        rows: Ignored (always uses all data indices).
+        offset: Vertical log-offset per frame for stacking.
+        show_fit: Not used for stability plots.
+        show_label: Show legend with file labels.
+        bounds: Reserved for future fitting support.
+        fit_flag: Reserved for future fitting support.
+        plot_type: Layout mode — ``"multiple"``, ``"single"``, or ``"single-combined"``.
+        subtract_baseline: Not used (always baseline = 1.0).
+        marker_size: Diameter of scatter markers in points.
+        label_size: Ignored (reserved for future use).
+        fit_func: Reserved for future fitting support.
+        **kwargs: Reserved for future extensions.
+    """
+    if q_auto:
+        q_range = None
+    if t_auto:
+        t_range = None
+    if y_auto:
+        y_range = None
+
+    _q, tel, g2, g2_err, qbin_labels, labels = get_g2_stability_data(xf_obj, q_range=q_range, t_range=t_range)
+    num_figs = _num_subplots(g2, plot_type)
+
+    t0_range = np.log10(t_range) if t_range else None
+
+    axes = _setup_subplots(hdl, num_figs, num_col, y_auto, show_label, stability_legend=True)
+
+    num_qval = g2[0].shape[1]
+    row_indices = np.arange(len(g2))
+    baseline_offset = np.ones(num_qval)
+
+    for m in range(len(g2)):
+        for n in range(num_qval):
+            if plot_type == "multiple":
+                ax = axes[n]
+                color = colors[row_indices[m] % len(colors)]
+                label = f"frame={int(labels[m])}"
+                if m == 0:
+                    ax.setTitle(qbin_labels[n])
+            elif plot_type == "single":
+                ax = axes[m]
+                color = colors[n % len(colors)]
+                ax.setTitle(str(labels[m]))
+            else:  # single-combined
+                ax = axes[0]
+                label = labels[m] + labels[m][n]
+
+            symbol = symbols[row_indices[m] % len(symbols)]
+            x = tel
+            y = g2[m][:, n] - baseline_offset[n] + 1.0 + m * offset
+            y_err = g2_err[m][:, n]
+
+            pg_plot_one_g2(ax, x, y, y_err, color, label=label, symbol=symbol, symbol_size=marker_size)
+            ax.setLabel("bottom", "tau (s)")
+            ax.setLabel("left", "g2")
+
+            if not y_auto:
+                ax.setRange(yRange=y_range)
+            if not t_auto:
+                ax.setRange(xRange=t0_range)
+
+
+def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symbol: str, symbol_size: int = 5) -> None:
+    """Plot a single G2 curve with error bars on a pyqtgraph axis.
+
+    Args:
+        ax: pyqtgraph ``PlotWidget`` / ``PlotItem`` to draw on.
+        x: Elapsed time array.
+        y: Normalized G2 values.
+        dy: G2 error bars (displayed as upper errors only).
+        color: RGB colour tuple for the curve and markers.
+        label: Legend label, or ``None`` for no entry.
+        symbol: pyqtgraph marker symbol name.
+        symbol_size: Diameter of markers in points.
+    """
+    pen = pg.mkPen(color=color, width=2)
+    line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
+
+    ax.plot(
+        x,
+        y,
+        pen=None,
+        symbol=symbol,
+        name=label,
+        symbolSize=symbol_size,
+        symbolPen=pg.mkPen(color=color, width=1),
+        symbolBrush=None,  # no fill → hollow markers
+    )
+    ax.setLogMode(x=True, y=None)
+    ax.addItem(line)
+

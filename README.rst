@@ -125,3 +125,9 @@ Gallery
 9. Experiment condition viewer. It reads the file structure and string entries of the selected HDF file.
 
    .. image:: docs/images/hdf_info.png
+
+License
+-------
+
+Copyright © 2026 UChicago Argonne, LLC. Licensed under the Apache License, Version 2.0.
+See `LICENSE <LICENSE>`_ for the full license text.

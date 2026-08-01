@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -27,7 +27,7 @@ classifiers = [
     "Natural Language :: English",
 ]
 
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
 keywords = [
     "XPCS",
     "X-ray",
@@ -43,13 +43,11 @@ dependencies = [
     "h5py",
     "matplotlib",
     "pyqtgraph",
-    "pandas",
     "scikit-learn",
-    "joblib",
     "psutil",
     "tqdm",
     "hdf5plugin",
-    "pyside6==6.8.3",
+    "pyside6>=6.8.3,<7",
 ]
 
 [project.scripts]
@@ -59,6 +57,7 @@ run_viewer = "pyxpcsviewer.cli:main"
 [project.optional-dependencies]
 dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff"]
 docs = ["sphinx", "sphinx-rtd-theme"]
+pyinstaller = ["pyinstaller>=6.21"]
 
 [project.urls]
 bugs = "https://github.com/AZjk/pyxpcsviewer/issues"
@@ -74,6 +73,37 @@ local_scheme = "node-and-timestamp"
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
+
+# Ruff
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = [
+    "src/pyxpcsviewer/gui/view/viewer_ui.py",
+    "src/pyxpcsviewer/gui/view/icons_rc.py",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pyxpcsviewer"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = ["F401"] # re-exported names
 
 # Mypy
 [tool.mypy]

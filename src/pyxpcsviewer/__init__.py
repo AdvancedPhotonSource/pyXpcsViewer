@@ -1,5 +1,8 @@
-from importlib.metadata import version, PackageNotFoundError
-from pyxpcsviewer.xpcs_file import XpcsFile
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
+from importlib.metadata import PackageNotFoundError, version
+
+from pyxpcsviewer.core.xpcs_file import XpcsFile
 
 # Version handling
 try:
@@ -7,5 +10,5 @@ try:
 except PackageNotFoundError:
     __version__ = "0.1.0"  # Fallback if package is not installed
 
-__author__ = 'Miaoqi Chu'
-__credits__ = 'Argonne National Laboratory'
+__author__ = "Miaoqi Chu"
+__credits__ = "Argonne National Laboratory"
