@@ -46,7 +46,6 @@ dependencies = [
     "scikit-learn",
     "psutil",
     "tqdm",
-    "hdf5plugin",
     "pyside6>=6.8.3,<7",
 ]
 

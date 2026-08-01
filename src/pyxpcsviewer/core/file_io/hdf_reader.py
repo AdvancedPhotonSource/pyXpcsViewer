@@ -3,7 +3,6 @@
 import logging
 
 import h5py
-import hdf5plugin  # noqa: F401 -- side-effect import registers HDF5 compression filters (Blosc, LZ4, Zstd, ...)
 import numpy as np
 
 from .aps_8idi import key as hdf_key
