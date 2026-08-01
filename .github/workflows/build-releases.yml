@@ -29,7 +29,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --noconfirm --onefile --windowed --name pyxpcsviewer --icon icon.ico --collect-all PySide6 --collect-all hdf5plugin src/pyxpcsviewer/cli.py
+          pyinstaller --noconfirm --onefile --windowed --name pyxpcsviewer --icon icon.ico src/pyxpcsviewer/cli.py
 
       - name: Smoke test executable
         run: |
@@ -73,7 +73,7 @@ jobs:
 
       - name: Build onedir bundle
         run: |
-          pyinstaller --noconfirm --windowed --name pyxpcsviewer --collect-all PySide6 --collect-all hdf5plugin src/pyxpcsviewer/cli.py
+          pyinstaller --noconfirm --windowed --name pyxpcsviewer src/pyxpcsviewer/cli.py
 
       - name: Smoke test bundle
         run: |
@@ -103,7 +103,7 @@ jobs:
 
       - name: Build AppImage
         run: |
-          ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir "pyxpcsviewer-${{ github.ref_name }}-x86_64.AppImage"
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$PWD/AppDir" "$PWD/pyxpcsviewer-${{ github.ref_name }}-x86_64.AppImage"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
