@@ -611,11 +611,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
-        new_labels = self.plots.plot_twotime(self.mp_2t_hdls, **kwargs)
+        new_labels, selection = self.plots.plot_twotime(self.mp_2t_hdls, **kwargs)
         if new_labels is not None:
+            self.comboBox_twotime_selection.blockSignals(True)
+            self.horizontalSlider_twotime_selection.blockSignals(True)
             self.comboBox_twotime_selection.clear()
             self.comboBox_twotime_selection.addItems(new_labels)
+            self.comboBox_twotime_selection.setCurrentIndex(selection)
             self.horizontalSlider_twotime_selection.setMaximum(len(new_labels) - 1)
+            self.horizontalSlider_twotime_selection.setValue(selection)
+            self.comboBox_twotime_selection.blockSignals(False)
+            self.horizontalSlider_twotime_selection.blockSignals(False)
 
     def show_dataset(self) -> None:
         """Open a pop-up :class:`~pyqtgraph.DataTreeWidget` showing the first target file's data tree."""
