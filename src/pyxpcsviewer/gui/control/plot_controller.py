@@ -358,27 +358,35 @@ class PlotController:
         hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
         return
 
-    def plot_twotime(self, hdl, rows=None, **kwargs):
+    def plot_twotime(self, hdl, rows=None, selection=0, **kwargs):
         """Display two-time correlation (C2) map alongside SAXS-2D background and G2 traces.
 
         Args:
             hdl: Dict-like handle mapping names to ``ImageView`` / ``PlotWidget`` widgets.
             rows: List of target indices; uses twotime targets.
+            selection: Q-bin index requested by the caller (e.g. the twotime
+                combobox's current index before repopulation). Clamped to
+                the new file's q-bin count when the active file changes.
             **kwargs: Passed to :func:`.plot.twotime.plot_twotime`.
 
         Returns:
-            A new ``qbin_labels`` list if the active file changed, else ``None``.
+            Tuple of ``(new_qbin_labels, selection_used)``. The first
+            element is a new ``qbin_labels`` list if the active file
+            changed, else ``None``. The second element is the q-bin index
+            that was actually rendered (equal to *selection* unless it had
+            to be clamped down for the new file).
         """
         xf_list = self.model.get_xf_list(rows, filter_atype="Twotime")
         if len(xf_list) == 0:
-            return None
+            return None, selection
         xfile = xf_list[0]
         new_qbin_labels = None
         if self.current_dset is None or self.current_dset.fname != xfile.fname:
             self.current_dset = xfile
             new_qbin_labels = xfile.get_twotime_qbin_labels()
-        twotime.plot_twotime(xfile, hdl, **kwargs)
-        return new_qbin_labels
+            selection = max(0, min(selection, len(new_qbin_labels) - 1))
+        twotime.plot_twotime(xfile, hdl, selection=selection, **kwargs)
+        return new_qbin_labels, selection
 
     def plot_intt(self, pg_hdl, rows=None, **kwargs):
         """Plot intensity-vs-time curves with Fourier spectrum and zoom view.

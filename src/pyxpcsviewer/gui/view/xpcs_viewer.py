@@ -187,7 +187,10 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
         self.cb_qmap_cmap.currentIndexChanged.connect(self.update_plot)
         self.comboBox_G2_target.currentIndexChanged.connect(self.update_plot)
-        self.horizontalSlider_G2_delay.valueChanged.connect(self.update_plot)
+        self.horizontalSlider_G2_delay.sliderReleased.connect(self.update_plot)
+        self.spinBox_G2_delay.editingFinished.connect(self.update_plot)
+        self.doubleSpinBox_G2_vmin.editingFinished.connect(self.update_plot)
+        self.doubleSpinBox_G2_vmax.editingFinished.connect(self.update_plot)
         self.pushButton_G2_regroup.clicked.connect(self.process_G2_regroup)
         self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
         self.pushButton_G2_loadQMap.clicked.connect(self.load_external_qmap_for_G2_regroup)
@@ -611,11 +614,17 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
         if self.mp_2t_hdls is None:
             self.init_twotime_plot_handler()
-        new_labels = self.plots.plot_twotime(self.mp_2t_hdls, **kwargs)
+        new_labels, selection = self.plots.plot_twotime(self.mp_2t_hdls, **kwargs)
         if new_labels is not None:
+            self.comboBox_twotime_selection.blockSignals(True)
+            self.horizontalSlider_twotime_selection.blockSignals(True)
             self.comboBox_twotime_selection.clear()
             self.comboBox_twotime_selection.addItems(new_labels)
+            self.comboBox_twotime_selection.setCurrentIndex(selection)
             self.horizontalSlider_twotime_selection.setMaximum(len(new_labels) - 1)
+            self.horizontalSlider_twotime_selection.setValue(selection)
+            self.comboBox_twotime_selection.blockSignals(False)
+            self.horizontalSlider_twotime_selection.blockSignals(False)
 
     def show_dataset(self) -> None:
         """Open a pop-up :class:`~pyqtgraph.DataTreeWidget` showing the first target file's data tree."""
