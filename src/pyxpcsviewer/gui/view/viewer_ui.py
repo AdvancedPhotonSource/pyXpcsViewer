@@ -2158,29 +2158,21 @@ class Ui_mainWindow(object):
         self.gridLayout_30 = QGridLayout(self.groupBox_9)
         self.gridLayout_30.setObjectName(u"gridLayout_30")
         self.gridLayout_30.setContentsMargins(1, 1, 1, 1)
-        self.comboBox_G2_target = QComboBox(self.groupBox_9)
-        self.comboBox_G2_target.addItem("")
-        self.comboBox_G2_target.addItem("")
-        self.comboBox_G2_target.addItem("")
-        self.comboBox_G2_target.addItem("")
-        self.comboBox_G2_target.setObjectName(u"comboBox_G2_target")
-
-        self.gridLayout_30.addWidget(self.comboBox_G2_target, 1, 1, 1, 1)
-
-        self.label_72 = QLabel(self.groupBox_9)
-        self.label_72.setObjectName(u"label_72")
-
-        self.gridLayout_30.addWidget(self.label_72, 1, 0, 1, 1)
-
         self.label_73 = QLabel(self.groupBox_9)
         self.label_73.setObjectName(u"label_73")
 
         self.gridLayout_30.addWidget(self.label_73, 2, 0, 1, 1)
 
-        self.pg_regroup_G2 = ImageView(self.groupBox_9)
-        self.pg_regroup_G2.setObjectName(u"pg_regroup_G2")
+        self.doubleSpinBox_G2_vmax = QDoubleSpinBox(self.groupBox_9)
+        self.doubleSpinBox_G2_vmax.setObjectName(u"doubleSpinBox_G2_vmax")
+        self.doubleSpinBox_G2_vmax.setValue(5.000000000000000)
 
-        self.gridLayout_30.addWidget(self.pg_regroup_G2, 0, 0, 1, 6)
+        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_vmax, 1, 6, 1, 1)
+
+        self.label_72 = QLabel(self.groupBox_9)
+        self.label_72.setObjectName(u"label_72")
+
+        self.gridLayout_30.addWidget(self.label_72, 1, 0, 1, 1)
 
         self.horizontalSlider_G2_delay = QSlider(self.groupBox_9)
         self.horizontalSlider_G2_delay.setObjectName(u"horizontalSlider_G2_delay")
@@ -2191,18 +2183,7 @@ class Ui_mainWindow(object):
         self.horizontalSlider_G2_delay.setSizePolicy(sizePolicy17)
         self.horizontalSlider_G2_delay.setOrientation(Qt.Orientation.Horizontal)
 
-        self.gridLayout_30.addWidget(self.horizontalSlider_G2_delay, 2, 1, 1, 5)
-
-        self.doubleSpinBox_G2_vmax = QDoubleSpinBox(self.groupBox_9)
-        self.doubleSpinBox_G2_vmax.setObjectName(u"doubleSpinBox_G2_vmax")
-        self.doubleSpinBox_G2_vmax.setValue(5.000000000000000)
-
-        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_vmax, 1, 5, 1, 1)
-
-        self.doubleSpinBox_G2_vmin = QDoubleSpinBox(self.groupBox_9)
-        self.doubleSpinBox_G2_vmin.setObjectName(u"doubleSpinBox_G2_vmin")
-
-        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_vmin, 1, 4, 1, 1)
+        self.gridLayout_30.addWidget(self.horizontalSlider_G2_delay, 2, 2, 1, 5)
 
         self.label_77 = QLabel(self.groupBox_9)
         self.label_77.setObjectName(u"label_77")
@@ -2212,7 +2193,31 @@ class Ui_mainWindow(object):
         sizePolicy18.setHeightForWidth(self.label_77.sizePolicy().hasHeightForWidth())
         self.label_77.setSizePolicy(sizePolicy18)
 
-        self.gridLayout_30.addWidget(self.label_77, 1, 3, 1, 1)
+        self.gridLayout_30.addWidget(self.label_77, 1, 4, 1, 1)
+
+        self.doubleSpinBox_G2_vmin = QDoubleSpinBox(self.groupBox_9)
+        self.doubleSpinBox_G2_vmin.setObjectName(u"doubleSpinBox_G2_vmin")
+
+        self.gridLayout_30.addWidget(self.doubleSpinBox_G2_vmin, 1, 5, 1, 1)
+
+        self.pg_regroup_G2 = ImageView(self.groupBox_9)
+        self.pg_regroup_G2.setObjectName(u"pg_regroup_G2")
+
+        self.gridLayout_30.addWidget(self.pg_regroup_G2, 0, 0, 1, 7)
+
+        self.spinBox_G2_delay = QSpinBox(self.groupBox_9)
+        self.spinBox_G2_delay.setObjectName(u"spinBox_G2_delay")
+
+        self.gridLayout_30.addWidget(self.spinBox_G2_delay, 2, 1, 1, 1)
+
+        self.comboBox_G2_target = QComboBox(self.groupBox_9)
+        self.comboBox_G2_target.addItem("")
+        self.comboBox_G2_target.addItem("")
+        self.comboBox_G2_target.addItem("")
+        self.comboBox_G2_target.addItem("")
+        self.comboBox_G2_target.setObjectName(u"comboBox_G2_target")
+
+        self.gridLayout_30.addWidget(self.comboBox_G2_target, 1, 1, 1, 2)
 
         self.splitter_8.addWidget(self.groupBox_9)
         self.layoutWidget2 = QWidget(self.splitter_8)
@@ -2232,7 +2237,7 @@ class Ui_mainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 660, 453))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 644, 453))
         self.gridLayout_54 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_54.setObjectName(u"gridLayout_54")
         self.gridLayout_54.setContentsMargins(0, 0, -1, 0)
@@ -2527,8 +2532,10 @@ class Ui_mainWindow(object):
         self.checkBox_G2_removeoutlier.toggled.connect(self.label_76.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.doubleSpinBox_G2_threshold.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliermethod.setEnabled)
+        self.horizontalSlider_G2_delay.valueChanged.connect(self.spinBox_G2_delay.setValue)
+        self.spinBox_G2_delay.valueChanged.connect(self.horizontalSlider_G2_delay.setValue)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(12)
         self.cb_saxs_type.setCurrentIndex(3)
         self.cb_stab_type.setCurrentIndex(3)
         self.cb_stab_norm.setCurrentIndex(0)
@@ -2838,14 +2845,14 @@ class Ui_mainWindow(object):
         self.label_57.setText(QCoreApplication.translate("mainWindow", u"offset:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_11), QCoreApplication.translate("mainWindow", u"g2_stability", None))
         self.groupBox_9.setTitle(QCoreApplication.translate("mainWindow", u"G2IPIF", None))
+        self.label_73.setText(QCoreApplication.translate("mainWindow", u"Delay Index:", None))
+        self.label_72.setText(QCoreApplication.translate("mainWindow", u"Target:", None))
+        self.label_77.setText(QCoreApplication.translate("mainWindow", u"levels: [min, max]", None))
         self.comboBox_G2_target.setItemText(0, QCoreApplication.translate("mainWindow", u"g2_per_pixel", None))
         self.comboBox_G2_target.setItemText(1, QCoreApplication.translate("mainWindow", u"G2", None))
         self.comboBox_G2_target.setItemText(2, QCoreApplication.translate("mainWindow", u"IP", None))
         self.comboBox_G2_target.setItemText(3, QCoreApplication.translate("mainWindow", u"IF", None))
 
-        self.label_72.setText(QCoreApplication.translate("mainWindow", u"Target:", None))
-        self.label_73.setText(QCoreApplication.translate("mainWindow", u"Delay:", None))
-        self.label_77.setText(QCoreApplication.translate("mainWindow", u"levels: [min, max]", None))
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Grouped g2", None))
         self.groupBox_24.setTitle(QCoreApplication.translate("mainWindow", u"QMap", None))
         self.label_74.setText(QCoreApplication.translate("mainWindow", u"Using the internal QMap located in /xpcs/qmap to group G2 the original way.", None))
