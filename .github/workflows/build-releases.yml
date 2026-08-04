@@ -111,9 +111,186 @@ jobs:
           name: linux-appimage
           path: pyxpcsviewer-${{ github.ref_name }}-x86_64.AppImage
 
+  build-macos-dmg:
+    name: Build, sign, and notarize macOS DMG
+    runs-on: macos-14
+    environment: macos-signing
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install package and PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[pyinstaller]
+
+      - name: Generate .icns app icon
+        run: bash packaging/macos/make_icns.sh
+
+      - name: Import Developer ID certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/developer-id.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+
+          printf '%s' "$BUILD_CERTIFICATE_BASE64" \
+            | base64 --decode > "$CERTIFICATE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security import "$CERTIFICATE_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$P12_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12
+
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+
+          echo "Available signing identities:"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+          SIGNING_IDENTITY="$(
+            security find-identity -v -p codesigning "$KEYCHAIN_PATH" \
+              | grep "Developer ID Application" \
+              | head -1 \
+              | awk '{print $2}'
+          )"
+
+          if [ -z "$SIGNING_IDENTITY" ]; then
+            echo "::error::Developer ID Application identity not found"
+            exit 1
+          fi
+
+          echo "SIGNING_IDENTITY=$SIGNING_IDENTITY" >> "$GITHUB_ENV"
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
+      - name: Build application
+        run: |
+          pyinstaller --noconfirm --windowed --name pyxpcsviewer \
+            --icon packaging/macos/icon.icns \
+            --osx-bundle-identifier gov.anl.aps.pyxpcsviewer \
+            src/pyxpcsviewer/cli.py
+
+      - name: Smoke test unsigned build
+        run: |
+          dist/pyxpcsviewer.app/Contents/MacOS/pyxpcsviewer --version
+
+      - name: Sign application bundle
+        run: |
+          codesign \
+            --force \
+            --deep \
+            --options runtime \
+            --timestamp \
+            --entitlements packaging/macos/entitlements.plist \
+            --sign "$SIGNING_IDENTITY" \
+            "dist/pyxpcsviewer.app"
+
+      - name: Verify application signature
+        run: |
+          codesign --verify --deep --strict --verbose=2 "dist/pyxpcsviewer.app"
+          codesign --display --verbose=4 "dist/pyxpcsviewer.app"
+
+      - name: Notarize and staple app bundle
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        run: |
+          ditto -c -k --keepParent "dist/pyxpcsviewer.app" "dist/pyxpcsviewer.zip"
+
+          xcrun notarytool submit "dist/pyxpcsviewer.zip" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+          xcrun stapler staple "dist/pyxpcsviewer.app"
+          rm -f "dist/pyxpcsviewer.zip"
+
+      - name: Create DMG
+        run: |
+          mkdir -p dmg-root
+          cp -R "dist/pyxpcsviewer.app" dmg-root/
+          ln -s /Applications dmg-root/Applications
+
+          hdiutil create \
+            -volname "pyxpcsviewer" \
+            -srcfolder dmg-root \
+            -format UDZO \
+            -ov \
+            "dist/pyxpcsviewer.dmg"
+
+      - name: Sign DMG
+        run: |
+          codesign \
+            --force \
+            --timestamp \
+            --sign "$SIGNING_IDENTITY" \
+            "dist/pyxpcsviewer.dmg"
+
+      - name: Notarize and staple DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool submit "dist/pyxpcsviewer.dmg" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+          xcrun stapler staple "dist/pyxpcsviewer.dmg"
+          xcrun stapler validate "dist/pyxpcsviewer.dmg"
+
+      - name: Check Gatekeeper
+        run: |
+          spctl \
+            --assess \
+            --type open \
+            --context context:primary-signature \
+            --verbose=4 \
+            "dist/pyxpcsviewer.dmg"
+
+      - name: Rename artifact
+        run: |
+          mv "dist/pyxpcsviewer.dmg" "dist/pyxpcsviewer-${{ github.ref_name }}-macos.dmg"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist/pyxpcsviewer-${{ github.ref_name }}-macos.dmg
+
+      - name: Delete temporary keychain
+        if: always()
+        run: |
+          if [ -n "${KEYCHAIN_PATH:-}" ]; then
+            security delete-keychain "$KEYCHAIN_PATH" || true
+          fi
+
   publish-release:
     name: Attach binaries to GitHub Release
-    needs: [build-windows-exe, build-appimage]
+    needs: [build-windows-exe, build-appimage, build-macos-dmg]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -129,3 +306,4 @@ jobs:
           files: |
             artifacts/windows-exe/*
             artifacts/linux-appimage/*
+            artifacts/macos-dmg/*
