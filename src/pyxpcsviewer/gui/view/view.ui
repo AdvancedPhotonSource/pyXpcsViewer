@@ -4388,6 +4388,19 @@
                   </property>
                  </widget>
                 </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QCheckBox" name="checkBox_G2_combineoutlier">
+                  <property name="text">
+                   <string>Combine Outlier</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -5568,6 +5581,22 @@
     <hint type="destinationlabel">
      <x>1569</x>
      <y>660</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_G2_removeoutlier</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>checkBox_G2_combineoutlier</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>666</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1256</x>
+     <y>690</y>
     </hint>
    </hints>
   </connection>

@@ -2364,6 +2364,13 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.pushButton_G2_savefile, 0, 7, 1, 1)
 
+        self.checkBox_G2_combineoutlier = QCheckBox(self.groupBox_23)
+        self.checkBox_G2_combineoutlier.setObjectName(u"checkBox_G2_combineoutlier")
+        self.checkBox_G2_combineoutlier.setCheckable(True)
+        self.checkBox_G2_combineoutlier.setChecked(False)
+
+        self.gridLayout_50.addWidget(self.checkBox_G2_combineoutlier, 1, 0, 1, 2)
+
 
         self.verticalLayout_3.addWidget(self.groupBox_23)
 
@@ -2532,6 +2539,7 @@ class Ui_mainWindow(object):
         self.checkBox_G2_removeoutlier.toggled.connect(self.label_76.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.doubleSpinBox_G2_threshold.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliermethod.setEnabled)
+        self.checkBox_G2_removeoutlier.toggled.connect(self.checkBox_G2_combineoutlier.setEnabled)
         self.horizontalSlider_G2_delay.valueChanged.connect(self.spinBox_G2_delay.setValue)
         self.spinBox_G2_delay.valueChanged.connect(self.horizontalSlider_G2_delay.setValue)
 
@@ -2872,6 +2880,7 @@ class Ui_mainWindow(object):
         self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
         self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
         self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
+        self.checkBox_G2_combineoutlier.setText(QCoreApplication.translate("mainWindow", u"Combine Outlier", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 

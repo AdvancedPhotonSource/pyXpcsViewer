@@ -401,6 +401,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             raise NotImplementedError("draw qmap is not implemented yet")
             return
 
+        # Outlier removal settings from the G2 Regroup UI widgets
+        if self.checkBox_G2_removeoutlier.isChecked():
+            kwargs["outlier_method"] = self.comboBox_G2_outliermethod.currentText()
+            kwargs["outlier_threshold"] = self.doubleSpinBox_G2_threshold.value()
+            kwargs["combine_outlier"] = self.checkBox_G2_combineoutlier.isChecked()
+        else:
+            kwargs["outlier_method"] = "MeanAbsoluteDeviation"
+            kwargs["outlier_threshold"] = -1.0
+            kwargs["combine_outlier"] = False
+
         self.plots.process_G2_regroup(**kwargs)
 
         g2_plot_kwargs = self.plot_g2(dryrun=True)
