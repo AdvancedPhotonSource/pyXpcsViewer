@@ -4529,7 +4529,7 @@ most delays is a genuinely hot pixel.</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="2">
+                <item row="2" column="4" colspan="2">
                  <widget class="QLabel" name="label_G2_errormodel">
                   <property name="toolTip">
                    <string>How g2_err is estimated. g2 itself is identical either way.
@@ -4543,7 +4543,7 @@ ones, so the outlier settings do not change these error bars.</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="3" colspan="3">
+                <item row="2" column="6" colspan="2">
                  <widget class="QComboBox" name="comboBox_G2_errormodel">
                   <property name="toolTip">
                    <string>How g2_err is estimated. g2 itself is identical either way.
@@ -4596,11 +4596,13 @@ hot-pixel mask instead.</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="6">
+                <item row="1" column="2">
                  <widget class="QLabel" name="label_G2_mintagcount">
                   <property name="toolTip">
                    <string>Reject only pixels flagged at this many delays or more, and then
-reject them at every delay. Needs Combine Outlier.
+reject them at every delay.
+Greyed out until both Remove Outlier and Combine Outlier (to the
+left) are checked, since the count means nothing without them.
 1 = flagged anywhere, flagged everywhere (the historical behaviour,
 and far too aggressive for the G20 target).
 Pick a value from the Debug dialog's bad-pixel map: with G20, a
@@ -4614,11 +4616,13 @@ count near the delay total works well, e.g. 30 out of 34.</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="7">
+                <item row="1" column="3" colspan="2">
                  <widget class="QSpinBox" name="spinBox_G2_mintagcount">
                   <property name="toolTip">
                    <string>Reject only pixels flagged at this many delays or more, and then
-reject them at every delay. Needs Combine Outlier.
+reject them at every delay.
+Greyed out until both Remove Outlier and Combine Outlier (to the
+left) are checked, since the count means nothing without them.
 1 = flagged anywhere, flagged everywhere (the historical behaviour,
 and far too aggressive for the G20 target).
 Pick a value from the Debug dialog's bad-pixel map: with G20, a
@@ -4638,7 +4642,7 @@ count near the delay total works well, e.g. 30 out of 34.</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="2" colspan="4">
+                <item row="2" column="2" colspan="2">
                  <widget class="QComboBox" name="comboBox_G2_outliertarget">
                   <property name="toolTip">
                    <string>Which per-pixel quantity the outlier test is computed on.
@@ -5874,38 +5878,6 @@ hot-pixel mask instead.</string>
     </hint>
     <hint type="destinationlabel">
      <x>1256</x>
-     <y>714</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_G2_combineoutlier</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBox_G2_mintagcount</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1191</x>
-     <y>690</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1600</x>
-     <y>714</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_G2_combineoutlier</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>label_G2_mintagcount</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1191</x>
-     <y>690</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1540</x>
      <y>714</y>
     </hint>
    </hints>

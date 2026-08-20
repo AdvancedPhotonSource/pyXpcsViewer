@@ -199,6 +199,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
         self.pushButton_G2_loadQMap.clicked.connect(self.load_external_qmap_for_G2_regroup)
         self.pushButton_G2_debug.clicked.connect(self.debug_G2_regroup)
+        # Min Tag needs BOTH switches on; Designer connections cannot express an
+        # AND, so this slot owns its enabled state (including the initial one).
+        self.checkBox_G2_removeoutlier.toggled.connect(self._update_G2_mintag_enabled)
+        self.checkBox_G2_combineoutlier.toggled.connect(self._update_G2_mintag_enabled)
+        self._update_G2_mintag_enabled()
 
         self.g2_fitting_function.currentIndexChanged.connect(self.update_g2_fitting_function)
         self.btn_up.clicked.connect(lambda: self.reorder_target("up"))
@@ -355,6 +360,18 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         )[0]
         if os.path.isfile(f):
             self.label_G2_external_qmapfname.setText(f)
+
+    def _update_G2_mintag_enabled(self) -> None:
+        """Enable Min Tag only when outlier rejection *and* the persistence filter are on.
+
+        Min Tag is the count for "Combine Outlier", which in turn does nothing
+        while "Remove Outlier" is off, so it has to follow both. The rest of the
+        Group Setting box greys out with the master switch via plain Designer
+        connections; this one needs an AND, which Designer cannot express.
+        """
+        enabled = self.checkBox_G2_removeoutlier.isChecked() and self.checkBox_G2_combineoutlier.isChecked()
+        self.spinBox_G2_mintagcount.setEnabled(enabled)
+        self.label_G2_mintagcount.setEnabled(enabled)
 
     def _resolve_G2_target_rows(self, title: str) -> list[int] | None:
         """Resolve which target file the G2 regroup actions apply to.

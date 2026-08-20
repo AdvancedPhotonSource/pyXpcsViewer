@@ -310,14 +310,44 @@ def test_min_tag_count_sent_only_when_combine_outlier_is_on(qapp):
     assert window.plots.calls[0]["min_tag_count"] == 30
 
 
-def test_min_tag_spin_defaults_to_one_and_follows_combine_outlier(qapp, tmp_path):
+def test_min_tag_spin_defaults_to_one(qapp, tmp_path):
     """1 reproduces the historical union, so the default must not change behaviour."""
     window = XpcsViewer(path=str(tmp_path))
     assert window.spinBox_G2_mintagcount.value() == 1
-    for state in (True, False):
-        window.checkBox_G2_combineoutlier.setChecked(state)
-        assert window.spinBox_G2_mintagcount.isEnabled() is state
-        assert window.label_G2_mintagcount.isEnabled() is state
+
+
+@pytest.mark.parametrize(
+    ("remove", "combine", "expected"),
+    [(True, True, True), (True, False, False), (False, True, False), (False, False, False)],
+)
+def test_min_tag_enabled_only_when_both_switches_are_on(qapp, tmp_path, remove, combine, expected):
+    """Min Tag is the count for Combine Outlier, which does nothing while Remove
+    Outlier is off -- so it must follow both, not just the one next to it.
+    Designer connections cannot express an AND, hence the hand-written slot."""
+    window = XpcsViewer(path=str(tmp_path))
+    window.checkBox_G2_removeoutlier.setChecked(remove)
+    window.checkBox_G2_combineoutlier.setChecked(combine)
+    assert window.spinBox_G2_mintagcount.isEnabled() is expected
+    assert window.label_G2_mintagcount.isEnabled() is expected
+
+
+def test_min_tag_starts_disabled(qapp, tmp_path):
+    """Combine Outlier is unchecked by default, and Qt only fires toggled() on a
+    change, so the initial state has to be set explicitly at construction."""
+    window = XpcsViewer(path=str(tmp_path))
+    assert not window.checkBox_G2_combineoutlier.isChecked()
+    assert not window.spinBox_G2_mintagcount.isEnabled()
+
+
+def test_min_tag_sits_next_to_the_checkbox_that_gates_it(qapp, tmp_path):
+    """It used to sit in the opposite corner of the box from Combine Outlier,
+    which made it read as permanently greyed out."""
+    window = XpcsViewer(path=str(tmp_path))
+    grid = window.gridLayout_50
+    combine_row, combine_col, _, combine_span = grid.getItemPosition(grid.indexOf(window.checkBox_G2_combineoutlier))
+    label_row, label_col, _, _ = grid.getItemPosition(grid.indexOf(window.label_G2_mintagcount))
+    assert label_row == combine_row
+    assert label_col == combine_col + combine_span  # immediately to its right
 
 
 def test_g2_regroup_tab_controls_have_tooltips(qapp, tmp_path):
