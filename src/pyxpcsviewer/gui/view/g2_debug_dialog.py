@@ -211,7 +211,7 @@ class _BinSweepPanel(QtWidgets.QWidget):
 class _BadMapPanel(QtWidgets.QWidget):
     """Detector image of outlier tag counts with a minimum-tag filter."""
 
-    def __init__(self, bundle: dict[str, Any], parent: QtWidgets.QWidget | None = None) -> None:
+    def __init__(self, bundle: dict[str, Any], min_tag_count: int = 1, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self._counts = bundle["bad"].sum(axis=0).reshape(bundle["img_shape"])
         self._n_dead = bundle["n_dead"]
@@ -223,6 +223,9 @@ class _BadMapPanel(QtWidgets.QWidget):
         self.spin = QtWidgets.QSpinBox()
         self.spin.setObjectName("g2_debug_mintag_spin")
         self.spin.setRange(1, max(1, int(self._counts.max())))
+        # preset to the Group Setting's Min Tag count: this panel is how you pick
+        # that value, so it should open showing what the current one does
+        self.spin.setValue(min(max(1, min_tag_count), self.spin.maximum()))
         self.spin.valueChanged.connect(self._render)
         top.addWidget(self.spin)
         self.summary = QtWidgets.QLabel("")
@@ -263,12 +266,15 @@ def build_debug_plots(
     method: str,
     threshold: float,
     combine_outlier: bool,
-    target: str = DEFAULT_OUTLIER_TARGET,
+    min_tag_count: int = 1,
 ) -> QtWidgets.QTabWidget:
     """Populate *widget* with the debug header and the two tabs.
 
     Appends to *widget*'s existing layout and returns the QTabWidget.
     Tab 1 is the bad-pixel map panel (``_BadMapPanel``).
+
+    The outlier target is read from ``bundle["target"]`` rather than passed in,
+    so the header cannot disagree with the data the panels actually plot.
     """
     layout = widget.layout()
     if layout is None:
@@ -276,7 +282,8 @@ def build_debug_plots(
     header = QtWidgets.QLabel(
         f"{os.path.basename(fname)} | delays={bundle['n_delays']}  sq={bundle['n_sq']}  "
         f"dq={bundle['n_dq']}  dead={bundle['n_dead']} | "
-        f"method={method}, threshold={threshold:g}, combine={combine_outlier}, target={target}"
+        f"method={method}, threshold={threshold:g}, combine={combine_outlier}, "
+        f"target={bundle['target']}, min_tag={min_tag_count}"
     )
     header.setObjectName("g2_debug_header")
     header.setWordWrap(True)
@@ -284,7 +291,7 @@ def build_debug_plots(
 
     tabs = QtWidgets.QTabWidget()
     tabs.addTab(_BinSweepPanel(bundle, method, threshold), "sq-bin histograms")
-    tabs.addTab(_BadMapPanel(bundle), "Bad-pixel map")
+    tabs.addTab(_BadMapPanel(bundle, min_tag_count), "Bad-pixel map")
     layout.addWidget(tabs)
     return tabs
 
@@ -349,6 +356,7 @@ class G2DebugDialog(QtWidgets.QDialog):
         threshold: float,
         combine_outlier: bool,
         target: str = DEFAULT_OUTLIER_TARGET,
+        min_tag_count: int = 1,
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -357,6 +365,7 @@ class G2DebugDialog(QtWidgets.QDialog):
         self._threshold = threshold
         self._combine = combine_outlier
         self._target = target
+        self._min_tag_count = min_tag_count
         self._worker_running = True
         self.setWindowTitle(f"G2 outlier debug — {os.path.basename(self._fname)}")
         self.setMinimumSize(900, 700)
@@ -388,7 +397,8 @@ class G2DebugDialog(QtWidgets.QDialog):
         for w in (self._placeholder, self._stage, self._progress):
             layout.removeWidget(w)
             w.deleteLater()
-        build_debug_plots(self, bundle, self._fname, self._method, self._threshold, self._combine, self._target)
+        # target is not passed: build_debug_plots reads it off the bundle
+        build_debug_plots(self, bundle, self._fname, self._method, self._threshold, self._combine, self._min_tag_count)
 
     def _on_failed(self, msg: str) -> None:
         self._worker_running = False

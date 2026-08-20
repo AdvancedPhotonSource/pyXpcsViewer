@@ -39,10 +39,19 @@ DEFAULT_ERROR_MODEL = "per-pixel"
 #:
 #: Unrelated to :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_G2_data`'s ``target``,
 #: which selects a channel to *display*.
-OUTLIER_TARGETS = ("G20", "g2-per-pixel")
+OUTLIER_TARGETS = ("g2-per-pixel", "G20")
 
 #: Default outlier target.
-DEFAULT_OUTLIER_TARGET = "G20"
+#:
+#: ``"g2-per-pixel"``, not ``"G20"``: measured on real data (A0096 glassy carbon,
+#: a static scatterer whose true g2 is flat), a per-delay ``G20`` cut at 3 MADs
+#: rejects 21.6% of samples and drags the g2 baseline to 0.91 with q-bins down to
+#: 0.55 -- impossible values.  ``g2 = <I**2 g2_pix> / <I>**2``, so trimming the
+#: brightest pixels strips tail mass from a mean-of-squares far faster than from a
+#: square-of-mean and biases the ratio down.  That is intrinsic to cutting on the
+#: numerator, not a threshold to tune.  ``G20`` is still the right statistic for
+#: finding persistently hot pixels -- see *min_tag_count*.
+DEFAULT_OUTLIER_TARGET = "g2-per-pixel"
 
 
 def has_G2_field(fname):
@@ -102,7 +111,9 @@ def average_by_qindex(idx_map, arr):
     return np.array(result)
 
 
-def find_g2_pixel_outliers(sqmap, values, threshold=3.0, method="MeanAbsoluteDeviation", combine_outlier=False):
+def find_g2_pixel_outliers(
+    sqmap, values, threshold=3.0, method="MeanAbsoluteDeviation", combine_outlier=False, min_tag_count=0
+):
     """Flag per-pixel, per-delay outliers of *values* within each sqmap bin.
 
     *values* is whichever per-pixel statistic the caller selected via ``target``
@@ -117,18 +128,27 @@ def find_g2_pixel_outliers(sqmap, values, threshold=3.0, method="MeanAbsoluteDev
     ``g2_pixel == 0`` exactly when ``G20 == 0`` (:func:`normalize_g2` clamps its
     denominator away from zero).
 
-    When *combine_outlier* is ``False`` (default), a pixel flagged at one delay
-    is not flagged at any other delay.  When *combine_outlier* is ``True``, the
-    union of outlier pixels across **all** delays is taken for each sq bin so
-    that a pixel found bad at *any* delay is excluded from *every* delay.
+    By default a pixel flagged at one delay is not flagged at any other delay.
+    *min_tag_count* turns on a **persistence filter** instead: a pixel flagged at
+    fewer than *min_tag_count* delays is not rejected at all, and one flagged at
+    at least that many is rejected at *every* delay.  This is how the ``"G20"``
+    target is usable -- a single-delay ``G20`` flag mostly tracks the intensity
+    gradient across a q ring, while a flag that repeats across most delays is a
+    genuinely hot pixel.  On A0096, ``G20`` flags 3279 pixels at all 34 delays
+    that ``"g2-per-pixel"`` never flags at even 30.
+
+    *combine_outlier* is the ``min_tag_count == 1`` special case (flagged
+    anywhere -> flagged everywhere), kept for callers that predate the count.
 
     Args:
         sqmap: Static ROI map, raveled, shape ``(n_pixels,)``.
         values: Per-pixel outlier statistic, shape ``(n_delays, n_pixels)``.
         threshold: Number of MADs (or standard deviations) above center for rejection.
         method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``.
-        combine_outlier: If ``True``, union outliers across all delays per sq bin
-            so each flagged pixel is excluded at every delay.
+        combine_outlier: If ``True``, equivalent to ``min_tag_count=1``. Ignored
+            when *min_tag_count* is set.
+        min_tag_count: Reject only pixels flagged at this many delays or more, at
+            every delay. ``0`` (default) keeps the per-delay flags as they are.
 
     Returns:
         Boolean mask, shape ``(n_delays, n_pixels)``, ``True`` where the pixel
@@ -173,14 +193,13 @@ def find_g2_pixel_outliers(sqmap, values, threshold=3.0, method="MeanAbsoluteDev
 
         bad[:, pix_idx] = vals_roi > hi
 
-    if combine_outlier:
-        # Union across all delays per sq bin: a pixel bad at any delay is bad at all delays.
-        for idx in range(1, n_sq + 1):
-            pix_idx = order[starts[idx - 1] : starts[idx]]
-            if pix_idx.size == 0:
-                continue
-            union_bad = bad[:, pix_idx].any(axis=0)  # (n_pixels_in_roi,)
-            bad[:, pix_idx] = union_bad  # broadcast to all delays
+    n_tags = min_tag_count if min_tag_count > 0 else (1 if combine_outlier else 0)
+    if n_tags > 0:
+        # Persistence filter: trust a flag only if it repeats. Pixels outside every
+        # sq bin are never flagged above, so their count is 0 and they stay clean.
+        # n_tags == 1 reproduces the old per-bin union exactly (that loop was a
+        # per-pixel any() over delays; the bin partition never affected the result).
+        bad[:] = bad.sum(axis=0) >= n_tags
 
     return bad
 
@@ -192,6 +211,7 @@ def compute_g2(
     outlier_method="MeanAbsoluteDeviation",
     outlier_threshold=-1.0,
     combine_outlier=False,
+    min_tag_count=0,
     error_model=DEFAULT_ERROR_MODEL,
     target=DEFAULT_OUTLIER_TARGET,
 ):
@@ -206,9 +226,13 @@ def compute_g2(
         outlier_threshold: Reject pixels with ``g2_pixel`` above ``center + threshold * spread``
             within their sq bin, evaluated independently per delay (see
             :func:`find_g2_pixel_outliers`). Negative (default) disables rejection entirely.
-        combine_outlier: If ``True``, union the outlier masks across all delays for each sq bin
-            so that a pixel flagged as an outlier at *any* delay is excluded from *all* delays.
+        combine_outlier: The ``min_tag_count=1`` special case, kept for older callers.
             Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        min_tag_count: Reject only pixels flagged at this many delays or more, at every
+            delay (see :func:`find_g2_pixel_outliers`). ``0`` (default) keeps the
+            per-delay flags. This is what makes ``target="G20"`` usable: on A0096 a raw
+            per-delay G20 cut biases g2 below 1, while ``min_tag_count=30`` of 34 removes
+            5027 hot pixels and leaves the curve flat and physical.
         error_model: One of :data:`ERROR_MODELS`; selects how ``g2_err`` is estimated.
             ``"per-pixel"`` (default) takes the scatter of the individual pixels in the
             dq bin; ``"sq-group"`` takes the scatter of the sq-bin averages making up the
@@ -252,7 +276,12 @@ def compute_g2(
         # view of the numerator -- no copy of a multi-hundred-MB cube.
         values = G2[:, 0] if target == "G20" else g2_pixel
         bad = find_g2_pixel_outliers(
-            sqmap_1d, values, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
+            sqmap_1d,
+            values,
+            threshold=outlier_threshold,
+            method=outlier_method,
+            combine_outlier=combine_outlier,
+            min_tag_count=min_tag_count,
         )
 
     n_dq = int(np.max(dqmap_1d))
@@ -326,6 +355,7 @@ def regroup_G2_with_qmap_array(
     outlier_method="MeanAbsoluteDeviation",
     outlier_threshold=-1.0,
     combine_outlier=False,
+    min_tag_count=0,
     error_model=DEFAULT_ERROR_MODEL,
     target=DEFAULT_OUTLIER_TARGET,
 ):
@@ -345,8 +375,10 @@ def regroup_G2_with_qmap_array(
             only when ``outlier_threshold >= 0``.
         outlier_threshold: Per-delay, per-sq-bin upper-bound outlier rejection threshold
             (see :func:`find_g2_pixel_outliers`). Negative (default) disables rejection.
-        combine_outlier: If ``True``, union outlier masks across all delays per sq bin
-            before exclusion. Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        combine_outlier: The ``min_tag_count=1`` special case, kept for older callers.
+            Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        min_tag_count: Reject only pixels flagged at this many delays or more, at every
+            delay (see :func:`find_g2_pixel_outliers`). ``0`` (default) keeps per-delay flags.
         error_model: One of :data:`ERROR_MODELS`; selects the ``g2_err`` estimator
             (see :func:`compute_g2`). Default ``"per-pixel"``.
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
@@ -362,6 +394,7 @@ def regroup_G2_with_qmap_array(
         outlier_method=outlier_method,
         outlier_threshold=outlier_threshold,
         combine_outlier=combine_outlier,
+        min_tag_count=min_tag_count,
         error_model=error_model,
         target=target,
     )
@@ -377,6 +410,7 @@ def regroup_G2(
     outlier_method="MeanAbsoluteDeviation",
     outlier_threshold=-1.0,
     combine_outlier=False,
+    min_tag_count=0,
     error_model=DEFAULT_ERROR_MODEL,
     target=DEFAULT_OUTLIER_TARGET,
 ):
@@ -396,8 +430,10 @@ def regroup_G2(
             only when ``outlier_threshold >= 0``.
         outlier_threshold: Per-delay, per-sq-bin upper-bound outlier rejection threshold
             (see :func:`find_g2_pixel_outliers`). Negative (default) disables rejection.
-        combine_outlier: If ``True``, union outlier masks across all delays per sq bin
-            before exclusion. Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        combine_outlier: The ``min_tag_count=1`` special case, kept for older callers.
+            Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        min_tag_count: Reject only pixels flagged at this many delays or more, at every
+            delay (see :func:`find_g2_pixel_outliers`). ``0`` (default) keeps per-delay flags.
         error_model: One of :data:`ERROR_MODELS`; selects the ``g2_err`` estimator
             (see :func:`compute_g2`). Default ``"per-pixel"``.
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
@@ -435,6 +471,7 @@ def regroup_G2(
         outlier_method=outlier_method,
         outlier_threshold=outlier_threshold,
         combine_outlier=combine_outlier,
+        min_tag_count=min_tag_count,
         error_model=error_model,
         target=target,
     )
@@ -447,6 +484,7 @@ def compute_g2_debug_bundle(
     outlier_method: str = "MeanAbsoluteDeviation",
     outlier_threshold: float = 3.0,
     combine_outlier: bool = False,
+    min_tag_count: int = 0,
     target: str = DEFAULT_OUTLIER_TARGET,
 ) -> dict[str, Any]:
     """Compute the per-pixel data the G2 outlier debug dialog plots.
@@ -461,8 +499,11 @@ def compute_g2_debug_bundle(
         G2: Unnormalized G2, shape ``(n_delays, 3, img_v, img_h)``.
         outlier_method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``.
         outlier_threshold: Upper-bound rejection threshold (MADs / std devs).
-        combine_outlier: If ``True``, union outlier masks across all delays
-            per sq bin (same semantics as :func:`find_g2_pixel_outliers`).
+        combine_outlier: If ``True``, equivalent to ``min_tag_count=1``
+            (same semantics as :func:`find_g2_pixel_outliers`).
+        min_tag_count: Persistence filter (see :func:`find_g2_pixel_outliers`).
+            Leave at ``0`` to plot the raw per-delay flags -- the bad-pixel map's
+            tag-count slider is how you pick a value for it.
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
             outlier statistic runs on, and hence what ``values`` holds.
 
@@ -492,7 +533,12 @@ def compute_g2_debug_bundle(
     # the bundle needs it. G2[:, 0] is a view, so the G20 branch allocates nothing.
     values = G2[:, 0] if target == "G20" else normalize_g2(G2)  # type: ignore[no-untyped-call]
     bad = find_g2_pixel_outliers(  # type: ignore[no-untyped-call]
-        sqmap_1d, values, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
+        sqmap_1d,
+        values,
+        threshold=outlier_threshold,
+        method=outlier_method,
+        combine_outlier=combine_outlier,
+        min_tag_count=min_tag_count,
     )
 
     return {

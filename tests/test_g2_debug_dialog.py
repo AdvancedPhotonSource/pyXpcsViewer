@@ -321,20 +321,35 @@ def test_bin_sweep_plots_are_light_themed(qapp, bundle):
         assert item.titleLabel.opts["color"] == "#000000"
 
 
-def test_header_reports_the_outlier_target(qapp, bundle):
+def test_header_reports_the_outlier_target(qapp):
+    """The header names the target the bundle was actually built with, so it
+    cannot drift from what the panels plot."""
+    G2, sqmap, dqmap = make_synthetic()
     host = _host()
-    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False, "G20")
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20")
+    build_debug_plots(host, b, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
     header = host.findChild(QtWidgets.QLabel, "g2_debug_header")
     assert "target=G20" in header.text()
+    assert "min_tag=1" in header.text()
 
 
-def test_bin_sweep_labels_the_plotted_quantity(qapp, bundle):
+def test_bin_sweep_labels_the_plotted_quantity(qapp):
     """The histograms are of `target`, not always g2 -- say so on the axis."""
+    G2, sqmap, dqmap = make_synthetic()
     host = _host()
-    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False, "G20")
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20")
+    build_debug_plots(host, b, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
     panel = host.findChild(_BinSweepPanel)
     item = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
     assert "G20" in item.getAxis("bottom").labelString()
+
+
+def test_bad_map_slider_presets_to_the_configured_min_tag(qapp, bundle):
+    """This panel is how you pick Min Tag, so it opens on the current value."""
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False, 2)
+    spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_mintag_spin")
+    assert spin.value() == 2
 
 
 def test_dialog_forwards_target_to_the_bundle(qapp):

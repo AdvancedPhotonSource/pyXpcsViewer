@@ -2393,6 +2393,21 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.label_G2_outliertarget, 2, 0, 1, 2)
 
+        self.label_G2_mintagcount = QLabel(self.groupBox_23)
+        self.label_G2_mintagcount.setObjectName(u"label_G2_mintagcount")
+        self.label_G2_mintagcount.setEnabled(False)
+
+        self.gridLayout_50.addWidget(self.label_G2_mintagcount, 2, 6, 1, 1)
+
+        self.spinBox_G2_mintagcount = QSpinBox(self.groupBox_23)
+        self.spinBox_G2_mintagcount.setObjectName(u"spinBox_G2_mintagcount")
+        self.spinBox_G2_mintagcount.setEnabled(False)
+        self.spinBox_G2_mintagcount.setMinimum(1)
+        self.spinBox_G2_mintagcount.setMaximum(9999)
+        self.spinBox_G2_mintagcount.setValue(1)
+
+        self.gridLayout_50.addWidget(self.spinBox_G2_mintagcount, 2, 7, 1, 1)
+
         self.comboBox_G2_outliertarget = QComboBox(self.groupBox_23)
         self.comboBox_G2_outliertarget.addItem("")
         self.comboBox_G2_outliertarget.addItem("")
@@ -2570,6 +2585,8 @@ class Ui_mainWindow(object):
         self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliermethod.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.checkBox_G2_combineoutlier.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.label_G2_outliertarget.setEnabled)
+        self.checkBox_G2_combineoutlier.toggled.connect(self.spinBox_G2_mintagcount.setEnabled)
+        self.checkBox_G2_combineoutlier.toggled.connect(self.label_G2_mintagcount.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliertarget.setEnabled)
         self.horizontalSlider_G2_delay.valueChanged.connect(self.spinBox_G2_delay.setValue)
         self.spinBox_G2_delay.valueChanged.connect(self.horizontalSlider_G2_delay.setValue)
@@ -2918,8 +2935,12 @@ class Ui_mainWindow(object):
 
         self.pushButton_G2_debug.setText(QCoreApplication.translate("mainWindow", u"Debug", None))
         self.label_G2_outliertarget.setText(QCoreApplication.translate("mainWindow", u"Outlier Target:", None))
-        self.comboBox_G2_outliertarget.setItemText(0, QCoreApplication.translate("mainWindow", u"G20", None))
-        self.comboBox_G2_outliertarget.setItemText(1, QCoreApplication.translate("mainWindow", u"g2-per-pixel", None))
+        self.label_G2_mintagcount.setText(QCoreApplication.translate("mainWindow", u"Min Tag:", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, at every delay. 1 = flagged anywhere, flagged everywhere.", None))
+#endif // QT_CONFIG(tooltip)
+        self.comboBox_G2_outliertarget.setItemText(0, QCoreApplication.translate("mainWindow", u"g2-per-pixel", None))
+        self.comboBox_G2_outliertarget.setItemText(1, QCoreApplication.translate("mainWindow", u"G20", None))
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi

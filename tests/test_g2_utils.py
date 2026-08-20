@@ -16,6 +16,7 @@ import pytest
 
 from pyxpcsviewer.core.g2_utils import (
     DEFAULT_OUTLIER_TARGET,
+    OUTLIER_TARGETS,
     compute_g2,
     compute_g2_debug_bundle,
     find_g2_pixel_outliers,
@@ -341,10 +342,14 @@ def test_target_g2_per_pixel_flags_the_correlated_pixel_not_the_bright_one():
     assert not bad[0, 5]  # g2 = 10/10 = 1.0
 
 
-def test_default_target_is_G20():
+def test_default_target_is_g2_per_pixel():
+    """Default is the normalized statistic. A raw per-delay G20 cut biases g2
+    below 1 on real data (see DEFAULT_OUTLIER_TARGET's note), so G20 is opt-in
+    and belongs with a min_tag_count persistence filter."""
     G2, sqmap, dqmap = make_target_data()
-    np.testing.assert_array_equal(_bad_mask(G2, sqmap, dqmap), _bad_mask(G2, sqmap, dqmap, target="G20"))
-    assert DEFAULT_OUTLIER_TARGET == "G20"
+    np.testing.assert_array_equal(_bad_mask(G2, sqmap, dqmap), _bad_mask(G2, sqmap, dqmap, target="g2-per-pixel"))
+    assert DEFAULT_OUTLIER_TARGET == "g2-per-pixel"
+    assert OUTLIER_TARGETS[0] == DEFAULT_OUTLIER_TARGET  # GUI combo shows item 0 first
 
 
 def test_compute_g2_target_changes_the_result():
@@ -392,3 +397,69 @@ def test_compute_g2_rejects_unknown_target():
     G2, sqmap, dqmap = make_data()
     with pytest.raises(ValueError, match="target"):
         compute_g2(sqmap, dqmap, G2, target="G2")
+
+
+# --- min_tag_count: reject only pixels whose flag repeats across delays.
+# This is what makes target="G20" usable -- a single-delay G20 flag mostly
+# tracks the intensity gradient across a q ring, a repeating one is a hot pixel.
+
+
+def _three_delay_values():
+    """One sq bin, 3 delays, 8 pixels.
+
+    pixel 6: outlier at all 3 delays (persistent -- a hot pixel)
+    pixel 7: outlier at delay 1 only (transient)
+    """
+    base = [1.0, 1.1, 0.9, 1.0, 1.1, 0.9]
+    values = np.array([[*base, 100.0, 1.0], [*base, 100.0, 100.0], [*base, 100.0, 1.0]])
+    return np.ones(8, dtype=np.uint16), values
+
+
+def test_min_tag_count_zero_keeps_per_delay_flags():
+    sqmap_1d, values = _three_delay_values()
+    bad = find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0)
+    assert bad[:, 6].tolist() == [True, True, True]
+    assert bad[:, 7].tolist() == [False, True, False]
+
+
+def test_min_tag_count_drops_transient_flags_and_spreads_persistent_ones():
+    sqmap_1d, values = _three_delay_values()
+    bad = find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0, min_tag_count=2)
+    assert bad[:, 6].all()  # 3 tags >= 2 -> rejected at every delay
+    assert not bad[:, 7].any()  # 1 tag < 2 -> not rejected at all, not even at delay 1
+    assert not bad[:, :6].any()
+
+
+def test_min_tag_count_one_equals_combine_outlier():
+    """combine_outlier is the min_tag_count == 1 special case."""
+    sqmap_1d, values = _three_delay_values()
+    np.testing.assert_array_equal(
+        find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0, min_tag_count=1),
+        find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0, combine_outlier=True),
+    )
+
+
+def test_min_tag_count_above_delay_count_rejects_nothing():
+    sqmap_1d, values = _three_delay_values()
+    assert not find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0, min_tag_count=4).any()
+
+
+def test_min_tag_count_takes_precedence_over_combine_outlier():
+    sqmap_1d, values = _three_delay_values()
+    bad = find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0, combine_outlier=True, min_tag_count=2)
+    assert not bad[:, 7].any()  # combine_outlier alone would have flagged it everywhere
+
+
+def test_compute_g2_forwards_min_tag_count():
+    """A transient flag must not change g2 once a persistence filter is on."""
+    G2, sqmap, dqmap = make_target_data()
+    g2_persistent, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20", min_tag_count=2)
+    g2_none, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=-1.0)
+    # the fixture has a single delay, so nothing can reach 2 tags -> no rejection
+    np.testing.assert_allclose(g2_persistent, g2_none)
+
+
+def test_bundle_forwards_min_tag_count():
+    G2, sqmap, dqmap = make_data()
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, min_tag_count=2)
+    assert not b["bad"].any()  # each known outlier is flagged at one delay only

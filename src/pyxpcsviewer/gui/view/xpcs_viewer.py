@@ -407,6 +407,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.doubleSpinBox_G2_threshold.value(),
             self.checkBox_G2_combineoutlier.isChecked(),
             self.comboBox_G2_outliertarget.currentText(),
+            self.spinBox_G2_mintagcount.value(),
             parent=self,
         )
         self._g2_debug_dialog.show()
@@ -460,10 +461,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             kwargs["outlier_method"] = self.comboBox_G2_outliermethod.currentText()
             kwargs["outlier_threshold"] = self.doubleSpinBox_G2_threshold.value()
             kwargs["combine_outlier"] = self.checkBox_G2_combineoutlier.isChecked()
+            # "Combine Outlier" turns the persistence filter on; the spin box is its
+            # count. 1 reproduces the old flagged-anywhere-flagged-everywhere union.
+            kwargs["min_tag_count"] = (
+                self.spinBox_G2_mintagcount.value() if self.checkBox_G2_combineoutlier.isChecked() else 0
+            )
         else:
             kwargs["outlier_method"] = "MeanAbsoluteDeviation"
             kwargs["outlier_threshold"] = -1.0
             kwargs["combine_outlier"] = False
+            kwargs["min_tag_count"] = 0
 
         self.pushButton_G2_regroup.setEnabled(False)
         self.pushButton_G2_savefile.setEnabled(False)

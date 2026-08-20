@@ -4436,16 +4436,45 @@
                   </property>
                  </widget>
                 </item>
+                <item row="2" column="6">
+                 <widget class="QLabel" name="label_G2_mintagcount">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Min Tag:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="7">
+                 <widget class="QSpinBox" name="spinBox_G2_mintagcount">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Reject only pixels flagged at this many delays or more, at every delay. 1 = flagged anywhere, flagged everywhere.</string>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                  <property name="value">
+                   <number>1</number>
+                  </property>
+                 </widget>
+                </item>
                 <item row="2" column="2" colspan="4">
                  <widget class="QComboBox" name="comboBox_G2_outliertarget">
                   <item>
                    <property name="text">
-                    <string>G20</string>
+                    <string>g2-per-pixel</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>g2-per-pixel</string>
+                    <string>G20</string>
                    </property>
                   </item>
                  </widget>
@@ -5661,6 +5690,38 @@
     </hint>
     <hint type="destinationlabel">
      <x>1256</x>
+     <y>714</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_G2_combineoutlier</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_G2_mintagcount</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>690</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1600</x>
+     <y>714</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_G2_combineoutlier</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_G2_mintagcount</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>690</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1540</x>
      <y>714</y>
     </hint>
    </hints>

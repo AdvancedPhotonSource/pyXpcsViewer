@@ -86,6 +86,14 @@ class _FakeSpin:
         return 3.0
 
 
+class _FakeIntSpin:
+    def __init__(self, value=1):
+        self._value = value
+
+    def value(self):
+        return self._value
+
+
 class _FakeTabWidget:
     def currentIndex(self):
         return 0  # "internal" qmap method
@@ -132,7 +140,8 @@ class _FakeWindow:
         self.doubleSpinBox_G2_threshold = _FakeSpin()
         self.checkBox_G2_combineoutlier = _FakeCheckbox(False)
         self.comboBox_G2_errormodel = _FakeCombo("per-pixel")
-        self.comboBox_G2_outliertarget = _FakeCombo("G20")
+        self.comboBox_G2_outliertarget = _FakeCombo("g2-per-pixel")
+        self.spinBox_G2_mintagcount = _FakeIntSpin(1)
         self.pg_regroup_g2 = object()
         self._selected_rows = list(selected_rows)
         # process_G2_regroup passes this as the on_finished callback; bind the
@@ -196,12 +205,12 @@ def test_process_G2_regroup_forwards_the_outlier_target(qapp):
     """The target picked in the UI must reach compute_g2, not silently default."""
     window = _FakeWindow()
     window.checkBox_G2_removeoutlier = _FakeCheckbox(True)  # the fake has no setChecked()
-    window.comboBox_G2_outliertarget = _FakeCombo("g2-per-pixel")
+    window.comboBox_G2_outliertarget = _FakeCombo("G20")
 
     XpcsViewer.process_G2_regroup(window)
 
     assert _pump(qapp, lambda: len(window.plots.calls) == 1)
-    assert window.plots.calls[0]["target"] == "g2-per-pixel"
+    assert window.plots.calls[0]["target"] == "G20"
 
 
 def test_process_G2_regroup_sends_target_even_with_rejection_off(qapp):
@@ -212,7 +221,8 @@ def test_process_G2_regroup_sends_target_even_with_rejection_off(qapp):
 
     assert _pump(qapp, lambda: len(window.plots.calls) == 1)
     assert window.plots.calls[0]["outlier_threshold"] == -1.0
-    assert window.plots.calls[0]["target"] == "G20"
+    assert window.plots.calls[0]["target"] == "g2-per-pixel"
+    assert window.plots.calls[0]["min_tag_count"] == 0
 
 
 def test_outlier_target_combo_exists_with_both_targets(qapp, tmp_path):
@@ -223,4 +233,33 @@ def test_outlier_target_combo_exists_with_both_targets(qapp, tmp_path):
     combo = window.comboBox_G2_outliertarget
     items = [combo.itemText(i) for i in range(combo.count())]
     assert items == list(OUTLIER_TARGETS)
-    assert combo.currentText() == "G20"
+    assert combo.currentText() == "g2-per-pixel"
+
+
+def test_min_tag_count_sent_only_when_combine_outlier_is_on(qapp):
+    """The Combine Outlier checkbox gates the persistence filter; the spin box
+    supplies its count. Unchecked must send 0, not the spin's value."""
+    window = _FakeWindow()
+    window.checkBox_G2_removeoutlier = _FakeCheckbox(True)
+    window.checkBox_G2_combineoutlier = _FakeCheckbox(False)
+    window.spinBox_G2_mintagcount = _FakeIntSpin(30)
+
+    XpcsViewer.process_G2_regroup(window)
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["min_tag_count"] == 0
+
+    window.plots.calls.clear()
+    window.checkBox_G2_combineoutlier = _FakeCheckbox(True)
+    XpcsViewer.process_G2_regroup(window)
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["min_tag_count"] == 30
+
+
+def test_min_tag_spin_defaults_to_one_and_follows_combine_outlier(qapp, tmp_path):
+    """1 reproduces the historical union, so the default must not change behaviour."""
+    window = XpcsViewer(path=str(tmp_path))
+    assert window.spinBox_G2_mintagcount.value() == 1
+    for state in (True, False):
+        window.checkBox_G2_combineoutlier.setChecked(state)
+        assert window.spinBox_G2_mintagcount.isEnabled() is state
+        assert window.label_G2_mintagcount.isEnabled() is state
