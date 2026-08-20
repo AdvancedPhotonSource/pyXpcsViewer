@@ -19,6 +19,7 @@ from pyxpcsviewer.gui.control.job_manager import JobManager
 from pyxpcsviewer.gui.control.plot_controller import PlotController
 from pyxpcsviewer.gui.model.file_locator import FileLocator
 
+from .g2_debug_dialog import G2DebugDialog
 from .viewer_ui import Ui_mainWindow as Ui
 
 home_dir = os.path.join(os.path.expanduser("~"), ".pyxpcsviewer")
@@ -141,6 +142,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # manually-tightened bound. Unlocked again in add_target() whenever
         # the list starts out empty.
         self._g2_bounds_initialized = False
+        # G2 outlier debug dialog (lazy: None until the first Debug click)
+        self._g2_debug_dialog: G2DebugDialog | None = None
 
         if path is not None:
             self.start_wd = path
@@ -194,6 +197,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.pushButton_G2_regroup.clicked.connect(self.process_G2_regroup)
         self.pushButton_G2_savefile.clicked.connect(self.savefile_G2_regroup)
         self.pushButton_G2_loadQMap.clicked.connect(self.load_external_qmap_for_G2_regroup)
+        self.pushButton_G2_debug.clicked.connect(self.debug_G2_regroup)
 
         self.g2_fitting_function.currentIndexChanged.connect(self.update_g2_fitting_function)
         self.btn_up.clicked.connect(lambda: self.reorder_target("up"))
@@ -373,6 +377,37 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             QMessageBox.information(self, "Save G2 regrouping", "G2 regrouping saved successfully.")
         else:
             QMessageBox.critical(self, "Save G2 regrouping", "Failed to save G2 regrouping.")
+
+    def debug_G2_regroup(self) -> None:
+        """Open the G2 outlier debug dialog for the first selected Multitau file.
+
+        The configured threshold/method are always applied (the "Remove
+        Outlier" checkbox is deliberately ignored — the dialog shows what
+        the settings would do). The heavy load/compute runs on a QThread
+        inside the dialog.
+        """
+        rows = self.get_selected_rows()
+        if len(rows) == 0:
+            return
+        xf_list = self.model.get_xf_list(rows, filter_atype="Multitau")  # type: ignore[union-attr]
+        if len(xf_list) == 0:
+            return
+        xfile = xf_list[0]
+        if not has_G2_field(xfile.fname):  # type: ignore[no-untyped-call]
+            QMessageBox.critical(self, "No G2 data found", "No G2 data found in the selected dataset.")
+            return
+        if self._g2_debug_dialog is not None and self._g2_debug_dialog.isVisible():
+            self._g2_debug_dialog.raise_()
+            self._g2_debug_dialog.activateWindow()
+            return
+        self._g2_debug_dialog = G2DebugDialog(
+            xfile,
+            self.comboBox_G2_outliermethod.currentText(),
+            self.doubleSpinBox_G2_threshold.value(),
+            self.checkBox_G2_combineoutlier.isChecked(),
+            parent=self,
+        )
+        self._g2_debug_dialog.show()
 
     def process_G2_regroup(self) -> None:
         """Re-group G2 correlations using internal, external, or drawn Q-map (delegates to ``self.plots``)."""

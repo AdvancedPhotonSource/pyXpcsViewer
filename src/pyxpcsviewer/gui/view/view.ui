@@ -4401,6 +4401,13 @@
                   </property>
                  </widget>
                 </item>
+                <item row="1" column="6">
+                 <widget class="QPushButton" name="pushButton_G2_debug">
+                  <property name="text">
+                   <string>Debug</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>

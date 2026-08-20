@@ -2371,6 +2371,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.checkBox_G2_combineoutlier, 1, 0, 1, 2)
 
+        self.pushButton_G2_debug = QPushButton(self.groupBox_23)
+        self.pushButton_G2_debug.setObjectName(u"pushButton_G2_debug")
+
+        self.gridLayout_50.addWidget(self.pushButton_G2_debug, 1, 6, 1, 1)
+
 
         self.verticalLayout_3.addWidget(self.groupBox_23)
 
@@ -2881,6 +2886,7 @@ class Ui_mainWindow(object):
         self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
         self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
         self.checkBox_G2_combineoutlier.setText(QCoreApplication.translate("mainWindow", u"Combine Outlier", None))
+        self.pushButton_G2_debug.setText(QCoreApplication.translate("mainWindow", u"Debug", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 

@@ -275,3 +275,13 @@ def test_dialog_failed_path(qapp):
     assert _pump(qapp, lambda: not dlg.isVisible(), timeout=10.0)
     assert len(shown) == 1
     assert "disk error" in shown[0]
+
+
+def test_debug_button_wired(qapp, tmp_path):
+    from pyxpcsviewer.gui.view.xpcs_viewer import XpcsViewer
+
+    window = XpcsViewer(path=str(tmp_path))
+    assert window.pushButton_G2_debug is not None
+    assert window._g2_debug_dialog is None
+    window.debug_G2_regroup()  # no selection: silent no-op, no dialog
+    assert window._g2_debug_dialog is None
