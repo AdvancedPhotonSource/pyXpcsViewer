@@ -249,7 +249,9 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 
 ### Task 2 (OPTIONAL): scale-safe fallback for degenerate `spread == 0` bins
 
-**NOT DONE (2026-08-20)** — Step 0 needs a real result file and `tests/data` is absent on this machine, so the deciding measurement could not be taken. Everything else in this plan shipped without it; the `g2-per-pixel` path is unaffected either way. Revisit if the `G20` bad-pixel map looks uniform across a ring rather than concentrated on bright pixels.
+**CLOSED AS UNNECESSARY (2026-08-20).** Step 0 was run against `/scratch/MQICHU/Datasets/xpcs/2026_0817_G2/A0096_original.hdf`: the MAD is exactly 0 in **0 of 12240** `(sq bin, delay)` pairs under `G20` (and 360/12240 under `g2-per-pixel`, one delay per sq bin). The degenerate-spread hazard does not arise, so the clamp stays as it is.
+
+The same measurement pass found a *different* and much larger problem — see the postscript below.
 
 Skip this task entirely if Step 0 shows the situation does not arise. See caveat 5 above.
 
@@ -519,3 +521,40 @@ ruff check src/pyxpcsviewer/gui/view/xpcs_viewer.py tests/test_g2_regroup_gui_wi
 - [x] `ruff check .` — no new findings.
 - [x] Manual: launch `pyxpcsviewer <dir>`, G2_regroup tab → Group Setting shows "Outlier Target" defaulting to `G20`, greyed out when "Remove Outlier" is unchecked. **Debug** shows `target=G20` in the header and histograms on the `G20` scale (raw magnitudes, not centred on 1). Switch to `g2-per-pixel`, reopen Debug, confirm the histograms move back to the g2 scale and a different bad-pixel map appears. **ReGroup** under each target and confirm the plotted g2 curves differ.
 - [x] Sanity on real data: with `target="G20"`, the bad-pixel map should concentrate on bright/hot pixels rather than scattering uniformly across each ring. If it looks uniform, revisit caveat 5 (Task 2).
+
+
+---
+
+## Postscript: real-data validation (2026-08-20)
+
+Tested against `/scratch/MQICHU/Datasets/xpcs/2026_0817_G2/A0096_original.hdf` — glassy carbon, a static
+scatterer, so the true g2 is **flat at 1+β**. That makes tilt and `min over q` correctness tests, not
+judgement calls.
+
+| settings | g2 mean | tilt | min over q |
+|---|---|---|---|
+| no rejection | 1.1997 | −0.0011 | 1.0653 |
+| g2-per-pixel, thr=3 (new default) | 1.0800 | −0.0863 | 0.9324 |
+| **G20, thr=3, per-delay (as originally specified)** | **0.9091** | **+0.1777** | **0.5509** |
+| G20, thr=3, `combine_outlier=True` | 0.8221 | −0.2262 | 0.2988 |
+| G20, thr=3, `min_tag_count=30` | 1.1839 | −0.0014 | 1.0570 |
+| G20, thr=3, `min_tag_count=34` | 1.1861 | −0.0012 | 1.0653 |
+
+**Caveat 2 of this plan was right, and worse than stated.** `G20 ≈ I²·g2` does make the statistic
+intensity-driven — but the consequence is not just "different pixels get flagged", it is a systematic bias in
+the result. `g2 = <I²·g2_pix> / <I>²`; trimming the brightest pixels strips tail mass from a mean-of-squares
+far faster than from a square-of-mean. Measured in sq bin 1, delay 0: the cut drops `<IP>` by 58% but
+`<IF1><IF2>` by only 48%, so the ratio falls. Raising the threshold does not fix it (thr=20 still gives
+min 0.63); it is intrinsic to cutting on the numerator.
+
+**Caveat 2's premise was also false here.** A static q-ring is *not* iso-intensity on this detector: in sq
+bin 1 the nonzero `G20` runs median 8479 → p90 47863 → max 192081, and 24% of the bin sits above
+`center + 3·MAD`. The per-delay test is mostly measuring the ring's intensity gradient.
+
+**But G20 sees something real.** Pixels flagged at ≥30 of 34 delays: 5027 under `G20`, **0** under
+`g2-per-pixel`. Those are hot pixels the normalized statistic is structurally blind to. Hence `min_tag_count`
+(commit `6333f1b`), which generalizes `combine_outlier` (= `min_tag_count=1`) into a real persistence filter.
+
+**Resulting guidance:** leave the target on `g2-per-pixel` for ordinary regrouping. Reach for `G20` only with
+`min_tag_count` set high (≥ ~85% of the delay count) to build a hot-pixel mask. Note also that on this file
+*threshold 3 distorts the curve under either target* — the no-rejection result is the flat, physical one.
