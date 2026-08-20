@@ -17,6 +17,33 @@ keymap = {
     "dqmap": "/xpcs/qmap/dynamic_roi_map",
 }
 
+#: Accepted values for the ``error_model`` argument of :func:`compute_g2`.
+#:
+#: ``"per-pixel"``: g2_err is the standard error of the mean of the per-pixel g2
+#: values inside the dq bin -- ``std(g2_pixel) / sqrt(n_pixels_in_dq_bin)``.
+#: ``"sq-group"``: g2_err is the standard error of the mean of the sq-bin averaged
+#: g2 values making up the dq bin -- ``std(g2_sq) / sqrt(n_sq_bins_in_dq_bin)``.
+ERROR_MODELS = ("per-pixel", "sq-group")
+
+#: Default error model, matching the historical (pre-outlier-rejection) behaviour.
+DEFAULT_ERROR_MODEL = "per-pixel"
+
+#: Accepted values for the ``target`` argument -- which per-pixel quantity the
+#: outlier statistic is computed on.
+#:
+#: ``"G20"``: the unnormalized correlation numerator ``G2[:, 0]``.  Outliers are
+#: pixels whose *raw* correlation is anomalous for their sq bin, which in practice
+#: means bright/hot pixels (``G20 ~ I**2 * g2``).
+#: ``"g2-per-pixel"``: the normalized per-pixel g2 (:func:`normalize_g2`).  Outliers
+#: are pixels whose *correlation* is anomalous independent of their brightness.
+#:
+#: Unrelated to :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_G2_data`'s ``target``,
+#: which selects a channel to *display*.
+OUTLIER_TARGETS = ("G20", "g2-per-pixel")
+
+#: Default outlier target.
+DEFAULT_OUTLIER_TARGET = "G20"
+
 
 def has_G2_field(fname):
     """Check if the G2 field exists in the specified HDF5 file.
@@ -75,13 +102,20 @@ def average_by_qindex(idx_map, arr):
     return np.array(result)
 
 
-def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteDeviation", combine_outlier=False):
-    """Flag per-pixel, per-delay g2 outliers within each sqmap bin.
+def find_g2_pixel_outliers(sqmap, values, threshold=3.0, method="MeanAbsoluteDeviation", combine_outlier=False):
+    """Flag per-pixel, per-delay outliers of *values* within each sqmap bin.
+
+    *values* is whichever per-pixel statistic the caller selected via ``target``
+    (see :data:`OUTLIER_TARGETS`) -- either the unnormalized numerator ``G20`` or
+    the normalized per-pixel g2.  Nothing here assumes one or the other.
 
     Detection is independent for each ``(sq bin, delay)`` pair: pixels with
-    ``g2_pixel == 0`` (photon-starved, not bad) are excluded from both the
+    ``values == 0`` (photon-starved, not bad) are excluded from both the
     center/spread statistics and the rejection test, and only an upper bound
     is applied (``center + threshold * spread``) — there is no lower bound.
+    The zero test picks the same pixels under either target, since
+    ``g2_pixel == 0`` exactly when ``G20 == 0`` (:func:`normalize_g2` clamps its
+    denominator away from zero).
 
     When *combine_outlier* is ``False`` (default), a pixel flagged at one delay
     is not flagged at any other delay.  When *combine_outlier* is ``True``, the
@@ -90,7 +124,7 @@ def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteD
 
     Args:
         sqmap: Static ROI map, raveled, shape ``(n_pixels,)``.
-        g2_pixel: Normalised per-pixel g2, shape ``(n_delays, n_pixels)``.
+        values: Per-pixel outlier statistic, shape ``(n_delays, n_pixels)``.
         threshold: Number of MADs (or standard deviations) above center for rejection.
         method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``.
         combine_outlier: If ``True``, union outliers across all delays per sq bin
@@ -101,7 +135,7 @@ def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteD
         is flagged as an outlier.
     """
     n_sq = int(np.max(sqmap))
-    bad = np.zeros_like(g2_pixel, dtype=bool)
+    bad = np.zeros_like(values, dtype=bool)
 
     # Group pixels by sq bin once via a stable sort instead of re-scanning the full
     # pixel array with `sqmap == idx` on every one of the n_sq loop iterations (that
@@ -118,26 +152,26 @@ def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteD
         if pix_idx.size == 0:
             continue
 
-        g2_roi = g2_pixel[:, pix_idx]  # (n_delays, n_pixels_in_roi)
-        g2_roi_nan = np.where(g2_roi == 0, np.nan, g2_roi)
+        vals_roi = values[:, pix_idx]  # (n_delays, n_pixels_in_roi)
+        vals_roi_nan = np.where(vals_roi == 0, np.nan, vals_roi)
 
         with warnings.catch_warnings():
             # a delay with zero nonzero pixels in this bin produces an all-NaN row,
             # which is a legitimate case handled below via nan_to_num, not an error
             warnings.simplefilter("ignore", category=RuntimeWarning)
             if method == "StandardDeviation":
-                center = np.nanmean(g2_roi_nan, axis=1, keepdims=True)
-                spread = np.nanstd(g2_roi_nan, axis=1, keepdims=True)
+                center = np.nanmean(vals_roi_nan, axis=1, keepdims=True)
+                spread = np.nanstd(vals_roi_nan, axis=1, keepdims=True)
             else:  # default: MeanAbsoluteDeviation
-                center = np.nanmedian(g2_roi_nan, axis=1, keepdims=True)
-                spread = np.nanmedian(np.abs(g2_roi_nan - center), axis=1, keepdims=True)
+                center = np.nanmedian(vals_roi_nan, axis=1, keepdims=True)
+                spread = np.nanmedian(np.abs(vals_roi_nan - center), axis=1, keepdims=True)
 
         center = np.nan_to_num(center, nan=0.0)
         spread = np.nan_to_num(spread, nan=1.0)
         spread[spread == 0] = 1.0
         hi = center + threshold * spread
 
-        bad[:, pix_idx] = g2_roi > hi
+        bad[:, pix_idx] = vals_roi > hi
 
     if combine_outlier:
         # Union across all delays per sq bin: a pixel bad at any delay is bad at all delays.
@@ -151,7 +185,16 @@ def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteD
     return bad
 
 
-def compute_g2(sqmap, dqmap, G2, outlier_method="MeanAbsoluteDeviation", outlier_threshold=-1.0, combine_outlier=False):
+def compute_g2(
+    sqmap,
+    dqmap,
+    G2,
+    outlier_method="MeanAbsoluteDeviation",
+    outlier_threshold=-1.0,
+    combine_outlier=False,
+    error_model=DEFAULT_ERROR_MODEL,
+    target=DEFAULT_OUTLIER_TARGET,
+):
     """Compute g2 and its error using static and dynamic ROI maps.
 
     Args:
@@ -166,12 +209,29 @@ def compute_g2(sqmap, dqmap, G2, outlier_method="MeanAbsoluteDeviation", outlier
         combine_outlier: If ``True``, union the outlier masks across all delays for each sq bin
             so that a pixel flagged as an outlier at *any* delay is excluded from *all* delays.
             Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        error_model: One of :data:`ERROR_MODELS`; selects how ``g2_err`` is estimated.
+            ``"per-pixel"`` (default) takes the scatter of the individual pixels in the
+            dq bin; ``"sq-group"`` takes the scatter of the sq-bin averages making up the
+            dq bin.  Only ``g2_err`` is affected -- ``g2`` itself is identical either way.
+        target: One of :data:`OUTLIER_TARGETS`; selects which per-pixel quantity the
+            outlier statistic runs on. Default ``"G20"`` (the unnormalized numerator).
+            This only changes *which pixels are rejected* -- the reported ``g2`` is
+            always the normalized sq-bin average either way. Only consulted when
+            ``outlier_threshold >= 0``.
 
     Returns:
         Tuple of ``(g2, g2_err)`` where *g2* is the normalized g2 values with shape
-        ``(n_delays, n_dq)`` and *g2_err* is the standard error of the mean of *g2_sq*
-        across the sq bins making up each dq bin.
+        ``(n_delays, n_dq)``, always the mean of *g2_sq* over the sq bins in each dq bin,
+        and *g2_err* is the standard error of the mean selected by *error_model*.
+
+    Raises:
+        ValueError: If *error_model* is not one of :data:`ERROR_MODELS`, or *target*
+            is not one of :data:`OUTLIER_TARGETS`.
     """
+    if error_model not in ERROR_MODELS:
+        raise ValueError(f"error_model must be one of {ERROR_MODELS}, got {error_model!r}")
+    if target not in OUTLIER_TARGETS:
+        raise ValueError(f"target must be one of {OUTLIER_TARGETS}, got {target!r}")
     # G2 is (N_delay x 3 x IMG_V x IMG_H)
     shape = G2.shape  #
     n_delays, n_channels, _, _ = shape
@@ -188,8 +248,11 @@ def compute_g2(sqmap, dqmap, G2, outlier_method="MeanAbsoluteDeviation", outlier
 
     bad = None
     if outlier_threshold >= 0:
+        # G2 is already (n_delays, n_channels, n_pixels) here, so G2[:, 0] is a strided
+        # view of the numerator -- no copy of a multi-hundred-MB cube.
+        values = G2[:, 0] if target == "G20" else g2_pixel
         bad = find_g2_pixel_outliers(
-            sqmap_1d, g2_pixel, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
+            sqmap_1d, values, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
         )
 
     n_dq = int(np.max(dqmap_1d))
@@ -223,7 +286,14 @@ def compute_g2(sqmap, dqmap, G2, outlier_method="MeanAbsoluteDeviation", outlier
         if temp.shape[1] > 0:
             roi_sq = np.unique(sqmap_1d[roi_dq]) - 1
             g2[:, idx - 1] = np.mean(g2_sq[:, roi_sq], axis=1)
-            g2_err[:, idx - 1] = np.std(g2_sq[:, roi_sq], axis=1) / np.sqrt(len(roi_sq))
+            if error_model == "per-pixel":
+                # scatter of the raw pixels in this dq bin; note this reads g2_pixel, so
+                # outlier-flagged pixels still contribute to the error even though they
+                # were excluded from the g2 average above.
+                g2_err[:, idx - 1] = np.std(temp, axis=1) / np.sqrt(temp.shape[1])
+            else:  # "sq-group"
+                # scatter of the sq-bin averages that make up this dq bin
+                g2_err[:, idx - 1] = np.std(g2_sq[:, roi_sq], axis=1) / np.sqrt(len(roi_sq))
 
     return g2, g2_err
 
@@ -250,7 +320,14 @@ def save_G2_to_file(fname, avg_result):
 
 
 def regroup_G2_with_qmap_array(
-    avg_result, sqmap, dqmap, outlier_method="MeanAbsoluteDeviation", outlier_threshold=-1.0, combine_outlier=False
+    avg_result,
+    sqmap,
+    dqmap,
+    outlier_method="MeanAbsoluteDeviation",
+    outlier_threshold=-1.0,
+    combine_outlier=False,
+    error_model=DEFAULT_ERROR_MODEL,
+    target=DEFAULT_OUTLIER_TARGET,
 ):
     """Compute g2 and g2_err from G2 data using Q-maps and add them to results.
 
@@ -270,6 +347,10 @@ def regroup_G2_with_qmap_array(
             (see :func:`find_g2_pixel_outliers`). Negative (default) disables rejection.
         combine_outlier: If ``True``, union outlier masks across all delays per sq bin
             before exclusion. Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        error_model: One of :data:`ERROR_MODELS`; selects the ``g2_err`` estimator
+            (see :func:`compute_g2`). Default ``"per-pixel"``.
+        target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
+            outlier statistic runs on (see :func:`compute_g2`). Default ``"G20"``.
 
     Returns:
         The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
@@ -281,6 +362,8 @@ def regroup_G2_with_qmap_array(
         outlier_method=outlier_method,
         outlier_threshold=outlier_threshold,
         combine_outlier=combine_outlier,
+        error_model=error_model,
+        target=target,
     )
     avg_result["g2"] = g2
     avg_result["g2_err"] = g2_err
@@ -294,6 +377,8 @@ def regroup_G2(
     outlier_method="MeanAbsoluteDeviation",
     outlier_threshold=-1.0,
     combine_outlier=False,
+    error_model=DEFAULT_ERROR_MODEL,
+    target=DEFAULT_OUTLIER_TARGET,
 ):
     """Regroup G2 data using Q-maps and update the HDF5 file with all results.
 
@@ -313,6 +398,10 @@ def regroup_G2(
             (see :func:`find_g2_pixel_outliers`). Negative (default) disables rejection.
         combine_outlier: If ``True``, union outlier masks across all delays per sq bin
             before exclusion. Only consulted when ``outlier_threshold >= 0``. Default ``False``.
+        error_model: One of :data:`ERROR_MODELS`; selects the ``g2_err`` estimator
+            (see :func:`compute_g2`). Default ``"per-pixel"``.
+        target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
+            outlier statistic runs on (see :func:`compute_g2`). Default ``"G20"``.
 
     Returns:
         The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
@@ -346,6 +435,8 @@ def regroup_G2(
         outlier_method=outlier_method,
         outlier_threshold=outlier_threshold,
         combine_outlier=combine_outlier,
+        error_model=error_model,
+        target=target,
     )
 
 
@@ -356,6 +447,7 @@ def compute_g2_debug_bundle(
     outlier_method: str = "MeanAbsoluteDeviation",
     outlier_threshold: float = 3.0,
     combine_outlier: bool = False,
+    target: str = DEFAULT_OUTLIER_TARGET,
 ) -> dict[str, Any]:
     """Compute the per-pixel data the G2 outlier debug dialog plots.
 
@@ -371,12 +463,20 @@ def compute_g2_debug_bundle(
         outlier_threshold: Upper-bound rejection threshold (MADs / std devs).
         combine_outlier: If ``True``, union outlier masks across all delays
             per sq bin (same semantics as :func:`find_g2_pixel_outliers`).
+        target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
+            outlier statistic runs on, and hence what ``values`` holds.
 
     Returns:
-        Dict with ``g2_pixel`` (n_delays, n_pixels), ``bad`` (bool, same shape),
-        ``sqmap_1d`` / ``dqmap_1d`` (dead pixels set to 0), ``img_shape``
-        ``(img_v, img_h)``, ``n_delays``, ``n_sq``, ``n_dq``, ``n_dead``.
+        Dict with ``values`` (the per-pixel statistic actually fed to the outlier
+        pass, ``(n_delays, n_pixels)``), ``target`` (str), ``bad`` (bool, same shape
+        as ``values``), ``sqmap_1d`` / ``dqmap_1d`` (dead pixels set to 0),
+        ``img_shape`` ``(img_v, img_h)``, ``n_delays``, ``n_sq``, ``n_dq``, ``n_dead``.
+
+    Raises:
+        ValueError: If *target* is not one of :data:`OUTLIER_TARGETS`.
     """
+    if target not in OUTLIER_TARGETS:
+        raise ValueError(f"target must be one of {OUTLIER_TARGETS}, got {target!r}")
     n_delays, n_channels, img_v, img_h = G2.shape
     G2 = G2.reshape(n_delays, n_channels, -1)
     sqmap_1d = sqmap.ravel().copy()
@@ -387,13 +487,17 @@ def compute_g2_debug_bundle(
     sqmap_1d[dead] = 0
     dqmap_1d[dead] = 0
 
-    g2_pixel = normalize_g2(G2)  # type: ignore[no-untyped-call]
+    # only materialize the normalized per-pixel g2 when it is the target -- on a
+    # 1 Mpixel detector with 60 delays that array is ~240 MB, and nothing else in
+    # the bundle needs it. G2[:, 0] is a view, so the G20 branch allocates nothing.
+    values = G2[:, 0] if target == "G20" else normalize_g2(G2)  # type: ignore[no-untyped-call]
     bad = find_g2_pixel_outliers(  # type: ignore[no-untyped-call]
-        sqmap_1d, g2_pixel, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
+        sqmap_1d, values, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
     )
 
     return {
-        "g2_pixel": g2_pixel,
+        "values": values,
+        "target": target,
         "bad": bad,
         "sqmap_1d": sqmap_1d,
         "dqmap_1d": dqmap_1d,

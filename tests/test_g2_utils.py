@@ -1,16 +1,26 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
-"""Tests for pyxpcsviewer.core.g2_utils.compute_g2_debug_bundle.
+"""Tests for pyxpcsviewer.core.g2_utils (compute_g2_debug_bundle, compute_g2 error models).
 
 The bundle is what the G2 outlier debug dialog plots. It must mirror
 compute_g2's preprocessing (dead-pixel masking, normalize_g2) and its
 outlier pass (find_g2_pixel_outliers) exactly, so the dialog shows what
 ReGroup actually sees.
+
+The compute_g2 cases cover the ``error_model`` switch: ``"per-pixel"`` (default,
+SEM over the pixels in the dq bin) vs ``"sq-group"`` (SEM over the sq-bin averages).
 """
 
 import numpy as np
+import pytest
 
-from pyxpcsviewer.core.g2_utils import compute_g2_debug_bundle, find_g2_pixel_outliers, normalize_g2
+from pyxpcsviewer.core.g2_utils import (
+    DEFAULT_OUTLIER_TARGET,
+    compute_g2,
+    compute_g2_debug_bundle,
+    find_g2_pixel_outliers,
+    normalize_g2,
+)
 
 
 def make_data():
@@ -38,8 +48,8 @@ def make_data():
 def test_bundle_shapes():
     G2, sqmap, dqmap = make_data()
     b = compute_g2_debug_bundle(sqmap, dqmap, G2)
-    assert b["g2_pixel"].shape == (2, 16)
-    assert b["g2_pixel"].dtype == np.float32
+    assert b["values"].shape == (2, 16)
+    assert b["values"].dtype == np.float32
     assert b["bad"].shape == (2, 16)
     assert b["bad"].dtype == bool
     assert b["img_shape"] == (4, 4)
@@ -58,18 +68,33 @@ def test_bundle_dead_pixel_masked():
     assert sqmap[0, 0] == 1  # input not mutated
 
 
-def test_bundle_g2_pixel_matches_normalize_g2():
+def test_bundle_values_are_normalize_g2_for_the_g2_target():
     G2, sqmap, dqmap = make_data()
-    b = compute_g2_debug_bundle(sqmap, dqmap, G2)
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, target="g2-per-pixel")
     n_delays, n_channels, _, _ = G2.shape
     expected = normalize_g2(G2.reshape(n_delays, n_channels, -1))
-    np.testing.assert_allclose(b["g2_pixel"], expected)
+    np.testing.assert_allclose(b["values"], expected)
+    assert b["target"] == "g2-per-pixel"
+
+
+def test_bundle_values_are_the_numerator_for_the_G20_target():
+    G2, sqmap, dqmap = make_data()
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, target="G20")
+    n_delays, n_channels, _, _ = G2.shape
+    np.testing.assert_allclose(b["values"], G2.reshape(n_delays, n_channels, -1)[:, 0])
+    assert b["target"] == "G20"
+
+
+def test_bundle_rejects_unknown_target():
+    G2, sqmap, dqmap = make_data()
+    with pytest.raises(ValueError, match="target"):
+        compute_g2_debug_bundle(sqmap, dqmap, G2, target="IP")
 
 
 def test_bundle_bad_matches_outlier_pass():
     G2, sqmap, dqmap = make_data()
     b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, outlier_method="MeanAbsoluteDeviation")
-    expected = find_g2_pixel_outliers(b["sqmap_1d"], b["g2_pixel"], threshold=3.0, method="MeanAbsoluteDeviation")
+    expected = find_g2_pixel_outliers(b["sqmap_1d"], b["values"], threshold=3.0, method="MeanAbsoluteDeviation")
     np.testing.assert_array_equal(b["bad"], expected)
     assert b["bad"].sum() == 2
     assert b["bad"][0, 15]
@@ -220,3 +245,150 @@ def test_find_outliers_matches_reference_on_random_data():
                 sqmap_1d, g2_pixel, threshold=3.0, method=method, combine_outlier=combine_outlier
             )
             np.testing.assert_array_equal(actual, expected)
+
+
+def test_compute_g2_error_model_default_is_per_pixel():
+    """The default g2_err is the per-pixel SEM (the pre-outlier-rejection behaviour)."""
+    G2, sqmap, dqmap = make_data()
+    _, err_default = compute_g2(sqmap, dqmap, G2)
+    _, err_pixel = compute_g2(sqmap, dqmap, G2, error_model="per-pixel")
+    np.testing.assert_array_equal(err_default, err_pixel)
+
+
+def test_compute_g2_error_models_match_their_formulas():
+    """Both models reproduce their reference formula, and g2 itself is model-independent."""
+    G2, sqmap, dqmap = make_data()
+
+    n_delays, n_channels = G2.shape[:2]
+    G2_flat = G2.reshape(n_delays, n_channels, -1)
+    sqmap_1d = sqmap.ravel().copy()
+    dqmap_1d = dqmap.ravel().copy()
+    dead = np.all((G2_flat[:, 1] == 0) & (G2_flat[:, 2] == 0), axis=0)
+    sqmap_1d[dead] = 0
+    dqmap_1d[dead] = 0
+    g2_pixel = normalize_g2(G2_flat)
+
+    g2_pix, err_pix = compute_g2(sqmap, dqmap, G2, error_model="per-pixel")
+    g2_sqg, err_sqg = compute_g2(sqmap, dqmap, G2, error_model="sq-group")
+
+    # only the error changes with the model
+    np.testing.assert_allclose(g2_pix, g2_sqg)
+
+    roi_dq = dqmap_1d == 1
+    temp = g2_pixel[:, roi_dq]
+    np.testing.assert_allclose(err_pix[:, 0], np.std(temp, axis=1) / np.sqrt(temp.shape[1]))
+
+    # sq-group averages 2 sq bins here, per-pixel averages 15 live pixels
+    assert not np.allclose(err_pix, err_sqg)
+    assert err_sqg.shape == err_pix.shape
+
+
+def test_compute_g2_rejects_unknown_error_model():
+    G2, sqmap, dqmap = make_data()
+    with pytest.raises(ValueError, match="error_model"):
+        compute_g2(sqmap, dqmap, G2, error_model="per_pixel")
+
+
+# --- Outlier target: which per-pixel quantity the rejection statistic runs on.
+# make_data() above sets IF == 1 everywhere, so G20 == g2_pixel there and it
+# cannot tell the two targets apart. make_target_data() is built so they
+# disagree on every pixel that matters.
+
+
+def make_target_data():
+    """(1 delay, 3 ch, 4x4) G2 where the two outlier targets disagree.
+
+    One sq bin (all pixels), one dq bin. Baseline pixels cycle IP over
+    {0.9, 1.0, 1.1} with IF1=IF2=1, so both G20 and g2_pixel have a
+    non-degenerate MAD (0.1) -- these expectations do not lean on the
+    spread==0 -> 1.0 clamp.
+
+      pixel 5  "hot":  IP=10,  IF=sqrt(10) -> G20=10  (outlier), g2=1.0 (not)
+      pixel 10 "corr": IP=1,   IF=0.1      -> G20=1   (not),     g2=100 (outlier)
+      pixel 0  "dead": IP=1e6, IF1=IF2=0   -> excluded from every bin
+    """
+    ip = np.array([0.9, 1.0, 1.1] * 6, dtype=np.float32)[:16].reshape(4, 4)
+    IP = ip[None].copy()
+    IF = np.ones((1, 4, 4), dtype=np.float32)
+    IP[0, 1, 1] = 10.0
+    IF[0, 1, 1] = np.sqrt(10.0)  # pixel 5
+    IP[0, 2, 2] = 1.0
+    IF[0, 2, 2] = 0.1  # pixel 10
+    IP[0, 0, 0] = 1.0e6
+    IF[0, 0, 0] = 0.0  # pixel 0, dead
+    G2 = np.stack([IP, IF, IF], axis=1).astype(np.float32)
+    sqmap = np.ones((4, 4), dtype=np.uint16)
+    dqmap = np.ones((4, 4), dtype=np.uint16)
+    return G2, sqmap, dqmap
+
+
+def _bad_mask(G2, sqmap, dqmap, **kw):
+    """Outlier mask compute_g2 would use, via the debug bundle (same code path)."""
+    return compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, **kw)["bad"]
+
+
+def test_target_G20_flags_the_bright_pixel_not_the_correlated_one():
+    G2, sqmap, dqmap = make_target_data()
+    bad = _bad_mask(G2, sqmap, dqmap, target="G20")
+    assert bad[0, 5]  # G20 = 10 in a bin whose median is ~1
+    assert not bad[0, 10]  # G20 = 1, unremarkable
+
+
+def test_target_g2_per_pixel_flags_the_correlated_pixel_not_the_bright_one():
+    G2, sqmap, dqmap = make_target_data()
+    bad = _bad_mask(G2, sqmap, dqmap, target="g2-per-pixel")
+    assert bad[0, 10]  # g2 = 100
+    assert not bad[0, 5]  # g2 = 10/10 = 1.0
+
+
+def test_default_target_is_G20():
+    G2, sqmap, dqmap = make_target_data()
+    np.testing.assert_array_equal(_bad_mask(G2, sqmap, dqmap), _bad_mask(G2, sqmap, dqmap, target="G20"))
+    assert DEFAULT_OUTLIER_TARGET == "G20"
+
+
+def test_compute_g2_target_changes_the_result():
+    """g2 itself differs between targets -- the argument is load-bearing, not cosmetic."""
+    G2, sqmap, dqmap = make_target_data()
+    g2_G20, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20")
+    g2_pix, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="g2-per-pixel")
+    assert not np.allclose(g2_G20, g2_pix)
+
+
+def test_target_G20_excludes_dead_pixels():
+    """Pixel 0 has IF1=IF2=0 (dead) and a huge IP; it must never be flagged,
+    and it must not inflate the bin statistics."""
+    G2, sqmap, dqmap = make_target_data()
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20")
+    assert b["sqmap_1d"][0] == 0
+    assert b["dqmap_1d"][0] == 0
+    assert b["n_dead"] == 1
+    assert not b["bad"][:, 0].any()
+
+
+def test_target_G20_statistics_are_per_sq_bin():
+    """A G20 of 1000 is normal in a bright bin and an outlier in a dim one.
+    Global (non-per-bin) statistics would flag both or neither."""
+    sqmap_1d = np.array([1] * 8 + [2] * 8, dtype=np.uint16)
+    values = np.concatenate(
+        [
+            np.array([1.0, 1.1, 0.9, 1.0, 1.1, 0.9, 1.0, 1000.0]),  # bin 1: dim, one spike
+            np.array([1000.0, 1100.0, 900.0, 1000.0, 1100.0, 900.0, 1000.0, 1000.0]),  # bin 2: bright
+        ]
+    )[None]
+    bad = find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0)
+    assert bad[0, 7]  # 1000 among ~1s
+    assert not bad[0, 8:].any()  # the same magnitude is normal in bin 2
+
+
+def test_outlier_rejection_has_no_lower_bound():
+    """Only `> center + threshold*spread` rejects; small values never do."""
+    sqmap_1d = np.ones(8, dtype=np.uint16)
+    values = np.array([[1.0, 1.1, 0.9, 1.0, 1.1, 0.9, 1.0, 1e-6]])
+    assert not find_g2_pixel_outliers(sqmap_1d, values, threshold=3.0).any()
+
+
+def test_compute_g2_rejects_unknown_target():
+    G2, sqmap, dqmap = make_data()
+    with pytest.raises(ValueError, match="target"):
+        compute_g2(sqmap, dqmap, G2, target="G2")

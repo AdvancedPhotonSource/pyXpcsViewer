@@ -92,6 +92,22 @@ def _add_hist(
     item.setTitle(f"{title_prefix}  n={values.size}  out={n_outlier}")
 
 
+def _style_light(item: pg.PlotItem) -> None:
+    """Recolor one PlotItem for a white background.
+
+    pyqtgraph's global config is dark (background ``k``, foreground ``d``), so
+    axes and the title default to light grey and would be near-invisible once
+    the histogram grid is switched to white.
+    """
+    for name in ("left", "bottom", "top", "right"):
+        axis = item.getAxis(name)
+        axis.setPen(pg.mkPen("k"))
+        axis.setTextPen(pg.mkPen("k"))
+    # LabelItem picks its color from opts at setText() time, so this must be set
+    # before _add_hist() assigns the title.
+    item.titleLabel.setAttr("color", "#000000")
+
+
 class _BinSweepPanel(QtWidgets.QWidget):
     """All-delay histogram grid for one selectable sq bin."""
 
@@ -109,21 +125,65 @@ class _BinSweepPanel(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        # Re-rendering the whole histogram grid is expensive, so the bin selector
+        # only fires on a committed value: Enter/focus-out for the spin box (with
+        # keyboard tracking off, so typing "12" never renders bin 1 on the way),
+        # and handle release for the slider. Dragging the slider still updates the
+        # spin box live so the number tracks the handle.
+        self._syncing = False
         top = QtWidgets.QHBoxLayout()
         top.addWidget(QtWidgets.QLabel("sq bin:"))
         self.spin = QtWidgets.QSpinBox()
         self.spin.setObjectName("g2_debug_sq_spin")
         self.spin.setRange(1, bundle["n_sq"])
-        self.spin.valueChanged.connect(self._render)
+        self.spin.setKeyboardTracking(False)
+        self.spin.editingFinished.connect(self._render)
+        self.spin.valueChanged.connect(self._sync_from_spin)
         top.addWidget(self.spin)
-        top.addStretch(1)
+        self.slider = QtWidgets.QSlider(Qt.Orientation.Horizontal)
+        self.slider.setObjectName("g2_debug_sq_slider")
+        self.slider.setRange(1, bundle["n_sq"])
+        self.slider.setMinimumWidth(150)
+        # no trailing stretch: the slider takes every pixel the label and spin box
+        # leave over
+        self.slider.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.slider.valueChanged.connect(self._sync_from_slider)
+        self.slider.sliderReleased.connect(self._render)
+        top.addWidget(self.slider, 1)
         layout.addLayout(top)
 
         n_delays = bundle["n_delays"]
         self._cols = math.ceil(math.sqrt(n_delays))
         self.glw = pg.GraphicsLayoutWidget()
+        self.glw.setBackground("w")
         layout.addWidget(self.glw)
         self._render()
+
+    def _sync_from_spin(self, value: int) -> None:
+        """Mirror a spin-box change onto the slider without triggering a render."""
+        if self._syncing:
+            return
+        self._syncing = True
+        try:
+            self.slider.setValue(value)
+        finally:
+            self._syncing = False
+
+    def _sync_from_slider(self, value: int) -> None:
+        """Mirror a slider change onto the spin box; render only once the value is committed.
+
+        While the handle is held down the render waits for ``sliderReleased``.
+        Groove clicks and arrow keys never emit that signal, so those render here.
+        """
+        if self._syncing:
+            return
+        self._syncing = True
+        try:
+            self.spin.setValue(value)
+        finally:
+            self._syncing = False
+        if not self.slider.isSliderDown():
+            self._render()
 
     def _render(self) -> None:
         self.glw.clear()
@@ -131,12 +191,14 @@ class _BinSweepPanel(QtWidgets.QWidget):
         roi = self._bundle["sqmap_1d"] == d
         if int(roi.sum()) == 0:
             item = self.glw.addPlot(row=0, col=0)
+            _style_light(item)
             item.setTitle(f"sq={d}  (empty)")
             return
         for delay in range(self._bundle["n_delays"]):
             row, col = divmod(delay, self._cols)
             item = self.glw.addPlot(row=row, col=col)
-            values = self._bundle["g2_pixel"][delay][roi]
+            _style_light(item)
+            values = self._bundle["values"][delay][roi]
             values = values[values != 0]
             n_outlier = int(self._bundle["bad"][delay][roi].sum())
             _add_hist(item, values, n_outlier, f"delay={delay}", self._method, self._threshold)
