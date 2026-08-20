@@ -4,9 +4,11 @@
 
 The "Debug" button in the Group Setting box opens this dialog for the first
 selected Multitau file. It visualizes what the configured outlier settings
-(method / threshold / combine) do to the per-pixel g2:
+(method / threshold / combine / target) do to the per-pixel statistic the
+outlier pass consumes -- either the unnormalized numerator G20 or the
+normalized per-pixel g2, per the target:
 
-* "sq-bin histograms" tab: per-sq-bin histograms of g2_pixel with the
+* "sq-bin histograms" tab: per-sq-bin histograms of that statistic with the
   center + threshold*spread bounds used by find_g2_pixel_outliers, for all
   delays of one selectable bin (bin sweep).
 * "Bad-pixel map" tab: detector image of how many delays each pixel was
@@ -30,7 +32,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 
-from pyxpcsviewer.core.g2_utils import compute_g2_debug_bundle
+from pyxpcsviewer.core.g2_utils import DEFAULT_OUTLIER_TARGET, compute_g2_debug_bundle
 
 
 class _XpcsFileLike(Protocol):
@@ -198,6 +200,8 @@ class _BinSweepPanel(QtWidgets.QWidget):
             row, col = divmod(delay, self._cols)
             item = self.glw.addPlot(row=row, col=col)
             _style_light(item)
+            # the histograms are of `target`, not necessarily g2 -- name the axis
+            item.setLabel("bottom", self._bundle["target"])
             values = self._bundle["values"][delay][roi]
             values = values[values != 0]
             n_outlier = int(self._bundle["bad"][delay][roi].sum())
@@ -259,6 +263,7 @@ def build_debug_plots(
     method: str,
     threshold: float,
     combine_outlier: bool,
+    target: str = DEFAULT_OUTLIER_TARGET,
 ) -> QtWidgets.QTabWidget:
     """Populate *widget* with the debug header and the two tabs.
 
@@ -271,7 +276,7 @@ def build_debug_plots(
     header = QtWidgets.QLabel(
         f"{os.path.basename(fname)} | delays={bundle['n_delays']}  sq={bundle['n_sq']}  "
         f"dq={bundle['n_dq']}  dead={bundle['n_dead']} | "
-        f"method={method}, threshold={threshold:g}, combine={combine_outlier}"
+        f"method={method}, threshold={threshold:g}, combine={combine_outlier}, target={target}"
     )
     header.setObjectName("g2_debug_header")
     header.setWordWrap(True)
@@ -298,6 +303,7 @@ class G2DebugWorker(QtCore.QThread):
         method: str,
         threshold: float,
         combine_outlier: bool,
+        target: str = DEFAULT_OUTLIER_TARGET,
         parent: QtCore.QObject | None = None,
     ) -> None:
         super().__init__(parent)
@@ -305,6 +311,7 @@ class G2DebugWorker(QtCore.QThread):
         self._method = method
         self._threshold = threshold
         self._combine = combine_outlier
+        self._target = target
 
     def run(self) -> None:
         try:
@@ -322,6 +329,7 @@ class G2DebugWorker(QtCore.QThread):
                 outlier_method=self._method,
                 outlier_threshold=self._threshold,
                 combine_outlier=self._combine,
+                target=self._target,
             )
         except Exception as exc:  # report any failure to the UI
             self.failed.emit(f"{type(exc).__name__}: {exc}")
@@ -340,6 +348,7 @@ class G2DebugDialog(QtWidgets.QDialog):
         method: str,
         threshold: float,
         combine_outlier: bool,
+        target: str = DEFAULT_OUTLIER_TARGET,
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -347,6 +356,7 @@ class G2DebugDialog(QtWidgets.QDialog):
         self._method = method
         self._threshold = threshold
         self._combine = combine_outlier
+        self._target = target
         self._worker_running = True
         self.setWindowTitle(f"G2 outlier debug — {os.path.basename(self._fname)}")
         self.setMinimumSize(900, 700)
@@ -361,7 +371,7 @@ class G2DebugDialog(QtWidgets.QDialog):
         layout.addWidget(self._stage)
         layout.addWidget(self._progress)
 
-        self._worker = G2DebugWorker(xfile, method, threshold, combine_outlier, self)
+        self._worker = G2DebugWorker(xfile, method, threshold, combine_outlier, target, self)
         self._worker.progress_stage.connect(self._on_stage)
         self._worker.finished_bundle.connect(self._on_bundle)
         self._worker.failed.connect(self._on_failed)
@@ -378,7 +388,7 @@ class G2DebugDialog(QtWidgets.QDialog):
         for w in (self._placeholder, self._stage, self._progress):
             layout.removeWidget(w)
             w.deleteLater()
-        build_debug_plots(self, bundle, self._fname, self._method, self._threshold, self._combine)
+        build_debug_plots(self, bundle, self._fname, self._method, self._threshold, self._combine, self._target)
 
     def _on_failed(self, msg: str) -> None:
         self._worker_running = False

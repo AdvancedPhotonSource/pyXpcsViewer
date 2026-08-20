@@ -106,17 +106,66 @@ def test_bin_sweep_renders_all_delays(qapp, bundle):
     assert (spin.minimum(), spin.maximum()) == (1, 2)
 
 
-def test_bin_sweep_spin_switches_bin(qapp, bundle):
+def _title(panel):
+    return next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem)).titleLabel.text
+
+
+def test_bin_sweep_spin_switches_bin_on_editing_finished(qapp, bundle):
     host = _host()
     build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
     panel = host.findChild(_BinSweepPanel)
     spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_sq_spin")
     spin.setValue(2)
-    plot0 = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
-    assert "out=3" in plot0.titleLabel.text  # pixels 15, 8 (both delays) and 13 (delay 0)
+    spin.editingFinished.emit()  # Enter / focus-out
+    # pixels 15, 8 (both delays) and 13 (delay 0)
+    assert "out=3" in _title(panel)
     spin.setValue(1)
-    plot0 = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
-    assert "out=0" in plot0.titleLabel.text
+    spin.editingFinished.emit()
+    assert "out=0" in _title(panel)
+
+
+def test_bin_sweep_spin_defers_render_until_committed(qapp, bundle):
+    """Typing/stepping the spin box must not re-render until the edit is finished."""
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_sq_spin")
+    assert "out=0" in _title(panel)  # bin 1 rendered at construction
+    spin.setValue(2)
+    assert "out=0" in _title(panel)  # still showing bin 1
+    spin.editingFinished.emit()
+    assert "out=3" in _title(panel)
+
+
+def test_bin_sweep_slider_and_spin_are_linked(qapp, bundle):
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    slider = host.findChild(QtWidgets.QSlider, "g2_debug_sq_slider")
+    spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_sq_spin")
+    assert (slider.minimum(), slider.maximum()) == (spin.minimum(), spin.maximum())
+
+    spin.setValue(2)
+    assert slider.value() == 2  # spin -> slider
+    slider.setValue(1)
+    assert spin.value() == 1  # slider -> spin
+    assert "out=0" in _title(panel)
+
+
+def test_bin_sweep_slider_renders_on_release_not_during_drag(qapp, bundle):
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    slider = host.findChild(QtWidgets.QSlider, "g2_debug_sq_slider")
+    spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_sq_spin")
+
+    slider.setSliderDown(True)  # handle grabbed
+    slider.setValue(2)
+    assert spin.value() == 2  # spin tracks the handle live
+    assert "out=0" in _title(panel)  # but no re-render mid-drag
+    slider.setSliderDown(False)
+    slider.sliderReleased.emit()
+    assert "out=3" in _title(panel)
 
 
 def test_bin_sweep_all_zero_bin(qapp):
@@ -124,8 +173,8 @@ def test_bin_sweep_all_zero_bin(qapp):
     build_debug_plots(host, _zero_bin_bundle(), "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
     panel = host.findChild(_BinSweepPanel)
     panel.spin.setValue(2)
-    plot0 = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
-    assert "all zero" in plot0.titleLabel.text
+    panel.spin.editingFinished.emit()
+    assert "all zero" in _title(panel)
 
 
 def test_bad_map_and_mintag_remask(qapp, bundle):
@@ -244,3 +293,57 @@ def test_debug_button_wired(qapp, tmp_path):
     assert window._g2_debug_dialog is None
     window.debug_G2_regroup()  # no selection: silent no-op, no dialog
     assert window._g2_debug_dialog is None
+
+
+def test_bin_sweep_slider_fills_the_row(qapp, bundle):
+    """The slider takes all horizontal space left over -- no trailing spacer."""
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    top = panel.layout().itemAt(0).layout()
+    items = [top.itemAt(i) for i in range(top.count())]
+    assert all(it.spacerItem() is None for it in items)
+    assert items[-1].widget() is panel.slider
+    assert panel.slider.sizePolicy().horizontalPolicy() == QtWidgets.QSizePolicy.Policy.Expanding
+
+
+def test_bin_sweep_plots_are_light_themed(qapp, bundle):
+    """White canvas with black axes/labels, despite pyqtgraph's dark global config."""
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    assert panel.glw.backgroundBrush().color().name() == "#ffffff"
+    for item in (it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem)):
+        for name in ("left", "bottom"):
+            axis = item.getAxis(name)
+            assert axis.pen().color().name() == "#000000"
+            assert axis.textPen().color().name() == "#000000"
+        assert item.titleLabel.opts["color"] == "#000000"
+
+
+def test_header_reports_the_outlier_target(qapp, bundle):
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False, "G20")
+    header = host.findChild(QtWidgets.QLabel, "g2_debug_header")
+    assert "target=G20" in header.text()
+
+
+def test_bin_sweep_labels_the_plotted_quantity(qapp, bundle):
+    """The histograms are of `target`, not always g2 -- say so on the axis."""
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False, "G20")
+    panel = host.findChild(_BinSweepPanel)
+    item = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
+    assert "G20" in item.getAxis("bottom").labelString()
+
+
+def test_dialog_forwards_target_to_the_bundle(qapp):
+    """The dialog must compute on the target it was opened with, or it
+    visualizes something other than what ReGroup will do."""
+    G2, sqmap, dqmap = make_synthetic()
+    fake = cast("_XpcsFileLike", types.SimpleNamespace(fname="fake.hdf", G2=G2, sqmap=sqmap, dqmap=dqmap))
+    dlg = G2DebugDialog(fake, "MeanAbsoluteDeviation", 3.0, False, "g2-per-pixel")
+    assert _pump(qapp, lambda: not dlg._worker_running)
+    header = dlg.findChild(QtWidgets.QLabel, "g2_debug_header")
+    assert "target=g2-per-pixel" in header.text()
+    dlg.close()
