@@ -27,8 +27,11 @@ from typing import Any, Protocol
 
 import numpy as np
 import pyqtgraph as pg  # type: ignore[import-untyped]
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMessageBox
+
+from pyxpcsviewer.core.g2_utils import compute_g2_debug_bundle
 
 
 class _XpcsFileLike(Protocol):
@@ -298,3 +301,114 @@ def build_debug_plots(
     tabs.addTab(_BadMapPanel(bundle), "Bad-pixel map")
     layout.addWidget(tabs)
     return tabs
+
+
+class G2DebugWorker(QtCore.QThread):
+    """Load the unnormalized G2 (fresh h5py handle per read — thread-safe)
+    and run the outlier pass off the main thread."""
+
+    progress_stage = QtCore.Signal(str)
+    finished_bundle = QtCore.Signal(object)
+    failed = QtCore.Signal(str)
+
+    def __init__(
+        self,
+        xfile: _XpcsFileLike,
+        method: str,
+        threshold: float,
+        combine_outlier: bool,
+        parent: QtCore.QObject | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._xfile = xfile
+        self._method = method
+        self._threshold = threshold
+        self._combine = combine_outlier
+
+    def run(self) -> None:
+        try:
+            self.progress_stage.emit("Loading G2…")
+            G2 = self._xfile.G2
+            if G2 is None:
+                raise ValueError("file has no unnormalized G2 (/xpcs/multitau/unnormalized_G2)")
+            sqmap = self._xfile.sqmap
+            dqmap = self._xfile.dqmap
+            self.progress_stage.emit("Detecting outliers…")
+            bundle = compute_g2_debug_bundle(
+                sqmap,
+                dqmap,
+                G2,
+                outlier_method=self._method,
+                outlier_threshold=self._threshold,
+                combine_outlier=self._combine,
+            )
+        except Exception as exc:  # report any failure to the UI
+            self.failed.emit(f"{type(exc).__name__}: {exc}")
+            return
+        self.finished_bundle.emit(bundle)
+
+
+class G2DebugDialog(QtWidgets.QDialog):
+    """Modeless debug dialog: placeholder while the worker runs, then the
+    plot tabs. Close is ignored while the worker is running (the HDF5 read
+    cannot be interrupted mid-read)."""
+
+    def __init__(
+        self,
+        xfile: _XpcsFileLike,
+        method: str,
+        threshold: float,
+        combine_outlier: bool,
+        parent: QtWidgets.QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._fname = xfile.fname
+        self._method = method
+        self._threshold = threshold
+        self._combine = combine_outlier
+        self._worker_running = True
+        self.setWindowTitle(f"G2 outlier debug — {os.path.basename(self._fname)}")
+        self.setMinimumSize(900, 700)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        self._placeholder = QtWidgets.QLabel("Computing G2 debug data…\n(close is disabled until this finishes)")
+        self._placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._stage = QtWidgets.QLabel("…")
+        self._progress = QtWidgets.QProgressBar()
+        self._progress.setRange(0, 0)  # indeterminate
+        layout.addWidget(self._placeholder)
+        layout.addWidget(self._stage)
+        layout.addWidget(self._progress)
+
+        self._worker = G2DebugWorker(xfile, method, threshold, combine_outlier, self)
+        self._worker.progress_stage.connect(self._on_stage)
+        self._worker.finished_bundle.connect(self._on_bundle)
+        self._worker.failed.connect(self._on_failed)
+        self._worker.start()
+
+    def _on_stage(self, text: str) -> None:
+        self._stage.setText(text)
+
+    def _on_bundle(self, bundle: dict[str, Any]) -> None:
+        self._worker_running = False
+        layout = self.layout()
+        if layout is None:  # created in __init__; the dialog cannot lose it
+            raise RuntimeError("G2DebugDialog lost its layout before the bundle arrived")
+        for w in (self._placeholder, self._stage, self._progress):
+            layout.removeWidget(w)
+            w.deleteLater()
+        build_debug_plots(self, bundle, self._fname, self._method, self._threshold, self._combine)
+
+    def _on_failed(self, msg: str) -> None:
+        self._worker_running = False
+        self._show_failure(msg)
+        self.close()
+
+    def _show_failure(self, msg: str) -> None:
+        QMessageBox.critical(self, "G2 debug failed", msg)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        if self._worker_running:
+            event.ignore()
+            return
+        event.accept()

@@ -9,6 +9,11 @@ this file (see test_close_blocked_while_computing / test_debug_button_wired).
 """
 
 import os
+import threading
+import time
+import types
+from collections.abc import Callable
+from typing import cast
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -21,7 +26,14 @@ import pyqtgraph as pg
 from PySide6 import QtWidgets
 
 from pyxpcsviewer.core.g2_utils import compute_g2_debug_bundle
-from pyxpcsviewer.gui.view.g2_debug_dialog import _BadMapPanel, _BinSweepPanel, _DelaySweepPanel, build_debug_plots
+from pyxpcsviewer.gui.view.g2_debug_dialog import (
+    G2DebugDialog,
+    _BadMapPanel,
+    _BinSweepPanel,
+    _DelaySweepPanel,
+    _XpcsFileLike,
+    build_debug_plots,
+)
 
 
 def make_synthetic():
@@ -185,3 +197,81 @@ def test_bad_map_and_mintag_remask(qapp, bundle):
     # render the remaining pixels in the colormap's low color
     lo, hi = view.ui.histogram.region.getRegion()
     assert hi > lo
+
+
+def _pump(qapp: QtWidgets.QApplication, predicate: Callable[[], bool], timeout: float = 10.0) -> bool:
+    """Pump events until predicate() is true or timeout."""
+    deadline = time.time() + timeout
+    while not predicate() and time.time() < deadline:
+        qapp.processEvents()
+        time.sleep(0.01)
+    return predicate()
+
+
+def test_dialog_computes_and_populates(qapp):
+    G2, sqmap, dqmap = make_synthetic()
+    # cast: SimpleNamespace has no declared members, so mypy cannot check it
+    # against the _XpcsFileLike protocol structurally
+    fake = cast("_XpcsFileLike", types.SimpleNamespace(fname="fake.hdf", G2=G2, sqmap=sqmap, dqmap=dqmap))
+    dlg = G2DebugDialog(fake, "MeanAbsoluteDeviation", 3.0, False)
+    dlg.show()
+    assert _pump(qapp, lambda: not dlg._worker_running)
+    tab = dlg.findChild(QtWidgets.QTabWidget)
+    assert tab is not None
+    assert tab.count() == 2
+    assert dlg.findChild(QtWidgets.QLabel, "g2_debug_header") is not None
+    dlg.close()
+    assert not dlg.isVisible()
+
+
+def test_close_blocked_while_computing(qapp):
+    gate = threading.Event()
+    G2, sqmap, dqmap = make_synthetic()
+
+    class SlowXfile:
+        fname = "fake.hdf"
+        sqmap: np.ndarray
+        dqmap: np.ndarray
+
+        @property
+        def G2(self):
+            gate.wait(timeout=10)
+            return G2
+
+    # class bodies don't see the test's locals, so set these from outside
+    SlowXfile.sqmap = sqmap
+    SlowXfile.dqmap = dqmap
+    dlg = G2DebugDialog(SlowXfile(), "MeanAbsoluteDeviation", 3.0, False)
+    dlg.show()
+    assert _pump(qapp, lambda: dlg._worker.isRunning(), timeout=5.0)
+    dlg.close()
+    assert dlg.isVisible()  # close ignored while computing
+    gate.set()
+    assert _pump(qapp, lambda: not dlg._worker_running)
+    assert dlg.findChild(QtWidgets.QTabWidget) is not None
+    dlg.close()
+    assert not dlg.isVisible()
+
+
+def test_dialog_failed_path(qapp):
+    shown = []
+    _, sqmap, dqmap = make_synthetic()
+
+    class BrokenXfile:
+        fname = "fake.hdf"
+        sqmap: np.ndarray
+        dqmap: np.ndarray
+
+        @property
+        def G2(self):
+            raise OSError("disk error")
+
+    # class bodies don't see the test's locals, so set these from outside
+    BrokenXfile.sqmap = sqmap
+    BrokenXfile.dqmap = dqmap
+    dlg = G2DebugDialog(BrokenXfile(), "MeanAbsoluteDeviation", 3.0, False)
+    dlg._show_failure = lambda msg: shown.append(msg)  # type: ignore[method-assign]
+    dlg.show()
+    assert _pump(qapp, lambda: not dlg.isVisible(), timeout=10.0)
+    assert len(shown) == 1
+    assert "disk error" in shown[0]
