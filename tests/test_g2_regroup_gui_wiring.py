@@ -263,3 +263,70 @@ def test_min_tag_spin_defaults_to_one_and_follows_combine_outlier(qapp, tmp_path
         window.checkBox_G2_combineoutlier.setChecked(state)
         assert window.spinBox_G2_mintagcount.isEnabled() is state
         assert window.label_G2_mintagcount.isEnabled() is state
+
+
+def test_g2_regroup_tab_controls_have_tooltips(qapp, tmp_path):
+    """Every control on the G2 regroup tab is annotated. The outlier settings
+    interact in non-obvious ways (target vs. threshold vs. persistence), so an
+    unlabelled control here is a real usability hole."""
+    window = XpcsViewer(path=str(tmp_path))
+    page = window.tabWidget.widget(12)
+    assert window.tabWidget.tabText(12) == "G2"
+    # pyqtgraph's ImageView contributes its own controls; not ours to annotate
+    pg_owned = {
+        "roiBtn",
+        "menuBtn",
+        "normGroup",
+        "normSubtractRadio",
+        "normDivideRadio",
+        "normOffRadio",
+        "normROICheck",
+        "normTimeRangeCheck",
+        "normFrameCheck",
+        "normXBlurSpin",
+        "normYBlurSpin",
+        "normTBlurSpin",
+        "label_3",
+        "label_4",
+        "label_5",
+        "label_8",
+        "label_9",
+        "label_10",
+    }
+    # these three labels are already full explanatory sentences in the UI
+    self_documenting = {"label_74", "label_75", "label_78"}
+    kinds = (
+        QtWidgets.QComboBox,
+        QtWidgets.QSpinBox,
+        QtWidgets.QDoubleSpinBox,
+        QtWidgets.QCheckBox,
+        QtWidgets.QPushButton,
+        QtWidgets.QSlider,
+        QtWidgets.QGroupBox,
+        QtWidgets.QLabel,
+        QtWidgets.QTabWidget,
+    )
+    missing = [
+        child.objectName()
+        for child in page.findChildren(QtWidgets.QWidget)
+        if isinstance(child, kinds)
+        and child.objectName()
+        and child.objectName() != "qt_spinbox_lineedit"
+        and child.objectName() not in pg_owned
+        and child.objectName() not in self_documenting
+        and not child.toolTip()
+    ]
+    assert missing == []
+
+
+def test_paired_label_and_control_share_a_tooltip(qapp, tmp_path):
+    """Users hover the label as often as the widget, so the two must agree."""
+    window = XpcsViewer(path=str(tmp_path))
+    for label, control in (
+        ("label_G2_outliertarget", "comboBox_G2_outliertarget"),
+        ("label_G2_mintagcount", "spinBox_G2_mintagcount"),
+        ("label_G2_errormodel", "comboBox_G2_errormodel"),
+        ("label_76", "doubleSpinBox_G2_threshold"),
+        ("label_72", "comboBox_G2_target"),
+    ):
+        assert getattr(window, label).toolTip() == getattr(window, control).toolTip(), label

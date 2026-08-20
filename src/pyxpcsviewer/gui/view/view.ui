@@ -4034,6 +4034,11 @@
             <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <widget class="QGroupBox" name="groupBox_9">
+            <property name="toolTip">
+             <string>Per-pixel view of a single delay of the raw G2 cube, whose three
+channels are the unnormalized numerator and the two mean-intensity
+terms. Display only - nothing here feeds ReGroup.</string>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>1</horstretch>
@@ -4058,6 +4063,10 @@
              </property>
              <item row="2" column="0">
               <widget class="QLabel" name="label_73">
+               <property name="toolTip">
+                <string>Which delay (tau) of the G2 cube to show. Only this one frame is
+read from the file, so moving it is cheap even on a networked disk.</string>
+               </property>
                <property name="text">
                 <string>Delay Index:</string>
                </property>
@@ -4065,6 +4074,9 @@
              </item>
              <item row="1" column="6">
               <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_vmax">
+               <property name="toolTip">
+                <string>Upper clip level for the displayed image. Display only.</string>
+               </property>
                <property name="value">
                 <double>5.000000000000000</double>
                </property>
@@ -4072,6 +4084,14 @@
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_72">
+               <property name="toolTip">
+                <string>Which channel of the raw G2 cube to display. Display only - this has
+no effect on ReGroup.
+g2_per_pixel - channel 0 divided by channels 1 and 2.
+G2 - channel 0, the unnormalized numerator. Same array the 'G20'
+  outlier target uses.
+IP, IF - channels 1 and 2, the two mean-intensity terms.</string>
+               </property>
                <property name="text">
                 <string>Target:</string>
                </property>
@@ -4079,6 +4099,10 @@
              </item>
              <item row="2" column="2" colspan="5">
               <widget class="QSlider" name="horizontalSlider_G2_delay">
+               <property name="toolTip">
+                <string>Which delay (tau) of the G2 cube to show. Only this one frame is
+read from the file, so moving it is cheap even on a networked disk.</string>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>1</horstretch>
@@ -4092,6 +4116,10 @@
              </item>
              <item row="1" column="4">
               <widget class="QLabel" name="label_77">
+               <property name="toolTip">
+                <string>Clip the displayed image to this range. Display only - the data and
+any regrouping are unaffected.</string>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -4104,16 +4132,33 @@
               </widget>
              </item>
              <item row="1" column="5">
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_vmin"/>
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_vmin">
+               <property name="toolTip">
+                <string>Lower clip level for the displayed image. Display only.</string>
+               </property>
+              </widget>
              </item>
              <item row="0" column="0" colspan="7">
               <widget class="ImageView" name="pg_regroup_G2" native="true"/>
              </item>
              <item row="2" column="1">
-              <widget class="QSpinBox" name="spinBox_G2_delay"/>
+              <widget class="QSpinBox" name="spinBox_G2_delay">
+               <property name="toolTip">
+                <string>Which delay (tau) of the G2 cube to show. Only this one frame is
+read from the file, so moving it is cheap even on a networked disk.</string>
+               </property>
+              </widget>
              </item>
              <item row="1" column="1" colspan="2">
               <widget class="QComboBox" name="comboBox_G2_target">
+               <property name="toolTip">
+                <string>Which channel of the raw G2 cube to display. Display only - this has
+no effect on ReGroup.
+g2_per_pixel - channel 0 divided by channels 1 and 2.
+G2 - channel 0, the unnormalized numerator. Same array the 'G20'
+  outlier target uses.
+IP, IF - channels 1 and 2, the two mean-intensity terms.</string>
+               </property>
                <item>
                 <property name="text">
                  <string>g2_per_pixel</string>
@@ -4142,6 +4187,10 @@
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
               <widget class="QGroupBox" name="groupBox_12">
+               <property name="toolTip">
+                <string>The g2 curves from the last ReGroup, one per dynamic q bin.
+Held in memory only until you press SaveToFile.</string>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                  <horstretch>0</horstretch>
@@ -4207,6 +4256,10 @@
              </item>
              <item>
               <widget class="QGroupBox" name="groupBox_24">
+               <property name="toolTip">
+                <string>Choose the Q-map - the static (sq) and dynamic (dq) ROI maps - that
+ReGroup bins the per-pixel G2 with.</string>
+               </property>
                <property name="title">
                 <string>QMap</string>
                </property>
@@ -4225,6 +4278,12 @@
                 </property>
                 <item row="0" column="0">
                  <widget class="QTabWidget" name="tabWidget_G2_regroup">
+                  <property name="toolTip">
+                   <string>Where the Q-map for regrouping comes from.
+Internal - the map already stored in the file under /xpcs/qmap.
+External - a map from another file, e.g. built with pysimplemask.
+Draw - hand-drawn ROIs (not implemented yet).</string>
+                  </property>
                   <property name="currentIndex">
                    <number>1</number>
                   </property>
@@ -4253,6 +4312,11 @@
                    <layout class="QGridLayout" name="gridLayout_51">
                     <item row="2" column="3">
                      <widget class="QPushButton" name="pushButton_G2_loadQMap">
+                      <property name="toolTip">
+                       <string>Pick an HDF5 file holding the static and dynamic ROI maps to regroup
+with. Read from /xpcs/qmap/... , falling back to /qmap/... for raw
+Q-map files.</string>
+                      </property>
                       <property name="text">
                        <string>Load QMap</string>
                       </property>
@@ -4260,6 +4324,9 @@
                     </item>
                     <item row="2" column="0" colspan="3">
                      <widget class="QLabel" name="label_G2_external_qmapfname">
+                      <property name="toolTip">
+                       <string>The external Q-map file ReGroup will use. Empty until you load one.</string>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                         <horstretch>1</horstretch>
@@ -4294,13 +4361,22 @@
                     </item>
                     <item row="1" column="0">
                      <widget class="QLabel" name="label_79">
+                      <property name="toolTip">
+                       <string>Number of static (sq) bins to split the drawn ROI into.
+The 'draw' Q-map method is not implemented yet.</string>
+                      </property>
                       <property name="text">
                        <string>num_static_bins:</string>
                       </property>
                      </widget>
                     </item>
                     <item row="1" column="1">
-                     <widget class="QSpinBox" name="spinBox_G2_num_sbin"/>
+                     <widget class="QSpinBox" name="spinBox_G2_num_sbin">
+                      <property name="toolTip">
+                       <string>Number of static (sq) bins to split the drawn ROI into.
+The 'draw' Q-map method is not implemented yet.</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -4311,6 +4387,10 @@
              </item>
              <item>
               <widget class="QGroupBox" name="groupBox_23">
+               <property name="toolTip">
+                <string>Outlier rejection and error-model settings, applied when you press
+ReGroup. Press Debug first to see what they do.</string>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                  <horstretch>0</horstretch>
@@ -4335,6 +4415,15 @@
                 </property>
                 <item row="0" column="5">
                  <widget class="QComboBox" name="comboBox_G2_outliermethod">
+                  <property name="toolTip">
+                   <string>How center and spread are estimated for each (sq bin, delay).
+MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are
+  hunting barely move the bound. Recommended.
+StandardDeviation - mean + std. Both are inflated by the very
+  pixels being tested, so it flags fewer of them.
+Pixels with a value of exactly 0 are treated as photon-starved and
+left out of the statistics either way.</string>
+                  </property>
                   <item>
                    <property name="text">
                     <string>MeanAbsoluteDeviation</string>
@@ -4349,6 +4438,12 @@
                 </item>
                 <item row="0" column="6">
                  <widget class="QPushButton" name="pushButton_G2_regroup">
+                  <property name="toolTip">
+                   <string>Recompute g2 and g2_err from the per-pixel G2 cube using the chosen
+Q-map and outlier settings, for the first selected file.
+Runs on a background thread. The result lives in memory and replaces
+the Grouped g2 plot - press SaveToFile to write it out.</string>
+                  </property>
                   <property name="text">
                    <string>ReGroup</string>
                   </property>
@@ -4356,6 +4451,11 @@
                 </item>
                 <item row="0" column="0" colspan="2">
                  <widget class="QCheckBox" name="checkBox_G2_removeoutlier">
+                  <property name="toolTip">
+                   <string>Master switch for outlier rejection.
+When off, every live pixel in a sq bin contributes to the average
+and the settings to the right are ignored.</string>
+                  </property>
                   <property name="text">
                    <string>Remove Outlier</string>
                   </property>
@@ -4369,6 +4469,14 @@
                 </item>
                 <item row="0" column="2">
                  <widget class="QLabel" name="label_76">
+                  <property name="toolTip">
+                   <string>Reject a pixel when its value exceeds center + threshold x spread
+within its own sq bin, evaluated per delay.
+Upper bound only - low values are never rejected.
+Lower is more aggressive. 3 is not gentle: on sparse-photon data it
+can drop over 10% of samples and visibly distort the curve. Check
+the Debug dialog before trusting a value.</string>
+                  </property>
                   <property name="text">
                    <string>Threshold:</string>
                   </property>
@@ -4376,6 +4484,14 @@
                 </item>
                 <item row="0" column="3" colspan="2">
                  <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_threshold">
+                  <property name="toolTip">
+                   <string>Reject a pixel when its value exceeds center + threshold x spread
+within its own sq bin, evaluated per delay.
+Upper bound only - low values are never rejected.
+Lower is more aggressive. 3 is not gentle: on sparse-photon data it
+can drop over 10% of samples and visibly distort the curve. Check
+the Debug dialog before trusting a value.</string>
+                  </property>
                   <property name="value">
                    <double>3.000000000000000</double>
                   </property>
@@ -4383,6 +4499,10 @@
                 </item>
                 <item row="0" column="7">
                  <widget class="QPushButton" name="pushButton_G2_savefile">
+                  <property name="toolTip">
+                   <string>Write the regrouped g2 and g2_err into an HDF5 file, replacing the
+existing datasets. Defaults to overwriting the source file.</string>
+                  </property>
                   <property name="text">
                    <string>SaveToFile</string>
                   </property>
@@ -4390,6 +4510,14 @@
                 </item>
                 <item row="1" column="0" colspan="2">
                  <widget class="QCheckBox" name="checkBox_G2_combineoutlier">
+                  <property name="toolTip">
+                   <string>Turn on the persistence filter: judge a pixel by how many delays it
+was flagged at rather than delay by delay. Min Tag sets the count.
+Off - each delay is filtered independently.
+This is what makes the G20 target usable: one flag mostly tracks the
+intensity gradient across a q ring, while a flag that repeats across
+most delays is a genuinely hot pixel.</string>
+                  </property>
                   <property name="text">
                    <string>Combine Outlier</string>
                   </property>
@@ -4403,6 +4531,13 @@
                 </item>
                 <item row="1" column="2">
                  <widget class="QLabel" name="label_G2_errormodel">
+                  <property name="toolTip">
+                   <string>How g2_err is estimated. g2 itself is identical either way.
+per-pixel - spread of the individual pixels in the dq bin.
+sq-group - spread of the sq-bin averages making up the dq bin.
+Note: per-pixel is computed from all pixels, including rejected
+ones, so the outlier settings do not change these error bars.</string>
+                  </property>
                   <property name="text">
                    <string>Error Model:</string>
                   </property>
@@ -4410,6 +4545,13 @@
                 </item>
                 <item row="1" column="3" colspan="3">
                  <widget class="QComboBox" name="comboBox_G2_errormodel">
+                  <property name="toolTip">
+                   <string>How g2_err is estimated. g2 itself is identical either way.
+per-pixel - spread of the individual pixels in the dq bin.
+sq-group - spread of the sq-bin averages making up the dq bin.
+Note: per-pixel is computed from all pixels, including rejected
+ones, so the outlier settings do not change these error bars.</string>
+                  </property>
                   <item>
                    <property name="text">
                     <string>per-pixel</string>
@@ -4424,6 +4566,13 @@
                 </item>
                 <item row="1" column="6">
                  <widget class="QPushButton" name="pushButton_G2_debug">
+                  <property name="toolTip">
+                   <string>Show what the current outlier settings do to the first selected
+file: per-sq-bin histograms with the rejection bound drawn on, and a
+map of how many delays each pixel was flagged at.
+The Remove Outlier checkbox is deliberately ignored here, so you can
+preview a setting before enabling it.</string>
+                  </property>
                   <property name="text">
                    <string>Debug</string>
                   </property>
@@ -4431,6 +4580,17 @@
                 </item>
                 <item row="2" column="0" colspan="2">
                  <widget class="QLabel" name="label_G2_outliertarget">
+                  <property name="toolTip">
+                   <string>Which per-pixel quantity the outlier test is computed on.
+g2-per-pixel - the normalized g2. Flags pixels whose correlation is
+  anomalous regardless of brightness. Unbiased; the default.
+G20 - the raw numerator G2[:,0]. Flags bright pixels, since G20
+  scales as intensity squared times g2.
+Warning: a plain per-delay G20 cut biases g2 downward, because
+trimming the numerator's bright tail lowers the very average it
+feeds. Pair G20 with Combine Outlier and a high Min Tag to build a
+hot-pixel mask instead.</string>
+                  </property>
                   <property name="text">
                    <string>Outlier Target:</string>
                   </property>
@@ -4438,6 +4598,14 @@
                 </item>
                 <item row="2" column="6">
                  <widget class="QLabel" name="label_G2_mintagcount">
+                  <property name="toolTip">
+                   <string>Reject only pixels flagged at this many delays or more, and then
+reject them at every delay. Needs Combine Outlier.
+1 = flagged anywhere, flagged everywhere (the historical behaviour,
+and far too aggressive for the G20 target).
+Pick a value from the Debug dialog's bad-pixel map: with G20, a
+count near the delay total works well, e.g. 30 out of 34.</string>
+                  </property>
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
@@ -4448,11 +4616,16 @@
                 </item>
                 <item row="2" column="7">
                  <widget class="QSpinBox" name="spinBox_G2_mintagcount">
+                  <property name="toolTip">
+                   <string>Reject only pixels flagged at this many delays or more, and then
+reject them at every delay. Needs Combine Outlier.
+1 = flagged anywhere, flagged everywhere (the historical behaviour,
+and far too aggressive for the G20 target).
+Pick a value from the Debug dialog's bad-pixel map: with G20, a
+count near the delay total works well, e.g. 30 out of 34.</string>
+                  </property>
                   <property name="enabled">
                    <bool>false</bool>
-                  </property>
-                  <property name="toolTip">
-                   <string>Reject only pixels flagged at this many delays or more, at every delay. 1 = flagged anywhere, flagged everywhere.</string>
                   </property>
                   <property name="minimum">
                    <number>1</number>
@@ -4467,6 +4640,17 @@
                 </item>
                 <item row="2" column="2" colspan="4">
                  <widget class="QComboBox" name="comboBox_G2_outliertarget">
+                  <property name="toolTip">
+                   <string>Which per-pixel quantity the outlier test is computed on.
+g2-per-pixel - the normalized g2. Flags pixels whose correlation is
+  anomalous regardless of brightness. Unbiased; the default.
+G20 - the raw numerator G2[:,0]. Flags bright pixels, since G20
+  scales as intensity squared times g2.
+Warning: a plain per-delay G20 cut biases g2 downward, because
+trimming the numerator's bright tail lowers the very average it
+feeds. Pair G20 with Combine Outlier and a high Min Tag to build a
+hot-pixel mask instead.</string>
+                  </property>
                   <item>
                    <property name="text">
                     <string>g2-per-pixel</string>

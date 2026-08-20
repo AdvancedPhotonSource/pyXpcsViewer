@@ -2900,48 +2900,229 @@ class Ui_mainWindow(object):
         self.label_69.setText(QCoreApplication.translate("mainWindow", u"marker size:", None))
         self.label_57.setText(QCoreApplication.translate("mainWindow", u"offset:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_11), QCoreApplication.translate("mainWindow", u"g2_stability", None))
+#if QT_CONFIG(tooltip)
+        self.groupBox_9.setToolTip(QCoreApplication.translate("mainWindow", u"Per-pixel view of a single delay of the raw G2 cube, whose three\n"
+"channels are the unnormalized numerator and the two mean-intensity\n"
+"terms. Display only - nothing here feeds ReGroup.", None))
+#endif // QT_CONFIG(tooltip)
         self.groupBox_9.setTitle(QCoreApplication.translate("mainWindow", u"G2IPIF", None))
+#if QT_CONFIG(tooltip)
+        self.label_73.setToolTip(QCoreApplication.translate("mainWindow", u"Which delay (tau) of the G2 cube to show. Only this one frame is\n"
+"read from the file, so moving it is cheap even on a networked disk.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Delay Index:", None))
+#if QT_CONFIG(tooltip)
+        self.doubleSpinBox_G2_vmax.setToolTip(QCoreApplication.translate("mainWindow", u"Upper clip level for the displayed image. Display only.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.label_72.setToolTip(QCoreApplication.translate("mainWindow", u"Which channel of the raw G2 cube to display. Display only - this has\n"
+"no effect on ReGroup.\n"
+"g2_per_pixel - channel 0 divided by channels 1 and 2.\n"
+"G2 - channel 0, the unnormalized numerator. Same array the 'G20'\n"
+"  outlier target uses.\n"
+"IP, IF - channels 1 and 2, the two mean-intensity terms.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_72.setText(QCoreApplication.translate("mainWindow", u"Target:", None))
+#if QT_CONFIG(tooltip)
+        self.horizontalSlider_G2_delay.setToolTip(QCoreApplication.translate("mainWindow", u"Which delay (tau) of the G2 cube to show. Only this one frame is\n"
+"read from the file, so moving it is cheap even on a networked disk.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.label_77.setToolTip(QCoreApplication.translate("mainWindow", u"Clip the displayed image to this range. Display only - the data and\n"
+"any regrouping are unaffected.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_77.setText(QCoreApplication.translate("mainWindow", u"levels: [min, max]", None))
+#if QT_CONFIG(tooltip)
+        self.doubleSpinBox_G2_vmin.setToolTip(QCoreApplication.translate("mainWindow", u"Lower clip level for the displayed image. Display only.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.spinBox_G2_delay.setToolTip(QCoreApplication.translate("mainWindow", u"Which delay (tau) of the G2 cube to show. Only this one frame is\n"
+"read from the file, so moving it is cheap even on a networked disk.", None))
+#endif // QT_CONFIG(tooltip)
         self.comboBox_G2_target.setItemText(0, QCoreApplication.translate("mainWindow", u"g2_per_pixel", None))
         self.comboBox_G2_target.setItemText(1, QCoreApplication.translate("mainWindow", u"G2", None))
         self.comboBox_G2_target.setItemText(2, QCoreApplication.translate("mainWindow", u"IP", None))
         self.comboBox_G2_target.setItemText(3, QCoreApplication.translate("mainWindow", u"IF", None))
 
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_target.setToolTip(QCoreApplication.translate("mainWindow", u"Which channel of the raw G2 cube to display. Display only - this has\n"
+"no effect on ReGroup.\n"
+"g2_per_pixel - channel 0 divided by channels 1 and 2.\n"
+"G2 - channel 0, the unnormalized numerator. Same array the 'G20'\n"
+"  outlier target uses.\n"
+"IP, IF - channels 1 and 2, the two mean-intensity terms.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.groupBox_12.setToolTip(QCoreApplication.translate("mainWindow", u"The g2 curves from the last ReGroup, one per dynamic q bin.\n"
+"Held in memory only until you press SaveToFile.", None))
+#endif // QT_CONFIG(tooltip)
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Grouped g2", None))
+#if QT_CONFIG(tooltip)
+        self.groupBox_24.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the Q-map - the static (sq) and dynamic (dq) ROI maps - that\n"
+"ReGroup bins the per-pixel G2 with.", None))
+#endif // QT_CONFIG(tooltip)
         self.groupBox_24.setTitle(QCoreApplication.translate("mainWindow", u"QMap", None))
+#if QT_CONFIG(tooltip)
+        self.tabWidget_G2_regroup.setToolTip(QCoreApplication.translate("mainWindow", u"Where the Q-map for regrouping comes from.\n"
+"Internal - the map already stored in the file under /xpcs/qmap.\n"
+"External - a map from another file, e.g. built with pysimplemask.\n"
+"Draw - hand-drawn ROIs (not implemented yet).", None))
+#endif // QT_CONFIG(tooltip)
         self.label_74.setText(QCoreApplication.translate("mainWindow", u"Using the internal QMap located in /xpcs/qmap to group G2 the original way.", None))
         self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_13), QCoreApplication.translate("mainWindow", u"Internal", None))
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_loadQMap.setToolTip(QCoreApplication.translate("mainWindow", u"Pick an HDF5 file holding the static and dynamic ROI maps to regroup\n"
+"with. Read from /xpcs/qmap/... , falling back to /qmap/... for raw\n"
+"Q-map files.", None))
+#endif // QT_CONFIG(tooltip)
         self.pushButton_G2_loadQMap.setText(QCoreApplication.translate("mainWindow", u"Load QMap", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_external_qmapfname.setToolTip(QCoreApplication.translate("mainWindow", u"The external Q-map file ReGroup will use. Empty until you load one.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_G2_external_qmapfname.setText("")
         self.label_75.setText(QCoreApplication.translate("mainWindow", u"Select an external QMap file generated by pysimplemask to apply a new QMap", None))
         self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_14), QCoreApplication.translate("mainWindow", u"External", None))
         self.label_78.setText(QCoreApplication.translate("mainWindow", u"Draw an ROI to explore the dynamics in it.", None))
+#if QT_CONFIG(tooltip)
+        self.label_79.setToolTip(QCoreApplication.translate("mainWindow", u"Number of static (sq) bins to split the drawn ROI into.\n"
+"The 'draw' Q-map method is not implemented yet.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_79.setText(QCoreApplication.translate("mainWindow", u"num_static_bins:", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_G2_num_sbin.setToolTip(QCoreApplication.translate("mainWindow", u"Number of static (sq) bins to split the drawn ROI into.\n"
+"The 'draw' Q-map method is not implemented yet.", None))
+#endif // QT_CONFIG(tooltip)
         self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Draw", None))
+#if QT_CONFIG(tooltip)
+        self.groupBox_23.setToolTip(QCoreApplication.translate("mainWindow", u"Outlier rejection and error-model settings, applied when you press\n"
+"ReGroup. Press Debug first to see what they do.", None))
+#endif // QT_CONFIG(tooltip)
         self.groupBox_23.setTitle(QCoreApplication.translate("mainWindow", u"Group Setting", None))
         self.comboBox_G2_outliermethod.setItemText(0, QCoreApplication.translate("mainWindow", u"MeanAbsoluteDeviation", None))
         self.comboBox_G2_outliermethod.setItemText(1, QCoreApplication.translate("mainWindow", u"StandardDeviation", None))
 
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_outliermethod.setToolTip(QCoreApplication.translate("mainWindow", u"How center and spread are estimated for each (sq bin, delay).\n"
+"MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are\n"
+"  hunting barely move the bound. Recommended.\n"
+"StandardDeviation - mean + std. Both are inflated by the very\n"
+"  pixels being tested, so it flags fewer of them.\n"
+"Pixels with a value of exactly 0 are treated as photon-starved and\n"
+"left out of the statistics either way.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_regroup.setToolTip(QCoreApplication.translate("mainWindow", u"Recompute g2 and g2_err from the per-pixel G2 cube using the chosen\n"
+"Q-map and outlier settings, for the first selected file.\n"
+"Runs on a background thread. The result lives in memory and replaces\n"
+"the Grouped g2 plot - press SaveToFile to write it out.", None))
+#endif // QT_CONFIG(tooltip)
         self.pushButton_G2_regroup.setText(QCoreApplication.translate("mainWindow", u"ReGroup", None))
+#if QT_CONFIG(tooltip)
+        self.checkBox_G2_removeoutlier.setToolTip(QCoreApplication.translate("mainWindow", u"Master switch for outlier rejection.\n"
+"When off, every live pixel in a sq bin contributes to the average\n"
+"and the settings to the right are ignored.", None))
+#endif // QT_CONFIG(tooltip)
         self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
+#if QT_CONFIG(tooltip)
+        self.label_76.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
+"within its own sq bin, evaluated per delay.\n"
+"Upper bound only - low values are never rejected.\n"
+"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
+"can drop over 10% of samples and visibly distort the curve. Check\n"
+"the Debug dialog before trusting a value.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
+#if QT_CONFIG(tooltip)
+        self.doubleSpinBox_G2_threshold.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
+"within its own sq bin, evaluated per delay.\n"
+"Upper bound only - low values are never rejected.\n"
+"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
+"can drop over 10% of samples and visibly distort the curve. Check\n"
+"the Debug dialog before trusting a value.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_savefile.setToolTip(QCoreApplication.translate("mainWindow", u"Write the regrouped g2 and g2_err into an HDF5 file, replacing the\n"
+"existing datasets. Defaults to overwriting the source file.", None))
+#endif // QT_CONFIG(tooltip)
         self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
+#if QT_CONFIG(tooltip)
+        self.checkBox_G2_combineoutlier.setToolTip(QCoreApplication.translate("mainWindow", u"Turn on the persistence filter: judge a pixel by how many delays it\n"
+"was flagged at rather than delay by delay. Min Tag sets the count.\n"
+"Off - each delay is filtered independently.\n"
+"This is what makes the G20 target usable: one flag mostly tracks the\n"
+"intensity gradient across a q ring, while a flag that repeats across\n"
+"most delays is a genuinely hot pixel.", None))
+#endif // QT_CONFIG(tooltip)
         self.checkBox_G2_combineoutlier.setText(QCoreApplication.translate("mainWindow", u"Combine Outlier", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_errormodel.setToolTip(QCoreApplication.translate("mainWindow", u"How g2_err is estimated. g2 itself is identical either way.\n"
+"per-pixel - spread of the individual pixels in the dq bin.\n"
+"sq-group - spread of the sq-bin averages making up the dq bin.\n"
+"Note: per-pixel is computed from all pixels, including rejected\n"
+"ones, so the outlier settings do not change these error bars.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_G2_errormodel.setText(QCoreApplication.translate("mainWindow", u"Error Model:", None))
         self.comboBox_G2_errormodel.setItemText(0, QCoreApplication.translate("mainWindow", u"per-pixel", None))
         self.comboBox_G2_errormodel.setItemText(1, QCoreApplication.translate("mainWindow", u"sq-group", None))
 
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_errormodel.setToolTip(QCoreApplication.translate("mainWindow", u"How g2_err is estimated. g2 itself is identical either way.\n"
+"per-pixel - spread of the individual pixels in the dq bin.\n"
+"sq-group - spread of the sq-bin averages making up the dq bin.\n"
+"Note: per-pixel is computed from all pixels, including rejected\n"
+"ones, so the outlier settings do not change these error bars.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_debug.setToolTip(QCoreApplication.translate("mainWindow", u"Show what the current outlier settings do to the first selected\n"
+"file: per-sq-bin histograms with the rejection bound drawn on, and a\n"
+"map of how many delays each pixel was flagged at.\n"
+"The Remove Outlier checkbox is deliberately ignored here, so you can\n"
+"preview a setting before enabling it.", None))
+#endif // QT_CONFIG(tooltip)
         self.pushButton_G2_debug.setText(QCoreApplication.translate("mainWindow", u"Debug", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_outliertarget.setToolTip(QCoreApplication.translate("mainWindow", u"Which per-pixel quantity the outlier test is computed on.\n"
+"g2-per-pixel - the normalized g2. Flags pixels whose correlation is\n"
+"  anomalous regardless of brightness. Unbiased; the default.\n"
+"G20 - the raw numerator G2[:,0]. Flags bright pixels, since G20\n"
+"  scales as intensity squared times g2.\n"
+"Warning: a plain per-delay G20 cut biases g2 downward, because\n"
+"trimming the numerator's bright tail lowers the very average it\n"
+"feeds. Pair G20 with Combine Outlier and a high Min Tag to build a\n"
+"hot-pixel mask instead.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_G2_outliertarget.setText(QCoreApplication.translate("mainWindow", u"Outlier Target:", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, and then\n"
+"reject them at every delay. Needs Combine Outlier.\n"
+"1 = flagged anywhere, flagged everywhere (the historical behaviour,\n"
+"and far too aggressive for the G20 target).\n"
+"Pick a value from the Debug dialog's bad-pixel map: with G20, a\n"
+"count near the delay total works well, e.g. 30 out of 34.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_G2_mintagcount.setText(QCoreApplication.translate("mainWindow", u"Min Tag:", None))
 #if QT_CONFIG(tooltip)
-        self.spinBox_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, at every delay. 1 = flagged anywhere, flagged everywhere.", None))
+        self.spinBox_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, and then\n"
+"reject them at every delay. Needs Combine Outlier.\n"
+"1 = flagged anywhere, flagged everywhere (the historical behaviour,\n"
+"and far too aggressive for the G20 target).\n"
+"Pick a value from the Debug dialog's bad-pixel map: with G20, a\n"
+"count near the delay total works well, e.g. 30 out of 34.", None))
 #endif // QT_CONFIG(tooltip)
         self.comboBox_G2_outliertarget.setItemText(0, QCoreApplication.translate("mainWindow", u"g2-per-pixel", None))
         self.comboBox_G2_outliertarget.setItemText(1, QCoreApplication.translate("mainWindow", u"G20", None))
 
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_outliertarget.setToolTip(QCoreApplication.translate("mainWindow", u"Which per-pixel quantity the outlier test is computed on.\n"
+"g2-per-pixel - the normalized g2. Flags pixels whose correlation is\n"
+"  anomalous regardless of brightness. Unbiased; the default.\n"
+"G20 - the raw numerator G2[:,0]. Flags bright pixels, since G20\n"
+"  scales as intensity squared times g2.\n"
+"Warning: a plain per-delay G20 cut biases g2 downward, because\n"
+"trimming the numerator's bright tail lowers the very average it\n"
+"feeds. Pair G20 with Combine Outlier and a high Min Tag to build a\n"
+"hot-pixel mask instead.", None))
+#endif // QT_CONFIG(tooltip)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 
