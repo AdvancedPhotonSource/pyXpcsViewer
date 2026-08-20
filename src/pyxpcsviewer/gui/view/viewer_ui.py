@@ -2371,10 +2371,34 @@ class Ui_mainWindow(object):
 
         self.gridLayout_50.addWidget(self.checkBox_G2_combineoutlier, 1, 0, 1, 2)
 
+        self.label_G2_errormodel = QLabel(self.groupBox_23)
+        self.label_G2_errormodel.setObjectName(u"label_G2_errormodel")
+
+        self.gridLayout_50.addWidget(self.label_G2_errormodel, 1, 2, 1, 1)
+
+        self.comboBox_G2_errormodel = QComboBox(self.groupBox_23)
+        self.comboBox_G2_errormodel.addItem("")
+        self.comboBox_G2_errormodel.addItem("")
+        self.comboBox_G2_errormodel.setObjectName(u"comboBox_G2_errormodel")
+
+        self.gridLayout_50.addWidget(self.comboBox_G2_errormodel, 1, 3, 1, 3)
+
         self.pushButton_G2_debug = QPushButton(self.groupBox_23)
         self.pushButton_G2_debug.setObjectName(u"pushButton_G2_debug")
 
         self.gridLayout_50.addWidget(self.pushButton_G2_debug, 1, 6, 1, 1)
+
+        self.label_G2_outliertarget = QLabel(self.groupBox_23)
+        self.label_G2_outliertarget.setObjectName(u"label_G2_outliertarget")
+
+        self.gridLayout_50.addWidget(self.label_G2_outliertarget, 2, 0, 1, 2)
+
+        self.comboBox_G2_outliertarget = QComboBox(self.groupBox_23)
+        self.comboBox_G2_outliertarget.addItem("")
+        self.comboBox_G2_outliertarget.addItem("")
+        self.comboBox_G2_outliertarget.setObjectName(u"comboBox_G2_outliertarget")
+
+        self.gridLayout_50.addWidget(self.comboBox_G2_outliertarget, 2, 2, 1, 4)
 
 
         self.verticalLayout_3.addWidget(self.groupBox_23)
@@ -2545,6 +2569,8 @@ class Ui_mainWindow(object):
         self.checkBox_G2_removeoutlier.toggled.connect(self.doubleSpinBox_G2_threshold.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliermethod.setEnabled)
         self.checkBox_G2_removeoutlier.toggled.connect(self.checkBox_G2_combineoutlier.setEnabled)
+        self.checkBox_G2_removeoutlier.toggled.connect(self.label_G2_outliertarget.setEnabled)
+        self.checkBox_G2_removeoutlier.toggled.connect(self.comboBox_G2_outliertarget.setEnabled)
         self.horizontalSlider_G2_delay.valueChanged.connect(self.spinBox_G2_delay.setValue)
         self.spinBox_G2_delay.valueChanged.connect(self.horizontalSlider_G2_delay.setValue)
 
@@ -2886,7 +2912,15 @@ class Ui_mainWindow(object):
         self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
         self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
         self.checkBox_G2_combineoutlier.setText(QCoreApplication.translate("mainWindow", u"Combine Outlier", None))
+        self.label_G2_errormodel.setText(QCoreApplication.translate("mainWindow", u"Error Model:", None))
+        self.comboBox_G2_errormodel.setItemText(0, QCoreApplication.translate("mainWindow", u"per-pixel", None))
+        self.comboBox_G2_errormodel.setItemText(1, QCoreApplication.translate("mainWindow", u"sq-group", None))
+
         self.pushButton_G2_debug.setText(QCoreApplication.translate("mainWindow", u"Debug", None))
+        self.label_G2_outliertarget.setText(QCoreApplication.translate("mainWindow", u"Outlier Target:", None))
+        self.comboBox_G2_outliertarget.setItemText(0, QCoreApplication.translate("mainWindow", u"G20", None))
+        self.comboBox_G2_outliertarget.setItemText(1, QCoreApplication.translate("mainWindow", u"g2-per-pixel", None))
+
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 

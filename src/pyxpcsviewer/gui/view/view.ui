@@ -4401,11 +4401,53 @@
                   </property>
                  </widget>
                 </item>
+                <item row="1" column="2">
+                 <widget class="QLabel" name="label_G2_errormodel">
+                  <property name="text">
+                   <string>Error Model:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3" colspan="3">
+                 <widget class="QComboBox" name="comboBox_G2_errormodel">
+                  <item>
+                   <property name="text">
+                    <string>per-pixel</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>sq-group</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
                 <item row="1" column="6">
                  <widget class="QPushButton" name="pushButton_G2_debug">
                   <property name="text">
                    <string>Debug</string>
                   </property>
+                 </widget>
+                </item>
+                <item row="2" column="0" colspan="2">
+                 <widget class="QLabel" name="label_G2_outliertarget">
+                  <property name="text">
+                   <string>Outlier Target:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2" colspan="4">
+                 <widget class="QComboBox" name="comboBox_G2_outliertarget">
+                  <item>
+                   <property name="text">
+                    <string>G20</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>g2-per-pixel</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                </layout>
@@ -5604,6 +5646,38 @@
     <hint type="destinationlabel">
      <x>1256</x>
      <y>690</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_G2_removeoutlier</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_G2_outliertarget</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>666</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1256</x>
+     <y>714</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_G2_removeoutlier</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>comboBox_G2_outliertarget</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>666</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1438</x>
+     <y>714</y>
     </hint>
    </hints>
   </connection>

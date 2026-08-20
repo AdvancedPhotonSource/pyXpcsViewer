@@ -5,13 +5,14 @@ import os
 import platform
 import sys
 import traceback
+from typing import Any
 
 import numpy as np
 import psutil
 import pyqtgraph as pg
 from pyqtgraph.parametertree import Parameter
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt, qInstallMessageHandler
+from PySide6.QtCore import qInstallMessageHandler
 from PySide6.QtWidgets import QMessageBox
 
 from pyxpcsviewer.core.g2_utils import has_G2_field
@@ -405,6 +406,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.comboBox_G2_outliermethod.currentText(),
             self.doubleSpinBox_G2_threshold.value(),
             self.checkBox_G2_combineoutlier.isChecked(),
+            self.comboBox_G2_outliertarget.currentText(),
             parent=self,
         )
         self._g2_debug_dialog.show()
@@ -417,7 +419,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         instead of the GUI thread: with outlier rejection enabled this can take
         several seconds, which would otherwise freeze the whole window.
         """
-        kwargs = {
+        # annotated: without it mypy infers dict[str, list[int]] from "rows" and
+        # rejects every str/float/bool setting added below
+        kwargs: dict[str, Any] = {
             "rows": self.get_selected_rows(),
         }
         if len(kwargs["rows"]) == 0:
@@ -441,6 +445,15 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             # kwargs["external_qmap"] = None
             raise NotImplementedError("draw qmap is not implemented yet")
             return
+
+        # g2_err estimator: "per-pixel" (scatter of pixels in the dq bin) or
+        # "sq-group" (scatter of the sq-bin averages); g2 itself is unaffected.
+        kwargs["error_model"] = self.comboBox_G2_errormodel.currentText()
+
+        # Which per-pixel quantity the outlier statistic runs on ("G20" or
+        # "g2-per-pixel"). Sent unconditionally: with rejection off the threshold
+        # of -1.0 makes it moot, and the kwargs dict keeps a stable shape.
+        kwargs["target"] = self.comboBox_G2_outliertarget.currentText()
 
         # Outlier removal settings from the G2 Regroup UI widgets
         if self.checkBox_G2_removeoutlier.isChecked():
@@ -472,34 +485,42 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.plots.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
 
     def plot_G2_regroup(self, dryrun: bool = False) -> dict | None:
-        """Display the G2 correlation data from regrouped results (or returns kwargs in dry-run mode)."""
+        """Display the G2 correlation data from regrouped results (or returns kwargs in dry-run mode).
+
+        Falls back to the first target file when nothing is selected, so entering
+        the tab shows data instead of waiting for a click. The read itself is one
+        detector frame out of the G2 cube (see
+        :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_G2_data`), fast enough
+        that no progress dialog is warranted.
+        """
+        rows = self.get_selected_rows()
+        if len(rows) == 0 and len(self.model.target) > 0:
+            rows = [0]
         kwargs = {
-            "rows": self.get_selected_rows(),
+            "rows": rows,
             "target": self.comboBox_G2_target.currentText(),
             "delay_index": self.horizontalSlider_G2_delay.value(),
             "cmap": self.cb_saxs2D_cmap.currentText(),
             "vmin": self.doubleSpinBox_G2_vmin.value(),
             "vmax": self.doubleSpinBox_G2_vmax.value(),
         }
-        if len(kwargs["rows"]) == 0:
-            # no dataset selected
-            return
+        if len(rows) == 0:
+            # no target files at all
+            return None
 
         if dryrun:
             return kwargs
 
-        if not has_G2_field(self.model.target[kwargs["rows"][0]]):
-            QMessageBox.critical(self, "No G2 data found", "No G2 data found in the selected dataset.")
-            return
+        fname = self.model.target[rows[0]]
+        if not has_G2_field(fname):
+            # non-modal: this path now runs on every tab switch and selection
+            # change, so a modal box here would be in the way
+            logger.warning("no unnormalized G2 data in %s", fname)
+            self.statusbar.showMessage("No G2 data in the selected dataset.", 5000)
+            return None
 
-        self.progress = QtWidgets.QProgressDialog("Loading data, please wait...", None, 0, 0, self)
-        self.progress.setWindowModality(Qt.WindowModal)  # Blocks interaction with main window
-        self.progress.setRange(0, 0)  # Setting 0,0 makes it an infinite "spinner"
-        self.progress.show()
         self.plots.plot_G2_regroup(self.pg_regroup_G2, **kwargs)
-        self.progress.close()
-
-        return
+        return None
 
     def plot_metadata(self, dryrun: bool = False) -> dict | None:
         """Display HDF5 metadata in a ParameterTree widget (or return kwargs in dry-run)."""

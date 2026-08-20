@@ -74,8 +74,11 @@ class _FakeCheckbox:
 
 
 class _FakeCombo:
+    def __init__(self, text="MeanAbsoluteDeviation"):
+        self._text = text
+
     def currentText(self):
-        return "MeanAbsoluteDeviation"
+        return self._text
 
 
 class _FakeSpin:
@@ -128,6 +131,8 @@ class _FakeWindow:
         self.comboBox_G2_outliermethod = _FakeCombo()
         self.doubleSpinBox_G2_threshold = _FakeSpin()
         self.checkBox_G2_combineoutlier = _FakeCheckbox(False)
+        self.comboBox_G2_errormodel = _FakeCombo("per-pixel")
+        self.comboBox_G2_outliertarget = _FakeCombo("G20")
         self.pg_regroup_g2 = object()
         self._selected_rows = list(selected_rows)
         # process_G2_regroup passes this as the on_finished callback; bind the
@@ -154,6 +159,7 @@ def test_process_G2_regroup_disables_buttons_then_reenables_and_replots(qapp):
     assert _pump(qapp, lambda: window.pushButton_G2_regroup.isEnabled())
 
     assert window.plots.calls and window.plots.calls[0]["rows"] == [0]
+    assert window.plots.calls[0]["error_model"] == "per-pixel"
     assert window.pushButton_G2_savefile.isEnabled()
     assert window.plots.plot_g2_calls and window.plots.plot_g2_calls[0][1] == {"dryrun": True}
 
@@ -184,3 +190,37 @@ def test_process_G2_regroup_noop_without_selection(qapp):
 
     assert window.plots.calls == []
     assert window.pushButton_G2_regroup.isEnabled()
+
+
+def test_process_G2_regroup_forwards_the_outlier_target(qapp):
+    """The target picked in the UI must reach compute_g2, not silently default."""
+    window = _FakeWindow()
+    window.checkBox_G2_removeoutlier = _FakeCheckbox(True)  # the fake has no setChecked()
+    window.comboBox_G2_outliertarget = _FakeCombo("g2-per-pixel")
+
+    XpcsViewer.process_G2_regroup(window)
+
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["target"] == "g2-per-pixel"
+
+
+def test_process_G2_regroup_sends_target_even_with_rejection_off(qapp):
+    """outlier_threshold=-1 makes target moot, but the kwargs shape stays stable."""
+    window = _FakeWindow()  # checkBox_G2_removeoutlier defaults to False
+
+    XpcsViewer.process_G2_regroup(window)
+
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["outlier_threshold"] == -1.0
+    assert window.plots.calls[0]["target"] == "G20"
+
+
+def test_outlier_target_combo_exists_with_both_targets(qapp, tmp_path):
+    """The generated UI exposes the combo, with item text matching OUTLIER_TARGETS."""
+    from pyxpcsviewer.core.g2_utils import OUTLIER_TARGETS
+
+    window = XpcsViewer(path=str(tmp_path))
+    combo = window.comboBox_G2_outliertarget
+    items = [combo.itemText(i) for i in range(combo.count())]
+    assert items == list(OUTLIER_TARGETS)
+    assert combo.currentText() == "G20"
