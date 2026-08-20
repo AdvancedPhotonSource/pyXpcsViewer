@@ -7,9 +7,8 @@ selected Multitau file. It visualizes what the configured outlier settings
 (method / threshold / combine) do to the per-pixel g2:
 
 * "sq-bin histograms" tab: per-sq-bin histograms of g2_pixel with the
-  center + threshold*spread bounds used by find_g2_pixel_outliers — either
-  all delays for one bin (bin sweep) or all bins for one delay (delay sweep,
-  paged).
+  center + threshold*spread bounds used by find_g2_pixel_outliers, for all
+  delays of one selectable bin (bin sweep).
 * "Bad-pixel map" tab: detector image of how many delays each pixel was
   flagged as an outlier, with a minimum-tag filter.
 
@@ -143,83 +142,6 @@ class _BinSweepPanel(QtWidgets.QWidget):
             _add_hist(item, values, n_outlier, f"delay={delay}", self._method, self._threshold)
 
 
-class _DelaySweepPanel(QtWidgets.QWidget):
-    """All-sq-bin histogram grid for one selectable delay, paged 60 per page."""
-
-    PER_PAGE = 60
-    COLS = 12
-
-    def __init__(
-        self,
-        bundle: dict[str, Any],
-        method: str,
-        threshold: float,
-        parent: QtWidgets.QWidget | None = None,
-    ) -> None:
-        super().__init__(parent)
-        self._bundle = bundle
-        self._method = method
-        self._threshold = threshold
-        self._page = 0
-
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        top = QtWidgets.QHBoxLayout()
-        top.addWidget(QtWidgets.QLabel("delay:"))
-        self.spin = QtWidgets.QSpinBox()
-        self.spin.setObjectName("g2_debug_delay_spin")
-        self.spin.setRange(0, bundle["n_delays"] - 1)
-        self.spin.valueChanged.connect(self._render)
-        top.addWidget(self.spin)
-        self.prev_btn = QtWidgets.QToolButton()
-        self.prev_btn.setObjectName("g2_debug_prev_btn")
-        self.prev_btn.setText("◀")
-        self.prev_btn.clicked.connect(lambda: self._goto_page(self._page - 1))
-        top.addWidget(self.prev_btn)
-        self.page_label = QtWidgets.QLabel("")
-        self.page_label.setObjectName("g2_debug_page_label")
-        top.addWidget(self.page_label)
-        self.next_btn = QtWidgets.QToolButton()
-        self.next_btn.setObjectName("g2_debug_next_btn")
-        self.next_btn.setText("▶")
-        self.next_btn.clicked.connect(lambda: self._goto_page(self._page + 1))
-        top.addWidget(self.next_btn)
-        top.addStretch(1)
-        layout.addLayout(top)
-
-        self.glw = pg.GraphicsLayoutWidget()
-        layout.addWidget(self.glw)
-        self._render()
-
-    def _n_pages(self) -> int:
-        n_sq = int(self._bundle["n_sq"])
-        return math.ceil(n_sq / self.PER_PAGE)
-
-    def _goto_page(self, page: int) -> None:
-        self._page = max(0, min(page, self._n_pages() - 1))
-        self._render()
-
-    def _render(self) -> None:
-        self.glw.clear()
-        delay = self.spin.value()
-        first = self._page * self.PER_PAGE + 1
-        last = min(first + self.PER_PAGE - 1, self._bundle["n_sq"])
-        for i, d in enumerate(range(first, last + 1)):
-            row, col = divmod(i, self.COLS)
-            item = self.glw.addPlot(row=row, col=col)
-            roi = self._bundle["sqmap_1d"] == d
-            if int(roi.sum()) == 0:
-                item.setTitle(f"sq={d}  (empty)")
-                continue
-            values = self._bundle["g2_pixel"][delay][roi]
-            values = values[values != 0]
-            n_outlier = int(self._bundle["bad"][delay][roi].sum())
-            _add_hist(item, values, n_outlier, f"sq={d}", self._method, self._threshold)
-        self.page_label.setText(f"page {self._page + 1}/{self._n_pages()}")
-        self.prev_btn.setEnabled(self._page > 0)
-        self.next_btn.setEnabled(self._page < self._n_pages() - 1)
-
-
 class _BadMapPanel(QtWidgets.QWidget):
     """Detector image of outlier tag counts with a minimum-tag filter."""
 
@@ -294,10 +216,7 @@ def build_debug_plots(
     layout.addWidget(header)
 
     tabs = QtWidgets.QTabWidget()
-    splitter = QtWidgets.QSplitter(Qt.Orientation.Vertical)
-    splitter.addWidget(_BinSweepPanel(bundle, method, threshold))
-    splitter.addWidget(_DelaySweepPanel(bundle, method, threshold))
-    tabs.addTab(splitter, "sq-bin histograms")
+    tabs.addTab(_BinSweepPanel(bundle, method, threshold), "sq-bin histograms")
     tabs.addTab(_BadMapPanel(bundle), "Bad-pixel map")
     layout.addWidget(tabs)
     return tabs

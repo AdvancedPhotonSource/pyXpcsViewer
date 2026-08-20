@@ -30,7 +30,6 @@ from pyxpcsviewer.gui.view.g2_debug_dialog import (
     G2DebugDialog,
     _BadMapPanel,
     _BinSweepPanel,
-    _DelaySweepPanel,
     _XpcsFileLike,
     build_debug_plots,
 )
@@ -66,17 +65,6 @@ def _zero_bin_bundle():
     sqmap[1, :] = 2
     sqmap[2, :] = 3
     dqmap = np.ones((3, 4), dtype=np.uint16)
-    return compute_g2_debug_bundle(sqmap, dqmap, G2)
-
-
-def _paged_bundle():
-    """1 delay, (8, 16) image, 128 sq bins (one per pixel) -> 3 pages of 60."""
-    G2 = np.zeros((1, 3, 8, 16), dtype=np.float32)
-    G2[:, 0] = 1.0
-    G2[:, 1] = 1.0
-    G2[:, 2] = 1.0
-    sqmap = np.arange(1, 129, dtype=np.uint16).reshape(8, 16)
-    dqmap = np.ones((8, 16), dtype=np.uint16)
     return compute_g2_debug_bundle(sqmap, dqmap, G2)
 
 
@@ -138,35 +126,6 @@ def test_bin_sweep_all_zero_bin(qapp):
     panel.spin.setValue(2)
     plot0 = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
     assert "all zero" in plot0.titleLabel.text
-
-
-def test_delay_sweep_paging(qapp):
-    host = _host()
-    build_debug_plots(host, _paged_bundle(), "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
-    label = host.findChild(QtWidgets.QLabel, "g2_debug_page_label")
-    prev = host.findChild(QtWidgets.QToolButton, "g2_debug_prev_btn")
-    next_ = host.findChild(QtWidgets.QToolButton, "g2_debug_next_btn")
-    assert label.text() == "page 1/3"
-    assert not prev.isEnabled()
-    assert next_.isEnabled()
-    next_.click()
-    assert label.text() == "page 2/3"
-    next_.click()
-    assert label.text() == "page 3/3"
-    assert not next_.isEnabled()
-    prev.click()
-    assert label.text() == "page 2/3"
-
-
-def test_delay_sweep_plot_counts(qapp):
-    host = _host()
-    build_debug_plots(host, _paged_bundle(), "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
-    panel = host.findChild(_DelaySweepPanel)
-    plots = [it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem)]
-    assert len(plots) == 60  # first page: bins 1-60
-    panel._goto_page(2)
-    plots = [it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem)]
-    assert len(plots) == 8  # last page: bins 121-128
 
 
 def test_bad_map_and_mintag_remask(qapp, bundle):
