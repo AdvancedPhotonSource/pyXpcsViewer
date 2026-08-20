@@ -25,11 +25,13 @@ from pyxpcsviewer.gui.view.g2_debug_dialog import _BadMapPanel, _BinSweepPanel, 
 
 
 def make_synthetic():
-    """(2 delays, 3 ch, 4x4) G2: dead pixel (0,0); sq 2 rows 2-3 hold two
-    outliers — pixel 15=(3,3) and pixel 8=(2,0) at 10.0 at BOTH delays."""
+    """(2 delays, 3 ch, 4x4) G2: dead pixel (0,0); sq 2 rows 2-3 hold
+    pixel 15=(3,3) and pixel 8=(2,0) at 10.0 at BOTH delays, and pixel
+    13=(3,1) at 10.0 at delay 0 only (a count-1 outlier)."""
     IP = np.ones((2, 4, 4), dtype=np.float32)
     IP[:, 3, 3] = 10.0
     IP[:, 2, 0] = 10.0
+    IP[0, 3, 1] = 10.0
     IF = np.ones((2, 4, 4), dtype=np.float32)
     IF[:, 0, 0] = 0.0
     G2 = np.stack([IP, IF, IF], axis=1).astype(np.float32)
@@ -111,7 +113,7 @@ def test_bin_sweep_spin_switches_bin(qapp, bundle):
     spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_sq_spin")
     spin.setValue(2)
     plot0 = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
-    assert "out=2" in plot0.titleLabel.text  # pixels 15 and 8 flagged
+    assert "out=3" in plot0.titleLabel.text  # pixels 15, 8 (both delays) and 13 (delay 0)
     spin.setValue(1)
     plot0 = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
     assert "out=0" in plot0.titleLabel.text
@@ -166,13 +168,20 @@ def test_bad_map_and_mintag_remask(qapp, bundle):
 
     img = view.getProcessedImage()
     assert img.shape == (4, 4)
-    # pixels 15=(3,3) and 8=(2,0) are flagged at both delays -> count 2
+    # pixels 15=(3,3) and 8=(2,0) are flagged at both delays -> count 2;
+    # pixel 13=(3,1) only at delay 0 -> count 1
     assert img[3, 3] == 2 and img[2, 0] == 2
+    assert img[3, 1] == 1
     assert int(img.max()) == 2
-    assert "tagged ≥1: 2" in summary.text()
+    assert "tagged ≥1: 3" in summary.text()
     assert "dead pixels = 1" in summary.text()
 
     spin.setValue(2)
     img2 = view.getProcessedImage()
+    assert img2[3, 1] == 0  # the count-1 pixel is masked by the min-tag filter
     assert int((img2 == 2).sum()) == 2  # only the two count==2 pixels remain
     assert "tagged ≥2: 2" in summary.text()
+    # min_tag == max count must not collapse levels to (c, c) — that would
+    # render the remaining pixels in the colormap's low color
+    lo, hi = view.ui.histogram.region.getRegion()
+    assert hi > lo

@@ -253,7 +253,10 @@ class _BadMapPanel(QtWidgets.QWidget):
         img[self._counts < min_tag] = 0.0
         vmax = max(1, int(self._counts.max()))
         self.view.setImage(img)
-        self.view.setLevels(min_tag, vmax)
+        # keep the level range non-degenerate: at min_tag == vmax, levels
+        # (c, c) would map the remaining pixels to the colormap's low color
+        lo = min(min_tag, vmax - 1) if vmax > 1 else 0
+        self.view.setLevels(lo, vmax)
         n = int(np.sum(self._counts >= min_tag))
         total = int(self._counts.size)
         self.summary.setText(
