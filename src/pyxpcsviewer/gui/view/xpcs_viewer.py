@@ -356,13 +356,50 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         if os.path.isfile(f):
             self.label_G2_external_qmapfname.setText(f)
 
+    def _resolve_G2_target_rows(self, title: str) -> list[int] | None:
+        """Resolve which target file the G2 regroup actions apply to.
+
+        All three act on a single file. An explicit selection always wins. With
+        nothing selected there is exactly one unambiguous fallback -- a lone
+        target file -- so use it; anything else is genuinely ambiguous and says
+        so, because silently doing nothing reads as a broken button.
+
+        Args:
+            title: Message-box title, e.g. ``"ReGroup"``.
+
+        Returns:
+            The rows to act on, or ``None`` if the caller should abort (a
+            warning has already been shown).
+        """
+        rows = self.get_selected_rows()
+        if rows:
+            return rows
+
+        n_target = len(self.model.target) if self.model is not None else 0
+        if n_target == 1:
+            self.statusbar.showMessage(f"{title}: using the only file in the target list.", 5000)
+            return [0]
+        if n_target == 0:
+            QMessageBox.warning(
+                self,
+                title,
+                "No files in the target list.\n\nAdd a file before running this.",
+            )
+        else:
+            QMessageBox.warning(
+                self,
+                title,
+                f"Nothing is selected, and there are {n_target} files in the target list.\n\n"
+                "Select the file you want to use.",
+            )
+        return None
+
     def savefile_G2_regroup(self):
         """Prompt the user to choose a save location and delegate to :meth:`PlotController.savefile_G2_regroup`."""
-        kwargs = {
-            "rows": self.get_selected_rows(),
-        }
-        if len(kwargs["rows"]) == 0:
+        rows = self._resolve_G2_target_rows("Save G2 regrouping")
+        if rows is None:
             return None
+        kwargs = {"rows": rows}
 
         save_fname = QtWidgets.QFileDialog.getSaveFileName(
             self, caption="select the save file for G2 regrouping", dir=None
@@ -382,13 +419,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def debug_G2_regroup(self) -> None:
         """Open the G2 outlier debug dialog for the first selected Multitau file.
 
+        Falls back to a lone target file when nothing is selected, and warns
+        when the choice is ambiguous (see :meth:`_resolve_G2_target_rows`).
+
         The configured threshold/method are always applied (the "Remove
         Outlier" checkbox is deliberately ignored — the dialog shows what
         the settings would do). The heavy load/compute runs on a QThread
         inside the dialog.
         """
-        rows = self.get_selected_rows()
-        if len(rows) == 0:
+        rows = self._resolve_G2_target_rows("G2 outlier debug")
+        if rows is None:
             return
         xf_list = self.model.get_xf_list(rows, filter_atype="Multitau")  # type: ignore[union-attr]
         if len(xf_list) == 0:
@@ -419,14 +459,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         :meth:`~pyxpcsviewer.gui.control.job_manager.JobManager.submit_g2_regroup`
         instead of the GUI thread: with outlier rejection enabled this can take
         several seconds, which would otherwise freeze the whole window.
+
+        With nothing selected, falls back to a lone target file and warns
+        otherwise (see :meth:`_resolve_G2_target_rows`).
         """
         # annotated: without it mypy infers dict[str, list[int]] from "rows" and
         # rejects every str/float/bool setting added below
-        kwargs: dict[str, Any] = {
-            "rows": self.get_selected_rows(),
-        }
-        if len(kwargs["rows"]) == 0:
+        rows = self._resolve_G2_target_rows("ReGroup")
+        if rows is None:
             return None
+        kwargs: dict[str, Any] = {"rows": rows}
 
         qmap_method = {0: "internal", 1: "external", 2: "draw"}[self.tabWidget_G2_regroup.currentIndex()]
 

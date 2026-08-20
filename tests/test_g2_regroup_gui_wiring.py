@@ -94,6 +94,14 @@ class _FakeIntSpin:
         return self._value
 
 
+class _FakeStatusBar:
+    def __init__(self):
+        self.messages = []
+
+    def showMessage(self, text, timeout=0):
+        self.messages.append(text)
+
+
 class _FakeTabWidget:
     def currentIndex(self):
         return 0  # "internal" qmap method
@@ -128,7 +136,7 @@ class _JobsStandIn:
 class _FakeWindow:
     """Duck-typed stand-in for XpcsViewer exposing only what process_G2_regroup touches."""
 
-    def __init__(self, selected_rows=(0,), regroup_exc=None):
+    def __init__(self, selected_rows=(0,), regroup_exc=None, n_targets=1):
         self.thread_pool = QtCore.QThreadPool()
         self.jobs = _JobsStandIn(self.thread_pool)
         self.plots = _FakePlots(exc=regroup_exc)
@@ -143,11 +151,14 @@ class _FakeWindow:
         self.comboBox_G2_outliertarget = _FakeCombo("g2-per-pixel")
         self.spinBox_G2_mintagcount = _FakeIntSpin(1)
         self.pg_regroup_g2 = object()
+        self.statusbar = _FakeStatusBar()
+        self.model = types.SimpleNamespace(target=[f"f{i}.hdf" for i in range(n_targets)])
         self._selected_rows = list(selected_rows)
         # process_G2_regroup passes this as the on_finished callback; bind the
         # real XpcsViewer implementation since it only touches attributes this
         # fake already provides (buttons, plots, plot_g2, pg_regroup_g2).
         self._on_G2_regroup_finished = types.MethodType(XpcsViewer._on_G2_regroup_finished, self)
+        self._resolve_G2_target_rows = types.MethodType(XpcsViewer._resolve_G2_target_rows, self)
 
     def get_selected_rows(self):
         return self._selected_rows
@@ -192,13 +203,57 @@ def test_process_G2_regroup_failure_reenables_buttons_and_reports_error(qapp, mo
     assert not window.plots.plot_g2_calls  # no replot on failure
 
 
-def test_process_G2_regroup_noop_without_selection(qapp):
-    window = _FakeWindow(selected_rows=())
+def test_process_G2_regroup_uses_the_only_file_when_nothing_is_selected(qapp):
+    """One file in the list is an unambiguous choice, so don't make the user
+    click it -- a dead ReGroup button reads as broken."""
+    window = _FakeWindow(selected_rows=(), n_targets=1)
+
+    XpcsViewer.process_G2_regroup(window)
+
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["rows"] == [0]
+    assert any("only file" in m for m in window.statusbar.messages)
+
+
+def test_process_G2_regroup_warns_when_the_choice_is_ambiguous(qapp, monkeypatch):
+    window = _FakeWindow(selected_rows=(), n_targets=3)
+    warned = []
+    monkeypatch.setattr(
+        "pyxpcsviewer.gui.view.xpcs_viewer.QMessageBox.warning",
+        lambda *args, **kwargs: warned.append(args),
+    )
 
     XpcsViewer.process_G2_regroup(window)
 
     assert window.plots.calls == []
-    assert window.pushButton_G2_regroup.isEnabled()
+    assert window.pushButton_G2_regroup.isEnabled()  # not left disabled on the abort
+    assert len(warned) == 1
+    assert "3 files" in warned[0][2]
+
+
+def test_process_G2_regroup_warns_when_no_files_are_loaded(qapp, monkeypatch):
+    window = _FakeWindow(selected_rows=(), n_targets=0)
+    warned = []
+    monkeypatch.setattr(
+        "pyxpcsviewer.gui.view.xpcs_viewer.QMessageBox.warning",
+        lambda *args, **kwargs: warned.append(args),
+    )
+
+    XpcsViewer.process_G2_regroup(window)
+
+    assert window.plots.calls == []
+    assert "No files in the target list" in warned[0][2]
+
+
+def test_explicit_selection_wins_over_the_fallback(qapp):
+    """A selection is never second-guessed, even with other files present."""
+    window = _FakeWindow(selected_rows=(2,), n_targets=5)
+
+    XpcsViewer.process_G2_regroup(window)
+
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["rows"] == [2]
+    assert window.statusbar.messages == []
 
 
 def test_process_G2_regroup_forwards_the_outlier_target(qapp):

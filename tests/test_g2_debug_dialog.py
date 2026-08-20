@@ -285,14 +285,21 @@ def test_dialog_failed_path(qapp):
     assert "disk error" in shown[0]
 
 
-def test_debug_button_wired(qapp, tmp_path):
+def test_debug_button_wired(qapp, tmp_path, monkeypatch):
     from pyxpcsviewer.gui.view.xpcs_viewer import XpcsViewer
 
+    warned = []
+    monkeypatch.setattr(
+        "pyxpcsviewer.gui.view.xpcs_viewer.QMessageBox.warning",
+        lambda *args, **kwargs: warned.append(args),
+    )
     window = XpcsViewer(path=str(tmp_path))
     assert window.pushButton_G2_debug is not None
     assert window._g2_debug_dialog is None
-    window.debug_G2_regroup()  # no selection: silent no-op, no dialog
+    window.debug_G2_regroup()  # empty target list: warn, no dialog
     assert window._g2_debug_dialog is None
+    assert len(warned) == 1
+    assert "No files in the target list" in warned[0][2]
 
 
 def test_bin_sweep_slider_fills_the_row(qapp, bundle):
