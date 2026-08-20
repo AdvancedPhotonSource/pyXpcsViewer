@@ -217,6 +217,51 @@ class _DelaySweepPanel(QtWidgets.QWidget):
         self.next_btn.setEnabled(self._page < self._n_pages() - 1)
 
 
+class _BadMapPanel(QtWidgets.QWidget):
+    """Detector image of outlier tag counts with a minimum-tag filter."""
+
+    def __init__(self, bundle: dict[str, Any], parent: QtWidgets.QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._counts = bundle["bad"].sum(axis=0).reshape(bundle["img_shape"])
+        self._n_dead = bundle["n_dead"]
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        top = QtWidgets.QHBoxLayout()
+        top.addWidget(QtWidgets.QLabel("min tag count:"))
+        self.spin = QtWidgets.QSpinBox()
+        self.spin.setObjectName("g2_debug_mintag_spin")
+        self.spin.setRange(1, max(1, int(self._counts.max())))
+        self.spin.valueChanged.connect(self._render)
+        top.addWidget(self.spin)
+        self.summary = QtWidgets.QLabel("")
+        self.summary.setObjectName("g2_debug_map_summary")
+        top.addWidget(self.summary)
+        top.addStretch(1)
+        layout.addLayout(top)
+
+        self.view = pg.ImageView()
+        self.view.setObjectName("g2_debug_map_view")
+        self.view.roi.setVisible(False)
+        self.view.setColorMap(pg.colormap.getFromMatplotlib("hot"))
+        layout.addWidget(self.view)
+        self._render()
+
+    def _render(self) -> None:
+        min_tag = self.spin.value()
+        img = self._counts.astype(float)
+        img[self._counts < min_tag] = 0.0
+        vmax = max(1, int(self._counts.max()))
+        self.view.setImage(img)
+        self.view.setLevels(min_tag, vmax)
+        n = int(np.sum(self._counts >= min_tag))
+        total = int(self._counts.size)
+        self.summary.setText(
+            f"tagged ≥{min_tag}: {n} ({100.0 * n / total:.3f}%), "
+            f"max count = {int(self._counts.max())}, dead pixels = {self._n_dead}"
+        )
+
+
 def build_debug_plots(
     widget: QtWidgets.QWidget,
     bundle: dict[str, Any],
@@ -228,7 +273,7 @@ def build_debug_plots(
     """Populate *widget* with the debug header and the two tabs.
 
     Appends to *widget*'s existing layout and returns the QTabWidget.
-    Tab 1 (bad-pixel map) is filled in by a later task.
+    Tab 1 is the bad-pixel map panel (``_BadMapPanel``).
     """
     layout = widget.layout()
     if layout is None:
@@ -247,6 +292,6 @@ def build_debug_plots(
     splitter.addWidget(_BinSweepPanel(bundle, method, threshold))
     splitter.addWidget(_DelaySweepPanel(bundle, method, threshold))
     tabs.addTab(splitter, "sq-bin histograms")
-    tabs.addTab(QtWidgets.QWidget(), "Bad-pixel map")
+    tabs.addTab(_BadMapPanel(bundle), "Bad-pixel map")
     layout.addWidget(tabs)
     return tabs

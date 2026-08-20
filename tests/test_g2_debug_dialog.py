@@ -21,7 +21,7 @@ import pyqtgraph as pg
 from PySide6 import QtWidgets
 
 from pyxpcsviewer.core.g2_utils import compute_g2_debug_bundle
-from pyxpcsviewer.gui.view.g2_debug_dialog import _BinSweepPanel, _DelaySweepPanel, build_debug_plots
+from pyxpcsviewer.gui.view.g2_debug_dialog import _BadMapPanel, _BinSweepPanel, _DelaySweepPanel, build_debug_plots
 
 
 def make_synthetic():
@@ -153,3 +153,26 @@ def test_delay_sweep_plot_counts(qapp):
     panel._goto_page(2)
     plots = [it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem)]
     assert len(plots) == 8  # last page: bins 121-128
+
+
+def test_bad_map_and_mintag_remask(qapp, bundle):
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BadMapPanel)
+    assert panel is not None
+    view = host.findChild(pg.ImageView, "g2_debug_map_view")
+    spin = host.findChild(QtWidgets.QSpinBox, "g2_debug_mintag_spin")
+    summary = host.findChild(QtWidgets.QLabel, "g2_debug_map_summary")
+
+    img = view.getProcessedImage()
+    assert img.shape == (4, 4)
+    # pixels 15=(3,3) and 8=(2,0) are flagged at both delays -> count 2
+    assert img[3, 3] == 2 and img[2, 0] == 2
+    assert int(img.max()) == 2
+    assert "tagged ≥1: 2" in summary.text()
+    assert "dead pixels = 1" in summary.text()
+
+    spin.setValue(2)
+    img2 = view.getProcessedImage()
+    assert int((img2 == 2).sum()) == 2  # only the two count==2 pixels remain
+    assert "tagged ≥2: 2" in summary.text()
