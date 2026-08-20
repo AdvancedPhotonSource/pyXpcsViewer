@@ -1,6 +1,7 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
 import warnings
+from typing import Any
 
 import h5py
 import numpy as np
@@ -336,3 +337,59 @@ def regroup_G2(
         outlier_threshold=outlier_threshold,
         combine_outlier=combine_outlier,
     )
+
+
+def compute_g2_debug_bundle(
+    sqmap: np.ndarray,
+    dqmap: np.ndarray,
+    G2: np.ndarray,
+    outlier_method: str = "MeanAbsoluteDeviation",
+    outlier_threshold: float = 3.0,
+    combine_outlier: bool = False,
+) -> dict[str, Any]:
+    """Compute the per-pixel data the G2 outlier debug dialog plots.
+
+    Mirrors :func:`compute_g2` preprocessing exactly (dead-pixel masking,
+    normalize) and runs the same outlier pass, so the dialog visualizes what
+    ReGroup actually sees. Pure numpy, no file IO.
+
+    Args:
+        sqmap: Static ROI map, shape ``(img_v, img_h)``.
+        dqmap: Dynamic ROI map, shape ``(img_v, img_h)``.
+        G2: Unnormalized G2, shape ``(n_delays, 3, img_v, img_h)``.
+        outlier_method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``.
+        outlier_threshold: Upper-bound rejection threshold (MADs / std devs).
+        combine_outlier: If ``True``, union outlier masks across all delays
+            per sq bin (same semantics as :func:`find_g2_pixel_outliers`).
+
+    Returns:
+        Dict with ``g2_pixel`` (n_delays, n_pixels), ``bad`` (bool, same shape),
+        ``sqmap_1d`` / ``dqmap_1d`` (dead pixels set to 0), ``img_shape``
+        ``(img_v, img_h)``, ``n_delays``, ``n_sq``, ``n_dq``, ``n_dead``.
+    """
+    n_delays, n_channels, img_v, img_h = G2.shape
+    G2 = G2.reshape(n_delays, n_channels, -1)
+    sqmap_1d = sqmap.ravel().copy()
+    dqmap_1d = dqmap.ravel().copy()
+
+    dead = np.all((G2[:, 1] == 0) & (G2[:, 2] == 0), axis=0)
+    n_dead = int(np.sum(dead))
+    sqmap_1d[dead] = 0
+    dqmap_1d[dead] = 0
+
+    g2_pixel = normalize_g2(G2)  # type: ignore[no-untyped-call]
+    bad = find_g2_pixel_outliers(  # type: ignore[no-untyped-call]
+        sqmap_1d, g2_pixel, threshold=outlier_threshold, method=outlier_method, combine_outlier=combine_outlier
+    )
+
+    return {
+        "g2_pixel": g2_pixel,
+        "bad": bad,
+        "sqmap_1d": sqmap_1d,
+        "dqmap_1d": dqmap_1d,
+        "img_shape": (img_v, img_h),
+        "n_delays": n_delays,
+        "n_sq": int(np.max(sqmap_1d)),
+        "n_dq": int(np.max(dqmap_1d)),
+        "n_dead": n_dead,
+    }
