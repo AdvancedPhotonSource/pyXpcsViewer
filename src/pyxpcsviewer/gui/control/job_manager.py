@@ -11,6 +11,7 @@ from pyxpcsviewer.core.fitting import create_fit_pool
 from .average_toolbox import AverageToolbox
 from .background_job import WorkerSlot
 from .g2_fit_worker import G2FitWorker
+from .g2_regroup_worker import G2RegroupWorker
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class JobManager:
         self.thread_pool = thread_pool
         self._avg = WorkerSlot()
         self._g2_fit = WorkerSlot()
+        self._g2_regroup = WorkerSlot()
         self.avg_jid = 0
         self.avg_worker_active = {}
 
@@ -64,6 +66,11 @@ class JobManager:
     def g2_fit_worker(self):
         """The in-flight :class:`~.g2_fit_worker.G2FitWorker`, or ``None``."""
         return self._g2_fit.worker
+
+    @property
+    def g2_regroup_worker(self):
+        """The in-flight :class:`~.g2_regroup_worker.G2RegroupWorker`, or ``None``."""
+        return self._g2_regroup.worker
 
     def submit_average(self, status_bar, progress_bar, on_finished, *args, **kwargs):
         """Create, wire, and start an :class:`AverageToolbox` job for the current targets.
@@ -127,6 +134,27 @@ class JobManager:
 
         worker = G2FitWorker(xf_list, q_range, t_range, bounds, fit_flag, fit_func, executor=self._fit_pool)
         self._g2_fit.start(self.thread_pool, worker, on_finished=on_finished)
+        return worker
+
+    def submit_g2_regroup(self, plots, kwargs, on_finished):
+        """Create and start a :class:`G2RegroupWorker` job.
+
+        Args:
+            plots: The ``PlotController`` instance to call ``process_G2_regroup`` on.
+            kwargs: Keyword arguments forwarded to ``PlotController.process_G2_regroup``.
+            on_finished: Slot called with ``None`` on success, or an error
+                message string if ``process_G2_regroup`` raised.
+
+        Returns:
+            The started :class:`G2RegroupWorker`, or ``None`` if a G2 regroup
+            job is already running.
+        """
+        if self._g2_regroup.busy:
+            logger.error("a G2 regroup job is already running")
+            return None
+
+        worker = G2RegroupWorker(plots, kwargs)
+        self._g2_regroup.start(self.thread_pool, worker, on_finished=on_finished)
         return worker
 
     def update_avg_values(self, data: tuple) -> None:

@@ -103,12 +103,22 @@ def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteD
     n_sq = int(np.max(sqmap))
     bad = np.zeros_like(g2_pixel, dtype=bool)
 
+    # Group pixels by sq bin once via a stable sort instead of re-scanning the full
+    # pixel array with `sqmap == idx` on every one of the n_sq loop iterations (that
+    # was O(n_sq * n_pixels) and dominated runtime on large detectors/bin counts).
+    # Stable sort preserves each bin's pixels in their original left-to-right order,
+    # so `order[starts[idx-1]:starts[idx]]` selects the same pixels, in the same
+    # order, that `sqmap == idx` would have.
+    order = np.argsort(sqmap, kind="stable")
+    sorted_sq = sqmap[order]
+    starts = np.searchsorted(sorted_sq, np.arange(1, n_sq + 2))
+
     for idx in range(1, n_sq + 1):
-        roi = sqmap == idx
-        if not roi.any():
+        pix_idx = order[starts[idx - 1] : starts[idx]]
+        if pix_idx.size == 0:
             continue
 
-        g2_roi = g2_pixel[:, roi]  # (n_delays, n_pixels_in_roi)
+        g2_roi = g2_pixel[:, pix_idx]  # (n_delays, n_pixels_in_roi)
         g2_roi_nan = np.where(g2_roi == 0, np.nan, g2_roi)
 
         with warnings.catch_warnings():
@@ -127,16 +137,16 @@ def find_g2_pixel_outliers(sqmap, g2_pixel, threshold=3.0, method="MeanAbsoluteD
         spread[spread == 0] = 1.0
         hi = center + threshold * spread
 
-        bad[:, roi] = g2_roi > hi
+        bad[:, pix_idx] = g2_roi > hi
 
     if combine_outlier:
         # Union across all delays per sq bin: a pixel bad at any delay is bad at all delays.
-        for idx in range(1, int(np.max(sqmap)) + 1):
-            roi = sqmap == idx
-            if not roi.any():
+        for idx in range(1, n_sq + 1):
+            pix_idx = order[starts[idx - 1] : starts[idx]]
+            if pix_idx.size == 0:
                 continue
-            union_bad = bad[:, roi].any(axis=0)  # (n_pixels_in_roi,)
-            bad[:, roi] = union_bad  # broadcast to all delays
+            union_bad = bad[:, pix_idx].any(axis=0)  # (n_pixels_in_roi,)
+            bad[:, pix_idx] = union_bad  # broadcast to all delays
 
     return bad
 

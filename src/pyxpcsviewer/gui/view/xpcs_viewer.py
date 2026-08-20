@@ -410,7 +410,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self._g2_debug_dialog.show()
 
     def process_G2_regroup(self) -> None:
-        """Re-group G2 correlations using internal, external, or drawn Q-map (delegates to ``self.plots``)."""
+        """Re-group G2 correlations using internal, external, or drawn Q-map.
+
+        Runs ``self.plots.process_G2_regroup`` on a background thread via
+        :meth:`~pyxpcsviewer.gui.control.job_manager.JobManager.submit_g2_regroup`
+        instead of the GUI thread: with outlier rejection enabled this can take
+        several seconds, which would otherwise freeze the whole window.
+        """
         kwargs = {
             "rows": self.get_selected_rows(),
         }
@@ -446,8 +452,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             kwargs["outlier_threshold"] = -1.0
             kwargs["combine_outlier"] = False
 
-        self.plots.process_G2_regroup(**kwargs)
+        self.pushButton_G2_regroup.setEnabled(False)
+        self.pushButton_G2_savefile.setEnabled(False)
+        self.jobs.submit_g2_regroup(self.plots, kwargs, on_finished=self._on_G2_regroup_finished)
+        return None
 
+    def _on_G2_regroup_finished(self, error: str | None) -> None:
+        """Re-enable G2-regroup controls, then either report an error or refresh the preview plot.
+
+        Args:
+            error: ``None`` on success, or the error message from a failed regroup.
+        """
+        self.pushButton_G2_regroup.setEnabled(True)
+        self.pushButton_G2_savefile.setEnabled(True)
+        if error is not None:
+            QMessageBox.critical(self, "G2 regrouping failed", error)
+            return
         g2_plot_kwargs = self.plot_g2(dryrun=True)
         self.plots.plot_g2(self.pg_regroup_g2, **g2_plot_kwargs)
 
