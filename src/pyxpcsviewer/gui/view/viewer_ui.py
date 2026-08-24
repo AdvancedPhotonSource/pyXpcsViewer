@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'view.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.3
+## Created by: Qt User Interface Compiler version 6.10.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -32,7 +32,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1713, 757)
+        mainWindow.resize(1909, 757)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -800,7 +800,7 @@ class Ui_mainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.g2_scroll_area = QWidget()
         self.g2_scroll_area.setObjectName(u"g2_scroll_area")
-        self.g2_scroll_area.setGeometry(QRect(0, 0, 1328, 539))
+        self.g2_scroll_area.setGeometry(QRect(0, 0, 1517, 539))
         sizePolicy1.setHeightForWidth(self.g2_scroll_area.sizePolicy().hasHeightForWidth())
         self.g2_scroll_area.setSizePolicy(sizePolicy1)
         self.gridLayout_10 = QGridLayout(self.g2_scroll_area)
@@ -1930,7 +1930,7 @@ class Ui_mainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.g2_scroll_area_2 = QWidget()
         self.g2_scroll_area_2.setObjectName(u"g2_scroll_area_2")
-        self.g2_scroll_area_2.setGeometry(QRect(0, 0, 1328, 540))
+        self.g2_scroll_area_2.setGeometry(QRect(0, 0, 1517, 540))
         sizePolicy1.setHeightForWidth(self.g2_scroll_area_2.sizePolicy().hasHeightForWidth())
         self.g2_scroll_area_2.setSizePolicy(sizePolicy1)
         self.gridLayout_48 = QGridLayout(self.g2_scroll_area_2)
@@ -2146,15 +2146,21 @@ class Ui_mainWindow(object):
         self.tabWidget.addTab(self.tab_11, "")
         self.tab_12 = QWidget()
         self.tab_12.setObjectName(u"tab_12")
-        self.gridLayout_53 = QGridLayout(self.tab_12)
-        self.gridLayout_53.setObjectName(u"gridLayout_53")
-        self.splitter_8 = QSplitter(self.tab_12)
+        self.gridLayout_3 = QGridLayout(self.tab_12)
+        self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.splitter_9 = QSplitter(self.tab_12)
+        self.splitter_9.setObjectName(u"splitter_9")
+        self.splitter_9.setOrientation(Qt.Orientation.Vertical)
+        self.splitter_8 = QSplitter(self.splitter_9)
         self.splitter_8.setObjectName(u"splitter_8")
         self.splitter_8.setOrientation(Qt.Orientation.Horizontal)
         self.groupBox_9 = QGroupBox(self.splitter_8)
         self.groupBox_9.setObjectName(u"groupBox_9")
-        sizePolicy16.setHeightForWidth(self.groupBox_9.sizePolicy().hasHeightForWidth())
-        self.groupBox_9.setSizePolicy(sizePolicy16)
+        sizePolicy17 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy17.setHorizontalStretch(2)
+        sizePolicy17.setVerticalStretch(2)
+        sizePolicy17.setHeightForWidth(self.groupBox_9.sizePolicy().hasHeightForWidth())
+        self.groupBox_9.setSizePolicy(sizePolicy17)
         self.gridLayout_30 = QGridLayout(self.groupBox_9)
         self.gridLayout_30.setObjectName(u"gridLayout_30")
         self.gridLayout_30.setContentsMargins(1, 1, 1, 1)
@@ -2176,22 +2182,22 @@ class Ui_mainWindow(object):
 
         self.horizontalSlider_G2_delay = QSlider(self.groupBox_9)
         self.horizontalSlider_G2_delay.setObjectName(u"horizontalSlider_G2_delay")
-        sizePolicy17 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        sizePolicy17.setHorizontalStretch(1)
-        sizePolicy17.setVerticalStretch(0)
-        sizePolicy17.setHeightForWidth(self.horizontalSlider_G2_delay.sizePolicy().hasHeightForWidth())
-        self.horizontalSlider_G2_delay.setSizePolicy(sizePolicy17)
+        sizePolicy18 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy18.setHorizontalStretch(1)
+        sizePolicy18.setVerticalStretch(0)
+        sizePolicy18.setHeightForWidth(self.horizontalSlider_G2_delay.sizePolicy().hasHeightForWidth())
+        self.horizontalSlider_G2_delay.setSizePolicy(sizePolicy18)
         self.horizontalSlider_G2_delay.setOrientation(Qt.Orientation.Horizontal)
 
         self.gridLayout_30.addWidget(self.horizontalSlider_G2_delay, 2, 2, 1, 5)
 
         self.label_77 = QLabel(self.groupBox_9)
         self.label_77.setObjectName(u"label_77")
-        sizePolicy18 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
-        sizePolicy18.setHorizontalStretch(0)
-        sizePolicy18.setVerticalStretch(0)
-        sizePolicy18.setHeightForWidth(self.label_77.sizePolicy().hasHeightForWidth())
-        self.label_77.setSizePolicy(sizePolicy18)
+        sizePolicy19 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy19.setHorizontalStretch(0)
+        sizePolicy19.setVerticalStretch(0)
+        sizePolicy19.setHeightForWidth(self.label_77.sizePolicy().hasHeightForWidth())
+        self.label_77.setSizePolicy(sizePolicy19)
 
         self.gridLayout_30.addWidget(self.label_77, 1, 4, 1, 1)
 
@@ -2220,15 +2226,13 @@ class Ui_mainWindow(object):
         self.gridLayout_30.addWidget(self.comboBox_G2_target, 1, 1, 1, 2)
 
         self.splitter_8.addWidget(self.groupBox_9)
-        self.layoutWidget2 = QWidget(self.splitter_8)
-        self.layoutWidget2.setObjectName(u"layoutWidget2")
-        self.verticalLayout_3 = QVBoxLayout(self.layoutWidget2)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.groupBox_12 = QGroupBox(self.layoutWidget2)
+        self.groupBox_12 = QGroupBox(self.splitter_8)
         self.groupBox_12.setObjectName(u"groupBox_12")
-        sizePolicy11.setHeightForWidth(self.groupBox_12.sizePolicy().hasHeightForWidth())
-        self.groupBox_12.setSizePolicy(sizePolicy11)
+        sizePolicy20 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        sizePolicy20.setHorizontalStretch(2)
+        sizePolicy20.setVerticalStretch(2)
+        sizePolicy20.setHeightForWidth(self.groupBox_12.sizePolicy().hasHeightForWidth())
+        self.groupBox_12.setSizePolicy(sizePolicy20)
         self.gridLayout_35 = QGridLayout(self.groupBox_12)
         self.gridLayout_35.setObjectName(u"gridLayout_35")
         self.gridLayout_35.setContentsMargins(1, 1, 1, 1)
@@ -2237,7 +2241,7 @@ class Ui_mainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 644, 453))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 200, 499))
         self.gridLayout_54 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_54.setObjectName(u"gridLayout_54")
         self.gridLayout_54.setContentsMargins(0, 0, -1, 0)
@@ -2252,10 +2256,116 @@ class Ui_mainWindow(object):
 
         self.gridLayout_35.addWidget(self.scrollArea_3, 0, 0, 1, 1)
 
+        self.splitter_8.addWidget(self.groupBox_12)
+        self.splitter_9.addWidget(self.splitter_8)
+        self.groupBox_23 = QGroupBox(self.splitter_9)
+        self.groupBox_23.setObjectName(u"groupBox_23")
+        sizePolicy21 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        sizePolicy21.setHorizontalStretch(0)
+        sizePolicy21.setVerticalStretch(0)
+        sizePolicy21.setHeightForWidth(self.groupBox_23.sizePolicy().hasHeightForWidth())
+        self.groupBox_23.setSizePolicy(sizePolicy21)
+        self.groupBox_23.setMaximumSize(QSize(16777215, 150))
+        self.gridLayout_53 = QGridLayout(self.groupBox_23)
+        self.gridLayout_53.setObjectName(u"gridLayout_53")
+        self.gridLayout_53.setContentsMargins(1, 1, 1, 1)
+        self.gridLayout_50 = QGridLayout()
+        self.gridLayout_50.setObjectName(u"gridLayout_50")
+        self.comboBox_G2_errormodel = QComboBox(self.groupBox_23)
+        self.comboBox_G2_errormodel.addItem("")
+        self.comboBox_G2_errormodel.addItem("")
+        self.comboBox_G2_errormodel.setObjectName(u"comboBox_G2_errormodel")
 
-        self.verticalLayout_3.addWidget(self.groupBox_12)
+        self.gridLayout_50.addWidget(self.comboBox_G2_errormodel, 1, 12, 1, 1)
 
-        self.groupBox_24 = QGroupBox(self.layoutWidget2)
+        self.checkBox_G2_removeoutlier = QCheckBox(self.groupBox_23)
+        self.checkBox_G2_removeoutlier.setObjectName(u"checkBox_G2_removeoutlier")
+        self.checkBox_G2_removeoutlier.setCheckable(True)
+        self.checkBox_G2_removeoutlier.setChecked(True)
+
+        self.gridLayout_50.addWidget(self.checkBox_G2_removeoutlier, 0, 0, 1, 1)
+
+        self.label_G2_outliertarget = QLabel(self.groupBox_23)
+        self.label_G2_outliertarget.setObjectName(u"label_G2_outliertarget")
+
+        self.gridLayout_50.addWidget(self.label_G2_outliertarget, 0, 1, 1, 1)
+
+        self.label_80 = QLabel(self.groupBox_23)
+        self.label_80.setObjectName(u"label_80")
+
+        self.gridLayout_50.addWidget(self.label_80, 0, 3, 1, 1)
+
+        self.pushButton_G2_regroup = QPushButton(self.groupBox_23)
+        self.pushButton_G2_regroup.setObjectName(u"pushButton_G2_regroup")
+
+        self.gridLayout_50.addWidget(self.pushButton_G2_regroup, 2, 12, 1, 1)
+
+        self.comboBox_G2_outliertarget = QComboBox(self.groupBox_23)
+        self.comboBox_G2_outliertarget.addItem("")
+        self.comboBox_G2_outliertarget.addItem("")
+        self.comboBox_G2_outliertarget.setObjectName(u"comboBox_G2_outliertarget")
+
+        self.gridLayout_50.addWidget(self.comboBox_G2_outliertarget, 0, 2, 1, 1)
+
+        self.doubleSpinBox_G2_threshold = QDoubleSpinBox(self.groupBox_23)
+        self.doubleSpinBox_G2_threshold.setObjectName(u"doubleSpinBox_G2_threshold")
+        self.doubleSpinBox_G2_threshold.setValue(3.000000000000000)
+
+        self.gridLayout_50.addWidget(self.doubleSpinBox_G2_threshold, 0, 12, 1, 1)
+
+        self.label_76 = QLabel(self.groupBox_23)
+        self.label_76.setObjectName(u"label_76")
+
+        self.gridLayout_50.addWidget(self.label_76, 0, 11, 1, 1)
+
+        self.comboBox_G2_outliermethod = QComboBox(self.groupBox_23)
+        self.comboBox_G2_outliermethod.addItem("")
+        self.comboBox_G2_outliermethod.addItem("")
+        self.comboBox_G2_outliermethod.setObjectName(u"comboBox_G2_outliermethod")
+
+        self.gridLayout_50.addWidget(self.comboBox_G2_outliermethod, 0, 4, 1, 7)
+
+        self.pushButton_G2_debug = QPushButton(self.groupBox_23)
+        self.pushButton_G2_debug.setObjectName(u"pushButton_G2_debug")
+
+        self.gridLayout_50.addWidget(self.pushButton_G2_debug, 2, 11, 1, 1)
+
+        self.pushButton_G2_savefile = QPushButton(self.groupBox_23)
+        self.pushButton_G2_savefile.setObjectName(u"pushButton_G2_savefile")
+
+        self.gridLayout_50.addWidget(self.pushButton_G2_savefile, 2, 4, 1, 7)
+
+        self.label_G2_mintagcount = QLabel(self.groupBox_23)
+        self.label_G2_mintagcount.setObjectName(u"label_G2_mintagcount")
+        self.label_G2_mintagcount.setEnabled(False)
+
+        self.gridLayout_50.addWidget(self.label_G2_mintagcount, 1, 3, 1, 1)
+
+        self.label_G2_errormodel = QLabel(self.groupBox_23)
+        self.label_G2_errormodel.setObjectName(u"label_G2_errormodel")
+
+        self.gridLayout_50.addWidget(self.label_G2_errormodel, 1, 8, 1, 4)
+
+        self.spinBox_G2_mintagcount = QSpinBox(self.groupBox_23)
+        self.spinBox_G2_mintagcount.setObjectName(u"spinBox_G2_mintagcount")
+        self.spinBox_G2_mintagcount.setEnabled(False)
+        self.spinBox_G2_mintagcount.setMinimum(1)
+        self.spinBox_G2_mintagcount.setMaximum(9999)
+        self.spinBox_G2_mintagcount.setValue(1)
+
+        self.gridLayout_50.addWidget(self.spinBox_G2_mintagcount, 1, 4, 1, 3)
+
+        self.checkBox_G2_combineoutlier = QCheckBox(self.groupBox_23)
+        self.checkBox_G2_combineoutlier.setObjectName(u"checkBox_G2_combineoutlier")
+        self.checkBox_G2_combineoutlier.setCheckable(True)
+        self.checkBox_G2_combineoutlier.setChecked(False)
+
+        self.gridLayout_50.addWidget(self.checkBox_G2_combineoutlier, 1, 0, 1, 3)
+
+
+        self.gridLayout_53.addLayout(self.gridLayout_50, 0, 1, 1, 1)
+
+        self.groupBox_24 = QGroupBox(self.groupBox_23)
         self.groupBox_24.setObjectName(u"groupBox_24")
         self.gridLayout_47 = QGridLayout(self.groupBox_24)
         self.gridLayout_47.setObjectName(u"gridLayout_47")
@@ -2279,11 +2389,11 @@ class Ui_mainWindow(object):
 
         self.label_G2_external_qmapfname = QLabel(self.tab_14)
         self.label_G2_external_qmapfname.setObjectName(u"label_G2_external_qmapfname")
-        sizePolicy19 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy19.setHorizontalStretch(1)
-        sizePolicy19.setVerticalStretch(0)
-        sizePolicy19.setHeightForWidth(self.label_G2_external_qmapfname.sizePolicy().hasHeightForWidth())
-        self.label_G2_external_qmapfname.setSizePolicy(sizePolicy19)
+        sizePolicy22 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy22.setHorizontalStretch(1)
+        sizePolicy22.setVerticalStretch(0)
+        sizePolicy22.setHeightForWidth(self.label_G2_external_qmapfname.sizePolicy().hasHeightForWidth())
+        self.label_G2_external_qmapfname.setSizePolicy(sizePolicy22)
 
         self.gridLayout_51.addWidget(self.label_G2_external_qmapfname, 2, 0, 1, 3)
 
@@ -2317,110 +2427,11 @@ class Ui_mainWindow(object):
         self.gridLayout_47.addWidget(self.tabWidget_G2_regroup, 0, 0, 1, 1)
 
 
-        self.verticalLayout_3.addWidget(self.groupBox_24)
+        self.gridLayout_53.addWidget(self.groupBox_24, 0, 0, 1, 1)
 
-        self.groupBox_23 = QGroupBox(self.layoutWidget2)
-        self.groupBox_23.setObjectName(u"groupBox_23")
-        sizePolicy20 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
-        sizePolicy20.setHorizontalStretch(0)
-        sizePolicy20.setVerticalStretch(0)
-        sizePolicy20.setHeightForWidth(self.groupBox_23.sizePolicy().hasHeightForWidth())
-        self.groupBox_23.setSizePolicy(sizePolicy20)
-        self.gridLayout_50 = QGridLayout(self.groupBox_23)
-        self.gridLayout_50.setObjectName(u"gridLayout_50")
-        self.gridLayout_50.setContentsMargins(1, 1, 1, 1)
-        self.comboBox_G2_outliermethod = QComboBox(self.groupBox_23)
-        self.comboBox_G2_outliermethod.addItem("")
-        self.comboBox_G2_outliermethod.addItem("")
-        self.comboBox_G2_outliermethod.setObjectName(u"comboBox_G2_outliermethod")
+        self.splitter_9.addWidget(self.groupBox_23)
 
-        self.gridLayout_50.addWidget(self.comboBox_G2_outliermethod, 0, 5, 1, 1)
-
-        self.pushButton_G2_regroup = QPushButton(self.groupBox_23)
-        self.pushButton_G2_regroup.setObjectName(u"pushButton_G2_regroup")
-
-        self.gridLayout_50.addWidget(self.pushButton_G2_regroup, 0, 6, 1, 1)
-
-        self.checkBox_G2_removeoutlier = QCheckBox(self.groupBox_23)
-        self.checkBox_G2_removeoutlier.setObjectName(u"checkBox_G2_removeoutlier")
-        self.checkBox_G2_removeoutlier.setCheckable(True)
-        self.checkBox_G2_removeoutlier.setChecked(True)
-
-        self.gridLayout_50.addWidget(self.checkBox_G2_removeoutlier, 0, 0, 1, 2)
-
-        self.label_76 = QLabel(self.groupBox_23)
-        self.label_76.setObjectName(u"label_76")
-
-        self.gridLayout_50.addWidget(self.label_76, 0, 2, 1, 1)
-
-        self.doubleSpinBox_G2_threshold = QDoubleSpinBox(self.groupBox_23)
-        self.doubleSpinBox_G2_threshold.setObjectName(u"doubleSpinBox_G2_threshold")
-        self.doubleSpinBox_G2_threshold.setValue(3.000000000000000)
-
-        self.gridLayout_50.addWidget(self.doubleSpinBox_G2_threshold, 0, 3, 1, 2)
-
-        self.pushButton_G2_savefile = QPushButton(self.groupBox_23)
-        self.pushButton_G2_savefile.setObjectName(u"pushButton_G2_savefile")
-
-        self.gridLayout_50.addWidget(self.pushButton_G2_savefile, 0, 7, 1, 1)
-
-        self.checkBox_G2_combineoutlier = QCheckBox(self.groupBox_23)
-        self.checkBox_G2_combineoutlier.setObjectName(u"checkBox_G2_combineoutlier")
-        self.checkBox_G2_combineoutlier.setCheckable(True)
-        self.checkBox_G2_combineoutlier.setChecked(False)
-
-        self.gridLayout_50.addWidget(self.checkBox_G2_combineoutlier, 1, 0, 1, 2)
-
-        self.label_G2_errormodel = QLabel(self.groupBox_23)
-        self.label_G2_errormodel.setObjectName(u"label_G2_errormodel")
-
-        self.gridLayout_50.addWidget(self.label_G2_errormodel, 2, 4, 1, 2)
-
-        self.comboBox_G2_errormodel = QComboBox(self.groupBox_23)
-        self.comboBox_G2_errormodel.addItem("")
-        self.comboBox_G2_errormodel.addItem("")
-        self.comboBox_G2_errormodel.setObjectName(u"comboBox_G2_errormodel")
-
-        self.gridLayout_50.addWidget(self.comboBox_G2_errormodel, 2, 6, 1, 2)
-
-        self.pushButton_G2_debug = QPushButton(self.groupBox_23)
-        self.pushButton_G2_debug.setObjectName(u"pushButton_G2_debug")
-
-        self.gridLayout_50.addWidget(self.pushButton_G2_debug, 1, 6, 1, 1)
-
-        self.label_G2_outliertarget = QLabel(self.groupBox_23)
-        self.label_G2_outliertarget.setObjectName(u"label_G2_outliertarget")
-
-        self.gridLayout_50.addWidget(self.label_G2_outliertarget, 2, 0, 1, 2)
-
-        self.label_G2_mintagcount = QLabel(self.groupBox_23)
-        self.label_G2_mintagcount.setObjectName(u"label_G2_mintagcount")
-        self.label_G2_mintagcount.setEnabled(False)
-
-        self.gridLayout_50.addWidget(self.label_G2_mintagcount, 1, 2, 1, 1)
-
-        self.spinBox_G2_mintagcount = QSpinBox(self.groupBox_23)
-        self.spinBox_G2_mintagcount.setObjectName(u"spinBox_G2_mintagcount")
-        self.spinBox_G2_mintagcount.setEnabled(False)
-        self.spinBox_G2_mintagcount.setMinimum(1)
-        self.spinBox_G2_mintagcount.setMaximum(9999)
-        self.spinBox_G2_mintagcount.setValue(1)
-
-        self.gridLayout_50.addWidget(self.spinBox_G2_mintagcount, 1, 3, 1, 2)
-
-        self.comboBox_G2_outliertarget = QComboBox(self.groupBox_23)
-        self.comboBox_G2_outliertarget.addItem("")
-        self.comboBox_G2_outliertarget.addItem("")
-        self.comboBox_G2_outliertarget.setObjectName(u"comboBox_G2_outliertarget")
-
-        self.gridLayout_50.addWidget(self.comboBox_G2_outliertarget, 2, 2, 1, 2)
-
-
-        self.verticalLayout_3.addWidget(self.groupBox_23)
-
-        self.splitter_8.addWidget(self.layoutWidget2)
-
-        self.gridLayout_53.addWidget(self.splitter_8, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.splitter_9, 0, 0, 1, 1)
 
         self.tabWidget.addTab(self.tab_12, "")
         self.splitter_3.addWidget(self.tabWidget)
@@ -2595,7 +2606,7 @@ class Ui_mainWindow(object):
         self.cb_stab_norm.setCurrentIndex(0)
         self.cb_tauq_type.setCurrentIndex(3)
         self.cb_avg_chunk_size.setCurrentIndex(2)
-        self.tabWidget_G2_regroup.setCurrentIndex(1)
+        self.tabWidget_G2_regroup.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(mainWindow)
@@ -2916,7 +2927,7 @@ class Ui_mainWindow(object):
         self.label_72.setToolTip(QCoreApplication.translate("mainWindow", u"Which channel of the raw G2 cube to display. Display only - this has\n"
 "no effect on ReGroup.\n"
 "g2_per_pixel - channel 0 divided by channels 1 and 2.\n"
-"G2 - channel 0, the unnormalized numerator. Same array the 'G20'\n"
+"G2 - channel 0, the unnormalized numerator. Same array the 'G2'\n"
 "  outlier target uses.\n"
 "IP, IF - channels 1 and 2, the two mean-intensity terms.", None))
 #endif // QT_CONFIG(tooltip)
@@ -2946,7 +2957,7 @@ class Ui_mainWindow(object):
         self.comboBox_G2_target.setToolTip(QCoreApplication.translate("mainWindow", u"Which channel of the raw G2 cube to display. Display only - this has\n"
 "no effect on ReGroup.\n"
 "g2_per_pixel - channel 0 divided by channels 1 and 2.\n"
-"G2 - channel 0, the unnormalized numerator. Same array the 'G20'\n"
+"G2 - channel 0, the unnormalized numerator. Same array the 'G2'\n"
 "  outlier target uses.\n"
 "IP, IF - channels 1 and 2, the two mean-intensity terms.", None))
 #endif // QT_CONFIG(tooltip)
@@ -2955,6 +2966,149 @@ class Ui_mainWindow(object):
 "Held in memory only until you press SaveToFile.", None))
 #endif // QT_CONFIG(tooltip)
         self.groupBox_12.setTitle(QCoreApplication.translate("mainWindow", u"Grouped g2", None))
+#if QT_CONFIG(tooltip)
+        self.groupBox_23.setToolTip(QCoreApplication.translate("mainWindow", u"Outlier rejection and error-model settings, applied when you press\n"
+"ReGroup. Press Debug first to see what they do.", None))
+#endif // QT_CONFIG(tooltip)
+        self.groupBox_23.setTitle(QCoreApplication.translate("mainWindow", u"ReGroup Setting", None))
+        self.comboBox_G2_errormodel.setItemText(0, QCoreApplication.translate("mainWindow", u"per-pixel", None))
+        self.comboBox_G2_errormodel.setItemText(1, QCoreApplication.translate("mainWindow", u"sq-group", None))
+
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_errormodel.setToolTip(QCoreApplication.translate("mainWindow", u"How g2_err is estimated. g2 itself is identical either way.\n"
+"per-pixel - spread of the individual pixels in the dq bin.\n"
+"sq-group - spread of the sq-bin averages making up the dq bin.\n"
+"Note: per-pixel is computed from all pixels, including rejected\n"
+"ones, so the outlier settings do not change these error bars.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.checkBox_G2_removeoutlier.setToolTip(QCoreApplication.translate("mainWindow", u"Master switch for outlier rejection.\n"
+"When off, every live pixel in a sq bin contributes to the average\n"
+"and the settings to the right are ignored.", None))
+#endif // QT_CONFIG(tooltip)
+        self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_outliertarget.setToolTip(QCoreApplication.translate("mainWindow", u"Which per-pixel quantity the outlier test is computed on.\n"
+"g2-per-pixel - the normalized g2. Flags pixels whose correlation is\n"
+"  anomalous regardless of brightness. Unbiased; the default.\n"
+"G2 - the raw numerator G2[:,0]. Flags bright pixels, since it\n"
+"  scales as intensity squared times g2.\n"
+"Warning: a plain per-delay G2 cut biases g2 downward, because\n"
+"trimming the numerator's bright tail lowers the very average it\n"
+"feeds. Pair G2 with Combine Outlier and a high Min Tag to build a\n"
+"hot-pixel mask instead.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_G2_outliertarget.setText(QCoreApplication.translate("mainWindow", u"Target:", None))
+#if QT_CONFIG(tooltip)
+        self.label_80.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
+"within its own sq bin, evaluated per delay.\n"
+"Upper bound only - low values are never rejected.\n"
+"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
+"can drop over 10% of samples and visibly distort the curve. Check\n"
+"the Debug dialog before trusting a value.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_80.setText(QCoreApplication.translate("mainWindow", u"Method", None))
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_regroup.setToolTip(QCoreApplication.translate("mainWindow", u"Recompute g2 and g2_err from the per-pixel G2 cube using the chosen\n"
+"Q-map and outlier settings, for the first selected file.\n"
+"Runs on a background thread. The result lives in memory and replaces\n"
+"the Grouped g2 plot - press SaveToFile to write it out.", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_G2_regroup.setText(QCoreApplication.translate("mainWindow", u"ReGroup", None))
+        self.comboBox_G2_outliertarget.setItemText(0, QCoreApplication.translate("mainWindow", u"g2-per-pixel", None))
+        self.comboBox_G2_outliertarget.setItemText(1, QCoreApplication.translate("mainWindow", u"G2", None))
+
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_outliertarget.setToolTip(QCoreApplication.translate("mainWindow", u"Which per-pixel quantity the outlier test is computed on.\n"
+"g2-per-pixel - the normalized g2. Flags pixels whose correlation is\n"
+"  anomalous regardless of brightness. Unbiased; the default.\n"
+"G2 - the raw numerator G2[:,0]. Flags bright pixels, since it\n"
+"  scales as intensity squared times g2.\n"
+"Warning: a plain per-delay G2 cut biases g2 downward, because\n"
+"trimming the numerator's bright tail lowers the very average it\n"
+"feeds. Pair G2 with Combine Outlier and a high Min Tag to build a\n"
+"hot-pixel mask instead.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.doubleSpinBox_G2_threshold.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
+"within its own sq bin, evaluated per delay.\n"
+"Upper bound only - low values are never rejected.\n"
+"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
+"can drop over 10% of samples and visibly distort the curve. Check\n"
+"the Debug dialog before trusting a value.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.label_76.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
+"within its own sq bin, evaluated per delay.\n"
+"Upper bound only - low values are never rejected.\n"
+"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
+"can drop over 10% of samples and visibly distort the curve. Check\n"
+"the Debug dialog before trusting a value.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
+        self.comboBox_G2_outliermethod.setItemText(0, QCoreApplication.translate("mainWindow", u"MeanAbsoluteDeviation", None))
+        self.comboBox_G2_outliermethod.setItemText(1, QCoreApplication.translate("mainWindow", u"StandardDeviation", None))
+
+#if QT_CONFIG(tooltip)
+        self.comboBox_G2_outliermethod.setToolTip(QCoreApplication.translate("mainWindow", u"How center and spread are estimated for each (sq bin, delay).\n"
+"MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are\n"
+"  hunting barely move the bound. Recommended.\n"
+"StandardDeviation - mean + std. Both are inflated by the very\n"
+"  pixels being tested, so it flags fewer of them.\n"
+"Pixels with a value of exactly 0 are treated as photon-starved and\n"
+"left out of the statistics either way.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_debug.setToolTip(QCoreApplication.translate("mainWindow", u"Show what the current outlier settings do to the first selected\n"
+"file: per-sq-bin histograms with the rejection bound drawn on, and a\n"
+"map of how many delays each pixel was flagged at.\n"
+"The Remove Outlier checkbox is deliberately ignored here, so you can\n"
+"preview a setting before enabling it.", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_G2_debug.setText(QCoreApplication.translate("mainWindow", u"Debug", None))
+#if QT_CONFIG(tooltip)
+        self.pushButton_G2_savefile.setToolTip(QCoreApplication.translate("mainWindow", u"Write the regrouped g2 and g2_err into an HDF5 file, replacing the\n"
+"existing datasets. Defaults to overwriting the source file.", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, and then\n"
+"reject them at every delay.\n"
+"Greyed out until both Remove Outlier and Combine Outlier (to the\n"
+"left) are checked, since the count means nothing without them.\n"
+"1 = flagged anywhere, flagged everywhere (the historical behaviour,\n"
+"and far too aggressive for the G2 target).\n"
+"Pick a value from the Debug dialog's bad-pixel map: with G2, a\n"
+"count near the delay total works well, e.g. 30 out of 34.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_G2_mintagcount.setText(QCoreApplication.translate("mainWindow", u"Min Tag:", None))
+#if QT_CONFIG(tooltip)
+        self.label_G2_errormodel.setToolTip(QCoreApplication.translate("mainWindow", u"How g2_err is estimated. g2 itself is identical either way.\n"
+"per-pixel - spread of the individual pixels in the dq bin.\n"
+"sq-group - spread of the sq-bin averages making up the dq bin.\n"
+"Note: per-pixel is computed from all pixels, including rejected\n"
+"ones, so the outlier settings do not change these error bars.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_G2_errormodel.setText(QCoreApplication.translate("mainWindow", u"Error Model:", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, and then\n"
+"reject them at every delay.\n"
+"Greyed out until both Remove Outlier and Combine Outlier (to the\n"
+"left) are checked, since the count means nothing without them.\n"
+"1 = flagged anywhere, flagged everywhere (the historical behaviour,\n"
+"and far too aggressive for the G2 target).\n"
+"Pick a value from the Debug dialog's bad-pixel map: with G2, a\n"
+"count near the delay total works well, e.g. 30 out of 34.", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.checkBox_G2_combineoutlier.setToolTip(QCoreApplication.translate("mainWindow", u"Turn on the persistence filter: judge a pixel by how many delays it\n"
+"was flagged at rather than delay by delay. Min Tag sets the count.\n"
+"Off - each delay is filtered independently.\n"
+"This is what makes the G2 target usable: one flag mostly tracks the\n"
+"intensity gradient across a q ring, while a flag that repeats across\n"
+"most delays is a genuinely hot pixel.", None))
+#endif // QT_CONFIG(tooltip)
+        self.checkBox_G2_combineoutlier.setText(QCoreApplication.translate("mainWindow", u"Combine Outlier pixel from all delays", None))
 #if QT_CONFIG(tooltip)
         self.groupBox_24.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the Q-map - the static (sq) and dynamic (dq) ROI maps - that\n"
 "ReGroup bins the per-pixel G2 with.", None))
@@ -2991,140 +3145,6 @@ class Ui_mainWindow(object):
 "The 'draw' Q-map method is not implemented yet.", None))
 #endif // QT_CONFIG(tooltip)
         self.tabWidget_G2_regroup.setTabText(self.tabWidget_G2_regroup.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Draw", None))
-#if QT_CONFIG(tooltip)
-        self.groupBox_23.setToolTip(QCoreApplication.translate("mainWindow", u"Outlier rejection and error-model settings, applied when you press\n"
-"ReGroup. Press Debug first to see what they do.", None))
-#endif // QT_CONFIG(tooltip)
-        self.groupBox_23.setTitle(QCoreApplication.translate("mainWindow", u"Group Setting", None))
-        self.comboBox_G2_outliermethod.setItemText(0, QCoreApplication.translate("mainWindow", u"MeanAbsoluteDeviation", None))
-        self.comboBox_G2_outliermethod.setItemText(1, QCoreApplication.translate("mainWindow", u"StandardDeviation", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_G2_outliermethod.setToolTip(QCoreApplication.translate("mainWindow", u"How center and spread are estimated for each (sq bin, delay).\n"
-"MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are\n"
-"  hunting barely move the bound. Recommended.\n"
-"StandardDeviation - mean + std. Both are inflated by the very\n"
-"  pixels being tested, so it flags fewer of them.\n"
-"Pixels with a value of exactly 0 are treated as photon-starved and\n"
-"left out of the statistics either way.", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.pushButton_G2_regroup.setToolTip(QCoreApplication.translate("mainWindow", u"Recompute g2 and g2_err from the per-pixel G2 cube using the chosen\n"
-"Q-map and outlier settings, for the first selected file.\n"
-"Runs on a background thread. The result lives in memory and replaces\n"
-"the Grouped g2 plot - press SaveToFile to write it out.", None))
-#endif // QT_CONFIG(tooltip)
-        self.pushButton_G2_regroup.setText(QCoreApplication.translate("mainWindow", u"ReGroup", None))
-#if QT_CONFIG(tooltip)
-        self.checkBox_G2_removeoutlier.setToolTip(QCoreApplication.translate("mainWindow", u"Master switch for outlier rejection.\n"
-"When off, every live pixel in a sq bin contributes to the average\n"
-"and the settings to the right are ignored.", None))
-#endif // QT_CONFIG(tooltip)
-        self.checkBox_G2_removeoutlier.setText(QCoreApplication.translate("mainWindow", u"Remove Outlier", None))
-#if QT_CONFIG(tooltip)
-        self.label_76.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
-"within its own sq bin, evaluated per delay.\n"
-"Upper bound only - low values are never rejected.\n"
-"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
-"can drop over 10% of samples and visibly distort the curve. Check\n"
-"the Debug dialog before trusting a value.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_76.setText(QCoreApplication.translate("mainWindow", u"Threshold:", None))
-#if QT_CONFIG(tooltip)
-        self.doubleSpinBox_G2_threshold.setToolTip(QCoreApplication.translate("mainWindow", u"Reject a pixel when its value exceeds center + threshold x spread\n"
-"within its own sq bin, evaluated per delay.\n"
-"Upper bound only - low values are never rejected.\n"
-"Lower is more aggressive. 3 is not gentle: on sparse-photon data it\n"
-"can drop over 10% of samples and visibly distort the curve. Check\n"
-"the Debug dialog before trusting a value.", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.pushButton_G2_savefile.setToolTip(QCoreApplication.translate("mainWindow", u"Write the regrouped g2 and g2_err into an HDF5 file, replacing the\n"
-"existing datasets. Defaults to overwriting the source file.", None))
-#endif // QT_CONFIG(tooltip)
-        self.pushButton_G2_savefile.setText(QCoreApplication.translate("mainWindow", u"SaveToFile", None))
-#if QT_CONFIG(tooltip)
-        self.checkBox_G2_combineoutlier.setToolTip(QCoreApplication.translate("mainWindow", u"Turn on the persistence filter: judge a pixel by how many delays it\n"
-"was flagged at rather than delay by delay. Min Tag sets the count.\n"
-"Off - each delay is filtered independently.\n"
-"This is what makes the G20 target usable: one flag mostly tracks the\n"
-"intensity gradient across a q ring, while a flag that repeats across\n"
-"most delays is a genuinely hot pixel.", None))
-#endif // QT_CONFIG(tooltip)
-        self.checkBox_G2_combineoutlier.setText(QCoreApplication.translate("mainWindow", u"Combine Outlier", None))
-#if QT_CONFIG(tooltip)
-        self.label_G2_errormodel.setToolTip(QCoreApplication.translate("mainWindow", u"How g2_err is estimated. g2 itself is identical either way.\n"
-"per-pixel - spread of the individual pixels in the dq bin.\n"
-"sq-group - spread of the sq-bin averages making up the dq bin.\n"
-"Note: per-pixel is computed from all pixels, including rejected\n"
-"ones, so the outlier settings do not change these error bars.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_G2_errormodel.setText(QCoreApplication.translate("mainWindow", u"Error Model:", None))
-        self.comboBox_G2_errormodel.setItemText(0, QCoreApplication.translate("mainWindow", u"per-pixel", None))
-        self.comboBox_G2_errormodel.setItemText(1, QCoreApplication.translate("mainWindow", u"sq-group", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_G2_errormodel.setToolTip(QCoreApplication.translate("mainWindow", u"How g2_err is estimated. g2 itself is identical either way.\n"
-"per-pixel - spread of the individual pixels in the dq bin.\n"
-"sq-group - spread of the sq-bin averages making up the dq bin.\n"
-"Note: per-pixel is computed from all pixels, including rejected\n"
-"ones, so the outlier settings do not change these error bars.", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.pushButton_G2_debug.setToolTip(QCoreApplication.translate("mainWindow", u"Show what the current outlier settings do to the first selected\n"
-"file: per-sq-bin histograms with the rejection bound drawn on, and a\n"
-"map of how many delays each pixel was flagged at.\n"
-"The Remove Outlier checkbox is deliberately ignored here, so you can\n"
-"preview a setting before enabling it.", None))
-#endif // QT_CONFIG(tooltip)
-        self.pushButton_G2_debug.setText(QCoreApplication.translate("mainWindow", u"Debug", None))
-#if QT_CONFIG(tooltip)
-        self.label_G2_outliertarget.setToolTip(QCoreApplication.translate("mainWindow", u"Which per-pixel quantity the outlier test is computed on.\n"
-"g2-per-pixel - the normalized g2. Flags pixels whose correlation is\n"
-"  anomalous regardless of brightness. Unbiased; the default.\n"
-"G20 - the raw numerator G2[:,0]. Flags bright pixels, since G20\n"
-"  scales as intensity squared times g2.\n"
-"Warning: a plain per-delay G20 cut biases g2 downward, because\n"
-"trimming the numerator's bright tail lowers the very average it\n"
-"feeds. Pair G20 with Combine Outlier and a high Min Tag to build a\n"
-"hot-pixel mask instead.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_G2_outliertarget.setText(QCoreApplication.translate("mainWindow", u"Outlier Target:", None))
-#if QT_CONFIG(tooltip)
-        self.label_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, and then\n"
-"reject them at every delay.\n"
-"Greyed out until both Remove Outlier and Combine Outlier (to the\n"
-"left) are checked, since the count means nothing without them.\n"
-"1 = flagged anywhere, flagged everywhere (the historical behaviour,\n"
-"and far too aggressive for the G20 target).\n"
-"Pick a value from the Debug dialog's bad-pixel map: with G20, a\n"
-"count near the delay total works well, e.g. 30 out of 34.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_G2_mintagcount.setText(QCoreApplication.translate("mainWindow", u"Min Tag:", None))
-#if QT_CONFIG(tooltip)
-        self.spinBox_G2_mintagcount.setToolTip(QCoreApplication.translate("mainWindow", u"Reject only pixels flagged at this many delays or more, and then\n"
-"reject them at every delay.\n"
-"Greyed out until both Remove Outlier and Combine Outlier (to the\n"
-"left) are checked, since the count means nothing without them.\n"
-"1 = flagged anywhere, flagged everywhere (the historical behaviour,\n"
-"and far too aggressive for the G20 target).\n"
-"Pick a value from the Debug dialog's bad-pixel map: with G20, a\n"
-"count near the delay total works well, e.g. 30 out of 34.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_G2_outliertarget.setItemText(0, QCoreApplication.translate("mainWindow", u"g2-per-pixel", None))
-        self.comboBox_G2_outliertarget.setItemText(1, QCoreApplication.translate("mainWindow", u"G20", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_G2_outliertarget.setToolTip(QCoreApplication.translate("mainWindow", u"Which per-pixel quantity the outlier test is computed on.\n"
-"g2-per-pixel - the normalized g2. Flags pixels whose correlation is\n"
-"  anomalous regardless of brightness. Unbiased; the default.\n"
-"G20 - the raw numerator G2[:,0]. Flags bright pixels, since G20\n"
-"  scales as intensity squared times g2.\n"
-"Warning: a plain per-delay G20 cut biases g2 downward, because\n"
-"trimming the numerator's bright tail lowers the very average it\n"
-"feeds. Pair G20 with Combine Outlier and a high Min Tag to build a\n"
-"hot-pixel mask instead.", None))
-#endif // QT_CONFIG(tooltip)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_12), QCoreApplication.translate("mainWindow", u"G2", None))
     # retranslateUi
 
