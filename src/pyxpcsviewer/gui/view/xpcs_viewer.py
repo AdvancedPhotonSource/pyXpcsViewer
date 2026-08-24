@@ -421,11 +421,11 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         save_fname = QtWidgets.QFileDialog.getSaveFileName(
             self, caption="select the save file for G2 regrouping", dir=None
         )[0]
-
-        if save_fname:
-            kwargs["save_fname"] = save_fname
-        else:
-            kwargs["save_fname"] = None
+        if not save_fname:
+            # Cancelled: abort before the kernel is reached -- save_G2(None)
+            # would otherwise overwrite the original file in place.
+            return
+        kwargs["save_fname"] = save_fname
 
         flag = self.plots.savefile_G2_regroup(**kwargs)
         if flag:
