@@ -1,6 +1,7 @@
 # Copyright © UChicago Argonne LLC
 # See LICENSE file for details
 import logging
+from typing import Any
 
 import h5py
 import numpy as np
@@ -133,6 +134,53 @@ def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
         return ret
     elif ret_type == "list":
         return [ret[key] for key in fields]
+
+
+def get_slice(fname: str, field: str, index: Any, mode: str = "alias", ftype: str = "nexus") -> np.ndarray:
+    """Read a single slice of a dataset without materializing the whole array.
+
+    Large fields such as the unnormalized ``G2`` cube are hundreds of MB; the
+    viewer usually needs one 2D detector frame out of it, so let HDF5 do the
+    partial read instead of loading everything and indexing in memory.
+
+    Args:
+        fname: Path to the HDF5 file.
+        field: Key name, resolved via the key map when *mode* is ``"alias"``.
+        index: Anything h5py accepts as an index expression, e.g. ``(3, 0)``.
+        mode: ``"raw"`` reads the literal key; ``"alias"`` resolves via ``aps_8idi``.
+        ftype: Expected file type for the reader backend.
+
+    Returns:
+        The requested slice as a numpy array.
+
+    Raises:
+        ValueError: If the field is missing from the file.
+    """
+    path = hdf_key[ftype][field] if mode == "alias" else field
+    with h5py.File(fname, "r") as f:
+        if path not in f:
+            logger.error("path to field not found: %s", path)
+            raise ValueError(f"key not found: {field}:{path}")
+        return np.asarray(f[path][index])
+
+
+def get_shape(fname: str, field: str, mode: str = "alias", ftype: str = "nexus") -> tuple[int, ...] | None:
+    """Return the shape of a dataset without reading its contents.
+
+    Args:
+        fname: Path to the HDF5 file.
+        field: Key name, resolved via the key map when *mode* is ``"alias"``.
+        mode: ``"raw"`` reads the literal key; ``"alias"`` resolves via ``aps_8idi``.
+        ftype: Expected file type for the reader backend.
+
+    Returns:
+        The dataset shape tuple, or ``None`` if the field is absent.
+    """
+    path = hdf_key[ftype][field] if mode == "alias" else field
+    with h5py.File(fname, "r") as f:
+        if path not in f:
+            return None
+        return f[path].shape
 
 
 def get_analysis_type(fname, ftype="nexus"):

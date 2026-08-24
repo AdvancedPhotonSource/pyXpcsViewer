@@ -9,12 +9,19 @@ from functools import cached_property
 
 import numpy as np
 
-from .file_io.hdf_reader import get, get_analysis_type, read_metadata_to_dict
+from .file_io.hdf_reader import get, get_analysis_type, get_shape, get_slice, read_metadata_to_dict
 from .file_io.qmap_utils import get_qmap
 from .fitting import build_g2_fit_summary, fit_with_fixed, power_law
 from .twotime_utils import get_c2_stream, get_single_c2_from_hdf
 
 logger = logging.getLogger(__name__)
+
+
+def _g2_per_pixel(ip: np.ndarray, if1: np.ndarray, if2: np.ndarray) -> np.ndarray:
+    """Normalize one delay's ``(IP, IF, IF)`` detector frames into a per-pixel g2 image."""
+    denominator = if1 * if2
+    denominator[denominator == 0] = 1
+    return ip / denominator
 
 
 def create_id(fname, label_style=None, simplify_flag=True):
@@ -433,26 +440,41 @@ class XpcsFile:
     def get_G2_data(self, target: str = "G2", delay_index: int = 0) -> np.ndarray:
         """Extract a single G2 channel array (raw counts, correlations, or fraction) for one delay bin.
 
+        Only the requested delay is read. The full ``G2`` cube is hundreds of MB
+        and is needed for regrouping but not for display, so unless it already
+        sits in the :attr:`G2` cache this partially reads the HDF5 dataset --
+        typically a few ms instead of a few seconds on a networked filesystem.
+
         Args:
             target: One of ``"G2"``, ``"IP"``, ``"IF"``, or ``"g2_per_pixel"``.
-            delay_index: Index into the first (delay) axis.
+            delay_index: Index into the first (delay) axis; clamped to the last delay.
 
         Returns:
             2D detector array for the requested channel.
+
+        Raises:
+            ValueError: If the file has no unnormalized G2 dataset.
         """
         assert target in ["G2", "IP", "IF", "g2_per_pixel"]
-        G2 = self.G2
-        assert G2 is not None
-        delay_index = min(delay_index, G2.shape[0] - 1)
+        channel_index = {"G2": 0, "IP": 1, "IF": 2}
 
-        if target in ["G2", "IP", "IF"]:
-            channel_index = {"G2": 0, "IP": 1, "IF": 2}[target]
-            return G2[delay_index, channel_index]
-        elif target == "g2_per_pixel":
-            denominator = G2[delay_index, 1] * G2[delay_index, 2]
-            denominator[denominator == 0] = 1
-            g2_per_pixel = G2[delay_index, 0] / denominator
-            return g2_per_pixel
+        # "G2" in self.__dict__ means the cached_property already holds the full
+        # cube (a previous regroup, say); slicing memory then beats re-reading.
+        cached: np.ndarray | None = self.__dict__.get("G2")
+        if cached is not None:
+            delay_index = min(delay_index, cached.shape[0] - 1)
+            if target in channel_index:
+                return cached[delay_index, channel_index[target]]
+            return _g2_per_pixel(cached[delay_index, 0], cached[delay_index, 1], cached[delay_index, 2])
+
+        shape = get_shape(self.fname, "G2")
+        if shape is None:
+            raise ValueError(f"no unnormalized G2 data in {self.fname}")
+        delay_index = min(delay_index, shape[0] - 1)
+        if target in channel_index:
+            return get_slice(self.fname, "G2", (delay_index, channel_index[target]))
+        frame = get_slice(self.fname, "G2", delay_index)  # (3, img_v, img_h)
+        return _g2_per_pixel(frame[0], frame[1], frame[2])
 
     def get_g2_data(
         self,
