@@ -510,7 +510,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # "sq-group" (scatter of the sq-bin averages); g2 itself is unaffected.
         kwargs["error_model"] = self.comboBox_G2_errormodel.currentText()
 
-        # Which per-pixel quantity the outlier statistic runs on ("G20" or
+        # Which per-pixel quantity the outlier statistic runs on ("G2" or
         # "g2-per-pixel"). Sent unconditionally: with rejection off the threshold
         # of -1.0 makes it moot, and the kwargs dict keeps a stable shape.
         kwargs["target"] = self.comboBox_G2_outliertarget.currentText()

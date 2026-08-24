@@ -5,7 +5,7 @@
 The "Debug" button in the Group Setting box opens this dialog for the first
 selected Multitau file. It visualizes what the configured outlier settings
 (method / threshold / combine / target) do to the per-pixel statistic the
-outlier pass consumes -- either the unnormalized numerator G20 or the
+outlier pass consumes -- either the unnormalized numerator G2[:, 0] or the
 normalized per-pixel g2, per the target:
 
 * "sq-bin histograms" tab: per-sq-bin histograms of that statistic with the

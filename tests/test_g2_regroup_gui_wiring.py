@@ -260,12 +260,12 @@ def test_process_G2_regroup_forwards_the_outlier_target(qapp):
     """The target picked in the UI must reach compute_g2, not silently default."""
     window = _FakeWindow()
     window.checkBox_G2_removeoutlier = _FakeCheckbox(True)  # the fake has no setChecked()
-    window.comboBox_G2_outliertarget = _FakeCombo("G20")
+    window.comboBox_G2_outliertarget = _FakeCombo("G2")
 
     XpcsViewer.process_G2_regroup(window)
 
     assert _pump(qapp, lambda: len(window.plots.calls) == 1)
-    assert window.plots.calls[0]["target"] == "G20"
+    assert window.plots.calls[0]["target"] == "G2"
 
 
 def test_process_G2_regroup_sends_target_even_with_rejection_off(qapp):

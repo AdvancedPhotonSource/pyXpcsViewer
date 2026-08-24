@@ -31,7 +31,7 @@
 - Consumes: existing `normalize_g2(G2_3ch)` (line 33 of g2_utils.py) and `find_g2_pixel_outliers(sqmap_1d, g2_pixel, threshold, method, combine_outlier)` (line 77) — both in `core/g2_utils.py`.
 - Produces: `compute_g2_debug_bundle(sqmap: np.ndarray, dqmap: np.ndarray, G2: np.ndarray, outlier_method: str = "MeanAbsoluteDeviation", outlier_threshold: float = 3.0, combine_outlier: bool = False) -> dict` returning keys: `g2_pixel` (ndarray float, `(n_delays, n_pixels)`), `bad` (ndarray bool, same shape), `sqmap_1d` / `dqmap_1d` (ndarray int, dead pixels set to 0), `img_shape` (`tuple[int, int]`), `n_delays` / `n_sq` / `n_dq` / `n_dead` (int). Task 2+ consume this dict shape.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/test_g2_utils.py`:
 
@@ -134,12 +134,12 @@ def test_bundle_combine_outlier_union():
     assert b["bad"].sum() == 4
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_utils.py -v`
 Expected: FAIL — `ImportError: cannot import name 'compute_g2_debug_bundle'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Append to `src/pyxpcsviewer/core/g2_utils.py`:
 
@@ -200,12 +200,12 @@ def compute_g2_debug_bundle(
     }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_utils.py -v`
 Expected: all 6 tests PASS
 
-- [ ] **Step 5: Lint + type check**
+- [x] **Step 5: Lint + type check**
 
 Run:
 ```bash
@@ -215,7 +215,7 @@ ruff check tests/test_g2_utils.py src/pyxpcsviewer/core/g2_utils.py
 ```
 Expected: ruff clean; mypy reports exactly 19 errors (the pre-existing ones — none on the new function's lines).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pyxpcsviewer/core/g2_utils.py tests/test_g2_utils.py
@@ -239,7 +239,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
   - `_BinSweepPanel(QtWidgets.QWidget)` with `.spin` (QSpinBox, objectName `g2_debug_sq_spin`, range 1..n_sq) and `.glw` (pg.GraphicsLayoutWidget, one PlotItem per delay, grid columns = `ceil(sqrt(n_delays))`).
   - `_add_hist(item, values, n_outlier, title_prefix, method, threshold)` and `_center_and_hi(values, method, threshold) -> tuple[float, float]` module helpers (reused by Task 3).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/test_g2_debug_dialog.py`:
 
@@ -361,12 +361,12 @@ def test_bin_sweep_all_zero_bin(qapp):
     assert "all zero" in plot0.getTitle().toPlainText()
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'pyxpcsviewer.gui.view.g2_debug_dialog'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/pyxpcsviewer/gui/view/g2_debug_dialog.py`:
 
@@ -543,12 +543,12 @@ def build_debug_plots(
     return tabs
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: all 4 tests PASS
 
-- [ ] **Step 5: Lint + type check**
+- [x] **Step 5: Lint + type check**
 
 Run:
 ```bash
@@ -558,7 +558,7 @@ ruff check src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dial
 ```
 Expected: clean (0 mypy errors on the new file).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dialog.py
@@ -579,7 +579,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - Consumes: `_add_hist()` and the bundle dict from Task 2.
 - Produces: `_DelaySweepPanel(QtWidgets.QWidget)` with `.spin` (objectName `g2_debug_delay_spin`, range 0..n_delays−1), `.glw`, `.prev_btn` (objectName `g2_debug_prev_btn`), `.next_btn` (objectName `g2_debug_next_btn`), `.page_label` (objectName `g2_debug_page_label`, text `page k/N`), 60 bins per page in a 12-column grid. `build_debug_plots` tab 0 becomes a vertical `QSplitter` with the bin-sweep panel on top and the delay-sweep panel below.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `tests/test_g2_debug_dialog.py` (extend the `from pyxpcsviewer.gui.view.g2_debug_dialog import ...` line to also import `_DelaySweepPanel`):
 
@@ -624,12 +624,12 @@ def test_delay_sweep_plot_counts(qapp):
     assert len(plots) == 8  # last page: bins 121-128
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: the 2 new tests FAIL with `AttributeError: _DelaySweepPanel` (import error) — existing 4 still pass.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 In `src/pyxpcsviewer/gui/view/g2_debug_dialog.py`, add after the `_BinSweepPanel` class:
 
@@ -725,12 +725,12 @@ with:
     tabs.addTab(splitter, "sq-bin histograms")
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: all 6 tests PASS
 
-- [ ] **Step 5: Lint + type check**
+- [x] **Step 5: Lint + type check**
 
 Run:
 ```bash
@@ -740,7 +740,7 @@ ruff check src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dial
 ```
 Expected: clean.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dialog.py
@@ -761,7 +761,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - Consumes: bundle dict (`bad`, `img_shape`, `n_dead`).
 - Produces: `_BadMapPanel(QtWidgets.QWidget)` with constructor `(bundle: dict, parent: QtWidgets.QWidget | None = None)` and `.spin` (objectName `g2_debug_mintag_spin`, range 1..max tag count, default 1), `.view` (pg.ImageView, objectName `g2_debug_map_view`, "hot" colormap, colorbar), `.summary` (QLabel, objectName `g2_debug_map_summary`). `build_debug_plots` tab 1 becomes this panel.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_g2_debug_dialog.py` (extend the module import line to also import `_BadMapPanel`):
 
@@ -787,12 +787,12 @@ def test_bad_map_and_mintag_remask(qapp, bundle):
     assert "tagged ≥2: 2" in summary.text()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py::test_bad_map_and_mintag_remask -v`
 Expected: FAIL — tab 1 is still the empty placeholder, `findChild(pg.ImageView, "g2_debug_map_view")` returns None.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 In `src/pyxpcsviewer/gui/view/g2_debug_dialog.py`, add after `_DelaySweepPanel`:
 
@@ -856,12 +856,12 @@ with:
 
 Note: `setLevels((min_tag, vmax))` clips sub-threshold pixels (set to 0) to the colormap's low color — black in "hot" — which is the "masked" look.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: all 7 tests PASS
 
-- [ ] **Step 5: Lint + type check**
+- [x] **Step 5: Lint + type check**
 
 Run:
 ```bash
@@ -871,7 +871,7 @@ ruff check src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dial
 ```
 Expected: clean.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dialog.py
@@ -894,7 +894,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
   - `G2DebugWorker(QtCore.QThread)` with constructor `(xfile: _XpcsFileLike, method: str, threshold: float, combine_outlier: bool, parent: QtCore.QObject | None = None)` and signals `progress_stage = QtCore.Signal(str)`, `finished_bundle = QtCore.Signal(object)`, `failed = QtCore.Signal(str)`.
   - `G2DebugDialog(QtWidgets.QDialog)` with constructor `(xfile: _XpcsFileLike, method: str, threshold: float, combine_outlier: bool, parent: QtWidgets.QWidget | None = None)`; instance attrs `_worker_running: bool`, `_worker: G2DebugWorker`; instance method `_show_failure(msg: str)` (the QMessageBox.critical call — instance-level so tests can override it). Task 6's slot constructs this.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `tests/test_g2_debug_dialog.py` (add `import threading`, `import time`, and `from typing import cast` at the top; extend the `g2_debug_dialog` import line to also import `G2DebugDialog` and `_XpcsFileLike`):
 
@@ -973,12 +973,12 @@ def test_dialog_failed_path(qapp):
 
 Note: `import types` is also needed at the top of the test file.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: the 3 new tests FAIL — `ImportError: cannot import name 'G2DebugDialog'`; the 7 existing pass.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Append to `src/pyxpcsviewer/gui/view/g2_debug_dialog.py` (add `from PySide6 import QtCore`, `from PySide6.QtWidgets import QMessageBox`, and `from pyxpcsviewer.core.g2_utils import compute_g2_debug_bundle` to the import block):
 
@@ -1092,12 +1092,12 @@ class G2DebugDialog(QtWidgets.QDialog):
         event.accept()
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py -v`
 Expected: all 10 tests PASS
 
-- [ ] **Step 5: Lint + type check**
+- [x] **Step 5: Lint + type check**
 
 Run:
 ```bash
@@ -1107,7 +1107,7 @@ ruff check src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dial
 ```
 Expected: clean.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pyxpcsviewer/gui/view/g2_debug_dialog.py tests/test_g2_debug_dialog.py
@@ -1130,7 +1130,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - Consumes: `G2DebugDialog` (Task 5); existing `XpcsViewer.get_selected_rows()`, `self.model.get_xf_list(rows, filter_atype="Multitau")` (gui/model/file_locator.py:65), `has_G2_field` (already imported in xpcs_viewer.py line 20), widgets `comboBox_G2_outliermethod` / `doubleSpinBox_G2_threshold` / `checkBox_G2_combineoutlier` / `checkBox_G2_removeoutlier` (checkbox read but only for future-proofing — settings are always applied per the spec decision).
 - Produces: `XpcsViewer.pushButton_G2_debug`, `XpcsViewer._g2_debug_dialog: G2DebugDialog | None`, `XpcsViewer.debug_G2_regroup() -> None`.
 
-- [ ] **Step 1: Write the failing smoke test**
+- [x] **Step 1: Write the failing smoke test**
 
 Append to `tests/test_g2_debug_dialog.py`:
 
@@ -1145,12 +1145,12 @@ def test_debug_button_wired(qapp, tmp_path):
     assert window._g2_debug_dialog is None
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py::test_debug_button_wired -v`
 Expected: FAIL — `AttributeError: 'XpcsViewer' object has no attribute 'pushButton_G2_debug'`
 
-- [ ] **Step 3: Add the button to `view.ui`**
+- [x] **Step 3: Add the button to `view.ui`**
 
 In `src/pyxpcsviewer/gui/view/view.ui`, inside `gridLayout_50` (the "Group Setting" `groupBox_23` layout), after the `checkBox_G2_combineoutlier` item and before the layout's closing tag, insert:
 
@@ -1184,7 +1184,7 @@ Precise anchor — replace:
 
 with the same block plus the new `<item row="1" column="6">` inserted between `</item>` and `</layout>` (i.e. the new item is the last item of `gridLayout_50`, landing directly under the ReGroup button at row 0 column 6).
 
-- [ ] **Step 4: Regenerate the UI python**
+- [x] **Step 4: Regenerate the UI python**
 
 Run:
 ```bash
@@ -1193,7 +1193,7 @@ git diff --stat src/pyxpcsviewer/gui/view/viewer_ui.py
 ```
 Expected: a small diff — a `self.pushButton_G2_debug = QtWidgets.QPushButton(...)` block, its grid geometry, and text "Debug". If the diff is unexpectedly huge (uic version churn beyond the new button), inspect it before proceeding; the generated file must differ only by the new button.
 
-- [ ] **Step 5: Wire `xpcs_viewer.py`**
+- [x] **Step 5: Wire `xpcs_viewer.py`**
 
 Four edits in `src/pyxpcsviewer/gui/view/xpcs_viewer.py`:
 
@@ -1247,12 +1247,12 @@ from .g2_debug_dialog import G2DebugDialog
         self._g2_debug_dialog.show()
 ```
 
-- [ ] **Step 6: Run the new test to verify it passes**
+- [x] **Step 6: Run the new test to verify it passes**
 
 Run: `/local/MQICHU/envs/l2604_xpcs/bin/python -m pytest tests/test_g2_debug_dialog.py::test_debug_button_wired -v`
 Expected: PASS
 
-- [ ] **Step 7: Full verification**
+- [x] **Step 7: Full verification**
 
 Run:
 ```bash
@@ -1263,7 +1263,7 @@ ruff check src/pyxpcsviewer/gui/view/xpcs_viewer.py tests/test_g2_debug_dialog.p
 ```
 Expected: whole suite passes (note `test_real_data.py` cases auto-skip without the scratch data — that is normal); ruff clean; no NEW mypy errors in `xpcs_viewer.py` (if the file had pre-existing errors, the count must be unchanged — check `git stash && mypy ... && git stash pop` if in doubt).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/pyxpcsviewer/gui/view/view.ui src/pyxpcsviewer/gui/view/viewer_ui.py src/pyxpcsviewer/gui/view/xpcs_viewer.py tests/test_g2_debug_dialog.py

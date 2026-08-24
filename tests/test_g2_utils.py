@@ -78,12 +78,12 @@ def test_bundle_values_are_normalize_g2_for_the_g2_target():
     assert b["target"] == "g2-per-pixel"
 
 
-def test_bundle_values_are_the_numerator_for_the_G20_target():
+def test_bundle_values_are_the_numerator_for_the_G2_target():
     G2, sqmap, dqmap = make_data()
-    b = compute_g2_debug_bundle(sqmap, dqmap, G2, target="G20")
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, target="G2")
     n_delays, n_channels, _, _ = G2.shape
     np.testing.assert_allclose(b["values"], G2.reshape(n_delays, n_channels, -1)[:, 0])
-    assert b["target"] == "G20"
+    assert b["target"] == "G2"
 
 
 def test_bundle_rejects_unknown_target():
@@ -291,7 +291,7 @@ def test_compute_g2_rejects_unknown_error_model():
 
 
 # --- Outlier target: which per-pixel quantity the rejection statistic runs on.
-# make_data() above sets IF == 1 everywhere, so G20 == g2_pixel there and it
+# make_data() above sets IF == 1 everywhere, so G2[:, 0] == g2_pixel there and it
 # cannot tell the two targets apart. make_target_data() is built so they
 # disagree on every pixel that matters.
 
@@ -300,12 +300,12 @@ def make_target_data():
     """(1 delay, 3 ch, 4x4) G2 where the two outlier targets disagree.
 
     One sq bin (all pixels), one dq bin. Baseline pixels cycle IP over
-    {0.9, 1.0, 1.1} with IF1=IF2=1, so both G20 and g2_pixel have a
+    {0.9, 1.0, 1.1} with IF1=IF2=1, so both G2[:, 0] and g2_pixel have a
     non-degenerate MAD (0.1) -- these expectations do not lean on the
     spread==0 -> 1.0 clamp.
 
-      pixel 5  "hot":  IP=10,  IF=sqrt(10) -> G20=10  (outlier), g2=1.0 (not)
-      pixel 10 "corr": IP=1,   IF=0.1      -> G20=1   (not),     g2=100 (outlier)
+      pixel 5  "hot":  IP=10,  IF=sqrt(10) -> G2=10   (outlier), g2=1.0 (not)
+      pixel 10 "corr": IP=1,   IF=0.1      -> G2=1    (not),     g2=100 (outlier)
       pixel 0  "dead": IP=1e6, IF1=IF2=0   -> excluded from every bin
     """
     ip = np.array([0.9, 1.0, 1.1] * 6, dtype=np.float32)[:16].reshape(4, 4)
@@ -328,11 +328,11 @@ def _bad_mask(G2, sqmap, dqmap, **kw):
     return compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, **kw)["bad"]
 
 
-def test_target_G20_flags_the_bright_pixel_not_the_correlated_one():
+def test_target_G2_flags_the_bright_pixel_not_the_correlated_one():
     G2, sqmap, dqmap = make_target_data()
-    bad = _bad_mask(G2, sqmap, dqmap, target="G20")
-    assert bad[0, 5]  # G20 = 10 in a bin whose median is ~1
-    assert not bad[0, 10]  # G20 = 1, unremarkable
+    bad = _bad_mask(G2, sqmap, dqmap, target="G2")
+    assert bad[0, 5]  # G2 = 10 in a bin whose median is ~1
+    assert not bad[0, 10]  # G2 = 1, unremarkable
 
 
 def test_target_g2_per_pixel_flags_the_correlated_pixel_not_the_bright_one():
@@ -343,8 +343,8 @@ def test_target_g2_per_pixel_flags_the_correlated_pixel_not_the_bright_one():
 
 
 def test_default_target_is_g2_per_pixel():
-    """Default is the normalized statistic. A raw per-delay G20 cut biases g2
-    below 1 on real data (see DEFAULT_OUTLIER_TARGET's note), so G20 is opt-in
+    """Default is the normalized statistic. A raw per-delay G2 cut biases g2
+    below 1 on real data (see DEFAULT_OUTLIER_TARGET's note), so G2 is opt-in
     and belongs with a min_tag_count persistence filter."""
     G2, sqmap, dqmap = make_target_data()
     np.testing.assert_array_equal(_bad_mask(G2, sqmap, dqmap), _bad_mask(G2, sqmap, dqmap, target="g2-per-pixel"))
@@ -355,24 +355,24 @@ def test_default_target_is_g2_per_pixel():
 def test_compute_g2_target_changes_the_result():
     """g2 itself differs between targets -- the argument is load-bearing, not cosmetic."""
     G2, sqmap, dqmap = make_target_data()
-    g2_G20, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20")
+    g2_G2, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="G2")
     g2_pix, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="g2-per-pixel")
-    assert not np.allclose(g2_G20, g2_pix)
+    assert not np.allclose(g2_G2, g2_pix)
 
 
-def test_target_G20_excludes_dead_pixels():
+def test_target_G2_excludes_dead_pixels():
     """Pixel 0 has IF1=IF2=0 (dead) and a huge IP; it must never be flagged,
     and it must not inflate the bin statistics."""
     G2, sqmap, dqmap = make_target_data()
-    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20")
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, target="G2")
     assert b["sqmap_1d"][0] == 0
     assert b["dqmap_1d"][0] == 0
     assert b["n_dead"] == 1
     assert not b["bad"][:, 0].any()
 
 
-def test_target_G20_statistics_are_per_sq_bin():
-    """A G20 of 1000 is normal in a bright bin and an outlier in a dim one.
+def test_target_G2_statistics_are_per_sq_bin():
+    """A numerator of 1000 is normal in a bright bin and an outlier in a dim one.
     Global (non-per-bin) statistics would flag both or neither."""
     sqmap_1d = np.array([1] * 8 + [2] * 8, dtype=np.uint16)
     values = np.concatenate(
@@ -396,11 +396,11 @@ def test_outlier_rejection_has_no_lower_bound():
 def test_compute_g2_rejects_unknown_target():
     G2, sqmap, dqmap = make_data()
     with pytest.raises(ValueError, match="target"):
-        compute_g2(sqmap, dqmap, G2, target="G2")
+        compute_g2(sqmap, dqmap, G2, target="IP")
 
 
 # --- min_tag_count: reject only pixels whose flag repeats across delays.
-# This is what makes target="G20" usable -- a single-delay G20 flag mostly
+# This is what makes target="G2" usable -- a single-delay G2 flag mostly
 # tracks the intensity gradient across a q ring, a repeating one is a hot pixel.
 
 
@@ -453,7 +453,7 @@ def test_min_tag_count_takes_precedence_over_combine_outlier():
 def test_compute_g2_forwards_min_tag_count():
     """A transient flag must not change g2 once a persistence filter is on."""
     G2, sqmap, dqmap = make_target_data()
-    g2_persistent, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="G20", min_tag_count=2)
+    g2_persistent, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=3.0, target="G2", min_tag_count=2)
     g2_none, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=-1.0)
     # the fixture has a single delay, so nothing can reach 2 tags -> no rejection
     np.testing.assert_allclose(g2_persistent, g2_none)

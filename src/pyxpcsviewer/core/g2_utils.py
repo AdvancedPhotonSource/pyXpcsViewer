@@ -31,25 +31,26 @@ DEFAULT_ERROR_MODEL = "per-pixel"
 #: Accepted values for the ``target`` argument -- which per-pixel quantity the
 #: outlier statistic is computed on.
 #:
-#: ``"G20"``: the unnormalized correlation numerator ``G2[:, 0]``.  Outliers are
+#: ``"G2"``: the unnormalized correlation numerator ``G2[:, 0]``.  Outliers are
 #: pixels whose *raw* correlation is anomalous for their sq bin, which in practice
-#: means bright/hot pixels (``G20 ~ I**2 * g2``).
+#: means bright/hot pixels (``G2 ~ I**2 * g2``).
 #: ``"g2-per-pixel"``: the normalized per-pixel g2 (:func:`normalize_g2`).  Outliers
 #: are pixels whose *correlation* is anomalous independent of their brightness.
 #:
-#: Unrelated to :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_G2_data`'s ``target``,
-#: which selects a channel to *display*.
-OUTLIER_TARGETS = ("g2-per-pixel", "G20")
+#: The ``"G2"`` name also appears in
+#: :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_G2_data`, where it selects the
+#: same array (channel 0) to *display* -- a different code path; don't conflate.
+OUTLIER_TARGETS = ("g2-per-pixel", "G2")
 
 #: Default outlier target.
 #:
-#: ``"g2-per-pixel"``, not ``"G20"``: measured on real data (A0096 glassy carbon,
-#: a static scatterer whose true g2 is flat), a per-delay ``G20`` cut at 3 MADs
+#: ``"g2-per-pixel"``, not ``"G2"``: measured on real data (A0096 glassy carbon,
+#: a static scatterer whose true g2 is flat), a per-delay ``G2`` cut at 3 MADs
 #: rejects 21.6% of samples and drags the g2 baseline to 0.91 with q-bins down to
 #: 0.55 -- impossible values.  ``g2 = <I**2 g2_pix> / <I>**2``, so trimming the
 #: brightest pixels strips tail mass from a mean-of-squares far faster than from a
 #: square-of-mean and biases the ratio down.  That is intrinsic to cutting on the
-#: numerator, not a threshold to tune.  ``G20`` is still the right statistic for
+#: numerator, not a threshold to tune.  ``G2`` is still the right statistic for
 #: finding persistently hot pixels -- see *min_tag_count*.
 DEFAULT_OUTLIER_TARGET = "g2-per-pixel"
 
@@ -117,24 +118,24 @@ def find_g2_pixel_outliers(
     """Flag per-pixel, per-delay outliers of *values* within each sqmap bin.
 
     *values* is whichever per-pixel statistic the caller selected via ``target``
-    (see :data:`OUTLIER_TARGETS`) -- either the unnormalized numerator ``G20`` or
-    the normalized per-pixel g2.  Nothing here assumes one or the other.
+    (see :data:`OUTLIER_TARGETS`) -- either the unnormalized numerator ``G2[:, 0]``
+    or the normalized per-pixel g2.  Nothing here assumes one or the other.
 
     Detection is independent for each ``(sq bin, delay)`` pair: pixels with
     ``values == 0`` (photon-starved, not bad) are excluded from both the
     center/spread statistics and the rejection test, and only an upper bound
     is applied (``center + threshold * spread``) — there is no lower bound.
     The zero test picks the same pixels under either target, since
-    ``g2_pixel == 0`` exactly when ``G20 == 0`` (:func:`normalize_g2` clamps its
-    denominator away from zero).
+    ``g2_pixel == 0`` exactly when ``G2[:, 0] == 0`` (:func:`normalize_g2` clamps
+    its denominator away from zero).
 
     By default a pixel flagged at one delay is not flagged at any other delay.
     *min_tag_count* turns on a **persistence filter** instead: a pixel flagged at
     fewer than *min_tag_count* delays is not rejected at all, and one flagged at
-    at least that many is rejected at *every* delay.  This is how the ``"G20"``
-    target is usable -- a single-delay ``G20`` flag mostly tracks the intensity
+    at least that many is rejected at *every* delay.  This is how the ``"G2"``
+    target is usable -- a single-delay ``G2`` flag mostly tracks the intensity
     gradient across a q ring, while a flag that repeats across most delays is a
-    genuinely hot pixel.  On A0096, ``G20`` flags 3279 pixels at all 34 delays
+    genuinely hot pixel.  On A0096, ``G2`` flags 3279 pixels at all 34 delays
     that ``"g2-per-pixel"`` never flags at even 30.
 
     *combine_outlier* is the ``min_tag_count == 1`` special case (flagged
@@ -230,15 +231,15 @@ def compute_g2(
             Only consulted when ``outlier_threshold >= 0``. Default ``False``.
         min_tag_count: Reject only pixels flagged at this many delays or more, at every
             delay (see :func:`find_g2_pixel_outliers`). ``0`` (default) keeps the
-            per-delay flags. This is what makes ``target="G20"`` usable: on A0096 a raw
-            per-delay G20 cut biases g2 below 1, while ``min_tag_count=30`` of 34 removes
+            per-delay flags. This is what makes ``target="G2"`` usable: on A0096 a raw
+            per-delay G2 cut biases g2 below 1, while ``min_tag_count=30`` of 34 removes
             5027 hot pixels and leaves the curve flat and physical.
         error_model: One of :data:`ERROR_MODELS`; selects how ``g2_err`` is estimated.
             ``"per-pixel"`` (default) takes the scatter of the individual pixels in the
             dq bin; ``"sq-group"`` takes the scatter of the sq-bin averages making up the
             dq bin.  Only ``g2_err`` is affected -- ``g2`` itself is identical either way.
         target: One of :data:`OUTLIER_TARGETS`; selects which per-pixel quantity the
-            outlier statistic runs on. Default ``"G20"`` (the unnormalized numerator).
+            outlier statistic runs on. Default :data:`DEFAULT_OUTLIER_TARGET`.
             This only changes *which pixels are rejected* -- the reported ``g2`` is
             always the normalized sq-bin average either way. Only consulted when
             ``outlier_threshold >= 0``.
@@ -274,7 +275,7 @@ def compute_g2(
     if outlier_threshold >= 0:
         # G2 is already (n_delays, n_channels, n_pixels) here, so G2[:, 0] is a strided
         # view of the numerator -- no copy of a multi-hundred-MB cube.
-        values = G2[:, 0] if target == "G20" else g2_pixel
+        values = G2[:, 0] if target == "G2" else g2_pixel
         bad = find_g2_pixel_outliers(
             sqmap_1d,
             values,
@@ -382,7 +383,8 @@ def regroup_G2_with_qmap_array(
         error_model: One of :data:`ERROR_MODELS`; selects the ``g2_err`` estimator
             (see :func:`compute_g2`). Default ``"per-pixel"``.
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
-            outlier statistic runs on (see :func:`compute_g2`). Default ``"G20"``.
+            outlier statistic runs on (see :func:`compute_g2`).
+            Default :data:`DEFAULT_OUTLIER_TARGET`.
 
     Returns:
         The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
@@ -437,7 +439,8 @@ def regroup_G2(
         error_model: One of :data:`ERROR_MODELS`; selects the ``g2_err`` estimator
             (see :func:`compute_g2`). Default ``"per-pixel"``.
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
-            outlier statistic runs on (see :func:`compute_g2`). Default ``"G20"``.
+            outlier statistic runs on (see :func:`compute_g2`).
+            Default :data:`DEFAULT_OUTLIER_TARGET`.
 
     Returns:
         The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
@@ -530,8 +533,8 @@ def compute_g2_debug_bundle(
 
     # only materialize the normalized per-pixel g2 when it is the target -- on a
     # 1 Mpixel detector with 60 delays that array is ~240 MB, and nothing else in
-    # the bundle needs it. G2[:, 0] is a view, so the G20 branch allocates nothing.
-    values = G2[:, 0] if target == "G20" else normalize_g2(G2)  # type: ignore[no-untyped-call]
+    # the bundle needs it. G2[:, 0] is a view, so the G2 branch allocates nothing.
+    values = G2[:, 0] if target == "G2" else normalize_g2(G2)  # type: ignore[no-untyped-call]
     bad = find_g2_pixel_outliers(  # type: ignore[no-untyped-call]
         sqmap_1d,
         values,
