@@ -13,7 +13,9 @@ which raised "got multiple values for argument 'stability_legend'" any time
 the g2_stability tab tried to plot.
 """
 
-from pyxpcsviewer.gui.control.plot.g2_mod import _setup_subplots
+import numpy as np
+
+from pyxpcsviewer.gui.control.plot.g2_mod import _setup_subplots, pg_plot
 
 
 class _FakeLegend:
@@ -69,3 +71,70 @@ def test_stability_call_pattern_does_not_raise_and_respects_show_label():
     hdl = _FakeHandler()
     axes = _setup_subplots(hdl, 1, 4, False, False, stability_legend=True)
     assert axes[0].legend_calls == []
+
+
+class _FakePlotAxis(_FakeAxis):
+    """Adds the remaining axis methods pg_plot() calls, so pg_plot can run end to end."""
+
+    def __init__(self):
+        super().__init__()
+        self.plot_calls = []
+
+    def setTitle(self, *args, **kwargs):
+        pass
+
+    def setLabel(self, *args, **kwargs):
+        pass
+
+    def setRange(self, **kwargs):
+        pass
+
+    def setLogMode(self, **kwargs):
+        pass
+
+    def addItem(self, *args, **kwargs):
+        pass
+
+    def plot(self, *args, **kwargs):
+        self.plot_calls.append({"args": args, **kwargs})
+
+
+class _FakePlotHandler(_FakeHandler):
+    def addPlot(self, row, col):
+        ax = _FakePlotAxis()
+        self.axes.append(ax)
+        return ax
+
+
+class _FakeXpcsFile:
+    """Minimal stand-in for XpcsFile, covering only what pg_plot()/get_g2_data() touch."""
+
+    def __init__(self, label, num_qval=2):
+        self.atype = ["Multitau"]
+        self.label = label
+        self.fit_summary = None
+        num_tau = 3
+        self._tel = np.logspace(-5, 0, num_tau)
+        self._g2 = np.ones((num_tau, num_qval))
+        self._g2_err = np.full((num_tau, num_qval), 0.01)
+        self._q = np.linspace(0.01, 0.02, num_qval)
+        self._labels = [f"q={q:.4f}" for q in self._q]
+
+    def get_g2_data(self, qrange=None, trange=None):
+        return self._q, self._tel, self._g2, self._g2_err, self._labels
+
+
+def test_pg_plot_single_layout_does_not_raise_and_uses_qvalue_labels():
+    """Regression test: plot_type="single" left `label` unbound in the per-curve
+    plot call, raising UnboundLocalError as soon as a user picked the "single"
+    G2 layout (one subplot per file, one curve per Q-value).
+    """
+    hdl = _FakePlotHandler()
+    xf_list = [_FakeXpcsFile("fileA"), _FakeXpcsFile("fileB")]
+
+    pg_plot(hdl, xf_list, q_range=None, t_range=None, y_range=None, rows=[], plot_type="single")
+
+    assert len(hdl.axes) == len(xf_list)
+    for ax, xf in zip(hdl.axes, xf_list):
+        names = [call["name"] for call in ax.plot_calls]
+        assert names == xf._labels

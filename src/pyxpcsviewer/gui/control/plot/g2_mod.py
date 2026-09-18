@@ -214,6 +214,7 @@ def pg_plot(
             elif plot_type == "single":
                 ax = axes[m]
                 color = colors[n % len(colors)]
+                label = labels[m][n]
                 ax.setTitle(xf_list[m].label)
             else:  # single-combined
                 ax = axes[0]
