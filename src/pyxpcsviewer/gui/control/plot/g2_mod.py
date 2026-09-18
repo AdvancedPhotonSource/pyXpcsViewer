@@ -359,6 +359,11 @@ def pg_plot_one_g2(ax, x, y, dy, color: tuple[int, ...], label: str | None, symb
         symbol: pyqtgraph marker symbol name.
         symbol_size: Diameter of markers in points.
     """
+    # tau=0 (zero-lag) entries can't be shown on the log-scale time axis; drop them
+    # rather than feeding log10 a zero and getting -inf.
+    valid = x > 0
+    x, y, dy = x[valid], y[valid], dy[valid]
+
     pen = pg.mkPen(color=color, width=2)
     line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
 

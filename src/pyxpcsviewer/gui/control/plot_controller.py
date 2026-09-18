@@ -155,6 +155,11 @@ class PlotController:
             y = xf_obj.g2[:, qbin]
             dy = xf_obj.g2_err[:, qbin]
 
+            # tau=0 (zero-lag) entries can't be shown on the log-scale time axis; drop
+            # them rather than feeding log10 a zero and getting -inf.
+            valid = x > 0
+            x, y, dy = x[valid], y[valid], dy[valid]
+
             line = pg.ErrorBarItem(x=np.log10(x), y=y, top=dy, bottom=dy, pen=pen)
             pen = pg.mkPen(color=color, width=1)
             g2_hdl.plot(

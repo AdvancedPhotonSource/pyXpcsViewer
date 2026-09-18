@@ -13,9 +13,11 @@ which raised "got multiple values for argument 'stability_legend'" any time
 the g2_stability tab tried to plot.
 """
 
+import warnings
+
 import numpy as np
 
-from pyxpcsviewer.gui.control.plot.g2_mod import _setup_subplots, pg_plot
+from pyxpcsviewer.gui.control.plot.g2_mod import _setup_subplots, pg_plot, pg_plot_one_g2
 
 
 class _FakeLegend:
@@ -138,3 +140,23 @@ def test_pg_plot_single_layout_does_not_raise_and_uses_qvalue_labels():
     for ax, xf in zip(hdl.axes, xf_list):
         names = [call["name"] for call in ax.plot_calls]
         assert names == xf._labels
+
+
+def test_pg_plot_one_g2_drops_zero_tau_instead_of_warning():
+    """Regression test: some result files' delay_list starts at tau=0 (zero-lag).
+    Feeding that straight into np.log10 raised "divide by zero encountered in
+    log10" and produced a -inf point instead of just being excluded from the
+    log-scale time axis.
+    """
+    ax = _FakePlotAxis()
+    x = np.array([0.0, 1e-5, 1e-4, 1e-3])
+    y = np.array([2.0, 1.8, 1.5, 1.1])
+    dy = np.array([0.1, 0.1, 0.1, 0.1])
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        pg_plot_one_g2(ax, x, y, dy, color=(0, 0, 0), label="q=0.01", symbol="o")
+
+    plotted_x, plotted_y = ax.plot_calls[0]["args"]
+    assert list(plotted_x) == [1e-5, 1e-4, 1e-3]
+    assert list(plotted_y) == [1.8, 1.5, 1.1]
