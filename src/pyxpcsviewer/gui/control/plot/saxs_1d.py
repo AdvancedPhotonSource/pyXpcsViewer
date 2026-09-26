@@ -117,7 +117,6 @@ def pg_plot(
     plot_norm: int = 0,
     plot_offset: int = 0,
     title: str | None = None,
-    rows: list[int] | None = None,
     qmax: float = 10.0,
     qmin: float = 0,
     loc: str = "best",
@@ -140,7 +139,6 @@ def pg_plot(
         plot_norm: Intensity normalisation index (0=None, 1=q², 2=q⁴, 3=I₀).
         plot_offset: Vertical log-offset per file (0 = no offset).
         title: Optional plot title.
-        rows: Row indices to use from the target list.
         qmax: Upper Q bound for axis limits.
         qmin: Lower Q bound for axis limits.
         loc: Legend anchor position.
@@ -162,12 +160,6 @@ def pg_plot(
     anchor_param = get_pyqtgraph_anchor_params(loc, padding=15)
     legend.anchor(**anchor_param)
 
-    alpha = np.ones(len(xf_list)) * 1.0
-    if rows:
-        alpha *= 0.35
-        for t in rows:
-            alpha[t] = 1.0
-
     if not subtract_background:
         bkg_file = None
     norm_method = [None, "q2", "q4", "I0"][plot_norm]
@@ -176,7 +168,7 @@ def pg_plot(
     plot_item.setLogMode(x=log_x, y=log_y)
 
     plot_id = 0
-    for n, fi in enumerate(xf_list):
+    for fi in xf_list:
         q, Iq, xlabel, ylabel = fi.get_saxs1d_data(
             bkg_xf=bkg_file,
             bkg_weight=weight,
@@ -194,7 +186,7 @@ def pg_plot(
                 Iq[m],
                 plot_id,
                 fi.saxs_1d["labels"][m],
-                alpha[n],
+                1.0,
                 marker_size=marker_size,
                 log_x=log_x,
                 log_y=log_y,

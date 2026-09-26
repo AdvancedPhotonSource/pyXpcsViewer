@@ -274,15 +274,19 @@ class PlotController:
         if xf_list:
             saxs_2d.plot(xf_list[0], *args, **kwargs)
 
-    def plot_saxs_1d(self, pg_hdl, mp_hdl, **kwargs):
+    def plot_saxs_1d(self, pg_hdl, mp_hdl, rows=None, **kwargs):
         """Delegate SAXS 1D plotting to :func:`.plot.saxs_1d.pg_plot`.
+
+        With no rows selected, all target files are overlaid. With one or more
+        rows selected, only those files are plotted.
 
         Args:
             pg_hdl: pyqtgraph plot handler (unused when only matplotlib is available).
             mp_hdl: Matplotlib plot handler widget.
+            rows: List of target indices; ``None``/empty plots all targets.
             **kwargs: Passed to ``saxs_1d.pg_plot``.
         """
-        xf_list = self.model.get_xf_list()
+        xf_list = self.model.get_xf_list(rows)
         if xf_list:
             saxs_1d.pg_plot(xf_list, mp_hdl, bkg_file=self.saxs1d_bkg_xf, **kwargs)
 
