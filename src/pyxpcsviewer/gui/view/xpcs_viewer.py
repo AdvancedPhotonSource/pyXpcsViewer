@@ -145,6 +145,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self._g2_bounds_initialized = False
         # G2 outlier debug dialog (lazy: None until the first Debug click)
         self._g2_debug_dialog: G2DebugDialog | None = None
+        # guards the one-time selectionChanged wiring in update_box()
+        self._target_selection_wired = False
 
         if path is not None:
             self.start_wd = path
@@ -163,7 +165,6 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         # self.saxs1d_lb_type.currentIndexChanged.connect(self.switch_saxs1d_line)
 
         self.tabWidget.currentChanged.connect(self.update_plot)
-        self.list_view_target.clicked.connect(self.update_plot)
 
         self.mp_2t_hdls = None
         self.init_twotime_plot_handler()
@@ -1242,6 +1243,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             self.list_view_source.parent().repaint()
         elif mode == "target":
             self.list_view_target.setModel(file_list)
+            if not self._target_selection_wired:
+                # setModel() is a no-op (and keeps the existing selection model)
+                # when called again with the same ListDataModel instance, which
+                # self.model.target always is -- so wire this only once, here,
+                # rather than on every add_target()/reload.
+                self.list_view_target.selectionModel().selectionChanged.connect(self.update_plot)
+                self._target_selection_wired = True
             self.box_target.setTitle(f"Target: {len(file_list):5d}")
             # on macos, the target box doesn't seem to update; force it
             file_list.layoutChanged.emit()
