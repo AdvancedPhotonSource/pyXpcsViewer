@@ -41,17 +41,22 @@ class _XpcsFileLike(Protocol):
     fname: str
     sqmap: np.ndarray
     dqmap: np.ndarray
+    saxs_1d: dict[str, np.ndarray]
 
     @property
     def G2(self) -> np.ndarray | None: ...
 
 
-def _center_and_hi(values: np.ndarray, method: str, threshold: float) -> tuple[float, float]:
-    """Center and upper bound exactly as find_g2_pixel_outliers computes them.
+def _center_and_hi(values: np.ndarray, method: str, threshold: float) -> tuple[float | None, float]:
+    """Center and upper bound exactly as the outlier pass computes them.
 
     ``values`` must already be the non-zero (alive) g2_pixel values for one
-    (sq bin, delay) pair.
+    (sq bin, delay) pair. "G2-smooth-bkg" has no per-bin center/spread -- it is
+    a flat cut against a global smooth-background reference -- so it returns
+    ``(None, threshold)``; the caller skips drawing a center line in that case.
     """
+    if method == "G2-smooth-bkg":
+        return None, threshold
     if method == "StandardDeviation":
         center = float(np.mean(values))
         spread = float(np.std(values))
@@ -89,7 +94,8 @@ def _add_hist(
             brush=pg.mkBrush("steelblue"),
         )
     )
-    item.addLine(x=center, pen=pg.mkPen("g", width=1))
+    if center is not None:
+        item.addLine(x=center, pen=pg.mkPen("g", width=1))
     item.addLine(x=hi, pen=pg.mkPen("r", style=Qt.PenStyle.DashLine, width=1))
     item.setTitle(f"{title_prefix}  n={values.size}  out={n_outlier}")
 
@@ -146,19 +152,31 @@ class _BinSweepPanel(QtWidgets.QWidget):
         self.slider.setObjectName("g2_debug_sq_slider")
         self.slider.setRange(1, bundle["n_sq"])
         self.slider.setMinimumWidth(150)
-        # no trailing stretch: the slider takes every pixel the label and spin box
-        # leave over
+        # no trailing stretch: the slider takes every pixel the other controls
+        # (including the checkbox added below) leave over
         self.slider.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.slider.valueChanged.connect(self._sync_from_slider)
         self.slider.sliderReleased.connect(self._render)
         top.addWidget(self.slider, 1)
+        self.zero_checkbox = QtWidgets.QCheckBox("include zero values")
+        self.zero_checkbox.setObjectName("g2_debug_include_zero_checkbox")
+        self.zero_checkbox.toggled.connect(self._render)
+        top.addWidget(self.zero_checkbox)
         layout.addLayout(top)
 
         n_delays = bundle["n_delays"]
         self._cols = math.ceil(math.sqrt(n_delays))
+        rows = math.ceil(n_delays / self._cols)
         self.glw = pg.GraphicsLayoutWidget()
         self.glw.setBackground("w")
-        layout.addWidget(self.glw)
+        # a floor size per subplot -- without it the grid just gets squeezed
+        # unreadably small instead of scrolling when the dialog is small
+        self.glw.setMinimumSize(self._cols * 220, rows * 180)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setObjectName("g2_debug_hist_scroll")
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(self.glw)
+        layout.addWidget(scroll)
         self._render()
 
     def _sync_from_spin(self, value: int) -> None:
@@ -203,7 +221,13 @@ class _BinSweepPanel(QtWidgets.QWidget):
             # the histograms are of `target`, not necessarily g2 -- name the axis
             item.setLabel("bottom", self._bundle["target"])
             values = self._bundle["values"][delay][roi]
-            values = values[values != 0]
+            # "G2-smooth-bkg" values are NaN for pixels with no valid
+            # smooth-background reference -- always excluded, since it isn't a
+            # real value. Zero (photon-starved) values are excluded too unless
+            # the checkbox opts into seeing them.
+            values = values[np.isfinite(values)]
+            if not self.zero_checkbox.isChecked():
+                values = values[values != 0]
             n_outlier = int(self._bundle["bad"][delay][roi].sum())
             _add_hist(item, values, n_outlier, f"delay={delay}", self._method, self._threshold)
 
@@ -279,11 +303,12 @@ def build_debug_plots(
     layout = widget.layout()
     if layout is None:
         raise RuntimeError("build_debug_plots() needs a host widget with a layout")
+    scale_suffix = f", scale={bundle['scale']:.6g}" if "scale" in bundle else ""
     header = QtWidgets.QLabel(
         f"{os.path.basename(fname)} | delays={bundle['n_delays']}  sq={bundle['n_sq']}  "
         f"dq={bundle['n_dq']}  dead={bundle['n_dead']} | "
         f"method={method}, threshold={threshold:g}, combine={combine_outlier}, "
-        f"target={bundle['target']}, min_tag={min_tag_count}"
+        f"target={bundle['target']}, min_tag={min_tag_count}{scale_suffix}"
     )
     header.setObjectName("g2_debug_header")
     header.setWordWrap(True)
@@ -337,6 +362,7 @@ class G2DebugWorker(QtCore.QThread):
                 outlier_threshold=self._threshold,
                 combine_outlier=self._combine,
                 target=self._target,
+                scattering_1d=self._xfile.saxs_1d["Iq"][0] if self._method == "G2-smooth-bkg" else None,
             )
         except Exception as exc:  # report any failure to the UI
             self.failed.emit(f"{type(exc).__name__}: {exc}")

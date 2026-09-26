@@ -54,6 +54,19 @@ OUTLIER_TARGETS = ("g2-per-pixel", "G2")
 #: finding persistently hot pixels -- see *min_tag_count*.
 DEFAULT_OUTLIER_TARGET = "g2-per-pixel"
 
+#: Accepted values for the ``outlier_method`` argument of :func:`compute_g2`.
+#:
+#: ``"MeanAbsoluteDeviation"`` / ``"StandardDeviation"``: per-``(sq bin, delay)``
+#: center + threshold*spread cut computed by :func:`find_g2_pixel_outliers` on
+#: whichever per-pixel statistic ``target`` selects.
+#: ``"G2-smooth-bkg"``: a single global smooth-background reference built from
+#: the file's own time-averaged ``scattering_1d``, scaled to match the
+#: intensity channels (see :func:`fit_scattering_scale`), with a flat
+#: ``> threshold`` cut on ``G2[:, 0] / IPIF_smooth**2`` (see
+#: :func:`find_g2_smooth_bkg_outliers`). ``target`` is not consulted for this
+#: method -- it always uses the raw numerator.
+OUTLIER_METHODS = ("MeanAbsoluteDeviation", "StandardDeviation", "G2-smooth-bkg")
+
 
 def has_G2_field(fname):
     """Check if the G2 field exists in the specified HDF5 file.
@@ -110,6 +123,29 @@ def average_by_qindex(idx_map, arr):
         result.append(avg_value)
 
     return np.array(result)
+
+
+def _apply_persistence_filter(bad, combine_outlier=False, min_tag_count=0):
+    """Turn independent per-delay flags into a persistence-filtered mask, in place.
+
+    Shared tail of :func:`find_g2_pixel_outliers` and
+    :func:`find_g2_smooth_bkg_outliers` -- see the former's docstring for the
+    semantics of *combine_outlier* / *min_tag_count*.
+
+    Args:
+        bad: Boolean mask, shape ``(n_delays, n_pixels)``. Modified in place.
+        combine_outlier: If ``True``, equivalent to ``min_tag_count=1``. Ignored
+            when *min_tag_count* is set.
+        min_tag_count: Reject only pixels flagged at this many delays or more, at
+            every delay. ``0`` (default) keeps the per-delay flags as they are.
+
+    Returns:
+        *bad*, for convenience.
+    """
+    n_tags = min_tag_count if min_tag_count > 0 else (1 if combine_outlier else 0)
+    if n_tags > 0:
+        bad[:] = bad.sum(axis=0) >= n_tags
+    return bad
 
 
 def find_g2_pixel_outliers(
@@ -194,15 +230,124 @@ def find_g2_pixel_outliers(
 
         bad[:, pix_idx] = vals_roi > hi
 
-    n_tags = min_tag_count if min_tag_count > 0 else (1 if combine_outlier else 0)
-    if n_tags > 0:
-        # Persistence filter: trust a flag only if it repeats. Pixels outside every
-        # sq bin are never flagged above, so their count is 0 and they stay clean.
-        # n_tags == 1 reproduces the old per-bin union exactly (that loop was a
-        # per-pixel any() over delays; the bin partition never affected the result).
-        bad[:] = bad.sum(axis=0) >= n_tags
+    # Persistence filter: trust a flag only if it repeats. Pixels outside every
+    # sq bin are never flagged above, so their count is 0 and they stay clean.
+    # n_tags == 1 reproduces the old per-bin union exactly (that loop was a
+    # per-pixel any() over delays; the bin partition never affected the result).
+    return _apply_persistence_filter(bad, combine_outlier=combine_outlier, min_tag_count=min_tag_count)
 
-    return bad
+
+def fit_scattering_scale(G2, sqmap_1d, scattering_1d):
+    """Fit the closed-form scale factor between the IP/IF channels and ``scattering_1d``.
+
+    Empirically, the sq-bin-averaged IP and IF channels (``G2[:, 1]``,
+    ``G2[:, 2]``) are each, to within noise, a constant multiple of the file's
+    own time-averaged ``scattering_1d`` -- both are the same mean detector
+    intensity per sq bin, just accumulated (and possibly frame-normalized)
+    differently. This fits that multiple by ordinary least squares in closed
+    form: ``scale = sum(combined_sq * scattering_1d) / sum(scattering_1d**2)``,
+    where ``combined_sq`` is ``(IP + IF) / 2`` averaged over delays and folded
+    into per-sq-bin means via :func:`average_by_qindex`.
+
+    Only sq bins that are both populated (at least one live pixel) and finite
+    in *scattering_1d* (not NaN -- masked/missing static bins) contribute to
+    the fit.
+
+    Args:
+        G2: Unnormalized G2, shape ``(n_delays, 3, n_pixels)`` or
+            ``(n_delays, 3, img_v, img_h)``.
+        sqmap_1d: Static ROI map, raveled, shape ``(n_pixels,)``. Dead pixels
+            should already be zeroed by the caller (as :func:`compute_g2` does).
+        scattering_1d: Time-averaged SAXS-1D intensity indexed by sq bin
+            (1-based bin *n* at index *n - 1*), shape ``(n_sq,)`` or larger
+            (only the first ``n_sq`` entries are used). May contain NaN for
+            masked/missing bins.
+
+    Returns:
+        The fitted scale factor (float).
+
+    Raises:
+        ValueError: If *scattering_1d* has fewer entries than the number of sq
+            bins in *sqmap_1d*, or no sq bin qualifies for the fit.
+    """
+    n_delays, n_channels = G2.shape[0], G2.shape[1]
+    G2 = G2.reshape(n_delays, n_channels, -1)
+    n_sq = int(np.max(sqmap_1d))
+    scattering_1d = np.asarray(scattering_1d)
+    if scattering_1d.size < n_sq:
+        raise ValueError(f"scattering_1d has {scattering_1d.size} entries, fewer than the {n_sq} sq bins in sqmap")
+    scattering_1d = scattering_1d[:n_sq].astype(float)
+
+    combined = (G2[:, 1] + G2[:, 2]) / 2.0  # (n_delays, n_pixels)
+    combined_mean = np.mean(combined, axis=0, keepdims=True)  # (1, n_pixels)
+    combined_sq = average_by_qindex(sqmap_1d, combined_mean)[0]  # (n_sq,)
+
+    count = np.bincount(sqmap_1d.ravel(), minlength=n_sq + 1)[1 : n_sq + 1]
+    valid = (count > 0) & np.isfinite(scattering_1d)
+    if not np.any(valid):
+        raise ValueError("no populated sq bin has a finite scattering_1d value; cannot fit scale")
+
+    denom = np.sum(scattering_1d[valid] ** 2)
+    if denom == 0:
+        raise ValueError("scattering_1d is all zero over the populated sq bins; cannot fit scale")
+
+    return float(np.sum(combined_sq[valid] * scattering_1d[valid]) / denom)
+
+
+def find_g2_smooth_bkg_outliers(
+    sqmap_1d, G2_channel0, scattering_1d, scale, threshold=3.0, combine_outlier=False, min_tag_count=0
+):
+    """Flag per-pixel, per-delay outliers against a smooth-background reference.
+
+    Builds a per-pixel smooth-intensity reference ``IPIF_smooth`` by broadcasting
+    ``scale * scattering_1d`` through *sqmap_1d* (sq bin *n* gets
+    ``scale * scattering_1d[n - 1]``), then flags pixels where
+    ``G2_channel0 / IPIF_smooth ** 2 > threshold``. Unlike
+    :func:`find_g2_pixel_outliers` there is no per-bin center/spread estimate --
+    the smooth background *is* the reference, so this is a flat cut, with no
+    "method" (MAD vs. std dev) to choose.
+
+    Pixels outside every sq bin, and pixels whose sq bin has no finite
+    *scattering_1d* value (masked/missing static bin), have no valid smooth
+    reference and are never flagged -- the same treatment
+    :func:`find_g2_pixel_outliers` gives photon-starved (``value == 0``) pixels.
+
+    Args:
+        sqmap_1d: Static ROI map, raveled, shape ``(n_pixels,)``.
+        G2_channel0: Unnormalized correlation numerator ``G2[:, 0]``, shape
+            ``(n_delays, n_pixels)``.
+        scattering_1d: Time-averaged SAXS-1D intensity indexed by sq bin,
+            shape ``(n_sq,)`` or larger (only the first ``n_sq`` entries are
+            used). May contain NaN for masked/missing bins.
+        scale: Scale factor from :func:`fit_scattering_scale`.
+        threshold: Reject a pixel when ``G2_channel0 / IPIF_smooth ** 2``
+            exceeds this value. Upper bound only -- there is no lower bound.
+        combine_outlier: If ``True``, equivalent to ``min_tag_count=1``. Ignored
+            when *min_tag_count* is set.
+        min_tag_count: Reject only pixels flagged at this many delays or more, at
+            every delay (see :func:`find_g2_pixel_outliers`). ``0`` (default)
+            keeps the per-delay flags as they are.
+
+    Returns:
+        Boolean mask, shape ``(n_delays, n_pixels)``, ``True`` where the pixel
+        is flagged as an outlier.
+    """
+    n_sq = int(np.max(sqmap_1d))
+    scattering_1d = np.asarray(scattering_1d)[:n_sq].astype(float)
+
+    # index 0 is unused (sqmap is 1-based; 0 means "outside every sq bin"), and
+    # stays 0 for bins without a finite scattering_1d value -- both end up
+    # excluded via the `live` mask below.
+    smooth_by_bin = np.zeros(n_sq + 1)
+    finite = np.isfinite(scattering_1d)
+    smooth_by_bin[1:][finite] = scale * scattering_1d[finite]
+    ipif_smooth = smooth_by_bin[sqmap_1d]  # (n_pixels,)
+
+    live = ipif_smooth > 0
+    bad = np.zeros_like(G2_channel0, dtype=bool)
+    bad[:, live] = (G2_channel0[:, live] / ipif_smooth[live] ** 2) > threshold
+
+    return _apply_persistence_filter(bad, combine_outlier=combine_outlier, min_tag_count=min_tag_count)
 
 
 def compute_g2(
@@ -215,6 +360,7 @@ def compute_g2(
     min_tag_count=0,
     error_model=DEFAULT_ERROR_MODEL,
     target=DEFAULT_OUTLIER_TARGET,
+    scattering_1d=None,
 ):
     """Compute g2 and its error using static and dynamic ROI maps.
 
@@ -222,11 +368,16 @@ def compute_g2(
         sqmap: The static ROI map.
         dqmap: The dynamic ROI map.
         G2: The unnormalized G2 data with shape ``(n_delays, n_channels, img_v, img_h)``.
-        outlier_method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``, consulted
-            only when ``outlier_threshold >= 0``.
+        outlier_method: One of :data:`OUTLIER_METHODS`, consulted only when
+            ``outlier_threshold >= 0``. ``"MeanAbsoluteDeviation"`` /
+            ``"StandardDeviation"`` use :func:`find_g2_pixel_outliers`;
+            ``"G2-smooth-bkg"`` uses :func:`find_g2_smooth_bkg_outliers` instead
+            and requires *scattering_1d*; ``target`` is not consulted for it.
         outlier_threshold: Reject pixels with ``g2_pixel`` above ``center + threshold * spread``
             within their sq bin, evaluated independently per delay (see
             :func:`find_g2_pixel_outliers`). Negative (default) disables rejection entirely.
+            For ``outlier_method="G2-smooth-bkg"``, this is instead a flat cut on
+            ``G2[:, 0] / IPIF_smooth ** 2`` (see :func:`find_g2_smooth_bkg_outliers`).
         combine_outlier: The ``min_tag_count=1`` special case, kept for older callers.
             Only consulted when ``outlier_threshold >= 0``. Default ``False``.
         min_tag_count: Reject only pixels flagged at this many delays or more, at every
@@ -242,7 +393,10 @@ def compute_g2(
             outlier statistic runs on. Default :data:`DEFAULT_OUTLIER_TARGET`.
             This only changes *which pixels are rejected* -- the reported ``g2`` is
             always the normalized sq-bin average either way. Only consulted when
-            ``outlier_threshold >= 0``.
+            ``outlier_threshold >= 0`` and ``outlier_method != "G2-smooth-bkg"``.
+        scattering_1d: Time-averaged SAXS-1D intensity indexed by sq bin, required
+            when ``outlier_method="G2-smooth-bkg"`` and ``outlier_threshold >= 0``
+            (see :func:`fit_scattering_scale`). Ignored otherwise.
 
     Returns:
         Tuple of ``(g2, g2_err)`` where *g2* is the normalized g2 values with shape
@@ -250,13 +404,17 @@ def compute_g2(
         and *g2_err* is the standard error of the mean selected by *error_model*.
 
     Raises:
-        ValueError: If *error_model* is not one of :data:`ERROR_MODELS`, or *target*
-            is not one of :data:`OUTLIER_TARGETS`.
+        ValueError: If *error_model* is not one of :data:`ERROR_MODELS`, *target*
+            is not one of :data:`OUTLIER_TARGETS`, *outlier_method* is not one of
+            :data:`OUTLIER_METHODS`, or *outlier_method* is ``"G2-smooth-bkg"``
+            with rejection enabled but *scattering_1d* is ``None``.
     """
     if error_model not in ERROR_MODELS:
         raise ValueError(f"error_model must be one of {ERROR_MODELS}, got {error_model!r}")
     if target not in OUTLIER_TARGETS:
         raise ValueError(f"target must be one of {OUTLIER_TARGETS}, got {target!r}")
+    if outlier_method not in OUTLIER_METHODS:
+        raise ValueError(f"outlier_method must be one of {OUTLIER_METHODS}, got {outlier_method!r}")
     # G2 is (N_delay x 3 x IMG_V x IMG_H)
     shape = G2.shape  #
     n_delays, n_channels, _, _ = shape
@@ -273,17 +431,31 @@ def compute_g2(
 
     bad = None
     if outlier_threshold >= 0:
-        # G2 is already (n_delays, n_channels, n_pixels) here, so G2[:, 0] is a strided
-        # view of the numerator -- no copy of a multi-hundred-MB cube.
-        values = G2[:, 0] if target == "G2" else g2_pixel
-        bad = find_g2_pixel_outliers(
-            sqmap_1d,
-            values,
-            threshold=outlier_threshold,
-            method=outlier_method,
-            combine_outlier=combine_outlier,
-            min_tag_count=min_tag_count,
-        )
+        if outlier_method == "G2-smooth-bkg":
+            if scattering_1d is None:
+                raise ValueError("outlier_method='G2-smooth-bkg' requires scattering_1d")
+            scale = fit_scattering_scale(G2, sqmap_1d, scattering_1d)
+            bad = find_g2_smooth_bkg_outliers(
+                sqmap_1d,
+                G2[:, 0],
+                scattering_1d,
+                scale,
+                threshold=outlier_threshold,
+                combine_outlier=combine_outlier,
+                min_tag_count=min_tag_count,
+            )
+        else:
+            # G2 is already (n_delays, n_channels, n_pixels) here, so G2[:, 0] is a strided
+            # view of the numerator -- no copy of a multi-hundred-MB cube.
+            values = G2[:, 0] if target == "G2" else g2_pixel
+            bad = find_g2_pixel_outliers(
+                sqmap_1d,
+                values,
+                threshold=outlier_threshold,
+                method=outlier_method,
+                combine_outlier=combine_outlier,
+                min_tag_count=min_tag_count,
+            )
 
     n_dq = int(np.max(dqmap_1d))
     # average by sqmap to get G2_sq;
@@ -359,6 +531,7 @@ def regroup_G2_with_qmap_array(
     min_tag_count=0,
     error_model=DEFAULT_ERROR_MODEL,
     target=DEFAULT_OUTLIER_TARGET,
+    scattering_1d=None,
 ):
     """Compute g2 and g2_err from G2 data using Q-maps and add them to results.
 
@@ -372,8 +545,8 @@ def regroup_G2_with_qmap_array(
             ``'g2_err'``.
         sqmap: The static ROI map used for averaging.
         dqmap: The dynamic ROI map used for grouping.
-        outlier_method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``, consulted
-            only when ``outlier_threshold >= 0``.
+        outlier_method: One of :data:`OUTLIER_METHODS`, consulted only when
+            ``outlier_threshold >= 0`` (see :func:`compute_g2`).
         outlier_threshold: Per-delay, per-sq-bin upper-bound outlier rejection threshold
             (see :func:`find_g2_pixel_outliers`). Negative (default) disables rejection.
         combine_outlier: The ``min_tag_count=1`` special case, kept for older callers.
@@ -385,6 +558,9 @@ def regroup_G2_with_qmap_array(
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
             outlier statistic runs on (see :func:`compute_g2`).
             Default :data:`DEFAULT_OUTLIER_TARGET`.
+        scattering_1d: Time-averaged SAXS-1D intensity indexed by sq bin, required
+            when ``outlier_method="G2-smooth-bkg"`` and ``outlier_threshold >= 0``
+            (see :func:`compute_g2`).
 
     Returns:
         The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
@@ -399,6 +575,7 @@ def regroup_G2_with_qmap_array(
         min_tag_count=min_tag_count,
         error_model=error_model,
         target=target,
+        scattering_1d=scattering_1d,
     )
     avg_result["g2"] = g2
     avg_result["g2_err"] = g2_err
@@ -415,6 +592,7 @@ def regroup_G2(
     min_tag_count=0,
     error_model=DEFAULT_ERROR_MODEL,
     target=DEFAULT_OUTLIER_TARGET,
+    scattering_1d=None,
 ):
     """Regroup G2 data using Q-maps and update the HDF5 file with all results.
 
@@ -428,8 +606,8 @@ def regroup_G2(
             ``'saxs2d'``, ``'saxs1d'``, etc.
         qmap_fname: Path to the HDF5 file containing the Q-maps (sqmap and dqmap).
             If ``None``, the Q-maps are read from the same file as *fname*.
-        outlier_method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``, consulted
-            only when ``outlier_threshold >= 0``.
+        outlier_method: One of :data:`OUTLIER_METHODS`, consulted only when
+            ``outlier_threshold >= 0`` (see :func:`compute_g2`).
         outlier_threshold: Per-delay, per-sq-bin upper-bound outlier rejection threshold
             (see :func:`find_g2_pixel_outliers`). Negative (default) disables rejection.
         combine_outlier: The ``min_tag_count=1`` special case, kept for older callers.
@@ -441,10 +619,24 @@ def regroup_G2(
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
             outlier statistic runs on (see :func:`compute_g2`).
             Default :data:`DEFAULT_OUTLIER_TARGET`.
+        scattering_1d: Time-averaged SAXS-1D intensity indexed by sq bin, required
+            when ``outlier_method="G2-smooth-bkg"`` and ``outlier_threshold >= 0``.
+            Its sq-bin indexing must match *fname*'s own internal Q-map, so this
+            is incompatible with an external/drawn *qmap_fname*.
 
     Returns:
         The updated avg_result dictionary with ``'g2'`` and ``'g2_err'`` added.
+
+    Raises:
+        ValueError: If ``outlier_method="G2-smooth-bkg"`` and *qmap_fname* names a
+            file other than *fname* (an external or drawn Q-map) -- *scattering_1d*'s
+            sq-bin indexing would not correspond to that Q-map's bins.
     """
+    if outlier_method == "G2-smooth-bkg" and qmap_fname is not None and qmap_fname != fname:
+        raise ValueError(
+            "outlier_method='G2-smooth-bkg' requires the file's own internal Q-map; "
+            "it is incompatible with an external or drawn Q-map"
+        )
     qmap_fname = qmap_fname or fname
 
     def _load_qmap(f, qmap_key):
@@ -477,6 +669,7 @@ def regroup_G2(
         min_tag_count=min_tag_count,
         error_model=error_model,
         target=target,
+        scattering_1d=scattering_1d,
     )
 
 
@@ -489,6 +682,7 @@ def compute_g2_debug_bundle(
     combine_outlier: bool = False,
     min_tag_count: int = 0,
     target: str = DEFAULT_OUTLIER_TARGET,
+    scattering_1d: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Compute the per-pixel data the G2 outlier debug dialog plots.
 
@@ -500,27 +694,44 @@ def compute_g2_debug_bundle(
         sqmap: Static ROI map, shape ``(img_v, img_h)``.
         dqmap: Dynamic ROI map, shape ``(img_v, img_h)``.
         G2: Unnormalized G2, shape ``(n_delays, 3, img_v, img_h)``.
-        outlier_method: ``"MeanAbsoluteDeviation"`` or ``"StandardDeviation"``.
-        outlier_threshold: Upper-bound rejection threshold (MADs / std devs).
+        outlier_method: One of :data:`OUTLIER_METHODS`. ``"G2-smooth-bkg"``
+            requires *scattering_1d* and ignores *target*.
+        outlier_threshold: Upper-bound rejection threshold. For
+            ``"MeanAbsoluteDeviation"`` / ``"StandardDeviation"`` this is in
+            MADs / std devs above each ``(sq bin, delay)`` center; for
+            ``"G2-smooth-bkg"`` it is a flat cut on
+            ``G2[:, 0] / IPIF_smooth ** 2``.
         combine_outlier: If ``True``, equivalent to ``min_tag_count=1``
             (same semantics as :func:`find_g2_pixel_outliers`).
         min_tag_count: Persistence filter (see :func:`find_g2_pixel_outliers`).
             Leave at ``0`` to plot the raw per-delay flags -- the bad-pixel map's
             tag-count slider is how you pick a value for it.
         target: One of :data:`OUTLIER_TARGETS`; selects the per-pixel quantity the
-            outlier statistic runs on, and hence what ``values`` holds.
+            outlier statistic runs on, and hence what ``values`` holds. Ignored
+            when ``outlier_method="G2-smooth-bkg"``.
+        scattering_1d: Time-averaged SAXS-1D intensity indexed by sq bin,
+            required when ``outlier_method="G2-smooth-bkg"`` (see
+            :func:`fit_scattering_scale`). Ignored otherwise.
 
     Returns:
         Dict with ``values`` (the per-pixel statistic actually fed to the outlier
-        pass, ``(n_delays, n_pixels)``), ``target`` (str), ``bad`` (bool, same shape
-        as ``values``), ``sqmap_1d`` / ``dqmap_1d`` (dead pixels set to 0),
-        ``img_shape`` ``(img_v, img_h)``, ``n_delays``, ``n_sq``, ``n_dq``, ``n_dead``.
+        pass, ``(n_delays, n_pixels)``), ``target`` (str -- ``"G2-smooth-bkg"``
+        when that method is used, regardless of the *target* argument), ``bad``
+        (bool, same shape as ``values``), ``sqmap_1d`` / ``dqmap_1d`` (dead
+        pixels set to 0), ``img_shape`` ``(img_v, img_h)``, ``n_delays``,
+        ``n_sq``, ``n_dq``, ``n_dead``, and (only for ``"G2-smooth-bkg"``)
+        ``scale`` (the fitted scale factor from :func:`fit_scattering_scale`).
 
     Raises:
-        ValueError: If *target* is not one of :data:`OUTLIER_TARGETS`.
+        ValueError: If *target* is not one of :data:`OUTLIER_TARGETS`,
+            *outlier_method* is not one of :data:`OUTLIER_METHODS`, or
+            *outlier_method* is ``"G2-smooth-bkg"`` but *scattering_1d* is
+            ``None``.
     """
     if target not in OUTLIER_TARGETS:
         raise ValueError(f"target must be one of {OUTLIER_TARGETS}, got {target!r}")
+    if outlier_method not in OUTLIER_METHODS:
+        raise ValueError(f"outlier_method must be one of {OUTLIER_METHODS}, got {outlier_method!r}")
     n_delays, n_channels, img_v, img_h = G2.shape
     G2 = G2.reshape(n_delays, n_channels, -1)
     sqmap_1d = sqmap.ravel().copy()
@@ -531,23 +742,7 @@ def compute_g2_debug_bundle(
     sqmap_1d[dead] = 0
     dqmap_1d[dead] = 0
 
-    # only materialize the normalized per-pixel g2 when it is the target -- on a
-    # 1 Mpixel detector with 60 delays that array is ~240 MB, and nothing else in
-    # the bundle needs it. G2[:, 0] is a view, so the G2 branch allocates nothing.
-    values = G2[:, 0] if target == "G2" else normalize_g2(G2)  # type: ignore[no-untyped-call]
-    bad = find_g2_pixel_outliers(  # type: ignore[no-untyped-call]
-        sqmap_1d,
-        values,
-        threshold=outlier_threshold,
-        method=outlier_method,
-        combine_outlier=combine_outlier,
-        min_tag_count=min_tag_count,
-    )
-
-    return {
-        "values": values,
-        "target": target,
-        "bad": bad,
+    bundle: dict[str, Any] = {
         "sqmap_1d": sqmap_1d,
         "dqmap_1d": dqmap_1d,
         "img_shape": (img_v, img_h),
@@ -556,3 +751,46 @@ def compute_g2_debug_bundle(
         "n_dq": int(np.max(dqmap_1d)),
         "n_dead": n_dead,
     }
+
+    if outlier_method == "G2-smooth-bkg":
+        if scattering_1d is None:
+            raise ValueError("outlier_method='G2-smooth-bkg' requires scattering_1d")
+        scale = fit_scattering_scale(G2, sqmap_1d, scattering_1d)
+        n_sq = bundle["n_sq"]
+        scattering_arr = np.asarray(scattering_1d)[:n_sq].astype(float)
+        smooth_by_bin = np.zeros(n_sq + 1)
+        finite = np.isfinite(scattering_arr)
+        smooth_by_bin[1:][finite] = scale * scattering_arr[finite]
+        ipif_smooth = smooth_by_bin[sqmap_1d]
+        live = ipif_smooth > 0
+        values = np.full_like(G2[:, 0], np.nan)
+        values[:, live] = G2[:, 0][:, live] / ipif_smooth[live] ** 2
+        bad = find_g2_smooth_bkg_outliers(  # type: ignore[no-untyped-call]
+            sqmap_1d,
+            G2[:, 0],
+            scattering_1d,
+            scale,
+            threshold=outlier_threshold,
+            combine_outlier=combine_outlier,
+            min_tag_count=min_tag_count,
+        )
+        bundle["target"] = "G2-smooth-bkg"
+        bundle["scale"] = scale
+    else:
+        # only materialize the normalized per-pixel g2 when it is the target -- on a
+        # 1 Mpixel detector with 60 delays that array is ~240 MB, and nothing else in
+        # the bundle needs it. G2[:, 0] is a view, so the G2 branch allocates nothing.
+        values = G2[:, 0] if target == "G2" else normalize_g2(G2)  # type: ignore[no-untyped-call]
+        bad = find_g2_pixel_outliers(  # type: ignore[no-untyped-call]
+            sqmap_1d,
+            values,
+            threshold=outlier_threshold,
+            method=outlier_method,
+            combine_outlier=combine_outlier,
+            min_tag_count=min_tag_count,
+        )
+        bundle["target"] = target
+
+    bundle["values"] = values
+    bundle["bad"] = bad
+    return bundle

@@ -177,6 +177,58 @@ def test_bin_sweep_all_zero_bin(qapp):
     assert "all zero" in _title(panel)
 
 
+def test_bin_sweep_wrapped_in_scroll_area(qapp, bundle):
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    scroll = host.findChild(QtWidgets.QScrollArea, "g2_debug_hist_scroll")
+    assert scroll is not None
+    assert scroll.widget() is panel.glw
+
+
+def test_bin_sweep_zero_checkbox_default_unchecked(qapp, bundle):
+    host = _host()
+    build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    checkbox = host.findChild(QtWidgets.QCheckBox, "g2_debug_include_zero_checkbox")
+    assert checkbox is not None
+    assert checkbox.isChecked() is False
+
+
+def test_bin_sweep_include_zero_checkbox_shows_zero_values(qapp):
+    host = _host()
+    build_debug_plots(host, _zero_bin_bundle(), "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    checkbox = host.findChild(QtWidgets.QCheckBox, "g2_debug_include_zero_checkbox")
+    panel.spin.setValue(2)
+    panel.spin.editingFinished.emit()
+    assert "all zero" in _title(panel)  # unchanged default behavior
+
+    checkbox.setChecked(True)
+    assert "all zero" not in _title(panel)
+    assert "n=4" in _title(panel)  # the 4 zero pixels in that row are now shown
+
+
+def test_bin_sweep_smooth_bkg_nan_excluded_even_with_zero_checkbox(qapp):
+    """NaN (no valid smooth-bkg reference) must stay excluded regardless of
+    the include-zero-values checkbox -- it isn't a real value, unlike a
+    photon-starved zero."""
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_synthetic(scale=5.0)
+    scattering_1d = scattering_1d.copy()
+    scattering_1d[1] = np.nan  # sq bin 2 has no valid reference
+    b = compute_g2_debug_bundle(
+        sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0, scattering_1d=scattering_1d
+    )
+    host = _host()
+    build_debug_plots(host, b, "fake.hdf", "G2-smooth-bkg", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    checkbox = host.findChild(QtWidgets.QCheckBox, "g2_debug_include_zero_checkbox")
+    panel.spin.setValue(2)
+    panel.spin.editingFinished.emit()
+    assert "all zero" in _title(panel)
+    checkbox.setChecked(True)
+    assert "all zero" in _title(panel)  # still excluded -- NaN, not zero
+
+
 def test_bad_map_and_mintag_remask(qapp, bundle):
     host = _host()
     build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
@@ -303,14 +355,15 @@ def test_debug_button_wired(qapp, tmp_path, monkeypatch):
 
 
 def test_bin_sweep_slider_fills_the_row(qapp, bundle):
-    """The slider takes all horizontal space left over -- no trailing spacer."""
+    """The slider takes all horizontal space the other controls leave over --
+    no trailing spacer (the zero-values checkbox trails it as a real widget)."""
     host = _host()
     build_debug_plots(host, bundle, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
     panel = host.findChild(_BinSweepPanel)
     top = panel.layout().itemAt(0).layout()
     items = [top.itemAt(i) for i in range(top.count())]
     assert all(it.spacerItem() is None for it in items)
-    assert items[-1].widget() is panel.slider
+    assert items[-1].widget() is panel.zero_checkbox
     assert panel.slider.sizePolicy().horizontalPolicy() == QtWidgets.QSizePolicy.Policy.Expanding
 
 
@@ -368,4 +421,93 @@ def test_dialog_forwards_target_to_the_bundle(qapp):
     assert _pump(qapp, lambda: not dlg._worker_running)
     header = dlg.findChild(QtWidgets.QLabel, "g2_debug_header")
     assert "target=g2-per-pixel" in header.text()
+    dlg.close()
+
+
+def make_smooth_bkg_synthetic(scale=5.0):
+    """(2 delays, 3 ch, 4x4) G2 tracking scale*scattering_1d per sq bin, with
+    a smooth-bkg outlier at pixel (0,0) delay 0 (g2=100 there, 1.0 elsewhere)."""
+    n_delays = 2
+    sqmap = np.zeros((4, 4), dtype=np.uint16)
+    sqmap[:2, :] = 1
+    sqmap[2:, :] = 2
+    scattering_1d = np.array([10.0, 20.0])
+    IP = np.zeros((n_delays, 4, 4))
+    IF = np.zeros((n_delays, 4, 4))
+    for idx, sq_val in enumerate(scattering_1d, start=1):
+        mask = sqmap == idx
+        IP[:, mask] = scale * sq_val
+        IF[:, mask] = scale * sq_val
+    g2 = np.ones((n_delays, 4, 4))
+    g2[0, 0, 0] = 100.0
+    G2 = np.stack([g2 * IP * IF, IP, IF], axis=1)
+    dqmap = np.ones((4, 4), dtype=np.uint16)
+    return G2, sqmap, dqmap, scattering_1d
+
+
+def test_bundle_smooth_bkg_flags_the_bright_pixel_and_reports_scale():
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_synthetic(scale=5.0)
+    b = compute_g2_debug_bundle(
+        sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0, scattering_1d=scattering_1d
+    )
+    assert b["target"] == "G2-smooth-bkg"
+    assert b["scale"] == pytest.approx(5.0)
+    assert b["bad"][0, 0]
+    assert not b["bad"][1, 0]
+
+
+def test_header_reports_the_smooth_bkg_scale():
+    """The scale factor is central to what G2-smooth-bkg does; the header must
+    show it, unlike the other two methods where there's no such factor."""
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_synthetic(scale=5.0)
+    host = _host()
+    b = compute_g2_debug_bundle(
+        sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0, scattering_1d=scattering_1d
+    )
+    build_debug_plots(host, b, "fake.hdf", "G2-smooth-bkg", 3.0, False)
+    header = host.findChild(QtWidgets.QLabel, "g2_debug_header")
+    assert "target=G2-smooth-bkg" in header.text()
+    assert "scale=5" in header.text()
+
+
+def test_header_omits_scale_for_non_smooth_bkg_methods():
+    G2, sqmap, dqmap = make_synthetic()
+    host = _host()
+    b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0)
+    build_debug_plots(host, b, "fake.hdf", "MeanAbsoluteDeviation", 3.0, False)
+    header = host.findChild(QtWidgets.QLabel, "g2_debug_header")
+    assert "scale=" not in header.text()
+
+
+def test_bin_sweep_smooth_bkg_has_no_center_line():
+    """G2-smooth-bkg is a flat threshold cut -- no per-bin center to draw."""
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_synthetic(scale=5.0)
+    host = _host()
+    b = compute_g2_debug_bundle(
+        sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0, scattering_1d=scattering_1d
+    )
+    build_debug_plots(host, b, "fake.hdf", "G2-smooth-bkg", 3.0, False)
+    panel = host.findChild(_BinSweepPanel)
+    item = next(it for it in panel.glw.ci.items if isinstance(it, pg.PlotItem))
+    # exactly one InfiniteLine (the red hi/threshold bound); a center line
+    # would be a second one
+    lines = [ln for ln in item.items if isinstance(ln, pg.InfiniteLine)]
+    assert len(lines) == 1
+
+
+def test_dialog_forwards_saxs_1d_for_smooth_bkg_method(qapp):
+    """The worker must pull scattering_1d from the file when the method needs
+    it, or the smooth-bkg fit has nothing to fit against."""
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_synthetic(scale=5.0)
+    fake = cast(
+        "_XpcsFileLike",
+        types.SimpleNamespace(
+            fname="fake.hdf", G2=G2, sqmap=sqmap, dqmap=dqmap, saxs_1d={"Iq": scattering_1d[None, :]}
+        ),
+    )
+    dlg = G2DebugDialog(fake, "G2-smooth-bkg", 3.0, False)
+    assert _pump(qapp, lambda: not dlg._worker_running)
+    header = dlg.findChild(QtWidgets.QLabel, "g2_debug_header")
+    assert "target=G2-smooth-bkg" in header.text()
+    assert "scale=5" in header.text()
     dlg.close()

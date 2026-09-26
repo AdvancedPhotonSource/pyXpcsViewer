@@ -4311,228 +4311,6 @@ ReGroup. Press Debug first to see what they do.</string>
              </property>
              <item row="0" column="1">
               <layout class="QGridLayout" name="gridLayout_50">
-               <item row="1" column="12">
-                <widget class="QComboBox" name="comboBox_G2_errormodel">
-                 <property name="toolTip">
-                  <string>How g2_err is estimated. g2 itself is identical either way.
-per-pixel - spread of the individual pixels in the dq bin.
-sq-group - spread of the sq-bin averages making up the dq bin.
-Note: per-pixel is computed from all pixels, including rejected
-ones, so the outlier settings do not change these error bars.</string>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>per-pixel</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>sq-group</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QCheckBox" name="checkBox_G2_removeoutlier">
-                 <property name="toolTip">
-                  <string>Master switch for outlier rejection.
-When off, every live pixel in a sq bin contributes to the average
-and the settings to the right are ignored.</string>
-                 </property>
-                 <property name="text">
-                  <string>Remove Outlier</string>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLabel" name="label_G2_outliertarget">
-                 <property name="toolTip">
-                  <string>Which per-pixel quantity the outlier test is computed on.
-g2-per-pixel - the normalized g2. Flags pixels whose correlation is
-  anomalous regardless of brightness. Unbiased; the default.
-G2 - the raw numerator G2[:,0]. Flags bright pixels, since it
-  scales as intensity squared times g2.
-Warning: a plain per-delay G2 cut biases g2 downward, because
-trimming the numerator's bright tail lowers the very average it
-feeds. Pair G2 with Combine Outlier and a high Min Tag to build a
-hot-pixel mask instead.</string>
-                 </property>
-                 <property name="text">
-                  <string>Target:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="3">
-                <widget class="QLabel" name="label_80">
-                 <property name="toolTip">
-                  <string>Reject a pixel when its value exceeds center + threshold x spread
-within its own sq bin, evaluated per delay.
-Upper bound only - low values are never rejected.
-Lower is more aggressive. 3 is not gentle: on sparse-photon data it
-can drop over 10% of samples and visibly distort the curve. Check
-the Debug dialog before trusting a value.</string>
-                 </property>
-                 <property name="text">
-                  <string>Method</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="12">
-                <widget class="QPushButton" name="pushButton_G2_regroup">
-                 <property name="toolTip">
-                  <string>Recompute g2 and g2_err from the per-pixel G2 cube using the chosen
-Q-map and outlier settings, for the first selected file.
-Runs on a background thread. The result lives in memory and replaces
-the Grouped g2 plot - press SaveToFile to write it out.</string>
-                 </property>
-                 <property name="text">
-                  <string>ReGroup</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QComboBox" name="comboBox_G2_outliertarget">
-                 <property name="toolTip">
-                  <string>Which per-pixel quantity the outlier test is computed on.
-g2-per-pixel - the normalized g2. Flags pixels whose correlation is
-  anomalous regardless of brightness. Unbiased; the default.
-G2 - the raw numerator G2[:,0]. Flags bright pixels, since it
-  scales as intensity squared times g2.
-Warning: a plain per-delay G2 cut biases g2 downward, because
-trimming the numerator's bright tail lowers the very average it
-feeds. Pair G2 with Combine Outlier and a high Min Tag to build a
-hot-pixel mask instead.</string>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>g2-per-pixel</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>G2</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="0" column="12">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_threshold">
-                 <property name="toolTip">
-                  <string>Reject a pixel when its value exceeds center + threshold x spread
-within its own sq bin, evaluated per delay.
-Upper bound only - low values are never rejected.
-Lower is more aggressive. 3 is not gentle: on sparse-photon data it
-can drop over 10% of samples and visibly distort the curve. Check
-the Debug dialog before trusting a value.</string>
-                 </property>
-                 <property name="value">
-                  <double>3.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="11">
-                <widget class="QLabel" name="label_76">
-                 <property name="toolTip">
-                  <string>Reject a pixel when its value exceeds center + threshold x spread
-within its own sq bin, evaluated per delay.
-Upper bound only - low values are never rejected.
-Lower is more aggressive. 3 is not gentle: on sparse-photon data it
-can drop over 10% of samples and visibly distort the curve. Check
-the Debug dialog before trusting a value.</string>
-                 </property>
-                 <property name="text">
-                  <string>Threshold:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="4" colspan="7">
-                <widget class="QComboBox" name="comboBox_G2_outliermethod">
-                 <property name="toolTip">
-                  <string>How center and spread are estimated for each (sq bin, delay).
-MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are
-  hunting barely move the bound. Recommended.
-StandardDeviation - mean + std. Both are inflated by the very
-  pixels being tested, so it flags fewer of them.
-Pixels with a value of exactly 0 are treated as photon-starved and
-left out of the statistics either way.</string>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>MeanAbsoluteDeviation</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>StandardDeviation</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="2" column="11">
-                <widget class="QPushButton" name="pushButton_G2_debug">
-                 <property name="toolTip">
-                  <string>Show what the current outlier settings do to the first selected
-file: per-sq-bin histograms with the rejection bound drawn on, and a
-map of how many delays each pixel was flagged at.
-The Remove Outlier checkbox is deliberately ignored here, so you can
-preview a setting before enabling it.</string>
-                 </property>
-                 <property name="text">
-                  <string>Debug</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="4" colspan="7">
-                <widget class="QPushButton" name="pushButton_G2_savefile">
-                 <property name="toolTip">
-                  <string>Write the regrouped g2 and g2_err into an HDF5 file, replacing the
-existing datasets. Defaults to overwriting the source file.</string>
-                 </property>
-                 <property name="text">
-                  <string>SaveToFile</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="3">
-                <widget class="QLabel" name="label_G2_mintagcount">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="toolTip">
-                  <string>Reject only pixels flagged at this many delays or more, and then
-reject them at every delay.
-Greyed out until both Remove Outlier and Combine Outlier (to the
-left) are checked, since the count means nothing without them.
-1 = flagged anywhere, flagged everywhere (the historical behaviour,
-and far too aggressive for the G2 target).
-Pick a value from the Debug dialog's bad-pixel map: with G2, a
-count near the delay total works well, e.g. 30 out of 34.</string>
-                 </property>
-                 <property name="text">
-                  <string>Min Tag:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="8" colspan="4">
-                <widget class="QLabel" name="label_G2_errormodel">
-                 <property name="toolTip">
-                  <string>How g2_err is estimated. g2 itself is identical either way.
-per-pixel - spread of the individual pixels in the dq bin.
-sq-group - spread of the sq-bin averages making up the dq bin.
-Note: per-pixel is computed from all pixels, including rejected
-ones, so the outlier settings do not change these error bars.</string>
-                 </property>
-                 <property name="text">
-                  <string>Error Model:</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="4" colspan="3">
                 <widget class="QSpinBox" name="spinBox_G2_mintagcount">
                  <property name="enabled">
@@ -4559,6 +4337,59 @@ count near the delay total works well, e.g. 30 out of 34.</string>
                  </property>
                 </widget>
                </item>
+               <item row="1" column="8" colspan="4">
+                <widget class="QLabel" name="label_G2_errormodel">
+                 <property name="toolTip">
+                  <string>How g2_err is estimated. g2 itself is identical either way.
+per-pixel - spread of the individual pixels in the dq bin.
+sq-group - spread of the sq-bin averages making up the dq bin.
+Note: per-pixel is computed from all pixels, including rejected
+ones, so the outlier settings do not change these error bars.</string>
+                 </property>
+                 <property name="text">
+                  <string>Error Model:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="label_G2_outliertarget">
+                 <property name="toolTip">
+                  <string>Which per-pixel quantity the outlier test is computed on.
+g2-per-pixel - the normalized g2. Flags pixels whose correlation is
+  anomalous regardless of brightness. Unbiased; the default.
+G2 - the raw numerator G2[:,0]. Flags bright pixels, since it
+  scales as intensity squared times g2.
+Warning: a plain per-delay G2 cut biases g2 downward, because
+trimming the numerator's bright tail lowers the very average it
+feeds. Pair G2 with Combine Outlier and a high Min Tag to build a
+hot-pixel mask instead.
+Disabled for the G2-smooth-bkg method, which always uses the raw
+numerator against a smooth background instead.</string>
+                 </property>
+                 <property name="text">
+                  <string>Target:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QLabel" name="label_80">
+                 <property name="toolTip">
+                  <string>How center and spread are estimated for each (sq bin, delay).
+MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are
+  hunting barely move the bound. Recommended.
+StandardDeviation - mean + std. Both are inflated by the very
+  pixels being tested, so it flags fewer of them.
+Pixels with a value of exactly 0 are treated as photon-starved and
+left out of the statistics either way.
+G2-smooth-bkg - no per-bin center/spread. Fits a single smooth
+  background from this file's own scattering_1d and flat-cuts
+  G2[:,0] / IPIF_smooth^2 at Threshold. Ignores Target.</string>
+                 </property>
+                 <property name="text">
+                  <string>Method</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0" colspan="3">
                 <widget class="QCheckBox" name="checkBox_G2_combineoutlier">
                  <property name="toolTip">
@@ -4577,6 +4408,197 @@ most delays is a genuinely hot pixel.</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="4" colspan="7">
+                <widget class="QComboBox" name="comboBox_G2_outliermethod">
+                 <property name="toolTip">
+                  <string>How center and spread are estimated for each (sq bin, delay).
+MeanAbsoluteDeviation - median + MAD. Robust: the outliers you are
+  hunting barely move the bound. Recommended.
+StandardDeviation - mean + std. Both are inflated by the very
+  pixels being tested, so it flags fewer of them.
+Pixels with a value of exactly 0 are treated as photon-starved and
+left out of the statistics either way.
+G2-smooth-bkg - no per-bin center/spread. Fits a single smooth
+  background from this file's own scattering_1d and flat-cuts
+  G2[:,0] / IPIF_smooth^2 at Threshold. Ignores Target. Requires
+  this file's own internal Q-map (incompatible with an external or
+  drawn Q-map).</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>MeanAbsoluteDeviation</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>StandardDeviation</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>G2-smooth-bkg</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="11">
+                <widget class="QLabel" name="label_76">
+                 <property name="toolTip">
+                  <string>Reject a pixel when its value exceeds center + threshold x spread
+within its own sq bin, evaluated per delay.
+Upper bound only - low values are never rejected.
+Lower is more aggressive. 3 is not gentle: on sparse-photon data it
+can drop over 10% of samples and visibly distort the curve. Check
+the Debug dialog before trusting a value.
+For G2-smooth-bkg, this is instead a flat cut on
+G2[:,0] / IPIF_smooth^2, with no per-bin center/spread.</string>
+                 </property>
+                 <property name="text">
+                  <string>Threshold:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="12">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_G2_threshold">
+                 <property name="toolTip">
+                  <string>Reject a pixel when its value exceeds center + threshold x spread
+within its own sq bin, evaluated per delay.
+Upper bound only - low values are never rejected.
+Lower is more aggressive. 3 is not gentle: on sparse-photon data it
+can drop over 10% of samples and visibly distort the curve. Check
+the Debug dialog before trusting a value.
+For G2-smooth-bkg, this is instead a flat cut on
+G2[:,0] / IPIF_smooth^2, with no per-bin center/spread.</string>
+                 </property>
+                 <property name="value">
+                  <double>3.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QComboBox" name="comboBox_G2_outliertarget">
+                 <property name="toolTip">
+                  <string>Which per-pixel quantity the outlier test is computed on.
+g2-per-pixel - the normalized g2. Flags pixels whose correlation is
+  anomalous regardless of brightness. Unbiased; the default.
+G2 - the raw numerator G2[:,0]. Flags bright pixels, since it
+  scales as intensity squared times g2.
+Warning: a plain per-delay G2 cut biases g2 downward, because
+trimming the numerator's bright tail lowers the very average it
+feeds. Pair G2 with Combine Outlier and a high Min Tag to build a
+hot-pixel mask instead.
+Disabled for the G2-smooth-bkg method, which always uses the raw
+numerator against a smooth background instead.</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>g2-per-pixel</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>G2</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="2" column="11">
+                <widget class="QPushButton" name="pushButton_G2_debug">
+                 <property name="toolTip">
+                  <string>Show what the current outlier settings do to the first selected
+file: per-sq-bin histograms with the rejection bound drawn on, and a
+map of how many delays each pixel was flagged at.
+The Remove Outlier checkbox is deliberately ignored here, so you can
+preview a setting before enabling it.</string>
+                 </property>
+                 <property name="text">
+                  <string>Debug</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="checkBox_G2_removeoutlier">
+                 <property name="toolTip">
+                  <string>Master switch for outlier rejection.
+When off, every live pixel in a sq bin contributes to the average
+and the settings to the right are ignored.</string>
+                 </property>
+                 <property name="text">
+                  <string>Remove Outlier</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="4" colspan="7">
+                <widget class="QPushButton" name="pushButton_G2_savefile">
+                 <property name="toolTip">
+                  <string>Write the regrouped g2 and g2_err into an HDF5 file, replacing the
+existing datasets. Defaults to overwriting the source file.</string>
+                 </property>
+                 <property name="text">
+                  <string>SaveToFile</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="12">
+                <widget class="QComboBox" name="comboBox_G2_errormodel">
+                 <property name="toolTip">
+                  <string>How g2_err is estimated. g2 itself is identical either way.
+per-pixel - spread of the individual pixels in the dq bin.
+sq-group - spread of the sq-bin averages making up the dq bin.
+Note: per-pixel is computed from all pixels, including rejected
+ones, so the outlier settings do not change these error bars.</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>per-pixel</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>sq-group</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="2" column="12">
+                <widget class="QPushButton" name="pushButton_G2_regroup">
+                 <property name="toolTip">
+                  <string>Recompute g2 and g2_err from the per-pixel G2 cube using the chosen
+Q-map and outlier settings, for the first selected file.
+Runs on a background thread. The result lives in memory and replaces
+the Grouped g2 plot - press SaveToFile to write it out.</string>
+                 </property>
+                 <property name="text">
+                  <string>ReGroup</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <widget class="QLabel" name="label_G2_mintagcount">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="toolTip">
+                  <string>Reject only pixels flagged at this many delays or more, and then
+reject them at every delay.
+Greyed out until both Remove Outlier and Combine Outlier (to the
+left) are checked, since the count means nothing without them.
+1 = flagged anywhere, flagged everywhere (the historical behaviour,
+and far too aggressive for the G2 target).
+Pick a value from the Debug dialog's bad-pixel map: with G2, a
+count near the delay total works well, e.g. 30 out of 34.</string>
+                 </property>
+                 <property name="text">
+                  <string>Min Tag:</string>
                  </property>
                 </widget>
                </item>

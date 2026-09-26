@@ -291,6 +291,56 @@ def test_outlier_target_combo_exists_with_both_targets(qapp, tmp_path):
     assert combo.currentText() == "g2-per-pixel"
 
 
+def test_outlier_method_combo_has_smooth_bkg(qapp, tmp_path):
+    """The generated UI exposes the combo, with item text matching OUTLIER_METHODS."""
+    from pyxpcsviewer.core.g2_utils import OUTLIER_METHODS
+
+    window = XpcsViewer(path=str(tmp_path))
+    combo = window.comboBox_G2_outliermethod
+    items = [combo.itemText(i) for i in range(combo.count())]
+    assert items == list(OUTLIER_METHODS)
+
+
+def test_process_G2_regroup_forwards_smooth_bkg_method(qapp):
+    """outlier_method='G2-smooth-bkg' must reach compute_g2 via regroup_G2, not
+    silently fall back to the default MAD method."""
+    window = _FakeWindow()
+    window.checkBox_G2_removeoutlier = _FakeCheckbox(True)
+    window.comboBox_G2_outliermethod = _FakeCombo("G2-smooth-bkg")
+
+    XpcsViewer.process_G2_regroup(window)
+
+    assert _pump(qapp, lambda: len(window.plots.calls) == 1)
+    assert window.plots.calls[0]["outlier_method"] == "G2-smooth-bkg"
+
+
+@pytest.mark.parametrize(
+    ("remove_outlier", "method", "expected"),
+    [
+        (True, "MeanAbsoluteDeviation", True),
+        (True, "G2-smooth-bkg", False),
+        (False, "MeanAbsoluteDeviation", False),
+        (False, "G2-smooth-bkg", False),
+    ],
+)
+def test_target_combo_disabled_only_for_smooth_bkg_method(qapp, tmp_path, remove_outlier, method, expected):
+    """Target is meaningless for G2-smooth-bkg (always uses the raw numerator),
+    and still follows Remove Outlier like every other Group Setting control."""
+    window = XpcsViewer(path=str(tmp_path))
+    window.checkBox_G2_removeoutlier.setChecked(remove_outlier)
+    window.comboBox_G2_outliermethod.setCurrentText(method)
+    assert window.comboBox_G2_outliertarget.isEnabled() is expected
+    assert window.label_G2_outliertarget.isEnabled() is expected
+
+
+def test_target_combo_starts_enabled(qapp, tmp_path):
+    """Remove Outlier defaults on and the method defaults to MAD, so Target
+    should start enabled, not require an interaction first."""
+    window = XpcsViewer(path=str(tmp_path))
+    assert window.comboBox_G2_outliertarget.isEnabled()
+    assert window.label_G2_outliertarget.isEnabled()
+
+
 def test_min_tag_count_sent_only_when_combine_outlier_is_on(qapp):
     """The Combine Outlier checkbox gates the persistence filter; the spin box
     supplies its count. Unchecked must send 0, not the spin's value."""

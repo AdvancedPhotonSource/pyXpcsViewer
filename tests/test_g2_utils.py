@@ -16,11 +16,15 @@ import pytest
 
 from pyxpcsviewer.core.g2_utils import (
     DEFAULT_OUTLIER_TARGET,
+    OUTLIER_METHODS,
     OUTLIER_TARGETS,
     compute_g2,
     compute_g2_debug_bundle,
     find_g2_pixel_outliers,
+    find_g2_smooth_bkg_outliers,
+    fit_scattering_scale,
     normalize_g2,
+    regroup_G2,
 )
 
 
@@ -463,3 +467,196 @@ def test_bundle_forwards_min_tag_count():
     G2, sqmap, dqmap = make_data()
     b = compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_threshold=3.0, min_tag_count=2)
     assert not b["bad"].any()  # each known outlier is flagged at one delay only
+
+
+# --- G2-smooth-bkg: a third outlier method with no per-bin center/spread --
+# it fits one global scale factor against the file's own scattering_1d and
+# flat-cuts G2[:, 0] / IPIF_smooth**2 at threshold.
+
+
+def make_smooth_bkg_data(scale=5.0):
+    """(3 delays, 3 ch, 4x4) G2 where IP/IF exactly track scale*scattering_1d per sq bin.
+
+    sq 1 = rows 0-1 (pixels 0-7), sq 2 = rows 2-3 (pixels 8-15); single dq bin.
+    g2 (= G2[:,0] / (IP*IF)) is 1.0 everywhere except pixel (0, 0) at delay 0,
+    which is a smooth-bkg outlier (g2=100) but NOT a per-bin MAD/StdDev outlier
+    (that method flags the correlated pixel too, since it looks the same on
+    both counts here -- this fixture isolates the smooth-bkg statistic).
+    """
+    n_delays = 3
+    sqmap = np.zeros((4, 4), dtype=np.uint16)
+    sqmap[:2, :] = 1
+    sqmap[2:, :] = 2
+    scattering_1d = np.array([10.0, 20.0])
+    IP = np.zeros((n_delays, 4, 4))
+    IF = np.zeros((n_delays, 4, 4))
+    for idx, sq_val in enumerate(scattering_1d, start=1):
+        mask = sqmap == idx
+        IP[:, mask] = scale * sq_val
+        IF[:, mask] = scale * sq_val
+    g2 = np.ones((n_delays, 4, 4))
+    g2[0, 0, 0] = 100.0
+    G2 = np.stack([g2 * IP * IF, IP, IF], axis=1)
+    dqmap = np.ones((4, 4), dtype=np.uint16)
+    return G2, sqmap, dqmap, scattering_1d
+
+
+def test_fit_scattering_scale_recovers_known_scale():
+    G2, sqmap, _, scattering_1d = make_smooth_bkg_data(scale=5.0)
+    sqmap_1d = sqmap.ravel()
+    scale = fit_scattering_scale(G2, sqmap_1d, scattering_1d)
+    assert scale == pytest.approx(5.0)
+
+
+def test_fit_scattering_scale_excludes_nan_bins():
+    """A masked/missing sq bin (NaN in scattering_1d) must not corrupt the fit."""
+    G2, sqmap, _, scattering_1d = make_smooth_bkg_data(scale=5.0)
+    scattering_1d_with_nan = scattering_1d.copy()
+    scattering_1d_with_nan[1] = np.nan
+    scale = fit_scattering_scale(G2, sqmap.ravel(), scattering_1d_with_nan)
+    assert scale == pytest.approx(5.0)
+
+
+def test_fit_scattering_scale_rejects_too_short_scattering_1d():
+    G2, sqmap, _, scattering_1d = make_smooth_bkg_data()
+    with pytest.raises(ValueError, match="scattering_1d"):
+        fit_scattering_scale(G2, sqmap.ravel(), scattering_1d[:1])
+
+
+def test_fit_scattering_scale_rejects_all_nan_scattering_1d():
+    G2, sqmap, _, scattering_1d = make_smooth_bkg_data()
+    with pytest.raises(ValueError, match="scattering_1d"):
+        fit_scattering_scale(G2, sqmap.ravel(), np.full_like(scattering_1d, np.nan))
+
+
+def test_find_g2_smooth_bkg_outliers_flags_the_bright_pixel():
+    G2, sqmap, _, scattering_1d = make_smooth_bkg_data(scale=5.0)
+    sqmap_1d = sqmap.ravel()
+    scale = fit_scattering_scale(G2, sqmap_1d, scattering_1d)
+    bad = find_g2_smooth_bkg_outliers(sqmap_1d, G2[:, 0].reshape(3, -1), scattering_1d, scale, threshold=3.0)
+    assert bad[0, 0]  # pixel (0,0), delay 0: g2=100 -> flagged
+    assert not bad[1:, 0].any()  # same pixel, other delays: g2=1 -> not flagged
+    assert not bad[:, 1:].any()  # no other pixel is ever flagged
+
+
+def test_find_g2_smooth_bkg_outliers_has_no_lower_bound():
+    sqmap_1d = np.ones(4, dtype=np.uint16)
+    scattering_1d = np.array([1.0])
+    G2_channel0 = np.array([[1e-6, 1.0, 1.0, 1.0]])
+    assert not find_g2_smooth_bkg_outliers(sqmap_1d, G2_channel0, scattering_1d, scale=1.0, threshold=3.0).any()
+
+
+def test_find_g2_smooth_bkg_outliers_excludes_missing_bin_pixels():
+    """Pixels whose sq bin has no finite scattering_1d value are never flagged,
+    even with an enormous G2_channel0 -- same treatment as photon-starved pixels."""
+    sqmap_1d = np.array([1, 2], dtype=np.uint16)
+    scattering_1d = np.array([1.0, np.nan])
+    G2_channel0 = np.array([[1.0, 1e12]])
+    bad = find_g2_smooth_bkg_outliers(sqmap_1d, G2_channel0, scattering_1d, scale=1.0, threshold=3.0)
+    assert not bad.any()
+
+
+def test_find_g2_smooth_bkg_outliers_persistence_filter():
+    """min_tag_count composes with the smooth-bkg flat cut exactly as it does
+    for the MAD/StdDev methods (shared _apply_persistence_filter helper)."""
+    sqmap_1d = np.ones(2, dtype=np.uint16)
+    scattering_1d = np.array([1.0])
+    G2_channel0 = np.array([[100.0, 1.0], [100.0, 1.0], [1.0, 1.0]])  # pixel 0 flagged at delays 0,1
+    bad = find_g2_smooth_bkg_outliers(sqmap_1d, G2_channel0, scattering_1d, scale=1.0, threshold=3.0, min_tag_count=2)
+    assert bad[:, 0].all()
+    bad_none = find_g2_smooth_bkg_outliers(
+        sqmap_1d, G2_channel0, scattering_1d, scale=1.0, threshold=3.0, min_tag_count=3
+    )
+    assert not bad_none.any()
+
+
+def test_compute_g2_dispatches_to_smooth_bkg():
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_data(scale=5.0)
+    g2_smooth, _ = compute_g2(
+        sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0, scattering_1d=scattering_1d
+    )
+    g2_none, _ = compute_g2(sqmap, dqmap, G2, outlier_threshold=-1.0)
+    # the outlier pixel biases g2 upward when included; excluding it should
+    # bring the sq-1 bin's contribution back toward 1.0
+    assert g2_smooth[0, 0] < g2_none[0, 0]
+
+
+def test_compute_g2_smooth_bkg_requires_scattering_1d():
+    G2, sqmap, dqmap, _ = make_smooth_bkg_data()
+    with pytest.raises(ValueError, match="scattering_1d"):
+        compute_g2(sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0)
+
+
+def test_compute_g2_rejects_unknown_outlier_method():
+    G2, sqmap, dqmap = make_data()
+    with pytest.raises(ValueError, match="outlier_method"):
+        compute_g2(sqmap, dqmap, G2, outlier_method="bogus", outlier_threshold=3.0)
+
+
+def test_outlier_methods_contains_smooth_bkg():
+    assert OUTLIER_METHODS == ("MeanAbsoluteDeviation", "StandardDeviation", "G2-smooth-bkg")
+
+
+def test_bundle_dispatches_to_smooth_bkg():
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_data(scale=5.0)
+    b = compute_g2_debug_bundle(
+        sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0, scattering_1d=scattering_1d
+    )
+    assert b["target"] == "G2-smooth-bkg"
+    assert b["scale"] == pytest.approx(5.0)
+    assert b["bad"][0, 0]
+    assert not b["bad"][1:, 0].any()
+
+
+def test_bundle_smooth_bkg_requires_scattering_1d():
+    G2, sqmap, dqmap, _ = make_smooth_bkg_data()
+    with pytest.raises(ValueError, match="scattering_1d"):
+        compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_method="G2-smooth-bkg", outlier_threshold=3.0)
+
+
+def test_bundle_rejects_unknown_outlier_method():
+    G2, sqmap, dqmap = make_data()
+    with pytest.raises(ValueError, match="outlier_method"):
+        compute_g2_debug_bundle(sqmap, dqmap, G2, outlier_method="bogus")
+
+
+def test_regroup_G2_rejects_smooth_bkg_with_external_qmap(tmp_path):
+    """scattering_1d's sq-bin indexing only matches fname's own internal Q-map."""
+    import h5py
+
+    fname = tmp_path / "a.h5"
+    qmap_fname = tmp_path / "b.h5"
+    G2, sqmap, dqmap, _ = make_smooth_bkg_data()
+    for path, own_sqmap in ((fname, sqmap), (qmap_fname, sqmap)):
+        with h5py.File(path, "w") as f:
+            f.create_dataset("/xpcs/qmap/static_roi_map", data=own_sqmap)
+            f.create_dataset("/xpcs/qmap/dynamic_roi_map", data=dqmap)
+
+    with pytest.raises(ValueError, match="G2-smooth-bkg"):
+        regroup_G2(
+            str(fname),
+            {"G2": G2},
+            qmap_fname=str(qmap_fname),
+            outlier_method="G2-smooth-bkg",
+            outlier_threshold=3.0,
+        )
+
+
+def test_regroup_G2_allows_smooth_bkg_with_its_own_qmap(tmp_path):
+    """qmap_fname == fname (or None, defaulting to fname) is not 'external'."""
+    import h5py
+
+    fname = tmp_path / "a.h5"
+    G2, sqmap, dqmap, scattering_1d = make_smooth_bkg_data(scale=5.0)
+    with h5py.File(fname, "w") as f:
+        f.create_dataset("/xpcs/qmap/static_roi_map", data=sqmap)
+        f.create_dataset("/xpcs/qmap/dynamic_roi_map", data=dqmap)
+
+    avg_result = regroup_G2(
+        str(fname),
+        {"G2": G2},
+        outlier_method="G2-smooth-bkg",
+        outlier_threshold=3.0,
+        scattering_1d=scattering_1d,
+    )
+    assert "g2" in avg_result and "g2_err" in avg_result

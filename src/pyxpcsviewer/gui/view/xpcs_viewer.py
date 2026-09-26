@@ -206,6 +206,13 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.checkBox_G2_removeoutlier.toggled.connect(self._update_G2_mintag_enabled)
         self.checkBox_G2_combineoutlier.toggled.connect(self._update_G2_mintag_enabled)
         self._update_G2_mintag_enabled()
+        # Target is meaningless for G2-smooth-bkg (always uses the raw numerator
+        # against a smooth background); grey it out when that method is picked.
+        # Also needs to follow Remove Outlier (Designer's direct connection to
+        # this pair would otherwise fight this slot), same AND pattern as Min Tag.
+        self.comboBox_G2_outliermethod.currentTextChanged.connect(self._update_G2_outliertarget_enabled)
+        self.checkBox_G2_removeoutlier.toggled.connect(self._update_G2_outliertarget_enabled)
+        self._update_G2_outliertarget_enabled()
 
         self.g2_fitting_function.currentIndexChanged.connect(self.update_g2_fitting_function)
         self.btn_up.clicked.connect(lambda: self.reorder_target("up"))
@@ -374,6 +381,22 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         enabled = self.checkBox_G2_removeoutlier.isChecked() and self.checkBox_G2_combineoutlier.isChecked()
         self.spinBox_G2_mintagcount.setEnabled(enabled)
         self.label_G2_mintagcount.setEnabled(enabled)
+
+    def _update_G2_outliertarget_enabled(self) -> None:
+        """Enable Target only when outlier rejection is on *and* the method consults it.
+
+        "G2-smooth-bkg" always uses the raw numerator against a smooth
+        background, ignoring Target entirely -- greying it out avoids implying
+        it does anything for that method. Also follows Remove Outlier, since
+        Designer's direct connection to this pair would otherwise fight this
+        slot on method changes.
+        """
+        enabled = (
+            self.checkBox_G2_removeoutlier.isChecked()
+            and self.comboBox_G2_outliermethod.currentText() != "G2-smooth-bkg"
+        )
+        self.comboBox_G2_outliertarget.setEnabled(enabled)
+        self.label_G2_outliertarget.setEnabled(enabled)
 
     def _resolve_G2_target_rows(self, title: str) -> list[int] | None:
         """Resolve which target file the G2 regroup actions apply to.

@@ -633,10 +633,14 @@ class XpcsFile:
         The result is stored in-place as ``self.g2`` and ``self.g2_err``.
 
         Args:
-            **kwargs: Forwarded to :func:`g2_utils.regroup_G2`.
+            **kwargs: Forwarded to :func:`g2_utils.regroup_G2`. ``scattering_1d``
+                defaults to this file's own time-averaged SAXS-1D intensity
+                (needed for ``outlier_method="G2-smooth-bkg"``) unless the
+                caller overrides it.
         """
         from .g2_utils import regroup_G2
 
+        kwargs.setdefault("scattering_1d", self.saxs_1d["Iq"][0])
         avg_result = regroup_G2(self.fname, {"G2": self.G2}, **kwargs)
         self.g2 = avg_result["g2"]
         self.g2_err = avg_result["g2_err"]
