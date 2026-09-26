@@ -187,6 +187,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
         self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
+        self.comboBox_g2_style.currentIndexChanged.connect(self.update_plot)
         self.pushButton_4.clicked.connect(self.update_plot)
         self.pushButton_5.clicked.connect(self.update_plot)
         self.comboBox_qmap_target.currentIndexChanged.connect(self.update_plot)
@@ -761,6 +762,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             "correct_diag": self.twotime_correct_diag.isChecked(),
             "autolevel": self.checkBox_twotime_autolevel.isChecked(),
             "selection": max(0, self.comboBox_twotime_selection.currentIndex()),
+            "g2_style": self.comboBox_g2_style.currentText(),
         }
         if dryrun:
             return kwargs

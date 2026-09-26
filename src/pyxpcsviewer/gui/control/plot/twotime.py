@@ -19,6 +19,7 @@ def plot_twotime(
     autolevel: bool = True,
     correct_diag: bool = False,
     selection: int = 0,
+    g2_style: str = "semilogx",
 ) -> None:
     """Plot two-time correlation (C2) maps alongside SAXS-2D background and G2 traces.
 
@@ -33,6 +34,8 @@ def plot_twotime(
         autolevel: Auto-scale colour levels each call.
         correct_diag: Apply diagonal correction to the C2 matrix.
         selection: Q-bin index for the C2 block.
+        g2_style: ``"semilogx"`` (default) or ``"linear"`` x-axis for the
+            g2_full/g2_partial trace plot.
     """
     assert "Twotime" in xfile.atype, "Not a twotime file"
 
@@ -68,15 +71,16 @@ def plot_twotime(
     else:
         vmin, vmax = np.percentile(c2, [0.5, 99.5])
         hdl["tt"].setLevels(min=vmin, max=vmax)
-    plot_twotime_g2(hdl, c2_result)
+    plot_twotime_g2(hdl, c2_result, g2_style=g2_style)
 
 
-def plot_twotime_g2(hdl, c2_result) -> None:
+def plot_twotime_g2(hdl, c2_result, g2_style: str = "semilogx") -> None:
     """Plot full G2 and partial G2 traces inside the C2 plot area.
 
     Args:
         hdl: Dict-like handle with a ``"c2g2"`` key pointing to a pyqtgraph PlotWidget.
         c2_result: Dict returned by :meth:`~pyxpcsviewer.core.xpcs_file.XpcsFile.get_twotime_c2`.
+        g2_style: ``"semilogx"`` (default) or ``"linear"`` x-axis.
     """
     g2_full, g2_partial = c2_result["g2_full"], c2_result["g2_partial"]
 
@@ -100,5 +104,5 @@ def plot_twotime_g2(hdl, c2_result) -> None:
             pen=pg.mkPen(color=COLORS_HEX[n], width=1),
             name=f"g2_partial_{n}",
         )
-    hdl["c2g2"].setLogMode(x=True, y=False)
+    hdl["c2g2"].setLogMode(x=(g2_style != "linear"), y=False)
     hdl["c2g2"].autoRange()
