@@ -167,34 +167,34 @@
              title="Drag to resize; double-click to reset"></div>
         <form class="analysis-controls" onsubmit="return false"><div class="tool-panel" id="g2-controls">
           <div class="section">
-            <div class="fields">
-              <div class="field"><label>panels</label>
-                <div class="segmented small" style="grid-column: 2 / span 2">
+            <div class="settings-line">
+              <div class="control"><span class="label">panels</span>
+                <div class="segmented small">
                   <label title="One panel per q-bin, files overlaid"><input type="radio" name="layout" value="q" checked>by q</label>
                   <label title="One panel per file, q-bins overlaid"><input type="radio" name="layout" value="file">by file</label>
                   <label title="Everything in one panel"><input type="radio" name="layout" value="combined">one</label>
                 </div></div>
-              <div class="field"><label>columns</label><input type="number" name="cols" class="input" min="1" max="6" step="1" value="2"><span class="unit"></span></div>
-              <div class="field"><label>marker size</label><input type="number" name="marker" class="input" min="2" max="14" step="1" value="6"><span class="unit">px</span></div>
-              <div class="field"><label>legend</label><div class="inline"><label class="toggle"><input type="checkbox" name="legend" checked>show</label></div><span class="unit"></span></div>
-              <div class="field"><label>subtract fitted baseline</label><div class="inline"><label class="toggle"><input type="checkbox" name="baseline" checked>d → 1</label></div><span class="unit"></span></div>
+              <div class="control"><span class="label">columns</span><input type="number" name="cols" class="input tiny" min="1" max="6" step="1" value="2"></div>
+              <div class="control"><span class="label">marker</span><input type="number" name="marker" class="input tiny" min="2" max="14" step="1" value="6"></div>
+              <label class="toggle"><input type="checkbox" name="legend" checked>legend</label>
+              <label class="toggle" title="Shift each curve so its fitted baseline d sits at 1"><input type="checkbox" name="baseline" checked>subtract fitted baseline</label>
             </div>
-          </div>
-          <div class="section">
-            <h4>Ranges</h4>
-            <div class="fields">
-              <div class="field pair"><label>q <span class="muted">Å⁻¹</span></label>
-                <input type="number" name="qmin" class="input" step="any" placeholder="min" value="0">
-                <input type="number" name="qmax" class="input" step="any" placeholder="max" value="0.01"></div>
-              <div class="field"><label>all q</label><div class="inline"><label class="toggle"><input type="checkbox" name="qauto" checked>auto</label></div><span class="unit"></span></div>
-              <div class="field pair"><label>τ <span class="muted">s</span></label>
-                <input type="number" name="tmin" class="input" step="any" placeholder="min" value="1e-6">
-                <input type="number" name="tmax" class="input" step="any" placeholder="max" value="1000"></div>
-              <div class="field"><label>all τ</label><div class="inline"><label class="toggle"><input type="checkbox" name="tauto" checked>auto</label></div><span class="unit"></span></div>
-              <div class="field pair"><label>g2</label>
-                <input type="number" name="ymin" class="input" step="any" placeholder="min" value="1">
-                <input type="number" name="ymax" class="input" step="any" placeholder="max" value="1.8"></div>
-              <div class="field"><label>all g2</label><div class="inline"><label class="toggle"><input type="checkbox" name="yauto" checked>auto</label></div><span class="unit"></span></div>
+            <div class="ranges">
+              <span class="label">q</span>
+              <input type="number" name="qmin" class="input" step="any" placeholder="min" value="0">
+              <input type="number" name="qmax" class="input" step="any" placeholder="max" value="0.01">
+              <span class="unit">Å⁻¹</span>
+              <label class="toggle"><input type="checkbox" name="qauto" checked>all</label>
+              <span class="label">τ</span>
+              <input type="number" name="tmin" class="input" step="any" placeholder="min" value="1e-6">
+              <input type="number" name="tmax" class="input" step="any" placeholder="max" value="1000">
+              <span class="unit">s</span>
+              <label class="toggle"><input type="checkbox" name="tauto" checked>all</label>
+              <span class="label">g2</span>
+              <input type="number" name="ymin" class="input" step="any" placeholder="min" value="1">
+              <input type="number" name="ymax" class="input" step="any" placeholder="max" value="1.8">
+              <span class="unit"></span>
+              <label class="toggle"><input type="checkbox" name="yauto" checked>all</label>
             </div>
           </div>
           <div class="section">

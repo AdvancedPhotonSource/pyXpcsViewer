@@ -339,6 +339,14 @@ body.dragging .js-plotly-plot { pointer-events: none; }
     .field.pair > label { grid-column: auto; }
 }
 
+/* a line of plot settings, and the ranges as a compact grid: label, min, max, unit, "all" */
+.settings-line { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 14px; margin: 2px 0 8px; }
+.ranges { display: grid; grid-template-columns: auto 92px 92px auto auto; gap: 4px 8px; align-items: center;
+          margin: 2px 0 2px; width: fit-content; }
+.ranges .input { height: 22px; padding: 0 5px; }
+.ranges .unit { color: var(--muted); font-size: 10.5px; min-width: 20px; }
+.ranges .toggle { padding: 0; }
+
 /* the bounds of a fit: a table widget in the look of the results table, one editable row per parameter */
 .bounds-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin: 4px 0 6px;
                background: var(--surface); }
