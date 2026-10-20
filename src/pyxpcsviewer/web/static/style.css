@@ -339,13 +339,19 @@ body.dragging .js-plotly-plot { pointer-events: none; }
     .field.pair > label { grid-column: auto; }
 }
 
-/* the bounds of a fit: a small table */
-.bounds { border-collapse: collapse; margin: 3px 0 5px; font-size: 11px; }
-.bounds th { font-weight: 500; color: var(--muted); text-align: left; padding: 2px 5px 3px 0; font-size: 10.5px; }
-.bounds td { padding: 2px 5px 2px 0; }
-.bounds td.name { color: var(--ink-2); white-space: nowrap; padding-right: 8px; }
-.bounds .input { width: 84px; height: 22px; padding: 0 5px; }
-.bounds td.fit { text-align: center; }
+/* the bounds of a fit: a table widget in the look of the results table, one editable row per parameter */
+.bounds-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin: 4px 0 6px;
+               background: var(--surface); }
+.bounds { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.bounds th { background: var(--surface-2); color: var(--ink-2); font-weight: 600; text-align: left; padding: 4px 8px;
+             border-bottom: 1px solid var(--line); white-space: nowrap; }
+.bounds th.fit, .bounds td.fit { text-align: center; width: 1%; padding: 2px 10px; }
+.bounds td { padding: 2px 6px; border-bottom: 1px solid #f1f0ec; }
+.bounds tr:last-child td { border-bottom: none; }
+.bounds td.name { color: var(--ink-2); white-space: nowrap; padding-left: 8px; width: 1%; }
+.bounds td:not(.name):not(.fit) { width: auto; }
+.bounds .input { width: 100%; min-width: 72px; height: 22px; padding: 0 5px; }
+.bounds tr:hover td { background: var(--surface-2); }
 .bounds tr.off { display: none; }
 
 /* the g2 fit results: bounds and flags, then one row per q-bin of each file */

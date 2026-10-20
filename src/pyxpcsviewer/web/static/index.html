@@ -204,8 +204,8 @@
                 <label><input type="radio" name="func" value="double">double exp</label>
               </div></div>
             <p class="hint">g2 = a·exp(−2(t/b)^c) + d, or a·[f·exp(−(t/b)^c) + (1−f)·exp(−(t/b₂)^c₂)]² + d. Fit between the bounds; untick to hold a parameter at its lower bound.</p>
-            <table class="bounds">
-              <thead><tr><th></th><th>min</th><th>max</th><th>fit</th></tr></thead>
+            <div class="bounds-wrap"><table class="bounds">
+              <thead><tr><th>parameter</th><th>lower</th><th>upper</th><th class="fit">fit</th></tr></thead>
               <tbody>
                 <tr><td class="name">a · contrast</td><td><input type="number" name="a_min" class="input" step="any" value="0.04"></td><td><input type="number" name="a_max" class="input" step="any" value="0.8"></td><td class="fit"><input type="checkbox" name="a_fit" checked></td></tr>
                 <tr><td class="name">b · τ (s)</td><td><input type="number" name="b_min" class="input" step="any" value="1e-5"></td><td><input type="number" name="b_max" class="input" step="any" value="100"></td><td class="fit"><input type="checkbox" name="b_fit" checked></td></tr>
@@ -215,7 +215,7 @@
                 <tr data-double><td class="name">c₂ · stretch₂</td><td><input type="number" name="c2_min" class="input" step="any" value="0.5"></td><td><input type="number" name="c2_max" class="input" step="any" value="2"></td><td class="fit"><input type="checkbox" name="c2_fit" checked></td></tr>
                 <tr data-double><td class="name">f · fraction</td><td><input type="number" name="f_min" class="input" step="any" value="0"></td><td><input type="number" name="f_max" class="input" step="any" value="1"></td><td class="fit"><input type="checkbox" name="f_fit" checked></td></tr>
               </tbody>
-            </table>
+            </table></div>
             <div class="button-row">
               <button type="button" id="g2-fit" class="button primary">Fit g2</button>
               <label class="toggle"><input type="checkbox" name="showfit">show fit</label>
@@ -246,13 +246,13 @@
                 <input type="number" name="qmax" class="input" step="any" placeholder="max (all)"></div>
               <div class="field"><label>fit parameters vs q</label><div class="inline"><label class="toggle"><input type="checkbox" name="params" checked>show</label></div><span class="unit"></span></div>
             </div>
-            <table class="bounds">
-              <thead><tr><th></th><th>min</th><th>max</th><th>fit</th></tr></thead>
+            <div class="bounds-wrap"><table class="bounds">
+              <thead><tr><th>parameter</th><th>lower</th><th>upper</th><th class="fit">fit</th></tr></thead>
               <tbody>
                 <tr><td class="name">a · prefactor</td><td><input type="number" name="a_min" class="input" step="any" value="1e-12"></td><td><input type="number" name="a_max" class="input" step="any" value="1e-3"></td><td class="fit"><input type="checkbox" name="a_fit" checked></td></tr>
                 <tr><td class="name">b · exponent</td><td><input type="number" name="b_min" class="input" step="any" value="-2.5"></td><td><input type="number" name="b_max" class="input" step="any" value="-0.5"></td><td class="fit"><input type="checkbox" name="b_fit" checked></td></tr>
               </tbody>
-            </table>
+            </table></div>
             <div class="button-row"><button type="button" id="tauq-fit" class="button primary">Fit τ(q)</button></div>
             <pre class="summary-text" id="tauq-info"></pre>
           </div>
