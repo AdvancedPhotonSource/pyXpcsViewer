@@ -29,7 +29,7 @@
   <main class="main">
     <!-- ── files ─────────────────────────────────────────────────────────────────────── -->
     <aside class="column side-panel">
-      <div class="data-group">
+      <div class="side-files">
         <div class="row">
           <input type="search" id="file-search" class="input search" placeholder="Filter files" autocomplete="off">
           <select id="file-sort" class="select" title="Sort">
@@ -52,6 +52,10 @@
         <p class="hint" id="file-hint"></p>
         <p class="hint">Click a file to show it; check files to compare them. <span class="kbd">↑</span> <span class="kbd">↓</span> move,
           <span class="kbd">space</span> checks, shift-click checks a range.</p>
+      </div>
+      <div class="gutter gutter-row" data-gutter="--side-h" data-target="previous" data-axis="y" data-sign="1"
+           title="Drag to resize; double-click to reset"></div>
+      <div class="side-meta">
         <div class="card meta-card">
           <div class="card-title">File shown <span class="badges" id="meta-badges"></span></div>
           <div id="meta-body"></div>

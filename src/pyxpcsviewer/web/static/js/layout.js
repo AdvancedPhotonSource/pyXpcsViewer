@@ -1,9 +1,9 @@
 // Drag the gutters between the columns, and between an analysis' result and its controls, to
 // resize them; double-click a gutter to go back to the default size. The sizes are CSS variables
-// on the page (--col1, --col3, --result-h), kept in localStorage for the next visit.
+// on the page (--col1, --col3, --result-h, --side-h), kept in localStorage for the next visit.
 const KEY = "xpcsweb-layout";
 const root = document.documentElement;
-const MIN = { "--col1": 220, "--col3": 360, "--result-h": 160 };
+const MIN = { "--col1": 220, "--col3": 360, "--result-h": 160, "--side-h": 140 };
 const IMAGE_MIN = 320;      // the image column keeps at least this width
 const CONTROLS_MIN = 120;   // the controls under a result keep at least this height
 
