@@ -309,6 +309,10 @@ body.dragging .js-plotly-plot { pointer-events: none; }
 .section:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
 .section-head h4 { margin: 0; }
+.fit-line { justify-content: flex-start; flex-wrap: wrap; gap: 6px 10px; }
+.fit-line h4 { margin-right: 4px; }
+.fit-line .button.primary.small { margin-left: 6px; }
+.fit-line .toggle { padding: 0; }
 .muted { color: var(--muted); font-size: 10.5px; }
 .note { color: var(--ink-2); font-size: 10.5px; margin: 3px 0; }
 .summary-text {

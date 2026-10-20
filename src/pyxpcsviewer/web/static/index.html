@@ -198,11 +198,16 @@
             </div>
           </div>
           <div class="section">
-            <div class="section-head"><h4>Fit</h4>
+            <div class="section-head fit-line">
+              <h4>Fit</h4>
               <div class="segmented small">
                 <label><input type="radio" name="func" value="single" checked>single exp</label>
                 <label><input type="radio" name="func" value="double">double exp</label>
-              </div></div>
+              </div>
+              <button type="button" id="g2-fit" class="button primary small">Fit g2</button>
+              <label class="toggle"><input type="checkbox" name="showfit">show fit</label>
+              <button type="button" id="g2-clear-fit" class="link-button">hide</button>
+            </div>
             <p class="hint">g2 = a·exp(−2(t/b)^c) + d, or a·[f·exp(−(t/b)^c) + (1−f)·exp(−(t/b₂)^c₂)]² + d. Fit between the bounds; untick to hold a parameter at its lower bound.</p>
             <div class="bounds-wrap"><table class="bounds">
               <thead><tr><th>parameter</th><th>lower</th><th>upper</th><th class="fit">fit</th></tr></thead>
@@ -216,11 +221,6 @@
                 <tr data-double><td class="name">f · fraction</td><td><input type="number" name="f_min" class="input" step="any" value="0"></td><td><input type="number" name="f_max" class="input" step="any" value="1"></td><td class="fit"><input type="checkbox" name="f_fit" checked></td></tr>
               </tbody>
             </table></div>
-            <div class="button-row">
-              <button type="button" id="g2-fit" class="button primary">Fit g2</button>
-              <label class="toggle"><input type="checkbox" name="showfit">show fit</label>
-              <button type="button" id="g2-clear-fit" class="link-button">hide</button>
-            </div>
             <div class="fit-table-wrap" id="g2-fit-info" hidden></div>
           </div>
         </div></form>
