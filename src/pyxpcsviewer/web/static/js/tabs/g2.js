@@ -40,7 +40,7 @@ function redraw() {
         return;
     }
     const fig = g2Figure(last.files, {
-        mode: form.layout || "q", cols: form.cols || 2, offset: form.offset || 0, showFit: form.showfit,
+        mode: form.layout || "q", cols: form.cols || 2, showFit: form.showfit,
         subtractBaseline: form.baseline, markerSize: form.marker || 6, legend: form.legend,
         tRange: form.tauto ? null : range(form.tmin, form.tmax), yRange: form.yauto ? null : range(form.ymin, form.ymax),
     });
@@ -52,20 +52,51 @@ function redraw() {
     renderFitInfo();
 }
 
+const PARAM_TITLES = { a: "a · contrast", b: "b · τ (s)", c: "c · stretch", d: "d · baseline", b2: "b₂ · τ₂ (s)",
+                       c2: "c₂ · stretch₂", f: "f · fraction" };
+
+function boundsRows(fit, names) {
+    const lower = fit.bounds ? fit.bounds[0] : [];
+    const upper = fit.bounds ? fit.bounds[1] : [];
+    const flags = fit.fit_flag || [];
+    return [
+        el("tr", { class: "bounds" }, [el("td", { text: "lower" }), ...names.map((_, i) => el("td", { text: fmt(lower[i], 4) }))]),
+        el("tr", { class: "bounds" }, [el("td", { text: "upper" }), ...names.map((_, i) => el("td", { text: fmt(upper[i], 4) }))]),
+        el("tr", { class: "bounds" }, [el("td", { text: "fit" }), ...names.map((_, i) => el("td", { text: flags[i] === false ? "fixed" : "✓" }))]),
+    ];
+}
+
+const sameSettings = (a, b) => JSON.stringify([a.bounds, a.fit_flag, a.func]) === JSON.stringify([b.bounds, b.fit_flag, b.func]);
+
+/** The fit results as a table: the bounds and flags on top, then every q-bin of every file. */
 function renderFitInfo() {
     const fitted = (last ? last.files : []).filter((f) => f.fit);
+    nodes.info.hidden = !fitted.length;
     if (!fitted.length) { nodes.info.replaceChildren(); return; }
-    const lines = [];
+    const first = fitted[0].fit;
+    const names = first.param_names;
+    const head = el("tr", {}, [el("th", { text: "q (Å⁻¹)" }), ...names.map((n) => el("th", { text: PARAM_TITLES[n] || n }))]);
+    const rows = boundsRows(first, names);
     fitted.forEach((f) => {
-        const names = f.fit.param_names;
-        lines.push(`${f.label}  (${f.fit.func} exponential, q ${f.fit.q_range}, t ${f.fit.t_range})`);
+        const own = f.fit.param_names.length === names.length ? f.fit : null;
+        rows.push(el("tr", { class: "group" }, [el("td", { colspan: names.length + 1, text: f.label })]));
+        if (!own) {
+            rows.push(el("tr", {}, [el("td", { colspan: names.length + 1, class: "failed", text: `fitted with the ${f.fit.func} exponential` })]));
+            return;
+        }
+        if (!sameSettings(own, first)) { rows.push(...boundsRows(own, names)); }
         f.q.forEach((q, n) => {
-            if (!f.fit.success[n]) { lines.push(`  q=${fmt(q, 5)}  fit failed`); return; }
-            const terms = names.map((k, i) => `${k}=${fmt(f.fit.params[n][i], 4)}±${fmt(f.fit.errors[n][i], 2)}`);
-            lines.push(`  q=${fmt(q, 5)}  ${terms.join("  ")}`);
+            const cells = [el("td", { text: fmt(q, 5) })];
+            if (!own.success[n]) {
+                cells.push(el("td", { colspan: names.length, class: "failed", text: "fit failed" }));
+            } else {
+                names.forEach((_, i) => cells.push(el("td", {}, [fmt(own.params[n][i], 4), " ",
+                                                                  el("span", { class: "err", text: `± ${fmt(own.errors[n][i], 2)}` })])));
+            }
+            rows.push(el("tr", {}, cells));
         });
     });
-    nodes.info.textContent = lines.join("\n");
+    nodes.info.replaceChildren(el("table", { class: "fit-table" }, [el("thead", {}, [head]), el("tbody", {}, rows)]));
 }
 
 async function refresh() {

@@ -348,6 +348,22 @@ body.dragging .js-plotly-plot { pointer-events: none; }
 .bounds td.fit { text-align: center; }
 .bounds tr.off { display: none; }
 
+/* the g2 fit results: bounds and flags, then one row per q-bin of each file */
+.fit-table-wrap { max-height: 42vh; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius);
+                  margin-top: 8px; background: var(--surface); }
+.fit-table { border-collapse: separate; border-spacing: 0; font-size: 10.5px; font-variant-numeric: tabular-nums;
+             white-space: nowrap; min-width: 100%; }
+.fit-table th { position: sticky; top: 0; z-index: 1; background: var(--surface-2); color: var(--ink-2); font-weight: 600;
+                text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.fit-table th:first-child, .fit-table td:first-child { text-align: left; position: sticky; left: 0; background: inherit; }
+.fit-table td { padding: 2px 8px; border-bottom: 1px solid #f1f0ec; text-align: right; background: var(--surface); }
+.fit-table tr.bounds td { color: var(--ink-2); background: #fbfaf8; }
+.fit-table tr.group td { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; text-align: left;
+                         padding-top: 4px; padding-bottom: 4px; }
+.fit-table .err { color: var(--muted); }
+.fit-table td.failed { color: var(--danger); }
+.fit-table tr:hover td:not(.group) { background: var(--surface-2); }
+
 /* the HDF metadata tree */
 .hdf-tree { padding: 6px 10px 14px; overflow: auto; font-size: 11px; }
 .hdf-tree details { margin: 2px 0 2px 0; }

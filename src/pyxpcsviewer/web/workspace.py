@@ -390,6 +390,8 @@ class Workspace:
         params = [val[i, 0].tolist() if i >= 0 else None for i in index]
         errors = [val[i, 1].tolist() if i >= 0 else None for i in index]
         names = FIT_PARAMS_SINGLE if summary["fit_func"] == "single" else FIT_PARAMS_DOUBLE
+        flags_text = str(summary.get("fit_flag", ""))  # stored as the text of a list, e.g. "[True, False]"
+        fit_flag = [part.strip() == "True" for part in flags_text.strip("[]").split(",") if part.strip()]
         payload: dict[str, Any] = jsonable(
             {
                 "func": summary["fit_func"],
@@ -400,6 +402,7 @@ class Workspace:
                 "params": params,
                 "errors": errors,
                 "bounds": summary.get("bounds"),
+                "fit_flag": fit_flag if len(fit_flag) == len(names) else [True] * len(names),
                 "q_range": summary.get("q_range"),
                 "t_range": summary.get("t_range"),
             }

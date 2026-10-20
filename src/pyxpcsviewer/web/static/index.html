@@ -175,7 +175,6 @@
                   <label title="Everything in one panel"><input type="radio" name="layout" value="combined">one</label>
                 </div></div>
               <div class="field"><label>columns</label><input type="number" name="cols" class="input" min="1" max="6" step="1" value="2"><span class="unit"></span></div>
-              <div class="field"><label>offset per file</label><input type="number" name="offset" class="input" step="0.05" value="0"><span class="unit">g2</span></div>
               <div class="field"><label>marker size</label><input type="number" name="marker" class="input" min="2" max="14" step="1" value="6"><span class="unit">px</span></div>
               <div class="field"><label>legend</label><div class="inline"><label class="toggle"><input type="checkbox" name="legend" checked>show</label></div><span class="unit"></span></div>
               <div class="field"><label>subtract fitted baseline</label><div class="inline"><label class="toggle"><input type="checkbox" name="baseline" checked>d → 1</label></div><span class="unit"></span></div>
@@ -222,7 +221,7 @@
               <label class="toggle"><input type="checkbox" name="showfit">show fit</label>
               <button type="button" id="g2-clear-fit" class="link-button">hide</button>
             </div>
-            <pre class="summary-text" id="g2-fit-info"></pre>
+            <div class="fit-table-wrap" id="g2-fit-info" hidden></div>
           </div>
         </div></form>
       </section>
