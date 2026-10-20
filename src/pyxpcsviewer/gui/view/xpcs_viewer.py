@@ -184,6 +184,8 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.saxs2d_autolevel.stateChanged.connect(self.update_saxs2d_level)
         self.btn_deselect.clicked.connect(self.clear_target_selection)
         self.list_view_target.doubleClicked.connect(self.show_dataset)
+        # Double-clicking a source entry adds it, as a shortcut for the "Add" button.
+        self.list_view_source.doubleClicked.connect(self.add_target)
         self.btn_select_bkgfile.clicked.connect(self.select_bkgfile)
         self.spinBox_saxs2d_selection.valueChanged.connect(self.plot_saxs_2d_selection)
         self.comboBox_twotime_selection.currentIndexChanged.connect(self.update_plot)
