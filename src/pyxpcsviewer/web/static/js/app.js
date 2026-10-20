@@ -6,15 +6,14 @@ import { installGutters } from "./layout.js";
 import { initFiles, loadFiles } from "./files.js";
 import { initImage } from "./image.js";
 import { tab as g2 } from "./tabs/g2.js";
-import { tab as saxs1d } from "./tabs/saxs1d.js";
-import { tab as stability } from "./tabs/stability.js";
+import { tab as profile } from "./tabs/profile.js";
 import { tab as intt } from "./tabs/intt.js";
 import { tab as tauq } from "./tabs/tauq.js";
 import { tab as twotime } from "./tabs/twotime.js";
 import { tab as hdf } from "./tabs/hdf.js";
 
 const TABS = [g2, tauq, twotime, hdf];              // the right column, one shown at a time
-const PANELS = [saxs1d, intt, stability];            // under the image, always shown
+const PANELS = [profile, intt];                      // under the image, always shown
 const TAB_KEY = "xpcsweb:tab";
 
 function activateTab(id) {

@@ -140,9 +140,9 @@ cli.py -> gui/view/xpcs_viewer.py (XpcsViewer QMainWindow, generated Ui_mainWind
 ### Web viewer (`web/`)
 
 `pyxpcsviewer-web` (`web/cli.py`) serves one result folder in the browser with the three-column layout of gixsu's
-web app: the files and the metadata of the file shown (two panes) | the detector image over the SAXS 1D, I(t) and
-stability panels (a scrolling stack) | one tab per dynamics analysis (g2, τ(q), two-time, metadata; result above
-controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept in localStorage). Nothing in
+web app: the files and the metadata of the file shown (two panes) | the detector image over the I(q) panel (the
+stability of the file shown as I(q) or g2 per time segment, or the SAXS 1D of the checked files) and the I(t)
+panel (a scrolling stack) | one tab per dynamics analysis (g2, τ(q), two-time, metadata; result above controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept in localStorage). Nothing in
 `web/` imports Qt.
 
 - **`web/workspace.py`** (`Workspace`) is the service: the folder's files (analysis types cached by name/mtime),
@@ -160,7 +160,8 @@ controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept 
   (gixsu's, so the tools look like one family) and bundles Inter as `fonts/inter-xpcs.woff2` (OFL, see the
   license file there); `js/state.js` is the store (files, the file shown, the files checked, the tab, the
   two-time bin); `js/files.js` and `js/image.js` are the left and center columns; `js/charts.js` is the Plotly
-  theme and the panel grid; `js/g2figure.js` builds g2 grids for the g2 tab and the stability panel; `js/tabs/*.js`
+  theme and the panel grid; `js/g2figure.js` builds g2 grids for the g2 tab and the I(q) panel's g2 segments;
+  `js/tabs/*.js`
   is one module per tab or center panel built with `tabs/base.js`'s `makeTab` (stale when its dependencies change,
   refreshed when shown; the center panels are always shown). I(t) traces are averaged down to 16k points by the
   server (`core/intt_utils.block_average`). The URL carries the file shown, the files checked and the tab (`?file=&check=&tab=`), so a view can be

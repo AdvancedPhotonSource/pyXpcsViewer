@@ -3,8 +3,7 @@
 // on the page (--col1, --col3, --result-h, --side-h, --image-h, ...), kept in localStorage for the next visit.
 const KEY = "xpcsweb-layout";
 const root = document.documentElement;
-const MIN = { "--col1": 220, "--col3": 360, "--result-h": 160, "--side-h": 140, "--image-h": 200, "--saxs1d-h": 140,
-              "--intt-h": 140, "--stability-h": 140 };
+const MIN = { "--col1": 220, "--col3": 360, "--result-h": 160, "--side-h": 140, "--image-h": 200, "--profile-h": 140 };
 const IMAGE_MIN = 320;      // the image column keeps at least this width
 const CONTROLS_MIN = 120;   // the controls under a result keep at least this height
 

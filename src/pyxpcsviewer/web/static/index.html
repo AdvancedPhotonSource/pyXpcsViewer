@@ -99,21 +99,38 @@
       <div class="gutter gutter-row" data-gutter="--image-h" data-target="previous" data-axis="y" data-sign="1"
            title="Drag to resize; double-click to reset"></div>
 
-      <!-- SAXS 1D -->
-      <section class="panel" id="saxs1d-panel">
-        <form class="toolbar panel-bar" id="saxs1d-controls" onsubmit="return false">
-          <h4 class="panel-title">SAXS 1D</h4>
-          <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
-          <label class="toggle"><input type="checkbox" name="logy" checked>log I</label>
-          <label class="toggle" title="Every φ slice of the file, not only the average"><input type="checkbox" name="allphi">φ slices</label>
-          <label class="toggle" title="Absolute cross-section"><input type="checkbox" name="absolute">1/cm</label>
-          <div class="control" title="Marker size"><span class="label">marker</span>
-            <input type="number" name="marker" class="input tiny" min="0" max="12" step="1" value="4"></div>
+      <!-- I(q): the stability of the file shown, or the SAXS 1D of the checked files -->
+      <section class="panel" id="profile-panel">
+        <form class="toolbar panel-bar" id="profile-controls" onsubmit="return false">
+          <div class="segmented small">
+            <label title="I(q) of each time segment of the file shown"><input type="radio" name="mode" value="saxs" checked>I(q) segments</label>
+            <label title="g2 of each time segment of the file shown, when the file stores them"><input type="radio" name="mode" value="g2">g2 segments</label>
+            <label title="I(q) of the checked files"><input type="radio" name="mode" value="saxs1d">SAXS 1D</label>
+          </div>
+          <div class="toggles" data-mode="saxs saxs1d">
+            <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
+            <label class="toggle"><input type="checkbox" name="logy" checked>log I</label>
+          </div>
+          <div class="toggles" data-mode="saxs1d" hidden>
+            <label class="toggle" title="Every φ slice of the file, not only the average"><input type="checkbox" name="allphi">φ slices</label>
+            <label class="toggle" title="Absolute cross-section"><input type="checkbox" name="absolute">1/cm</label>
+            <div class="control" title="Marker size"><span class="label">marker</span>
+              <input type="number" name="marker" class="input tiny" min="0" max="12" step="1" value="4"></div>
+          </div>
+          <div class="toggles" data-mode="g2" hidden>
+            <div class="segmented small">
+              <label><input type="radio" name="layout" value="q" checked>by q</label>
+              <label><input type="radio" name="layout" value="file">by segment</label>
+              <label><input type="radio" name="layout" value="combined">one</label>
+            </div>
+            <div class="control"><span class="label">columns</span>
+              <input type="number" name="cols" class="input tiny" min="1" max="6" step="1" value="2"></div>
+          </div>
         </form>
-        <div class="message" id="saxs1d-message"></div>
-        <div class="graph-wrap"><div id="saxs1d-graph" class="graph"></div></div>
+        <div class="message" id="profile-message"></div>
+        <div class="graph-wrap scroll"><div id="profile-graph" class="graph"></div></div>
       </section>
-      <div class="gutter gutter-row" data-gutter="--saxs1d-h" data-target="previous" data-axis="y" data-sign="1"
+      <div class="gutter gutter-row" data-gutter="--profile-h" data-target="previous" data-axis="y" data-sign="1"
            title="Drag to resize; double-click to reset"></div>
 
       <!-- I(t) -->
@@ -129,34 +146,7 @@
         <div class="message" id="intt-message"></div>
         <div class="graph-wrap"><div id="intt-graph" class="graph"></div></div>
       </section>
-      <div class="gutter gutter-row" data-gutter="--intt-h" data-target="previous" data-axis="y" data-sign="1"
-           title="Drag to resize; double-click to reset"></div>
 
-      <!-- Stability -->
-      <section class="panel" id="stability-panel">
-        <form class="toolbar panel-bar" id="stability-controls" onsubmit="return false">
-          <h4 class="panel-title">Stability</h4>
-          <div class="segmented small">
-            <label title="I(q) of each time segment"><input type="radio" name="source" value="saxs" checked>I(q) segments</label>
-            <label title="g2 of each time segment, when the file stores them"><input type="radio" name="source" value="g2">g2 segments</label>
-          </div>
-          <div class="toggles" data-source="saxs">
-            <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
-            <label class="toggle"><input type="checkbox" name="logy" checked>log I</label>
-          </div>
-          <div class="toggles" data-source="g2" hidden>
-            <div class="segmented small">
-              <label><input type="radio" name="layout" value="q" checked>by q</label>
-              <label><input type="radio" name="layout" value="file">by segment</label>
-              <label><input type="radio" name="layout" value="combined">one</label>
-            </div>
-            <div class="control"><span class="label">columns</span>
-              <input type="number" name="cols" class="input tiny" min="1" max="6" step="1" value="2"></div>
-          </div>
-        </form>
-        <div class="message" id="stability-message"></div>
-        <div class="graph-wrap scroll"><div id="stability-graph" class="graph"></div></div>
-      </section>
     </div>
     <div class="gutter gutter-col" data-gutter="--col3" data-target=".analysis-panel" data-axis="x" data-sign="-1"
          title="Drag to resize; double-click to reset"></div>
