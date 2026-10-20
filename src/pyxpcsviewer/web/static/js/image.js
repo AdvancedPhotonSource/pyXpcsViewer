@@ -4,26 +4,18 @@
 import { get, file, unpack, unpackFlat } from "./api.js";
 import { state, update, subscribe } from "./state.js";
 import { axis, baseLayout, colorscale, discreteScale, draw, placeholder, SERIES, ACCENT } from "./charts.js";
-import { readForm, onChange, persistForm, dualRange, debounce, busy, fmt, el } from "./widgets.js";
+import { readForm, onChange, persistForm, debounce, busy, fmt, el } from "./widgets.js";
 
 const nodes = {};
-let contrast = null;
 let request = 0;
 const cache = { file: null, image: null, overlay: null, bins: null };
 const HINT = "Hover over the image for q and φ. Scroll to zoom, double-click to reset; click a q-bin to show its two-time correlation.";
 
-function levelAt(levels, percent) {
-    const i = Math.round(Math.min(100, Math.max(0, percent)) * 2);   // 201 entries, 0.5 % apart
-    return levels[Math.min(levels.length - 1, i)];
-}
-
-function contrastLevels(image) {
-    if (!image || image.kind !== "saxs") { return [image ? image.zmin : 0, image ? image.zmax : 1]; }
-    const levels = unpackFlat(image.levels);
-    const [lo, hi] = contrast.values();
-    let zmin = levelAt(levels, lo);
-    let zmax = levelAt(levels, hi);
-    if (!(zmax > zmin)) { zmax = zmin + 1e-6; }
+/** The color levels of a map: the 1st to the 99.9th percentile of an intensity image (the server
+    computes them), the whole range of a label map. */
+function levels(image) {
+    const zmin = image.zmin;
+    const zmax = image.zmax > zmin ? image.zmax : zmin + 1e-6;
     return [zmin, zmax];
 }
 
@@ -57,7 +49,7 @@ function render() {
     const form = readForm(nodes.toolbar);
     if (!image) { return; }
     const z = unpack(image.z);
-    const [zmin, zmax] = contrastLevels(image);
+    const [zmin, zmax] = levels(image);
     const main = { type: "heatmap", z, x0: image.x0, dx: image.factor, y0: image.y0, dy: image.factor, zmin, zmax,
                    zsmooth: false, hoverinfo: "none", showscale: image.kind !== "mask", name: image.kind,
                    colorbar: { thickness: 9, len: 0.85, outlinewidth: 0, tickfont: { size: 9.5 }, x: 1.005,
@@ -165,22 +157,6 @@ export async function initImage() {
     nodes.cmap = nodes.toolbar.querySelector('[name="cmap"]');
     (state.info ? state.info.colormaps : []).forEach((name) => nodes.cmap.append(el("option", { value: name, text: name })));
     persistForm(nodes.toolbar, "image");
-    contrast = dualRange(document.getElementById("image-contrast"), {
-        min: 0, max: 100, step: 0.5, values: [1, 99.5], format: (v) => v.toFixed(1),
-        output: document.getElementById("image-contrast-values"),
-        onInput: () => {
-            if (!cache.image || cache.image.kind !== "saxs") { return; }
-            const [zmin, zmax] = contrastLevels(cache.image);
-            Plotly.restyle(nodes.graph, { zmin: [zmin], zmax: [zmax] }, [0]);
-        },
-    });
-    try {
-        const saved = JSON.parse(window.localStorage.getItem("xpcsweb:contrast"));
-        if (Array.isArray(saved)) { contrast.set(saved[0], saved[1]); }
-    } catch (e) { /* none saved */ }
-    document.getElementById("image-contrast").addEventListener("change", () => {
-        try { window.localStorage.setItem("xpcsweb:contrast", JSON.stringify(contrast.values())); } catch (e) { /* none */ }
-    });
     onChange(nodes.toolbar, (form, input) => {
         if (input.name === "cmap") {
             if (cache.image && cache.image.kind !== "mask") { Plotly.restyle(nodes.graph, { colorscale: [colorscale(form.cmap)] }, [0]); }

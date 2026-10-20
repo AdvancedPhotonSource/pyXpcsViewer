@@ -79,10 +79,7 @@
             <label><input type="radio" name="scale" value="log" checked>log</label>
             <label><input type="radio" name="scale" value="linear">linear</label>
           </div>
-          <div class="control" title="Color map"><select name="cmap" class="select small"></select></div>
-          <div class="control slider" title="Color levels as percentiles of the image">
-            <span class="label">contrast</span><div id="image-contrast"></div><span class="range2-values" id="image-contrast-values"></span>
-          </div>
+          <div class="control" title="Color map (levels: the 1st to the 99.9th percentile)"><select name="cmap" class="select small"></select></div>
           <label class="toggle" title="The beam center"><input type="checkbox" name="center" checked>beam center</label>
           <label class="toggle" title="The dynamic q-bins over the intensity; the two-time bin shown in white">
             <input type="checkbox" name="bins">q-bins</label>
@@ -103,9 +100,9 @@
       <section class="panel" id="profile-panel">
         <form class="toolbar panel-bar" id="profile-controls" onsubmit="return false">
           <div class="segmented small">
+            <label title="I(q) of the checked files"><input type="radio" name="mode" value="saxs1d">SAXS 1D</label>
             <label title="I(q) of each time segment of the file shown"><input type="radio" name="mode" value="saxs" checked>I(q) segments</label>
             <label title="g2 of each time segment of the file shown, when the file stores them"><input type="radio" name="mode" value="g2">g2 segments</label>
-            <label title="I(q) of the checked files"><input type="radio" name="mode" value="saxs1d">SAXS 1D</label>
           </div>
           <div class="toggles" data-mode="saxs saxs1d">
             <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>

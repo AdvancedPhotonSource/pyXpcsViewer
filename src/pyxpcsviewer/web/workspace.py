@@ -267,8 +267,9 @@ class Workspace:
 
         Returns:
             The map ``z`` (packed) with its sampling (``factor``, the source pixels per sent pixel;
-            ``x0``/``y0`` the center of the first sent pixel in source pixel units), the percentile
-            table ``levels`` (201 values, for the contrast slider), the beam center and the q extent.
+            ``x0``/``y0`` the center of the first sent pixel in source pixel units), the color levels
+            ``zmin``/``zmax`` (the 1st and 99.9th percentiles of an intensity image) and the percentile
+            table ``levels`` (201 values), the beam center and the q extent.
         """
         if kind not in IMAGE_KINDS:
             raise WorkspaceError(f"kind must be one of {IMAGE_KINDS}")
@@ -287,7 +288,17 @@ class Workspace:
             img = block_mean(xf.saxs_2d, factor)
             z = log10_clamped(img) if scale == "log" else img.astype(np.float32)
             levels = percentile_table(z)
-            zmin, zmax = float(levels[2]), float(levels[-2])  # 1 % and 99.5 %
+            finite = z[np.isfinite(z)]
+            if finite.size:
+                zmin, zmax = (float(v) for v in np.percentile(finite, [1.0, 99.9]))
+            else:
+                zmin, zmax = 0.0, 1.0
+            if not zmax > zmin:  # a flat image: show its whole (tiny) range
+                zmin, zmax = (
+                    (float(finite.min()), float(finite.max()))
+                    if finite.size and finite.max() > finite.min()
+                    else (zmin, zmin + 1.0)
+                )
         elif kind == "mask":
             z = subsample(xf.mask, factor).astype(np.uint8)
             levels = np.array([0.0, 1.0], dtype=np.float32)

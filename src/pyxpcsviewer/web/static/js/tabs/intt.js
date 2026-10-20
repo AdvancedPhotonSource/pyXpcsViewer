@@ -2,7 +2,7 @@
 // at most 16k points by the server) and its Fourier spectrum.
 import { post, unpackFlat } from "../api.js";
 import { filesForAnalysis } from "../state.js";
-import { axis, baseLayout, draw, placeholder, seriesColor, heightFor, INK2 } from "../charts.js";
+import { axis, baseLayout, draw, placeholder, seriesColor, heightFor } from "../charts.js";
 import { readForm, onChange, persistForm, setMessage, busy } from "../widgets.js";
 import { makeTab, EMPTY } from "./base.js";
 
@@ -32,11 +32,9 @@ function redraw() {
     draw(nodes.graph, data, baseLayout({
         height: heightFor(nodes.graph), margin: { l: 50, r: 10, t: 10, b: 34 }, showlegend: false,
         xaxis: axis({ title: { text: seconds ? "t (s)" : "frame" }, domain: [0, 1], anchor: "y" }),
-        yaxis: axis({ title: { text: "I (cts / pixel)" }, domain: [0.56, 1], anchor: "x" }),
+        yaxis: axis({ title: { text: "I (cts / pixel)" }, domain: [0.54, 1], anchor: "x" }),
         xaxis2: axis({ title: { text: "frequency (Hz)" }, domain: [0, 1], anchor: "y2" }),
-        yaxis2: axis({ title: { text: "|FFT|" }, domain: [0, 0.36], anchor: "x2" }),
-        annotations: [{ text: "Fourier spectrum", showarrow: false, xref: "paper", yref: "paper", x: 0, y: 0.36,
-                        xanchor: "left", yanchor: "bottom", font: { size: 10.5, color: INK2 }, yshift: 2 }],
+        yaxis2: axis({ title: { text: "|FFT|" }, domain: [0, 0.38], anchor: "x2" }),
     }));
     setMessage(nodes.message, last.skipped.map((s) => s.reason).join(" · "), "note");
     const averaged = last.files.filter((f) => f.points < f.frames);

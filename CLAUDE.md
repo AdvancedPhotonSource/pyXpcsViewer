@@ -142,7 +142,7 @@ cli.py -> gui/view/xpcs_viewer.py (XpcsViewer QMainWindow, generated Ui_mainWind
 `pyxpcsviewer-web` (`web/cli.py`) serves one result folder in the browser with the three-column layout of gixsu's
 web app: the files and the metadata of the file shown (two panes) | the detector image over the I(q) panel (the
 stability of the file shown as I(q) or g2 per time segment, or the SAXS 1D of the checked files) and the I(t)
-panel (a scrolling stack) | one tab per dynamics analysis (g2, τ(q), two-time, metadata; result above controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept in localStorage). Nothing in
+panel (all in view, two gutters) | one tab per dynamics analysis (g2, τ(q), two-time, metadata; result above controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept in localStorage). Nothing in
 `web/` imports Qt.
 
 - **`web/workspace.py`** (`Workspace`) is the service: the folder's files (analysis types cached by name/mtime),

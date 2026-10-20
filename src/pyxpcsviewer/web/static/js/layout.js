@@ -6,6 +6,8 @@ const root = document.documentElement;
 const MIN = { "--col1": 220, "--col3": 360, "--result-h": 160, "--side-h": 140, "--image-h": 200, "--profile-h": 140 };
 const IMAGE_MIN = 320;      // the image column keeps at least this width
 const CONTROLS_MIN = 120;   // the controls under a result keep at least this height
+const PANEL_MIN = 120;      // the I(t) panel keeps at least this height
+const GUTTER = 5;
 
 let sizes = {};
 try { sizes = JSON.parse(window.localStorage.getItem(KEY)) || {}; } catch (e) { sizes = {}; }
@@ -22,6 +24,10 @@ export function relayout() {   // plots follow their containers
 function width(selector) {
     const el = document.querySelector(selector);
     return el ? el.getBoundingClientRect().width : 0;
+}
+function height(selector) {
+    const el = document.querySelector(selector);
+    return el ? el.getBoundingClientRect().height : 0;
 }
 
 export function installGutters() {
@@ -40,6 +46,10 @@ export function installGutters() {
             max = window.innerWidth - width(".analysis-panel") - IMAGE_MIN;
         } else if (gutter.dataset.gutter === "--col3") {
             max = window.innerWidth - width(".side-panel") - IMAGE_MIN;
+        } else if (gutter.dataset.gutter === "--image-h") {       // the I(q) panel keeps its height, I(t) its minimum
+            max = target.parentElement.getBoundingClientRect().height - height("#profile-panel") - PANEL_MIN - 2 * GUTTER;
+        } else if (gutter.dataset.gutter === "--profile-h") {
+            max = target.parentElement.getBoundingClientRect().height - height("#image-panel") - PANEL_MIN - 2 * GUTTER;
         } else {
             max = target.parentElement.getBoundingClientRect().height - CONTROLS_MIN;
         }

@@ -96,44 +96,6 @@ export function clampNumbers(container) {
     }, true);
 }
 
-/**
- * A two-thumb range on two overlapping range inputs inside `container` (class range2):
- * `values()` gives [low, high]; `onInput` is called while dragging, `onChange` when released.
- */
-export function dualRange(container, { min = 0, max = 100, step = 0.1, values = [0, 100], format = (v) => v,
-                                       onInput = null, onChange = null, output = null } = {}) {
-    container.classList.add("range2");
-    const track = el("div", { class: "range2-track" }, [el("div", { class: "range2-fill" })]);
-    const lo = el("input", { type: "range", min, max, step, value: values[0], "aria-label": "lower" });
-    const hi = el("input", { type: "range", min, max, step, value: values[1], "aria-label": "upper" });
-    const text = output || el("div", { class: "range2-values" });
-    container.replaceChildren(track, lo, hi);
-    if (!output) { container.after(text); }
-    const fill = track.firstElementChild;
-    const current = () => [Number(lo.value), Number(hi.value)];
-    const paint = () => {
-        const [a, b] = current();
-        const pa = ((a - min) / (max - min)) * 100;
-        const pb = ((b - min) / (max - min)) * 100;
-        fill.style.left = `${pa}%`;
-        fill.style.width = `${Math.max(0, pb - pa)}%`;
-        text.textContent = `${format(a)} – ${format(b)} %`;
-    };
-    const settle = (which) => {
-        let [a, b] = current();
-        if (a > b) {
-            if (which === lo) { b = a; hi.value = b; } else { a = b; lo.value = a; }
-        }
-        paint();
-    };
-    [lo, hi].forEach((input) => {
-        input.addEventListener("input", () => { settle(input); if (onInput) { onInput(current()); } });
-        input.addEventListener("change", () => { settle(input); if (onChange) { onChange(current()); } });
-    });
-    paint();
-    return { values: current, set: (a, b) => { lo.value = a; hi.value = b; paint(); } };
-}
-
 export function setMessage(node, text, kind = "error") {
     node.textContent = text || "";
     node.classList.toggle("note", kind === "note");
