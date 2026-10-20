@@ -28,8 +28,8 @@ pyxpcsviewer path_to_hdf_directory   # or: pyxpcsviewer   (uses cwd)
 Run the web viewer (needs the `web` extras: `pip install -e ".[web,dev]"` — fastapi, uvicorn, plotly, httpx):
 
 ```bash
-pyxpcsviewer-web path_to_hdf_directory            # serves http://127.0.0.1:8070/ and opens a browser
-pyxpcsviewer-web path --port 8070 --no-browser    # --host 0.0.0.0 opens it to the network
+pyxpcsviewer-web path_to_hdf_directory            # serves http://127.0.0.1:8070/
+pyxpcsviewer-web path --port 8070 --open          # --open starts a browser; --host 0.0.0.0 opens it to the network
 ```
 
 Lint (no ruff config in the repo, so ruff runs with its default rule set):

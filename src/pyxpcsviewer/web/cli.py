@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
         help="underscore-separated filename-segment indices for short labels, e.g. '0_2'",
     )
     parser.add_argument("--cache-size", type=int, default=8, help="open files kept in memory (default 8)")
-    parser.add_argument("--no-browser", action="store_true", help="do not open the page in a browser")
+    parser.add_argument("--open", action="store_true", help="open the page in a browser once the server is up")
     parser.add_argument("--log-level", default="info", choices=("critical", "error", "warning", "info", "debug"))
     args = parser.parse_args(argv)
 
@@ -55,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
     shown = "127.0.0.1" if args.host in ("0.0.0.0", "::", "") else args.host
     url = f"http://{shown}:{args.port}/"
     print(f"pyXPCSViewer web {__version__}: {root}\n  {url}", file=sys.stderr)
-    if not args.no_browser:
+    if args.open:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     uvicorn.run(app, host=args.host, port=args.port, log_level=args.log_level)
     return 0
