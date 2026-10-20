@@ -172,6 +172,15 @@ def build_app(
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+    @app.middleware("http")
+    async def _revalidate_static(request: Any, call_next: Any) -> Any:
+        """The page's own files are revalidated on every load (ETag / Last-Modified), so a browser
+        never keeps an old stylesheet or script after the viewer is updated."""
+        response = await call_next(request)
+        if request.url.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     # ── the folder ───────────────────────────────────────────────────────────────────────
     @app.get("/api/info")
     def info() -> dict[str, Any]:

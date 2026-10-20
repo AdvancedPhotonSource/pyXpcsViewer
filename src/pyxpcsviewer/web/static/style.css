@@ -101,9 +101,9 @@ h4 { margin: 0 0 3px; font-size: 11.5px; font-weight: 600; }
 .gutter::before { content: ""; position: absolute; }
 .gutter-col::before { top: 0; bottom: 0; left: -4px; right: -4px; }
 .gutter-row::before { left: 0; right: 0; top: -4px; bottom: -4px; }
-.gutter::after { content: ""; position: absolute; background: #cfcdc6; border-radius: 2px; }
-.gutter-col::after { left: 0; right: 0; top: calc(50% - 16px); height: 32px; }
-.gutter-row::after { top: 0; bottom: 0; left: calc(50% - 16px); width: 32px; }
+.gutter::after { content: ""; position: absolute; background: #b9b7af; border-radius: 2px; }
+.gutter-col::after { left: 0; right: 0; top: calc(50% - 18px); height: 36px; }
+.gutter-row::after { top: 0; bottom: 0; left: calc(50% - 18px); width: 36px; }
 .gutter:hover::after, body.dragging .gutter::after { background: var(--accent); }
 body.dragging, body.dragging * { user-select: none !important; }
 body.dragging-x, body.dragging-x * { cursor: col-resize !important; }
