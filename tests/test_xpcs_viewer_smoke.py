@@ -53,3 +53,18 @@ def test_xpcs_viewer_constructs_without_data(qapp, tmp_path):
             )
     finally:
         window.close()
+
+
+def test_twotime_options_default_on(qapp, tmp_path):
+    """autolevel, correct-diag and auto-crop start checked, and plot_twotime(dryrun) sees them."""
+    from pyxpcsviewer.gui.view.xpcs_viewer import XpcsViewer
+
+    window = XpcsViewer(path=str(tmp_path))
+    try:
+        assert window.checkBox_twotime_autolevel.isChecked()
+        assert window.twotime_correct_diag.isChecked()
+        assert window.twotime_autocrop.isChecked()
+        kwargs = window.plot_twotime(dryrun=True)
+        assert kwargs["autolevel"] and kwargs["correct_diag"] and kwargs["auto_crop"]
+    finally:
+        window.close()

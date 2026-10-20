@@ -1487,6 +1487,7 @@ class Ui_mainWindow(object):
 
         self.checkBox_twotime_autolevel = QCheckBox(self.groupBox_11)
         self.checkBox_twotime_autolevel.setObjectName(u"checkBox_twotime_autolevel")
+        self.checkBox_twotime_autolevel.setChecked(True)
 
         self.gridLayout_2.addWidget(self.checkBox_twotime_autolevel, 1, 6, 1, 1)
 
@@ -1567,6 +1568,7 @@ class Ui_mainWindow(object):
 
         self.twotime_correct_diag = QCheckBox(self.groupBox_11)
         self.twotime_correct_diag.setObjectName(u"twotime_correct_diag")
+        self.twotime_correct_diag.setChecked(True)
 
         self.gridLayout_2.addWidget(self.twotime_correct_diag, 1, 10, 1, 1)
 

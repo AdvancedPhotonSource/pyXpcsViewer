@@ -2742,6 +2742,9 @@
               <property name="text">
                <string>autolevel</string>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
             <item row="0" column="9" colspan="3">
@@ -2900,6 +2903,9 @@
              <widget class="QCheckBox" name="twotime_correct_diag">
               <property name="text">
                <string>correct-diag</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
