@@ -10,7 +10,7 @@ const nodes = {};
 let last = null;
 let request = 0;
 const DRAW_KEYS = new Set(["logx", "logy", "offset", "params"]);
-const PANEL_H = 210;
+const PANEL_H = 190;
 
 function names() { return filesForAnalysis().filter((id) => atypeOf(id).includes("Multitau")); }
 
@@ -78,7 +78,7 @@ function redraw() {
             layout[`yaxis${n}`] = axis({ domain: ydomain, anchor: `x${n}`, ...(log ? { type: "log", dtick: decades > 4 ? 2 : 1 } : {}),
                                          ...(range ? { range } : {}) });
             layout.annotations.push({ text: p.titles[i], showarrow: false, xref: "paper", yref: "paper", x: xdomain[0], y: ydomain[1],
-                                      xanchor: "left", yanchor: "bottom", font: { size: 11.5, color: INK2 }, yshift: 2 });
+                                      xanchor: "left", yanchor: "bottom", font: { size: 10.5, color: INK2 }, yshift: 2 });
             last.files.forEach((f, m) => {
                 const q = f.params_vs_q;
                 const color = seriesColor(m);

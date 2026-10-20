@@ -29,7 +29,7 @@ function redrawSaxs(form) {
         height: heightFor(nodes.graph), margin: { l: 58, r: 14, t: 18, b: 44 },
         xaxis: (form.logx ? logAxis : axis)({ title: { text: last.xlabel }, ...(form.logx ? logTicks(...qs) : {}) }),
         yaxis: (form.logy ? logAxis : axis)({ title: { text: last.ylabel }, ...(form.logy ? logTicks(...is) : {}) }),
-        title: { text: last.label, font: { size: 12 }, x: 0.02, xanchor: "left", y: 0.99, yanchor: "top" },
+        title: { text: last.label, font: { size: 10.5 }, x: 0.02, xanchor: "left", y: 0.99, yanchor: "top" },
     }));
 }
 
@@ -43,7 +43,7 @@ function redrawG2(form) {
                                      tRange: form.tauto ? null : range(form.tmin, form.tmax),
                                      yRange: form.yauto ? null : range(form.ymin, form.ymax) });
     lastRows = fig.rows;
-    draw(nodes.graph, fig.data, { ...fig.layout, height: heightFor(nodes.graph, fig.rows, 250) });
+    draw(nodes.graph, fig.data, { ...fig.layout, height: heightFor(nodes.graph, fig.rows, 230) });
 }
 
 function redraw() {
@@ -103,6 +103,6 @@ function init() {
     });
 }
 
-function resize() { if (last) { Plotly.relayout(nodes.graph, { height: heightFor(nodes.graph, lastRows, 250) }); } }
+function resize() { if (last) { Plotly.relayout(nodes.graph, { height: heightFor(nodes.graph, lastRows, 230) }); } }
 
 export const tab = makeTab({ id: "stability", deps: ["active"], init, refresh, resize });

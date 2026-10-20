@@ -45,7 +45,7 @@ function redraw() {
         tRange: form.tauto ? null : range(form.tmin, form.tmax), yRange: form.yauto ? null : range(form.ymin, form.ymax),
     });
     lastRows = fig.rows;
-    draw(nodes.graph, fig.data, { ...fig.layout, height: heightFor(nodes.graph, fig.rows, 250) });
+    draw(nodes.graph, fig.data, { ...fig.layout, height: heightFor(nodes.graph, fig.rows, 230) });
     const notes = last.skipped.map((s) => s.reason);
     if (form.showfit && !last.files.some((f) => f.fit)) { notes.push("No fit yet: press Fit g2."); }
     setMessage(nodes.message, notes.join(" · "), "note");
@@ -142,7 +142,7 @@ function init() {
 }
 
 function resize() {
-    if (last && last.files.length) { Plotly.relayout(nodes.graph, { height: heightFor(nodes.graph, lastRows, 250) }); }
+    if (last && last.files.length) { Plotly.relayout(nodes.graph, { height: heightFor(nodes.graph, lastRows, 230) }); }
 }
 
 export const tab = makeTab({ id: "g2", init, refresh, resize });

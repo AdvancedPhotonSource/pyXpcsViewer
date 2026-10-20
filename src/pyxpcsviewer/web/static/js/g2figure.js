@@ -61,7 +61,7 @@ export function g2Figure(files, options = {}) {
     });
     const entries = mode === "q" ? nf : mode === "file" ? nq : nf * nq;
     const outer = legend ? outerLegend(entries) : { legend: {}, marginTop: 24, marginRight: 12 };
-    const layout = baseLayout({ ...g.layout, margin: { l: 50, r: outer.marginRight, t: outer.marginTop, b: 42 },
+    const layout = baseLayout({ ...g.layout, margin: { l: 46, r: outer.marginRight, t: outer.marginTop, b: 38 },
                                 showlegend: legend, legend: outer.legend });
     g.panels.forEach((panel) => {
         const bottomRow = panel.row === g.rows - 1 || panel.row === Math.floor((count - 1) / g.cols);

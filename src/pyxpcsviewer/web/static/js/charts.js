@@ -12,7 +12,7 @@ export const MUTED = "#62615d";
 export const GRID = "#ecebe7";
 export const SURFACE = "#ffffff";
 export const ACCENT = "#2a78d6";
-export const FONT = { family: "xpcs-ui, Inter, system-ui, -apple-system, 'Segoe UI', sans-serif", size: 12, color: INK };
+export const FONT = { family: "xpcs-ui, Inter, system-ui, -apple-system, 'Segoe UI', sans-serif", size: 10.5, color: INK };
 export const CONFIG = {
     responsive: true, displaylogo: false, scrollZoom: false,
     modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d", "toggleSpikelines", "hoverCompareCartesian",
@@ -35,7 +35,7 @@ export function withAlpha(color, alpha) {
 export function axis(extra = {}) {
     return { showline: true, linecolor: MUTED, linewidth: 1, ticks: "outside", tickcolor: MUTED, ticklen: 4,
              gridcolor: GRID, zeroline: false, exponentformat: "power", automargin: true,
-             title: { standoff: 6, font: { size: 12, color: INK2 } }, ...extra };
+             title: { standoff: 5, font: { size: 10.5, color: INK2 } }, tickfont: { size: 10 }, ...extra };
 }
 
 /** A log axis: ranges given in data units are written as their log10. */
@@ -64,10 +64,10 @@ export function positiveExtent(arrays) {
 export function baseLayout(extra = {}) {
     return {
         font: FONT, paper_bgcolor: SURFACE, plot_bgcolor: SURFACE,
-        margin: { l: 56, r: 14, t: 26, b: 44 },
+        margin: { l: 50, r: 12, t: 22, b: 38 },
         hovermode: "closest",
-        hoverlabel: { bgcolor: INK, bordercolor: INK, font: { ...FONT, color: "#fff", size: 11.5 }, align: "left" },
-        legend: { bgcolor: "rgba(255,255,255,0.8)", borderwidth: 0, font: { size: 11 }, x: 1, xanchor: "right",
+        hoverlabel: { bgcolor: INK, bordercolor: INK, font: { ...FONT, color: "#fff", size: 10.5 }, align: "left" },
+        legend: { bgcolor: "rgba(255,255,255,0.8)", borderwidth: 0, font: { size: 10 }, x: 1, xanchor: "right",
                   y: 1, yanchor: "top", itemsizing: "constant", tracegroupgap: 2 },
         ...extra,
     };
@@ -82,13 +82,13 @@ export function placeholder(el, text, { error = false } = {}) {
     return Plotly.react(el, [], baseLayout({
         xaxis: { visible: false }, yaxis: { visible: false }, margin: { l: 16, r: 16, t: 16, b: 16 },
         annotations: [{ text, showarrow: false, xref: "paper", yref: "paper", x: 0.5, y: 0.5,
-                        font: { size: 13, color: error ? "#c43d3d" : MUTED } }],
+                        font: { size: 11.5, color: error ? "#c43d3d" : MUTED } }],
     }), { ...CONFIG, displayModeBar: false });
 }
 
 /** The height a figure of `rows` panel rows takes in its (scrolling) wrapper: the wrapper's
     height, or more when the panels need it. */
-export function heightFor(el, rows = 1, panelHeight = 240) {
+export function heightFor(el, rows = 1, panelHeight = 220) {
     const wrap = el.parentElement;
     const available = Math.max(160, (wrap ? wrap.clientHeight : 0) - 4);
     if (rows <= 1) { return available; }
@@ -120,7 +120,7 @@ export function grid(count, cols, { titles = [], gapX = 0.12, gapY = 0.22, xaxis
         if (titles[i]) {
             layout.annotations.push({ text: titles[i], showarrow: false, xref: "paper", yref: "paper",
                                       x: xdomain[0], y: ydomain[1], xanchor: "left", yanchor: "bottom",
-                                      font: { size: 11.5, color: INK2 }, yshift: 2 });
+                                      font: { size: 10.5, color: INK2 }, yshift: 2 });
         }
         panels.push({ x: `x${n}`, y: `y${n}`, xaxis: `xaxis${n}`, yaxis: `yaxis${n}`, xdomain, ydomain, row, col });
     }
@@ -132,13 +132,13 @@ export function grid(count, cols, { titles = [], gapX = 0.12, gapY = 0.22, xaxis
 export function outerLegend(series = 1) {
     if (series > 8) {
         return { legend: { orientation: "v", x: 1.01, xanchor: "left", y: 1, yanchor: "top", bgcolor: "rgba(255,255,255,0)",
-                           font: { size: 10.5 }, itemsizing: "constant", itemwidth: 24, tracegroupgap: 0 },
-                 marginTop: 24, marginRight: 150 };
+                           font: { size: 9.5 }, itemsizing: "constant", itemwidth: 22, tracegroupgap: 0 },
+                 marginTop: 20, marginRight: 135 };
     }
     const rows = Math.max(1, Math.ceil(series / 3));
     return { legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "top", yref: "container",
-                       bgcolor: "rgba(255,255,255,0)", font: { size: 11 }, itemsizing: "constant", itemwidth: 30 },
-             marginTop: 24 + 18 * rows, marginRight: 12 };
+                       bgcolor: "rgba(255,255,255,0)", font: { size: 10 }, itemsizing: "constant", itemwidth: 28 },
+             marginTop: 20 + 16 * rows, marginRight: 12 };
 }
 
 /** The Plotly color scale of a color map, from the server's table (a built-in name as a fallback). */

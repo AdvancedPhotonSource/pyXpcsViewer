@@ -30,7 +30,7 @@ function redrawC2() {
     const extent = last.shape[0] * dt;
     draw(nodes.c2, [{
         type: "heatmap", z, x0: dt / 2, dx: dt, y0: dt / 2, dy: dt, zmin, zmax, zsmooth: false, colorscale: colorscale(form.cmap),
-        colorbar: { thickness: 10, len: 0.9, outlinewidth: 0, tickfont: { size: 10 }, x: 1.005, title: { text: "C2", side: "right", font: { size: 11 } } },
+        colorbar: { thickness: 9, len: 0.9, outlinewidth: 0, tickfont: { size: 9.5 }, x: 1.005, title: { text: "C2", side: "right", font: { size: 10 } } },
         hovertemplate: "t₁ %{x:.4g} s<br>t₂ %{y:.4g} s<br>C2 %{z:.4f}<extra></extra>",
     }], baseLayout({
         margin: { l: 52, r: 8, t: 10, b: 40 }, showlegend: false, dragmode: "pan",
@@ -63,7 +63,7 @@ function redrawG2() {
     data.push({ type: "scatter", mode: "lines", x, y, name: "whole run", line: { color: INK, width: 2.2 },
                 hovertemplate: "whole run<br>t %{x:.4g} s<br>g2 %{y:.4f}<extra></extra>" });
     draw(nodes.g2, data, baseLayout({
-        margin: { l: 52, r: 8, t: 8, b: 36 }, legend: { font: { size: 10 } },
+        margin: { l: 46, r: 8, t: 8, b: 32 }, legend: { font: { size: 9.5 } },
         xaxis: (form.g2log ? logAxis : axis)({ title: { text: "t (s)" }, ...(form.g2log ? logTicks(period, full.length * period) : {}) }),
         yaxis: axis({ title: { text: "g2" } }),
     }));

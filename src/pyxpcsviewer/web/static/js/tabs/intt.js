@@ -37,7 +37,7 @@ function redraw() {
         xaxis2: axis({ title: { text: "frequency (Hz)" }, domain: [0, 1], anchor: "y2" }),
         yaxis2: (form.logfft ? logAxis : axis)({ title: { text: "|FFT|" }, domain: [0, 0.26], anchor: "x2" }),
         annotations: [{ text: "Fourier spectrum", showarrow: false, xref: "paper", yref: "paper", x: 0, y: 0.26,
-                        xanchor: "left", yanchor: "bottom", font: { size: 11.5, color: "#4b4a46" }, yshift: 2 }],
+                        xanchor: "left", yanchor: "bottom", font: { size: 10.5, color: "#4b4a46" }, yshift: 2 }],
     });
     draw(nodes.graph, data, layout);
     setMessage(nodes.message, last.skipped.map((s) => s.reason).join(" · "), "note");

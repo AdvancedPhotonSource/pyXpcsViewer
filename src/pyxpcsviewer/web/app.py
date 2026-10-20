@@ -150,6 +150,13 @@ def build_app(
         status = 404 if str(exc).startswith("no such file") else 400
         return JSONResponse({"detail": str(exc)}, status_code=status)
 
+    @app.exception_handler(Exception)
+    async def _unexpected_error(request: Any, exc: Exception) -> JSONResponse:
+        """Anything a file can throw at the reader (a missing HDF5 filter, a corrupt dataset) reaches
+        the page as a message instead of a bare 500."""
+        logger.exception("%s %s failed", request.method, request.url.path)
+        return JSONResponse({"detail": f"{type(exc).__name__}: {exc}"}, status_code=500)
+
     # ── the page ─────────────────────────────────────────────────────────────────────────
     @app.get("/", include_in_schema=False)
     def index() -> FileResponse:

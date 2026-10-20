@@ -41,6 +41,7 @@ dependencies = [
     "numpy",
     "scipy",
     "h5py",
+    "hdf5plugin",
     "matplotlib",
     "pyqtgraph",
     "scikit-learn",

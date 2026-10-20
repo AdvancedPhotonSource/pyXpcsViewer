@@ -60,9 +60,9 @@ function render() {
     const [zmin, zmax] = contrastLevels(image);
     const main = { type: "heatmap", z, x0: image.x0, dx: image.factor, y0: image.y0, dy: image.factor, zmin, zmax,
                    zsmooth: false, hoverinfo: "none", showscale: image.kind !== "mask", name: image.kind,
-                   colorbar: { thickness: 10, len: 0.85, outlinewidth: 0, tickfont: { size: 10 }, x: 1.005,
+                   colorbar: { thickness: 9, len: 0.85, outlinewidth: 0, tickfont: { size: 9.5 }, x: 1.005,
                                title: { text: image.kind === "saxs" ? (image.scale === "log" ? "log₁₀ I" : "I") : "bin",
-                                        side: "right", font: { size: 11 } } } };
+                                        side: "right", font: { size: 10 } } } };
     if (image.kind === "saxs") { main.colorscale = colorscale(form.cmap); }
     else if (image.kind === "mask") { main.colorscale = [[0, "#e9e8e4"], [1, ACCENT]]; }
     else {
@@ -78,7 +78,7 @@ function render() {
     }
     const [h, w] = image.shape_full;
     const layout = baseLayout({
-        margin: { l: 50, r: 10, t: 8, b: 40 }, showlegend: false, dragmode: "pan",
+        margin: { l: 46, r: 10, t: 8, b: 36 }, showlegend: false, dragmode: "pan",
         xaxis: axis({ title: { text: "column (px)" }, constrain: "domain", range: [-0.5, w - 0.5], exponentformat: "none" }),
         yaxis: axis({ title: { text: "row (px)" }, scaleanchor: "x", scaleratio: 1, constrain: "domain",
                       range: [-0.5, h - 0.5], exponentformat: "none" }),
