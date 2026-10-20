@@ -30,7 +30,7 @@ function redraw() {
                     hovertemplate: `${f.label}<br>%{x:.4g} Hz<br>%{y:.4g}<extra></extra>` });
     });
     draw(nodes.graph, data, baseLayout({
-        height: heightFor(nodes.graph), margin: { l: 50, r: 10, t: 10, b: 34 },
+        height: heightFor(nodes.graph), margin: { l: 50, r: 10, t: 10, b: 34 }, showlegend: false,
         xaxis: axis({ title: { text: seconds ? "t (s)" : "frame" }, domain: [0, 1], anchor: "y" }),
         yaxis: axis({ title: { text: "I (cts / pixel)" }, domain: [0.56, 1], anchor: "x" }),
         xaxis2: axis({ title: { text: "frequency (Hz)" }, domain: [0, 1], anchor: "y2" }),
