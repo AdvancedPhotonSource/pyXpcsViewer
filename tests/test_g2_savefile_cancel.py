@@ -40,6 +40,7 @@ def _window(selected_rows=(0,)):
     win.model = types.SimpleNamespace(target=["a.hdf"])
     win.plots = _FakePlots()
     win.get_selected_rows = lambda: list(selected_rows)
+    win._current_dir = lambda: os.getcwd()  # seeds the save dialog; any directory works here
     win._resolve_G2_target_rows = lambda title: XpcsViewer._resolve_G2_target_rows(win, title)
     return win
 

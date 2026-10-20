@@ -367,7 +367,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
     def load_external_qmap_for_G2_regroup(self) -> None:
         """Open a file dialog to select an external Q-map HDF5 file for G2 regrouping."""
         f = QtWidgets.QFileDialog.getOpenFileName(
-            self, caption="select the external qmap file for G2 regrouping", dir=None
+            self, caption="select the external qmap file for G2 regrouping", dir=self._current_dir()
         )[0]
         if os.path.isfile(f):
             self.label_G2_external_qmapfname.setText(f)
@@ -446,7 +446,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         kwargs = {"rows": rows}
 
         save_fname = QtWidgets.QFileDialog.getSaveFileName(
-            self, caption="select the save file for G2 regrouping", dir=None
+            self, caption="select the save file for G2 regrouping", dir=self._current_dir()
         )[0]
         if not save_fname:
             # Cancelled: abort before the kernel is reached -- save_G2(None)
@@ -700,7 +700,9 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def saxs1d_export(self) -> None:
         """Export SAXS-1D ROI data to the user-selected folder via :meth:`PlotController.export_saxs_1d`."""
-        folder = QtWidgets.QFileDialog.getExistingDirectory(self, caption="select a folder to export SAXS profiles")
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            self, caption="select a folder to export SAXS profiles", dir=self._current_dir()
+        )
 
         if folder in [None, ""]:
             return
@@ -878,7 +880,7 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
 
     def select_bkgfile(self) -> None:
         """Open a file dialog to select a background SAXS-1D file for subtraction."""
-        path = self.work_dir.text()
+        path = self._current_dir()
         f = QtWidgets.QFileDialog.getOpenFileName(self, caption="select the file for background subtraction", dir=path)[
             0
         ]
@@ -888,18 +890,27 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         else:
             return
 
+    def _average_save_dir(self) -> str:
+        """Folder to seed the average save-path/name dialogs with."""
+        save_path = self.avg_save_path.text()
+        return save_path if os.path.isdir(save_path) else self._current_dir()
+
     def set_average_save_path(self) -> None:
         """Open a directory dialog to set the save location for average results."""
-        save_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Open directory")
+        save_path = QtWidgets.QFileDialog.getExistingDirectory(self, "Open directory", self._average_save_dir())
+        if not save_path:
+            return  # cancelled: keep the current value
         self.avg_save_path.clear()
         self.avg_save_path.setText(save_path)
         return
 
     def set_average_save_name(self) -> None:
         """Open a file-save dialog to set the output name for average results."""
-        save_name = QtWidgets.QFileDialog.getSaveFileName(self, "Save as")
+        save_name = QtWidgets.QFileDialog.getSaveFileName(self, "Save as", self._average_save_dir())[0]
+        if not save_name:
+            return  # cancelled: keep the current value
         self.avg_save_name.clear()
-        self.avg_save_name.setText(os.path.basename(save_name[0]))
+        self.avg_save_name.setText(os.path.basename(save_name))
         return
 
     def init_average(self) -> None:
@@ -1217,6 +1228,16 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
         self.update_box(self.model.source, mode="source")
         self.apply_filter_to_source()
 
+    def _current_dir(self) -> str:
+        """Directory the viewer is browsing right now, used to seed every file dialog.
+
+        This follows the folder chosen via "Load" (or typed into the work-dir
+        box) rather than the start-up directory, so dialogs open where the
+        user last navigated to.
+        """
+        path = self.work_dir.text()
+        return path if os.path.isdir(path) else self.start_wd
+
     def load_path(self, path=None, debug: bool = False) -> None:
         """Load a directory path, initialize the model/controllers, and reload the source list.
 
@@ -1229,14 +1250,20 @@ class XpcsViewer(QtWidgets.QMainWindow, Ui):
             folder = QtWidgets.QFileDialog.getExistingDirectory(
                 self,
                 "Open directory",
-                self.start_wd,
+                self._current_dir(),
                 QtWidgets.QFileDialog.DontUseNativeDialog,
             )
+            if not folder:
+                # Cancelled: stay in the folder currently loaded instead of
+                # snapping back to the start-up directory.
+                return
         else:
             folder = path
 
         if not os.path.isdir(folder):
             self.statusbar.showMessage(f"{folder} is not a folder.")
+            if self.model is not None:
+                return  # keep the folder currently loaded
             folder = self.start_wd
 
         self.work_dir.setText(folder)
