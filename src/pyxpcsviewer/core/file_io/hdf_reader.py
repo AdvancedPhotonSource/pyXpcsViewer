@@ -94,7 +94,7 @@ def read_metadata_to_dict(file_path):
     return data_dict
 
 
-def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
+def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus", optional=()):
     """Retrieve field values from an HDF5 result file.
 
     Args:
@@ -105,6 +105,8 @@ def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
         ret_type: ``"dict"`` returns a dict keyed by field name; ``"list"``
             returns a flat list of values.
         ftype: Expected file type for the reader backend.
+        optional: Subset of *fields* that may be absent from the file; a missing
+            one comes back as ``None`` instead of raising.
 
     Returns:
         Dictionary or list of field values depending on *ret_type*.
@@ -112,11 +114,15 @@ def get(fname, fields, mode="raw", ret_type="dict", ftype="nexus"):
     assert mode in ["raw", "alias"], "mode not supported"
     assert ret_type in ["dict", "list"], "ret_type not supported"
 
-    ret = {}
+    ret: dict[str, Any] = {}
     with h5py.File(fname, "r") as HDF_Result:
         for key in fields:
             path = hdf_key[ftype][key] if mode == "alias" else key
             if path not in HDF_Result:
+                if key in optional:
+                    logger.debug("optional field not found: %s", path)
+                    ret[key] = None
+                    continue
                 logger.error("path to field not found: %s", path)
                 raise ValueError("key not found: %s:%s", key, path)
             else:

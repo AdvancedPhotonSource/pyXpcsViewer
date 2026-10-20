@@ -8,9 +8,14 @@ loading the fields for the file's actual analysis type(s) and leaving the
 fields for the *other* type as None.
 """
 
+import shutil
+
+import h5py
 import pytest
 
+from pyxpcsviewer.core.file_io.aps_8idi import key as hdf_key
 from pyxpcsviewer.core.file_io.hdf_reader import get, get_analysis_type
+from pyxpcsviewer.core.xpcs_file import XpcsFile
 
 
 def test_get_analysis_type_multitau_only(multitau_path):
@@ -83,3 +88,39 @@ def test_common_fields_present_regardless_of_analysis_type(fixture_name, request
     assert xf.saxs_1d["Iq"].shape[1] == xf.saxs_1d["q"].shape[0]
     assert xf.Int_t.shape[0] == 2
     assert xf.label
+
+
+def _copy_without(src, tmp_path, *fields):
+    """Copy *src* into *tmp_path* with the given alias fields deleted; returns the new path."""
+    path = tmp_path / "copy.hdf"
+    shutil.copy(src, path)
+    with h5py.File(path, "a") as f:
+        for field in fields:
+            del f[hdf_key["nexus"][field]]
+    return str(path)
+
+
+@pytest.mark.parametrize("field", ["start_time", "t1", "static_num_pts"])
+def test_file_without_unused_field_still_loads(multitau_path, tmp_path, field):
+    """No view reads these fields, so a file lacking one must still load, with the value as None."""
+    xf = XpcsFile(_copy_without(multitau_path, tmp_path, field))
+    assert getattr(xf, field) is None
+    assert xf.g2 is not None
+
+
+def test_twotime_file_without_stride_avg_config_assumes_no_striding(twotime_path, tmp_path):
+    path = _copy_without(twotime_path, tmp_path, "c2_stride_frame", "c2_avg_frame")
+    frame_time = get(path, ["t0"], "alias", ftype="nexus")["t0"]
+    assert XpcsFile(path).c2_t0 == pytest.approx(frame_time)
+
+
+def test_twotime_c2_time_step_includes_twotime_stride(twotime_path, tmp_path):
+    """The C2 image and its g2 trace are scaled by frame_time * twotime stride * avg."""
+    path = tmp_path / "stride2.hdf"
+    shutil.copy(twotime_path, path)
+    with h5py.File(path, "a") as f:
+        f[hdf_key["nexus"]["c2_stride_frame"]][()] = 2
+    frame_time = get(str(path), ["t0"], "alias", ftype="nexus")["t0"]
+
+    c2 = XpcsFile(str(path)).get_twotime_c2(selection=0)
+    assert c2["acquire_period"] == pytest.approx(2 * frame_time)

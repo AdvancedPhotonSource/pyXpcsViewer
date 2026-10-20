@@ -57,7 +57,7 @@ class QMap:
     pixel_size: float
     det_dist: float
     dynamic_num_pts: np.ndarray
-    static_num_pts: np.ndarray
+    static_num_pts: np.ndarray | None
     map_names: list[str]
     map_units: list[str]
     k0: float
@@ -99,12 +99,14 @@ class QMap:
                 "pixel_size",
                 "det_dist",
                 "dynamic_num_pts",
-                "static_num_pts",
                 "map_names",
                 "map_units",
             ):
                 path = key_map["nexus"][key]
                 info[key] = f[path][()]
+            # not used by any view; a file lacking it still loads
+            path = key_map["nexus"]["static_num_pts"]
+            info["static_num_pts"] = f[path][()] if path in f else None
         info["k0"] = 2 * np.pi / (12.398 / info["X_energy"])
         info["map_names"] = [item.decode("utf-8") for item in info["map_names"]]
         info["map_units"] = [item.decode("utf-8") for item in info["map_units"]]

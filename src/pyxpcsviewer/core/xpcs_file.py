@@ -109,8 +109,8 @@ class XpcsFile:
         self.Iqp: np.ndarray = payload.pop("Iqp")
         self.Int_t: np.ndarray = payload.pop("Int_t")
         self.t0: float = payload.pop("t0")
-        self.t1: float = payload.pop("t1")
-        self.start_time: str = payload.pop("start_time")
+        self.t1: float | None = payload.pop("t1")
+        self.start_time: str | None = payload.pop("start_time")
         self.abs_cross_section_scale: float = payload.pop("abs_cross_section_scale")
 
         # only present for Multitau files
@@ -205,6 +205,8 @@ class XpcsFile:
         """
         # default common fields for both twotime and multitau analysis;
         fields = ["saxs_1d", "Iqp", "Int_t", "t0", "t1", "start_time"]
+        # a file lacking any of these still loads; the missing value reads as None
+        optional = ["t1", "start_time", "c2_stride_frame", "c2_avg_frame"]
 
         if "Multitau" in self.atype:
             fields = [*fields, "tau", "g2", "g2_err", "stride_frame", "avg_frame"]
@@ -218,12 +220,14 @@ class XpcsFile:
                 "c2_avg_frame",
             ]
 
-        ret = get(self.fname, fields, "alias", ftype="nexus")
+        ret = get(self.fname, fields, "alias", ftype="nexus", optional=optional)
 
         if "Twotime" in self.atype:
             stride_frame = ret.pop("c2_stride_frame")
             avg_frame = ret.pop("c2_avg_frame")
-            ret["c2_t0"] = ret["t0"] * stride_frame * avg_frame
+            if stride_frame is None or avg_frame is None:
+                logger.warning("%s lacks the twotime stride/avg config; assuming 1 for the C2 time step", self.fname)
+            ret["c2_t0"] = ret["t0"] * (stride_frame or 1) * (avg_frame or 1)
         if "Multitau" in self.atype:
             # correct g2_err to avoid fitting divergence
             # ret['g2_err_mod'] = self.correct_g2_err(ret['g2_err'])
@@ -293,7 +297,7 @@ class XpcsFile:
         return self.qmap.dplist
 
     @property
-    def static_num_pts(self) -> np.ndarray:
+    def static_num_pts(self) -> np.ndarray | None:
         return self.qmap.static_num_pts
 
     @property
@@ -704,7 +708,7 @@ class XpcsFile:
         Returns:
             Dict with keys ``c2_mat``, ``delta_t``, ``acquire_period``, etc.
         """
-        assert self.c2_processed_bins is not None, "only twotime is supported"
+        assert self.c2_processed_bins is not None and self.c2_t0 is not None, "only twotime is supported"
         dq_processed = tuple(self.c2_processed_bins.tolist())
         assert selection >= 0 and selection < len(dq_processed), f"selection {selection} out of range {dq_processed}"
         config = (selection, correct_diag, max_size)
@@ -715,7 +719,7 @@ class XpcsFile:
                 self.fname,
                 selection=selection,
                 max_size=max_size,
-                t0=self.t0,
+                t0=self.c2_t0,
                 correct_diag=correct_diag,
             )
             self.c2_all_data = c2_result
