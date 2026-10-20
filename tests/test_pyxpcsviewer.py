@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 
 """Tests for `pyxpcsviewer` package."""
 

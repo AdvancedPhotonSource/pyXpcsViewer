@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
+
 #
 # pyxpcsviewer documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  9 13:47:02 2017.

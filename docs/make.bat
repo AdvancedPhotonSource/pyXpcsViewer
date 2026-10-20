@@ -1,4 +1,6 @@
 @ECHO OFF
+REM Copyright © UChicago Argonne LLC
+REM See LICENSE file for details
 
 pushd %~dp0
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
+
 """Normalize all layout margin properties in a Qt .ui file to a target value.
 
 Usage:

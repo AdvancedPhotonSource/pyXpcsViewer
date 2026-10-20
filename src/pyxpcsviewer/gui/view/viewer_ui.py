@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
 
 ################################################################################
 ## Form generated from reading UI file 'view.ui'

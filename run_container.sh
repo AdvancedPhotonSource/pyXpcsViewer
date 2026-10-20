@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
+
 # Build and run pyxpcsviewer in a podman container with X11 forwarding.
 #
 # Usage:

@@ -1,3 +1,6 @@
+# Copyright © UChicago Argonne LLC
+# See LICENSE file for details
+
 # Resource object code (Python 3)
 # Created by: object code
 # Created by: The Resource Compiler for Qt version 6.10.3
