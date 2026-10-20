@@ -144,8 +144,8 @@ class PlotController:
         if xf_obj:
             g2map_hdl.setImage(xf_obj.get_offseted_g2(normalization).T)
             dqmap = xf_obj.get_cropped_qmap("dqmap")
-            qmap_hdl.setImage(dqmap)
             apply_zoom_limit(qmap_hdl, dqmap.shape)
+            qmap_hdl.setImage(dqmap)
 
             g2_hdl.clear()
             color = (0, 128, 255)
@@ -190,19 +190,21 @@ class PlotController:
         """
         xf_list = self.model.get_xf_list(rows=rows)
         if xf_list:
-            value = None
+            value, levels = None, None
             if target == "scattering":
                 value = np.log10(xf_list[0].saxs_2d + 1)
-                vmin, vmax = np.percentile(value, (2, 98))
-                hdl.setImage(value, levels=(vmin, vmax))
+                levels = tuple(np.percentile(value, (2, 98)))
             elif target == "dynamic_roi_map":
                 value = xf_list[0].dqmap
-                hdl.setImage(value)
             elif target == "static_roi_map":
                 value = xf_list[0].sqmap
-                hdl.setImage(value)
             if value is not None:
+                # zoom limit first so a larger map can auto-range fully
                 apply_zoom_limit(hdl, value.shape)
+                if levels is not None:
+                    hdl.setImage(value, levels=levels)
+                else:
+                    hdl.setImage(value)
             hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
 
     def plot_tauq_pre(self, hdl=None, rows=None):
@@ -362,8 +364,8 @@ class PlotController:
         if vmin is not None and vmax is not None:
             G2_data = np.clip(G2_data, vmin, vmax)
 
-        hdl.setImage(G2_data, levels=(vmin, vmax))
         apply_zoom_limit(hdl, G2_data.shape)
+        hdl.setImage(G2_data, levels=(vmin, vmax))
         hdl.setColorMap(pg.colormap.getFromMatplotlib(cmap))
         return
 

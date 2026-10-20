@@ -60,8 +60,11 @@ def plot_twotime(
     c2, delta_t = c2_result["c2_mat"], c2_result["delta_t"]
 
     hdl["tt"].imageItem.setScale(delta_t)
-    hdl["tt"].setImage(c2, autoRange=True)
+    # Limits must be updated before setImage(autoRange=True): the previous
+    # file's zoom-out floor would otherwise clamp the auto-range of a longer
+    # acquisition to the old extent, showing only its lower-left corner.
     apply_zoom_limit(hdl["tt"], c2.shape, scale=delta_t)
+    hdl["tt"].setImage(c2, autoRange=True)
 
     cmap = pg.colormap.getFromMatplotlib(cmap)
     hdl["tt"].setColorMap(cmap)

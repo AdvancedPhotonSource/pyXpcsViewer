@@ -44,9 +44,9 @@ def plot(
     if not do_autorange:
         view_range = pg_hdl.view.viewRange()
 
-    # Set new image
-    pg_hdl.setImage(img, autoLevels=autolevel, autoRange=do_autorange)
+    # Set new image (zoom limit first, so a larger image can auto-range fully)
     apply_zoom_limit(pg_hdl, img.shape)
+    pg_hdl.setImage(img, autoLevels=autolevel, autoRange=do_autorange)
 
     # Restore view range if we skipped auto-ranging
     if not do_autorange:

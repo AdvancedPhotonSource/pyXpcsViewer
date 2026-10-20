@@ -14,6 +14,11 @@ def apply_zoom_limit(
     Without a floor, repeatedly scrolling to zoom out leaves the image a
     barely visible speck, with no way back short of reloading the file.
 
+    Call this *before* ``setImage(..., autoRange=True)``. ``maxXRange`` /
+    ``maxYRange`` also cap the range an auto-range may produce, so a stale
+    limit from a smaller previous image would clip the new image's
+    auto-range to the old extent until the user hits "View All".
+
     Args:
         image_view: Any object exposing pyqtgraph's ``ImageView.getView()``.
         img_shape: The displayed array's ``.shape``; the first two axes are
