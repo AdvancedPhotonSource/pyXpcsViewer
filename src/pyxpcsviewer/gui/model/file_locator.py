@@ -6,6 +6,7 @@ import os
 import time
 import traceback
 
+from pyxpcsviewer.core.file_io.discover import list_result_files
 from pyxpcsviewer.core.file_io.qmap_utils import QMapManager
 from pyxpcsviewer.core.xpcs_file import XpcsFile as XF
 
@@ -220,21 +221,9 @@ class FileLocator:
             ``True`` on success.
         """
         self.path = path
-        flist = [
-            entry.name
-            for entry in os.scandir(path)
-            if entry.is_file() and entry.name.lower().endswith(filter_list) and not entry.name.startswith(".")
-        ]
-        if sort_method.startswith("Filename"):
-            flist.sort()
-        elif sort_method.startswith("Time"):
-            flist.sort(key=lambda x: os.path.getmtime(os.path.join(path, x)))
-        elif sort_method.startswith("Index"):
-            pass
-
-        if sort_method.endswith("-reverse"):
-            flist.reverse()
-        self.source.replace(flist)
+        sort = {"Filename": "name", "Time": "time", "Index": "index"}[sort_method.split("-")[0]]
+        files = list_result_files(path, filter_list, sort=sort, reverse=sort_method.endswith("-reverse"))
+        self.source.replace([f.name for f in files])
         return True
 
 

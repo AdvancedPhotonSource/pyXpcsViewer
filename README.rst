@@ -57,6 +57,22 @@ to isolate pyXPCSViewer, so it does not interfere with dependencies of your exis
 
     run_viewer, an alias to pyxpcsviewer, can also be used to luanch the viewer.
 
+Web viewer
+----------
+
+The same folder can be browsed in a web browser, with no Qt needed on the machine that serves it:
+
+.. code-block:: bash
+
+   pip install "xpcs-viewer[web]"          # fastapi, uvicorn and plotly
+   pyxpcsviewer-web path_to_hdf_directory   # serves http://127.0.0.1:8070/ and opens it in a browser
+
+Click a file to show its detector image and metadata, check files to compare them; the tabs on the right give
+the multi-tau g2 with its fits, SAXS 1D, the stability over time, the intensity trace, τ(q), the two-time
+correlation (click a q-bin on the image to pick it) and the file's metadata. ``--host 0.0.0.0`` opens the
+server to the network, ``--port`` picks the port, ``--label-style`` shortens the file labels as the desktop
+viewer does. The page's URL carries the file shown, the files checked and the tab, so a view can be shared.
+
 5. To upgrade:
 
    1. Activate your environment if you have not already.

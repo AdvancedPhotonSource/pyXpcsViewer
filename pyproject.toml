@@ -52,9 +52,11 @@ dependencies = [
 [project.scripts]
 pyxpcsviewer = "pyxpcsviewer.cli:main"
 run_viewer = "pyxpcsviewer.cli:main"
+pyxpcsviewer-web = "pyxpcsviewer.web.cli:main"
 
 [project.optional-dependencies]
-dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff"]
+dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff", "httpx"]
+web = ["fastapi", "uvicorn", "plotly"]
 docs = ["sphinx", "sphinx-rtd-theme"]
 pyinstaller = ["pyinstaller>=6.21"]
 
@@ -72,6 +74,7 @@ local_scheme = "node-and-timestamp"
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
+"pyxpcsviewer.web" = ["static/*", "static/js/*", "static/js/tabs/*", "static/fonts/*"]
 
 # Ruff
 [tool.ruff]

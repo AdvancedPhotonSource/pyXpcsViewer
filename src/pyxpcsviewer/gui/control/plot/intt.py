@@ -3,6 +3,8 @@
 import numpy as np
 import pyqtgraph as pg
 
+from pyxpcsviewer.core.intt_utils import smooth_intensity
+
 from .palette import get_color_marker
 
 
@@ -17,20 +19,8 @@ def smooth_data(fc, window: int = 1, sampling: int = 1) -> tuple[np.ndarray, np.
     Returns:
         Tuple of ``(x_array, y_array)`` — frame indices and smoothed intensities.
     """
-    # some bad frames have both x and y = 0;
-    # x, y = fc.Int_t[0], fc.Int_t[1]
-    y = fc.Int_t[1]
-    x = np.arange(y.shape[0])
-
-    if window > 1:
-        y = np.cumsum(y, dtype=float, axis=0)
-        y = (y[window:] - y[:-window]) / window
-        x = x[window:]
-    if sampling >= 2:
-        y = y[::sampling]
-        x = x[::sampling]
-
-    return x, y
+    # some bad frames have both x and y = 0; the frame index is rebuilt from the position
+    return smooth_intensity(fc.Int_t[1], window=window, sampling=sampling)
 
 
 def plot(xf_list, pg_hdl, enable_zoom=True, xlabel="Frame Index", **kwargs):

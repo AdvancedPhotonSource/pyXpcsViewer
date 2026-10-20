@@ -557,9 +557,9 @@ class XpcsFile:
         if use_absolute_crosssection and self.abs_cross_section_scale is not None:
             Iq *= self.abs_cross_section_scale
 
-        # apply sampling
+        # apply sampling along q (Iq holds one row per φ slice)
         if sampling > 1:
-            q, Iq = q[::sampling], Iq[::sampling]
+            q, Iq = q[::sampling], Iq[:, ::sampling]
         # apply normalization
         q, Iq, xlabel, ylabel = self.norm_saxs_data(q, Iq, norm_method=norm_method)
         return q, Iq, xlabel, ylabel

@@ -25,6 +25,13 @@ Run the GUI:
 pyxpcsviewer path_to_hdf_directory   # or: pyxpcsviewer   (uses cwd)
 ```
 
+Run the web viewer (needs the `web` extras: `pip install -e ".[web,dev]"` — fastapi, uvicorn, plotly, httpx):
+
+```bash
+pyxpcsviewer-web path_to_hdf_directory            # serves http://127.0.0.1:8070/ and opens a browser
+pyxpcsviewer-web path --port 8070 --no-browser    # --host 0.0.0.0 opens it to the network
+```
+
 Lint (no ruff config in the repo, so ruff runs with its default rule set):
 
 ```bash
@@ -46,7 +53,10 @@ pytest
 
 There is a real test suite under `tests/`: `test_fitting.py`, `test_g2_bounds_init.py`, `test_g2_mod.py`,
 `test_view_utils.py`, and `test_xpcs_viewer_smoke.py` (the latter two `pytest.importorskip("PySide6")` and set
-`QT_QPA_PLATFORM=offscreen` to construct real Qt widgets headlessly). `test_pyxpcsviewer.py` is still an
+`QT_QPA_PLATFORM=offscreen` to construct real Qt widgets headlessly). The web viewer has `test_web_workspace.py`
+(the service on the real files), `test_web_api.py` (the routes through FastAPI's `TestClient`; skipped without
+fastapi/httpx) and `test_web_encoding.py`; the GUI-independent helpers have `test_discover.py`, `test_image_utils.py`
+and `test_intt_utils.py`. `test_pyxpcsviewer.py` is still an
 unmodified cookiecutter stub (imports the nonexistent `pyxpcsviewer.pyxpcsviewer`, no real assertions) —
 harmless, but don't treat it as a template for new tests.
 
@@ -72,8 +82,8 @@ src/pyxpcsviewer/gui/view/convert_ui_to_py.sh
 
 ## Architecture
 
-The codebase is split into `core/` (pure, GUI-independent logic) and `gui/` (PySide6/pyqtgraph MVC layer that
-imports from `core/`); `web/` is an empty placeholder package reserved for a future web frontend.
+The codebase is split into `core/` (pure, GUI-independent logic), `gui/` (PySide6/pyqtgraph MVC layer that
+imports from `core/`) and `web/` (a FastAPI service over `core/` plus a browser front end, see below).
 
 ### Layering
 
@@ -98,7 +108,9 @@ cli.py -> gui/view/xpcs_viewer.py (XpcsViewer QMainWindow, generated Ui_mainWind
     add it here first.
   - **`core/g2_utils.py`**, **`core/twotime_utils.py`**, **`core/fast_g2_averaging.py`** hold pure g2/two-time
     regrouping and multiprocessing-based fast-averaging logic (the last has an argparse CLI entry point).
-  - **`core/default_setting.py`** holds the default window-size settings dict.
+  - **`core/file_io/discover.py`** (`list_result_files`) lists a folder's result files for both front ends;
+    **`core/image_utils.py`** (block-mean downsampling, log scaling, percentile tables) and **`core/intt_utils.py`**
+    (moving average, spectrum) are pure helpers the web viewer draws on.
 - **`gui/`** is organized as MVC and imports from `core/` for all business logic:
   - **`gui/model/file_locator.py`** (`FileLocator`, parent of `ViewerKernel`) manages the "source" (files found
     in the working directory) and "target" (user-selected files) `ListDataModel`s, an `XpcsFile` object cache
@@ -124,6 +136,34 @@ cli.py -> gui/view/xpcs_viewer.py (XpcsViewer QMainWindow, generated Ui_mainWind
     widgets used as the custom widget classes referenced by `viewer_ui.py`.
   - **`gui/view/view.ui`**, **`gui/view/resources/icons.qrc`** are the Qt Designer sources for the generated
     `viewer_ui.py`/`icons_rc.py`.
+
+### Web viewer (`web/`)
+
+`pyxpcsviewer-web` (`web/cli.py`) serves one result folder in the browser with the three-column layout of gixsu's
+web app (files and the metadata of the file shown | the detector image | one tab per analysis, result above
+controls, gutters draggable). Nothing in `web/` imports Qt.
+
+- **`web/workspace.py`** (`Workspace`) is the service: the folder's files (analysis types cached by name/mtime),
+  an LRU of open `XpcsFile` objects, and one method per thing the page shows — `image` (downsampled detector maps
+  with a 201-point percentile table for the contrast slider), `pixel`, `g2`/`fit_g2`/`tauq`, `saxs1d`,
+  `stability`/`g2_stability`, `intt`, `twotime_bins`/`twotime_c2`/`twotime_bin_at`, `summary`, `hdf_info`. Every
+  method returns a JSON-ready dict; large arrays are packed by **`web/encoding.py`** as base64 typed arrays
+  (`{"dtype": "f4", "bdata": ..., "shape": [...]}`), decoded by `static/js/api.js`. `WorkspaceError` is a 4xx.
+  Fits are run through `XpcsFile.fit_g2`/`fit_tauq`, so the τ(q) tab reads the g2 tab's fit from the same object.
+- **`web/app.py`** (`build_app(root, label_style=, cache_size=, host=)`) wraps it as `/api/...` routes (OpenAPI
+  at `/api/docs`), serves `static/` and `plotly.min.js` from the installed `plotly` package (`/vendor/`), and
+  accepts only loopback Host headers (plus the bound address) unless bound to 0.0.0.0 (`trusted_hosts`).
+- **`web/static/`** is the page, plain ES modules with no build step: `index.html` holds every panel's controls
+  (named inputs read by `widgets.readForm`, persisted in localStorage); `style.css` carries the design tokens
+  (gixsu's, so the tools look like one family) and bundles Inter as `fonts/inter-xpcs.woff2` (OFL, see the
+  license file there); `js/state.js` is the store (files, the file shown, the files checked, the tab, the
+  two-time bin); `js/files.js` and `js/image.js` are the left and center columns; `js/charts.js` is the Plotly
+  theme and the panel grid; `js/g2figure.js` builds g2 grids for the g2 and stability tabs; `js/tabs/*.js` is one
+  module per tab built with `tabs/base.js`'s `makeTab` (stale when its dependencies change, refreshed when
+  shown). The URL carries the file shown, the files checked and the tab (`?file=&check=&tab=`), so a view can be
+  shared. Analyses of several files use the checked files, else the file shown; single-file tabs (stability,
+  two-time, metadata) use the file shown. A click on a q-bin of the image picks the two-time block.
+- Not in the web viewer (Qt only): the averaging toolbox, G2 regrouping and its debug dialog, the g2 map.
 
 ### Data format
 
