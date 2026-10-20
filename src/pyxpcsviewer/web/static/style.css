@@ -35,6 +35,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html, body {
     margin: 0;
@@ -50,7 +51,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); margi
 h4 { margin: 0 0 3px; font-size: 11.5px; font-weight: 600; }
 
 /* thin scroll bars in the panels */
-.side-meta, .analysis-controls, .graph-wrap, .file-table-wrap, .hdf-tree, .summary-text {
+.side-meta, .image-column, .analysis-controls, .graph-wrap, .file-table-wrap, .hdf-tree, .summary-text {
     scrollbar-width: thin; scrollbar-color: #cdcbc4 transparent;
 }
 
@@ -89,9 +90,23 @@ h4 { margin: 0 0 3px; font-size: 11.5px; font-weight: 600; }
 .side-files > .row, .side-files > .hint { flex: 0 0 auto; }
 .side-meta { min-height: 0; overflow-y: auto; padding: 8px 10px 12px; }
 .side-meta > .card { margin-top: 0; }
-.image-column { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
-                overflow: hidden; }
-.image-column > .image-panel { border: none; border-radius: 0; }
+/* the center column: the image over the SAXS 1D, I(t) and stability panels, each as tall as its
+   variable says (dragged with the gutters), the column scrolling when they do not fit */
+.image-column { display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; background: var(--surface-2); }
+.image-column > .image-panel { border: none; border-radius: 0; flex: 0 0 auto; height: var(--image-h, 58vh);
+                               min-height: 200px; }
+.image-column > .gutter { flex: 0 0 auto; }
+.panel { background: var(--surface); display: flex; flex-direction: column; flex: 0 0 auto; min-height: 120px;
+         min-width: 0; position: relative; }
+#saxs1d-panel { height: var(--saxs1d-h, 300px); }
+#intt-panel { height: var(--intt-h, 300px); }
+#stability-panel { height: var(--stability-h, 300px); border-bottom: 1px solid var(--line); }
+.panel > .toolbar { flex: 0 0 auto; min-height: 30px; padding: 4px 8px; gap: 4px 10px; }
+.panel > .message { flex: 0 0 auto; }
+.panel > .graph-wrap { flex: 1 1 auto; min-height: 0; padding: 2px 6px 0; }
+.panel-title { margin: 0 6px 0 0; font-size: 11px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.panel-bar .toggles { column-gap: 10px; }
+.input.tiny { width: 50px; padding: 0 4px; }
 .analysis-panel { background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
 
 /* the gutters between columns, and between an analysis' result and its controls */

@@ -29,7 +29,7 @@ from pyxpcsviewer.core.image_utils import (
     percentile_table,
     subsample,
 )
-from pyxpcsviewer.core.intt_utils import smooth_intensity
+from pyxpcsviewer.core.intt_utils import block_average, smooth_intensity
 from pyxpcsviewer.core.xpcs_file import XpcsFile, create_id
 
 from .encoding import jsonable, pack
@@ -633,8 +633,9 @@ class Workspace:
 
     # ── intensity vs time ────────────────────────────────────────────────────────────────────
 
-    def intt(self, names: list[str], window: int = 1, sampling: int = 1) -> dict[str, Any]:
-        """The intensity per frame of the files (smoothed, subsampled) and its spectrum."""
+    def intt(self, names: list[str], window: int = 1, sampling: int = 1, max_points: int = 16000) -> dict[str, Any]:
+        """The intensity per frame of the files and its spectrum, each trace averaged down to at
+        most ``max_points`` points (0: every point)."""
         files, skipped = [], []
         for name in names:
             try:
@@ -643,14 +644,16 @@ class Workspace:
                 skipped.append({"file": name, "reason": str(exc)})
                 continue
             x, y = smooth_intensity(xf.Int_t[1], window=max(1, int(window)), sampling=max(1, int(sampling)))
-            freq, mag = xf.Int_t_fft
+            x, y = block_average(x, y, int(max_points))
+            freq, mag = block_average(*xf.Int_t_fft, int(max_points))
             files.append(
                 {
                     "file": name,
                     "label": xf.label,
                     "frame_time": float(xf.t0),
                     "frames": int(xf.Int_t.shape[1]),
-                    "x": pack(x, "int32"),
+                    "points": int(y.shape[0]),
+                    "x": pack(x),
                     "y": pack(y),
                     "fft_x": pack(freq),
                     "fft_y": pack(mag),

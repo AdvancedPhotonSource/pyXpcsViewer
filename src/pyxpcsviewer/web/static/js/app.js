@@ -13,7 +13,8 @@ import { tab as tauq } from "./tabs/tauq.js";
 import { tab as twotime } from "./tabs/twotime.js";
 import { tab as hdf } from "./tabs/hdf.js";
 
-const TABS = [g2, saxs1d, stability, intt, tauq, twotime, hdf];
+const TABS = [g2, tauq, twotime, hdf];              // the right column, one shown at a time
+const PANELS = [saxs1d, intt, stability];            // under the image, always shown
 const TAB_KEY = "xpcsweb:tab";
 
 function activateTab(id) {
@@ -54,6 +55,7 @@ async function boot() {
     initFiles();
     await initImage();
     TABS.forEach((t) => { if (t.init) { t.init(); } });
+    PANELS.forEach((panel) => { panel.init(); panel.show(); });
 
     document.getElementById("tabs").addEventListener("click", (event) => {
         const button = event.target.closest(".tab[data-tab]");
@@ -63,10 +65,12 @@ async function boot() {
         if (changed.includes("tab")) { activateTab(state.tab); }
         if (changed.includes("active") || changed.includes("files")) { renderStatus(); }
         TABS.forEach((t) => t.onState(changed));
+        PANELS.forEach((panel) => panel.onState(changed));
     });
     window.addEventListener("resize", () => {
         const current = TABS.find((t) => t.id === state.tab);
         if (current && current.visible && current.resize) { current.resize(); }
+        PANELS.forEach((panel) => { if (panel.resize) { panel.resize(); } });
     });
     document.addEventListener("keydown", (event) => {
         if (event.target.matches("input, select, textarea") || event.ctrlKey || event.metaKey || event.altKey) { return; }

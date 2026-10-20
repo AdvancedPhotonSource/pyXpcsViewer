@@ -4,7 +4,7 @@
 
 import numpy as np
 
-from pyxpcsviewer.core.intt_utils import intensity_spectrum, smooth_intensity
+from pyxpcsviewer.core.intt_utils import block_average, intensity_spectrum, smooth_intensity
 
 
 def test_smooth_intensity_is_identity_by_default():
@@ -31,3 +31,14 @@ def test_intensity_spectrum_matches_xpcs_file_convention():
     assert mag[0] == 0
     assert freq[1] == 1 / (256 * 0.01)
     assert np.allclose(mag[1:], np.abs(np.fft.fft(y))[1:128])
+
+
+def test_block_average_caps_the_points_and_keeps_the_mean():
+    x = np.arange(10.0)
+    y = np.arange(10.0) * 2
+    bx, by = block_average(x, y, 4)
+    assert len(by) == 4 and np.allclose(by, [2, 8, 14, 18]) and np.allclose(bx, [1, 4, 7, 9])
+    assert np.isclose(np.average(by, weights=[3, 3, 3, 1]), y.mean())
+    _, sy = block_average(x, y, 10)
+    assert len(sy) == 10 and np.array_equal(sy, y)
+    assert len(block_average(x, y, 0)[1]) == 10

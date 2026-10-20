@@ -143,6 +143,10 @@ def test_intt(workspace, names):
     f = result["files"][0]
     assert f["frames"] == 5000 and _array(f["x"]).shape == (2498,) and _array(f["y"]).shape == (2498,)
     assert _array(f["fft_x"]).shape == (2500,)
+    capped = workspace.intt([names["mt"]], max_points=1000)["files"][0]
+    assert capped["points"] == 1000 and _array(capped["y"]).shape == (1000,)
+    assert _array(capped["fft_y"]).shape == _array(capped["fft_x"]).shape and _array(capped["fft_y"]).shape[0] <= 1000
+    assert np.isclose(_array(capped["y"]).mean(), _array(f["y"]).mean(), rtol=0.05)
 
 
 def test_twotime(workspace, names):

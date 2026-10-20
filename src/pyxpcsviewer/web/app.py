@@ -73,6 +73,7 @@ class Saxs1dRequest(FilesRequest):
 class InttRequest(FilesRequest):
     window: int = 1
     sampling: int = 1
+    max_points: int = 16000
 
 
 # ── hosts ────────────────────────────────────────────────────────────────────────────────────
@@ -287,6 +288,6 @@ def build_app(
 
     @app.post("/api/intt")
     def intt(body: InttRequest) -> dict[str, Any]:
-        return service.intt(body.names, window=body.window, sampling=body.sampling)
+        return service.intt(body.names, window=body.window, sampling=body.sampling, max_points=body.max_points)
 
     return app

@@ -67,7 +67,7 @@
 
     <!-- ── image ─────────────────────────────────────────────────────────────────────── -->
     <div class="column image-column">
-      <section class="image-panel">
+      <section class="image-panel" id="image-panel">
         <form class="toolbar" id="image-toolbar" onsubmit="return false">
           <div class="segmented" title="What the image shows">
             <label><input type="radio" name="kind" value="saxs" checked>Intensity</label>
@@ -96,6 +96,67 @@
         <div class="graph-wrap"><div id="image-graph" class="graph"></div></div>
         <div class="readout" id="image-readout"></div>
       </section>
+      <div class="gutter gutter-row" data-gutter="--image-h" data-target="previous" data-axis="y" data-sign="1"
+           title="Drag to resize; double-click to reset"></div>
+
+      <!-- SAXS 1D -->
+      <section class="panel" id="saxs1d-panel">
+        <form class="toolbar panel-bar" id="saxs1d-controls" onsubmit="return false">
+          <h4 class="panel-title">SAXS 1D</h4>
+          <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
+          <label class="toggle"><input type="checkbox" name="logy" checked>log I</label>
+          <label class="toggle" title="Every φ slice of the file, not only the average"><input type="checkbox" name="allphi">φ slices</label>
+          <label class="toggle" title="Absolute cross-section"><input type="checkbox" name="absolute">1/cm</label>
+          <div class="control" title="Marker size"><span class="label">marker</span>
+            <input type="number" name="marker" class="input tiny" min="0" max="12" step="1" value="4"></div>
+        </form>
+        <div class="message" id="saxs1d-message"></div>
+        <div class="graph-wrap"><div id="saxs1d-graph" class="graph"></div></div>
+      </section>
+      <div class="gutter gutter-row" data-gutter="--saxs1d-h" data-target="previous" data-axis="y" data-sign="1"
+           title="Drag to resize; double-click to reset"></div>
+
+      <!-- I(t) -->
+      <section class="panel" id="intt-panel">
+        <form class="toolbar panel-bar" id="intt-controls" onsubmit="return false">
+          <h4 class="panel-title">I(t)</h4>
+          <div class="segmented small">
+            <label><input type="radio" name="xunit" value="time" checked>time</label>
+            <label><input type="radio" name="xunit" value="frame">frame</label>
+          </div>
+          <span class="muted" id="intt-note"></span>
+        </form>
+        <div class="message" id="intt-message"></div>
+        <div class="graph-wrap"><div id="intt-graph" class="graph"></div></div>
+      </section>
+      <div class="gutter gutter-row" data-gutter="--intt-h" data-target="previous" data-axis="y" data-sign="1"
+           title="Drag to resize; double-click to reset"></div>
+
+      <!-- Stability -->
+      <section class="panel" id="stability-panel">
+        <form class="toolbar panel-bar" id="stability-controls" onsubmit="return false">
+          <h4 class="panel-title">Stability</h4>
+          <div class="segmented small">
+            <label title="I(q) of each time segment"><input type="radio" name="source" value="saxs" checked>I(q) segments</label>
+            <label title="g2 of each time segment, when the file stores them"><input type="radio" name="source" value="g2">g2 segments</label>
+          </div>
+          <div class="toggles" data-source="saxs">
+            <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
+            <label class="toggle"><input type="checkbox" name="logy" checked>log I</label>
+          </div>
+          <div class="toggles" data-source="g2" hidden>
+            <div class="segmented small">
+              <label><input type="radio" name="layout" value="q" checked>by q</label>
+              <label><input type="radio" name="layout" value="file">by segment</label>
+              <label><input type="radio" name="layout" value="combined">one</label>
+            </div>
+            <div class="control"><span class="label">columns</span>
+              <input type="number" name="cols" class="input tiny" min="1" max="6" step="1" value="2"></div>
+          </div>
+        </form>
+        <div class="message" id="stability-message"></div>
+        <div class="graph-wrap scroll"><div id="stability-graph" class="graph"></div></div>
+      </section>
     </div>
     <div class="gutter gutter-col" data-gutter="--col3" data-target=".analysis-panel" data-axis="x" data-sign="-1"
          title="Drag to resize; double-click to reset"></div>
@@ -104,9 +165,6 @@
     <aside class="column analysis-panel">
       <nav class="tabs" id="tabs" aria-label="Analyses">
         <button type="button" class="tab" data-tab="g2">g2<i class="dot"></i></button>
-        <button type="button" class="tab" data-tab="saxs1d">SAXS 1D<i class="dot"></i></button>
-        <button type="button" class="tab" data-tab="stability">Stability<i class="dot"></i></button>
-        <button type="button" class="tab" data-tab="intt">I(t)<i class="dot"></i></button>
         <button type="button" class="tab" data-tab="tauq">τ(q)<i class="dot"></i></button>
         <button type="button" class="tab" data-tab="twotime">Two-time<i class="dot"></i></button>
         <button type="button" class="tab" data-tab="hdf">Metadata<i class="dot"></i></button>
@@ -178,115 +236,6 @@
               <button type="button" id="g2-clear-fit" class="link-button">hide</button>
             </div>
             <pre class="summary-text" id="g2-fit-info"></pre>
-          </div>
-        </div></form>
-      </section>
-
-      <!-- SAXS 1D -->
-      <section class="analysis-tab" data-tab="saxs1d">
-        <div class="analysis-result"><div class="result">
-          <div class="message" id="saxs1d-message"></div>
-          <div class="graph-wrap"><div id="saxs1d-graph" class="graph"></div></div>
-        </div></div>
-        <div class="gutter gutter-row" data-gutter="--result-h" data-target="previous" data-axis="y" data-sign="1"></div>
-        <form class="analysis-controls" onsubmit="return false"><div class="tool-panel" id="saxs1d-controls">
-          <div class="section">
-            <div class="fields">
-              <div class="field"><label>axes</label><div class="inline">
-                <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
-                <label class="toggle"><input type="checkbox" name="logy" checked>log I</label></div><span class="unit"></span></div>
-              <div class="field"><label>normalize</label>
-                <select name="norm" class="select" style="grid-column: 2 / span 2">
-                  <option value="none">none</option><option value="q2">I · q²</option><option value="q4">I · q⁴</option><option value="I0">I / I₀</option>
-                </select></div>
-              <div class="field pair"><label>q <span class="muted">Å⁻¹</span></label>
-                <input type="number" name="qmin" class="input" step="any" placeholder="min (all)">
-                <input type="number" name="qmax" class="input" step="any" placeholder="max (all)"></div>
-              <div class="field"><label>every n-th q</label><input type="number" name="sampling" class="input" min="1" step="1" value="1"><span class="unit"></span></div>
-              <div class="field"><label>offset per file</label><input type="number" name="offset" class="input" step="0.1" value="0"><span class="unit" title="decades when log I">dec</span></div>
-              <div class="field"><label>marker size</label><input type="number" name="marker" class="input" min="0" max="12" step="1" value="4"><span class="unit">px</span></div>
-              <div class="field"><label>every φ slice</label><div class="inline"><label class="toggle"><input type="checkbox" name="allphi">show</label></div><span class="unit"></span></div>
-              <div class="field"><label>absolute cross-section</label><div class="inline"><label class="toggle"><input type="checkbox" name="absolute">1/cm</label></div><span class="unit"></span></div>
-            </div>
-          </div>
-          <div class="section">
-            <h4>Background</h4>
-            <div class="fields">
-              <div class="field wide"><label>subtract</label><select name="bkg" class="select"><option value="">none</option></select></div>
-              <div class="field"><label>weight</label><input type="number" name="weight" class="input" step="0.05" value="1"><span class="unit">×</span></div>
-            </div>
-          </div>
-        </div></form>
-      </section>
-
-      <!-- Stability -->
-      <section class="analysis-tab" data-tab="stability">
-        <div class="analysis-result"><div class="result">
-          <div class="message" id="stability-message"></div>
-          <div class="graph-wrap scroll"><div id="stability-graph" class="graph"></div></div>
-        </div></div>
-        <div class="gutter gutter-row" data-gutter="--result-h" data-target="previous" data-axis="y" data-sign="1"></div>
-        <form class="analysis-controls" onsubmit="return false"><div class="tool-panel" id="stability-controls">
-          <div class="section">
-            <div class="section-head"><h4>Of the file shown</h4>
-              <div class="segmented small">
-                <label title="I(q) of each time segment"><input type="radio" name="source" value="saxs" checked>I(q) segments</label>
-                <label title="g2 of each time segment, when the file stores them"><input type="radio" name="source" value="g2">g2 segments</label>
-              </div></div>
-            <div data-source="saxs"><div class="fields">
-              <div class="field"><label>axes</label><div class="inline">
-                <label class="toggle"><input type="checkbox" name="logx" checked>log q</label>
-                <label class="toggle"><input type="checkbox" name="logy" checked>log I</label></div><span class="unit"></span></div>
-              <div class="field"><label>normalize</label>
-                <select name="norm" class="select" style="grid-column: 2 / span 2">
-                  <option value="none">none</option><option value="q2">I · q²</option><option value="q4">I · q⁴</option><option value="I0">I / I₀</option>
-                </select></div>
-            </div><p class="hint">Segments run from dark (first) to bright (last).</p></div>
-            <div data-source="g2" hidden><div class="fields">
-              <div class="field"><label>panels</label>
-                <div class="segmented small" style="grid-column: 2 / span 2">
-                  <label><input type="radio" name="layout" value="q" checked>by q</label>
-                  <label><input type="radio" name="layout" value="file">by segment</label>
-                  <label><input type="radio" name="layout" value="combined">one</label>
-                </div></div>
-              <div class="field"><label>columns</label><input type="number" name="cols" class="input" min="1" max="6" step="1" value="2"><span class="unit"></span></div>
-              <div class="field"><label>offset per segment</label><input type="number" name="offset" class="input" step="0.05" value="0"><span class="unit">g2</span></div>
-              <div class="field"><label>marker size</label><input type="number" name="marker" class="input" min="2" max="14" step="1" value="5"><span class="unit">px</span></div>
-              <div class="field"><label>legend</label><div class="inline"><label class="toggle"><input type="checkbox" name="legend" checked>show</label></div><span class="unit"></span></div>
-              <div class="field pair"><label>q <span class="muted">Å⁻¹</span></label>
-                <input type="number" name="qmin" class="input" step="any" value="0"><input type="number" name="qmax" class="input" step="any" value="0.01"></div>
-              <div class="field"><label>all q</label><div class="inline"><label class="toggle"><input type="checkbox" name="qauto" checked>auto</label></div><span class="unit"></span></div>
-              <div class="field pair"><label>τ <span class="muted">s</span></label>
-                <input type="number" name="tmin" class="input" step="any" value="1e-6"><input type="number" name="tmax" class="input" step="any" value="1000"></div>
-              <div class="field"><label>all τ</label><div class="inline"><label class="toggle"><input type="checkbox" name="tauto" checked>auto</label></div><span class="unit"></span></div>
-              <div class="field pair"><label>g2</label>
-                <input type="number" name="ymin" class="input" step="any" value="1"><input type="number" name="ymax" class="input" step="any" value="1.8"></div>
-              <div class="field"><label>all g2</label><div class="inline"><label class="toggle"><input type="checkbox" name="yauto" checked>auto</label></div><span class="unit"></span></div>
-            </div></div>
-          </div>
-        </div></form>
-      </section>
-
-      <!-- I(t) -->
-      <section class="analysis-tab" data-tab="intt">
-        <div class="analysis-result"><div class="result">
-          <div class="message" id="intt-message"></div>
-          <div class="graph-wrap"><div id="intt-graph" class="graph"></div></div>
-        </div></div>
-        <div class="gutter gutter-row" data-gutter="--result-h" data-target="previous" data-axis="y" data-sign="1"></div>
-        <form class="analysis-controls" onsubmit="return false"><div class="tool-panel" id="intt-controls">
-          <div class="section">
-            <div class="fields">
-              <div class="field"><label>x axis</label>
-                <div class="segmented small" style="grid-column: 2 / span 2">
-                  <label><input type="radio" name="xunit" value="time" checked>time</label>
-                  <label><input type="radio" name="xunit" value="frame">frame</label>
-                </div></div>
-              <div class="field"><label>moving average</label><input type="number" name="window" class="input" min="1" max="999" step="1" value="1"><span class="unit">frames</span></div>
-              <div class="field"><label>every n-th frame</label><input type="number" name="sampling" class="input" min="1" step="1" value="1"><span class="unit"></span></div>
-              <div class="field"><label>spectrum</label><div class="inline"><label class="toggle"><input type="checkbox" name="logfft">log |FFT|</label></div><span class="unit"></span></div>
-            </div>
-            <p class="hint">Drag the slider under the trace to zoom in time; the spectrum is of the raw trace.</p>
           </div>
         </div></form>
       </section>

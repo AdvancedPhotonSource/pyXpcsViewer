@@ -48,3 +48,24 @@ def intensity_spectrum(y: np.ndarray, frame_time: float) -> tuple[np.ndarray, np
     if magnitude.size:
         magnitude[0] = 0.0
     return freq[:half], magnitude
+
+
+def block_average(x: np.ndarray, y: np.ndarray, max_points: int) -> tuple[np.ndarray, np.ndarray]:
+    """``(x, y)`` reduced to at most ``max_points`` points by averaging consecutive blocks.
+
+    A trace of 100k frames is more than a plot can show; the mean of each block keeps the
+    level of the trace (a plain subsample would keep its noise). ``x`` becomes the mean position
+    of each block; a last partial block is kept.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64)
+    n = y.shape[0]
+    if max_points <= 0 or n <= max_points:
+        return x, y
+    factor = -(-n // max_points)  # ceil
+    count = -(-n // factor)
+    sums = np.add.reduceat(y, np.arange(0, n, factor))
+    xs = np.add.reduceat(x, np.arange(0, n, factor))
+    sizes = np.full(count, factor, dtype=np.float64)
+    sizes[-1] = n - factor * (count - 1)
+    return xs / sizes, sums / sizes

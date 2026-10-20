@@ -140,8 +140,10 @@ cli.py -> gui/view/xpcs_viewer.py (XpcsViewer QMainWindow, generated Ui_mainWind
 ### Web viewer (`web/`)
 
 `pyxpcsviewer-web` (`web/cli.py`) serves one result folder in the browser with the three-column layout of gixsu's
-web app (files and the metadata of the file shown | the detector image | one tab per analysis, result above
-controls, gutters draggable). Nothing in `web/` imports Qt.
+web app: the files and the metadata of the file shown (two panes) | the detector image over the SAXS 1D, I(t) and
+stability panels (a scrolling stack) | one tab per dynamics analysis (g2, τ(q), two-time, metadata; result above
+controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept in localStorage). Nothing in
+`web/` imports Qt.
 
 - **`web/workspace.py`** (`Workspace`) is the service: the folder's files (analysis types cached by name/mtime),
   an LRU of open `XpcsFile` objects, and one method per thing the page shows — `image` (downsampled detector maps
@@ -158,9 +160,10 @@ controls, gutters draggable). Nothing in `web/` imports Qt.
   (gixsu's, so the tools look like one family) and bundles Inter as `fonts/inter-xpcs.woff2` (OFL, see the
   license file there); `js/state.js` is the store (files, the file shown, the files checked, the tab, the
   two-time bin); `js/files.js` and `js/image.js` are the left and center columns; `js/charts.js` is the Plotly
-  theme and the panel grid; `js/g2figure.js` builds g2 grids for the g2 and stability tabs; `js/tabs/*.js` is one
-  module per tab built with `tabs/base.js`'s `makeTab` (stale when its dependencies change, refreshed when
-  shown). The URL carries the file shown, the files checked and the tab (`?file=&check=&tab=`), so a view can be
+  theme and the panel grid; `js/g2figure.js` builds g2 grids for the g2 tab and the stability panel; `js/tabs/*.js`
+  is one module per tab or center panel built with `tabs/base.js`'s `makeTab` (stale when its dependencies change,
+  refreshed when shown; the center panels are always shown). I(t) traces are averaged down to 16k points by the
+  server (`core/intt_utils.block_average`). The URL carries the file shown, the files checked and the tab (`?file=&check=&tab=`), so a view can be
   shared. Analyses of several files use the checked files, else the file shown; single-file tabs (stability,
   two-time, metadata) use the file shown. A click on a q-bin of the image picks the two-time block.
 - Not in the web viewer (Qt only): the averaging toolbox, G2 regrouping and its debug dialog, the g2 map.
