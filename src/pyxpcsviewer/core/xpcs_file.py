@@ -11,7 +11,7 @@ import numpy as np
 
 from .file_io.hdf_reader import get, get_analysis_type, get_shape, get_slice, read_metadata_to_dict
 from .file_io.qmap_utils import get_qmap
-from .fitting import build_g2_fit_summary, fit_with_fixed, power_law
+from .fitting import build_g2_fit_summary, fit_tauq_summary
 from .twotime_utils import get_c2_stream, get_single_c2_from_hdf
 
 logger = logging.getLogger(__name__)
@@ -851,44 +851,9 @@ class XpcsFile:
             no g2 fit summary is available.
         """
         if self.fit_summary is None:
-            return
-
-        x = self.fit_summary["q_val"]
-        q_slice = (x >= q_range[0]) * (x <= q_range[1])
-        x = x[q_slice]
-
-        y = self.fit_summary["fit_val"][q_slice, 0, 1]
-        sigma = self.fit_summary["fit_val"][q_slice, 1, 1]
-
-        # filter out those invalid fittings; failed g2 fitting has -1 err
-        valid_idx = sigma > 0
-
-        if np.sum(valid_idx) == 0:
-            self.fit_summary["tauq_success"] = False
-            return
-
-        x = x[valid_idx]
-        y = y[valid_idx]
-        sigma = sigma[valid_idx]
-
-        # reshape to two-dimension so the fit_with_fixed function works
-        y = y.reshape(-1, 1)
-        sigma = sigma.reshape(-1, 1)
-
-        # the initial value for typical gel systems
-        p0 = [1.0e-7, -2.0]
-        fit_x = np.logspace(np.log10(np.min(x) / 1.1), np.log10(np.max(x) * 1.1), 128)
-
-        fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds, fit_flag, fit_x, p0=p0)
-
-        # fit_line and fit_val are lists with just one element;
-        self.fit_summary["tauq_success"] = fit_line[0]["success"]
-        self.fit_summary["tauq_q"] = x
-        self.fit_summary["tauq_tau"] = np.squeeze(y)
-        self.fit_summary["tauq_tau_err"] = np.squeeze(sigma)
-        self.fit_summary["tauq_fit_line"] = fit_line[0]
-        self.fit_summary["tauq_fit_val"] = fit_val[0]
-
+            return None
+        if not fit_tauq_summary(self.fit_summary, q_range, bounds, fit_flag):
+            return None
         return self.fit_summary
 
     def get_roi_data(self, roi_parameter: dict, phi_num: int = 180) -> tuple[np.ndarray, np.ndarray]:

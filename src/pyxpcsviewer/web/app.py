@@ -9,18 +9,26 @@ Routes are thin: they parse parameters, call the workspace and turn its errors i
 
 from __future__ import annotations
 
-import ipaddress
 import logging
+from contextlib import asynccontextmanager
 from importlib import resources
 from pathlib import Path
 from typing import Any
 
-from beamline_webkit import array_response, array_responses
-from fastapi import FastAPI, HTTPException, Query
+from beamline_webkit import (
+    AppInfo,
+    JobManager,
+    JobState,
+    Session,
+    SessionStore,
+    array_response,
+    array_responses,
+    create_app,
+)
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from pyxpcsviewer import __version__
 
@@ -31,11 +39,10 @@ from .workspace import DEFAULT_G2_BOUNDS, DEFAULT_TAUQ_BOUNDS, Workspace, Worksp
 logger = logging.getLogger(__name__)
 
 STATIC_DIR = Path(__file__).parent / "static"
-LOOPBACK_HOSTS = ("localhost", "*.localhost", "127.0.0.1", "[::1]")
 # The version of the API as the committed openapi.json (``pyxpcsviewer-web --export-openapi``) describes
 # it: bump the minor for an addition, the major for a change a frontend built against the old document
 # would not survive. The package version is separate: it changes with every release.
-API_SCHEMA_VERSION = "0.3.0"
+API_SCHEMA_VERSION = "0.4.0"
 
 
 # ── request bodies ───────────────────────────────────────────────────────────────────────────
@@ -82,32 +89,6 @@ class InttRequest(FilesRequest):
     max_points: int = 16000
 
 
-# ── hosts ────────────────────────────────────────────────────────────────────────────────────
-
-
-def is_loopback(host: str) -> bool:
-    """True for a name or address of this machine's loopback interface."""
-    name = str(host).strip().strip("[]").lower()
-    if name == "localhost" or name.endswith(".localhost"):
-        return True
-    try:
-        return ipaddress.ip_address(name).is_loopback
-    except ValueError:
-        return False
-
-
-def trusted_hosts(ip: str = "127.0.0.1") -> list[str] | None:
-    """The Host headers the server answers to when bound to ``ip``: the loopback names and ``ip``
-    itself, so a page that rebinds its own name to this machine (DNS rebinding) is refused. None
-    (any host) when bound to every interface: it was opened to the network on purpose."""
-    if ip in ("0.0.0.0", "::", ""):
-        return None
-    hosts = list(LOOPBACK_HOSTS)
-    if not is_loopback(ip):
-        hosts.append(f"[{ip}]" if ":" in ip else ip)
-    return hosts
-
-
 # ── the application ──────────────────────────────────────────────────────────────────────────
 
 
@@ -127,42 +108,49 @@ def build_app(
     cache_size: int = 8,
     host: str = "127.0.0.1",
     workspace: Workspace | None = None,
+    session_ttl: float = 3600.0,
 ) -> FastAPI:
     """The application for the result files under ``root``.
+
+    Built on :func:`beamline_webkit.create_app`: the health route, the one error shape and the
+    trusted-host guard come from there. Fits run as jobs and live in the page's session.
 
     Args:
         root: The folder to browse.
         label_style: Short-label style for the files (the CLI's ``--label-style``).
         cache_size: Open files kept in memory.
         host: The address the server binds to; it decides the Host headers accepted
-            (:func:`trusted_hosts`).
+            (:func:`beamline_webkit.trusted_hosts`).
         workspace: A ready workspace instead of one built from ``root`` (tests).
+        session_ttl: Seconds a page's fits are kept after its last request.
     """
     service = workspace or Workspace(root, label_style=label_style, cache_size=cache_size)
-    app = FastAPI(
-        title="pyXPCSViewer web",
-        version=__version__,
-        docs_url="/api/docs",
-        redoc_url=None,
-        openapi_url="/api/openapi.json",
+    sessions = SessionStore(ttl=session_ttl)
+    jobs = JobManager(workers=2)
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> Any:
+        service.warm_fit_pool()
+        yield
+        jobs.shutdown()
+        service.close()
+
+    app = create_app(
+        AppInfo(name="xpcs-viewer", title="pyXPCSViewer web", version=__version__, schema_version=API_SCHEMA_VERSION),
+        host=host,
+        lifespan=lifespan,
     )
-    hosts = trusted_hosts(host)
-    if hosts is not None:
-        app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
     app.state.workspace = service
+    app.state.sessions = sessions
+    app.state.jobs = jobs
+    app.include_router(jobs.router())
+    current_session = sessions.dependency()
     plotly_js = plotly_js_path()
 
     @app.exception_handler(WorkspaceError)
     async def _workspace_error(_request: Any, exc: WorkspaceError) -> JSONResponse:
         status = 404 if str(exc).startswith("no such file") else 400
         return JSONResponse({"detail": str(exc)}, status_code=status)
-
-    @app.exception_handler(Exception)
-    async def _unexpected_error(request: Any, exc: Exception) -> JSONResponse:
-        """Anything a file can throw at the reader (a missing HDF5 filter, a corrupt dataset) reaches
-        the page as a message instead of a bare 500."""
-        logger.exception("%s %s failed", request.method, request.url.path)
-        return JSONResponse({"detail": f"{type(exc).__name__}: {exc}"}, status_code=500)
 
     # ── the page ─────────────────────────────────────────────────────────────────────────
     @app.get("/", include_in_schema=False)
@@ -360,19 +348,74 @@ def build_app(
         return array_response(c2, meta=meta)
 
     # ── several files ────────────────────────────────────────────────────────────────────
-    @app.post("/api/g2")
-    def g2(body: G2Request) -> models.G2:
-        return service.g2(body.names, body.q_range, body.t_range, with_fit=body.with_fit)
+    def fits_of(session: Session) -> dict[str, dict[str, Any]]:
+        store: dict[str, dict[str, Any]] = session.setdefault("fits", dict)
+        return store
 
-    @app.post("/api/g2/fit")
-    def g2_fit(body: G2FitRequest) -> models.G2:
+    @app.post("/api/g2")
+    def g2(body: G2Request, session: Session = Depends(current_session)) -> models.G2:  # noqa: B008
+        return service.g2(body.names, body.q_range, body.t_range, with_fit=body.with_fit, fits=fits_of(session))
+
+    @app.post("/api/g2/fit", summary="Fit the g2 of the files now, and answer with the result")
+    def g2_fit(body: G2FitRequest, session: Session = Depends(current_session)) -> models.G2:  # noqa: B008
         return service.fit_g2(
-            body.names, body.q_range, body.t_range, fit_func=body.fit_func, bounds=body.bounds, fit_flag=body.fit_flag
+            body.names,
+            body.q_range,
+            body.t_range,
+            fit_func=body.fit_func,
+            bounds=body.bounds,
+            fit_flag=body.fit_flag,
+            fits=fits_of(session),
         )
 
+    @app.post("/api/jobs/g2-fit", status_code=202, summary="Fit the g2 of the files as a job")
+    def g2_fit_job(body: G2FitRequest, session: Session = Depends(current_session)) -> JobState:  # noqa: B008
+        """Starts the fit and answers with the job; follow it at /api/jobs/{id}/events, then
+        fetch the fits with /api/g2 or /api/files/{name}/g2/fit. The result names the files
+        fitted and those skipped."""
+        # validated here, so a bad request is a 400 instead of a failed job
+        service.fit_g2(
+            [], body.q_range, body.t_range, fit_func=body.fit_func, bounds=body.bounds, fit_flag=body.fit_flag
+        )
+        store = fits_of(session)
+
+        def run(progress: Any) -> dict[str, Any]:
+            answer = service.fit_g2(
+                body.names,
+                body.q_range,
+                body.t_range,
+                fit_func=body.fit_func,
+                bounds=body.bounds,
+                fit_flag=body.fit_flag,
+                fits=store,
+                progress=progress,
+            )
+            return {
+                "fitted": [f["file"] for f in answer["files"] if f["fit"] is not None],
+                "failed": [f["file"] for f in answer["files"] if f["fit"] is None],
+                "skipped": answer["skipped"],
+            }
+
+        return jobs.submit(run, name="g2 fit", session=session.id).state()
+
+    @app.get("/api/files/{name}/g2/fit", summary="The page's fit of the file, matched to the g2 route's q values")
+    def g2_fit_of_file(
+        name: str,
+        session: Session = Depends(current_session),  # noqa: B008
+        q_min: float | None = None,
+        q_max: float | None = None,
+        t_min: float | None = None,
+        t_max: float | None = None,
+    ) -> models.G2Fit | None:
+        q_range = [q_min, q_max] if q_min is not None and q_max is not None else None
+        t_range = [t_min, t_max] if t_min is not None and t_max is not None else None
+        return service.fit_payload(name, q_range, t_range, fits=fits_of(session))
+
     @app.post("/api/tauq")
-    def tauq(body: TauqRequest) -> models.Tauq:
-        return service.tauq(body.names, body.q_range, bounds=body.bounds, fit_flag=body.fit_flag, fit=body.fit)
+    def tauq(body: TauqRequest, session: Session = Depends(current_session)) -> models.Tauq:  # noqa: B008
+        return service.tauq(
+            body.names, body.q_range, bounds=body.bounds, fit_flag=body.fit_flag, fit=body.fit, fits=fits_of(session)
+        )
 
     @app.post("/api/saxs1d")
     def saxs1d(body: Saxs1dRequest) -> models.Saxs1d:

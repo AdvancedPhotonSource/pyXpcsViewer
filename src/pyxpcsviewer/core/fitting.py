@@ -349,6 +349,65 @@ def build_g2_fit_summary(
     return _assemble_fit_summary(fit_func, fit_val, t_el, q_val, q_range, t_range, bounds, fit_flag, fit_line, label)
 
 
+def fit_tauq_summary(
+    summary: dict[str, Any],
+    q_range: tuple[float, float],
+    bounds: tuple[np.ndarray, np.ndarray],
+    fit_flag: list[bool],
+) -> bool:
+    """Fit ``tau(q)`` of a g2 fit summary to a power law, writing the ``tauq_*`` keys into it.
+
+    Pure in the sense of :func:`build_g2_fit_summary`: it touches nothing but ``summary``, so a
+    caller that keeps fits per user (the web service) passes its own copy.
+
+    Args:
+        summary: A g2 fit summary (:func:`build_g2_fit_summary`), updated in place.
+        q_range: ``(q_min, q_max)`` range for selecting data points.
+        bounds: Lower and upper parameter bounds for the fit.
+        fit_flag: Boolean flags indicating which parameters are free.
+
+    Returns:
+        True when a fit was attempted, False when no q-bin had a valid g2 fit (then
+        ``tauq_success`` is False and nothing else is written).
+    """
+    x = np.asarray(summary["q_val"])
+    q_slice = (x >= q_range[0]) * (x <= q_range[1])
+    x = x[q_slice]
+
+    y = summary["fit_val"][q_slice, 0, 1]
+    sigma = summary["fit_val"][q_slice, 1, 1]
+
+    # filter out those invalid fittings; failed g2 fitting has -1 err
+    valid_idx = sigma > 0
+
+    if np.sum(valid_idx) == 0:
+        summary["tauq_success"] = False
+        return False
+
+    x = x[valid_idx]
+    y = y[valid_idx]
+    sigma = sigma[valid_idx]
+
+    # reshape to two-dimension so the fit_with_fixed function works
+    y = y.reshape(-1, 1)
+    sigma = sigma.reshape(-1, 1)
+
+    # the initial value for typical gel systems
+    p0 = [1.0e-7, -2.0]
+    fit_x = np.logspace(np.log10(np.min(x) / 1.1), np.log10(np.max(x) * 1.1), 128)
+
+    fit_line, fit_val = fit_with_fixed(power_law, x, y, sigma, bounds, fit_flag, fit_x, p0=p0)
+
+    # fit_line and fit_val are lists with just one element;
+    summary["tauq_success"] = fit_line[0]["success"]
+    summary["tauq_q"] = x
+    summary["tauq_tau"] = np.squeeze(y)
+    summary["tauq_tau_err"] = np.squeeze(sigma)
+    summary["tauq_fit_line"] = fit_line[0]
+    summary["tauq_fit_val"] = fit_val[0]
+    return True
+
+
 def _noop() -> None:
     """Trivial picklable task used only to force a fresh pool's workers to fork now."""
     return None
@@ -442,8 +501,16 @@ def fit_g2_batch(
 
         if n_bins == 0:
             results[file_idx] = _assemble_fit_summary(
-                fit_func, fit_val_per_file[file_idx], t_el, q_val, q_range, t_range,
-                bounds, fit_flag, fit_line_per_file[file_idx], label,
+                fit_func,
+                fit_val_per_file[file_idx],
+                t_el,
+                q_val,
+                q_range,
+                t_range,
+                bounds,
+                fit_flag,
+                fit_line_per_file[file_idx],
+                label,
             )
             continue
 
@@ -501,9 +568,21 @@ def fit_g2_batch(
 
             if remaining[file_idx] == 0:
                 q_val, t_el, _, _, label = file_inputs[file_idx]
-                results[file_idx] = None if failed[file_idx] else _assemble_fit_summary(
-                    fit_func, fit_val_per_file[file_idx], t_el, q_val, q_range, t_range,
-                    bounds, fit_flag, fit_line_per_file[file_idx], label,
+                results[file_idx] = (
+                    None
+                    if failed[file_idx]
+                    else _assemble_fit_summary(
+                        fit_func,
+                        fit_val_per_file[file_idx],
+                        t_el,
+                        q_val,
+                        q_range,
+                        t_range,
+                        bounds,
+                        fit_flag,
+                        fit_line_per_file[file_idx],
+                        label,
+                    )
                 )
 
     n_failed = sum(failed)

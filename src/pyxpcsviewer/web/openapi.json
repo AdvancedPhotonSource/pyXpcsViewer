@@ -769,6 +769,35 @@
         "title": "HdfInfo",
         "type": "object"
       },
+      "Health": {
+        "description": "The answer of ``GET /api/health``.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "status": {
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "schema_version"
+        ],
+        "title": "Health",
+        "type": "object"
+      },
       "Image": {
         "additionalProperties": false,
         "properties": {
@@ -1155,6 +1184,117 @@
           }
         },
         "title": "InttRequest",
+        "type": "object"
+      },
+      "JobState": {
+        "description": "What a page sees of a job.",
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "number"
+          },
+          "done": {
+            "default": 0,
+            "description": "steps done",
+            "title": "Done",
+            "type": "integer"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "why it failed",
+            "title": "Error"
+          },
+          "finished": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "the step under way",
+            "title": "Message"
+          },
+          "name": {
+            "description": "what the job does, for the page's message bar",
+            "title": "Name",
+            "type": "string"
+          },
+          "result": {
+            "description": "what the job returned, once done",
+            "title": "Result"
+          },
+          "session": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "the session that started it",
+            "title": "Session"
+          },
+          "started": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "total": {
+            "default": 0,
+            "description": "steps in all; 0 while unknown",
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "created"
+        ],
+        "title": "JobState",
         "type": "object"
       },
       "PackedArray": {
@@ -2099,7 +2239,7 @@
   },
   "info": {
     "title": "pyXPCSViewer web",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -2331,6 +2471,117 @@
           }
         },
         "summary": "G2 Data"
+      }
+    },
+    "/api/files/{name}/g2/fit": {
+      "get": {
+        "operationId": "g2_fit_of_file_api_files__name__g2_fit_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q_min",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q Min"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q_max",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q Max"
+            }
+          },
+          {
+            "in": "query",
+            "name": "t_min",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "T Min"
+            }
+          },
+          {
+            "in": "query",
+            "name": "t_max",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "T Max"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/G2Fit"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response G2 Fit Of File Api Files  Name  G2 Fit Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The page's fit of the file, matched to the g2 route's q values"
       }
     },
     "/api/files/{name}/g2/meta": {
@@ -3437,7 +3688,28 @@
             "description": "Validation Error"
           }
         },
-        "summary": "G2 Fit"
+        "summary": "Fit the g2 of the files now, and answer with the result"
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Liveness and versions",
+        "tags": [
+          "service"
+        ]
       }
     },
     "/api/info": {
@@ -3494,6 +3766,169 @@
           }
         },
         "summary": "Intt"
+      }
+    },
+    "/api/jobs/g2-fit": {
+      "post": {
+        "description": "Starts the fit and answers with the job; follow it at /api/jobs/{id}/events, then\nfetch the fits with /api/g2 or /api/files/{name}/g2/fit. The result names the files\nfitted and those skipped.",
+        "operationId": "g2_fit_job_api_jobs_g2_fit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/G2FitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fit the g2 of the files as a job"
+      }
+    },
+    "/api/jobs/{job_id}": {
+      "delete": {
+        "operationId": "job_cancel_api_jobs__job_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel the job",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "get": {
+        "operationId": "job_state_api_jobs__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The job's state",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/jobs/{job_id}/events": {
+      "get": {
+        "operationId": "job_events_api_jobs__job_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "event: <status>, data: the JobState as JSON; one per change"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The job's states as Server-Sent Events, until it finishes",
+        "tags": [
+          "jobs"
+        ]
       }
     },
     "/api/saxs1d": {

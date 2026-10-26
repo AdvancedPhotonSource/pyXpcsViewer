@@ -13,14 +13,10 @@ pytest.importorskip("beamline_webkit")
 from beamline_webkit.testing import array_of, meta_of  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from pyxpcsviewer.web.app import build_app, trusted_hosts  # noqa: E402
+from pyxpcsviewer.web.app import build_app  # noqa: E402
 
-
-def test_trusted_hosts():
-    assert trusted_hosts("0.0.0.0") is None
-    assert "localhost" in trusted_hosts("127.0.0.1") and "10.0.0.5" not in trusted_hosts("127.0.0.1")
-    assert "10.0.0.5" in trusted_hosts("10.0.0.5")
-    assert "[::1]" in trusted_hosts("::1")
+PAGE_A = {"X-Session-Id": "page-aaaaaaaa"}
+PAGE_B = {"X-Session-Id": "page-bbbbbbbb"}
 
 
 def test_app_over_an_empty_folder(tmp_path):
@@ -37,6 +33,8 @@ def test_app_over_an_empty_folder(tmp_path):
     assert client.get("/api/files/missing.hdf/summary").status_code == 404
     assert client.get("/api/files/..%2Fx.hdf/summary").status_code in (400, 404)
     assert client.get("/api/info", headers={"Host": "evil.example.com"}).status_code == 400
+    health = client.get("/api/health").json()
+    assert health["name"] == "xpcs-viewer" and health["schema_version"] == info["schema_version"]
     assert client.post("/api/g2", json={"names": ["missing.hdf"]}).json() == {
         "files": [],
         "skipped": [{"file": "missing.hdf", "reason": "no such file: missing.hdf"}],
@@ -115,3 +113,53 @@ def test_binary_routes_over_the_real_files(multitau_path, twotime_path):
         f"/api/files/{tt}/twotime/c2", params={"selection": 1, "max_size": 256, "include_c2": "false"}
     ).json()
     assert rest["c2"] is None and rest["g2_full"]["shape"] == [2000]
+
+
+def test_fits_belong_to_the_page_and_run_as_jobs(multitau_path, twotime_path):
+    import time
+
+    client = TestClient(build_app(os.path.dirname(multitau_path)), base_url="http://localhost")
+    mt = os.path.basename(multitau_path)
+    tt = os.path.basename(twotime_path)
+    assert client.post("/api/g2", json={"names": [mt]}, headers=PAGE_A).json()["files"][0]["fit"] is None
+
+    started = client.post("/api/jobs/g2-fit", json={"names": [mt, tt], "fit_func": "single"}, headers=PAGE_A)
+    assert started.status_code == 202 and started.json()["name"] == "g2 fit"
+    job_id = started.json()["id"]
+    deadline = time.monotonic() + 60
+    while (state := client.get(f"/api/jobs/{job_id}").json())["status"] not in ("done", "failed", "cancelled"):
+        assert time.monotonic() < deadline, state
+        time.sleep(0.05)
+    assert state["status"] == "done", state
+    assert state["result"]["fitted"] == [mt] and state["result"]["skipped"][0]["file"] == tt
+    assert state["done"] == state["total"] > 0
+
+    fit = client.get(f"/api/files/{mt}/g2/fit", headers=PAGE_A).json()
+    assert fit["func"] == "single" and len(fit["success"]) == 36
+    assert (
+        len(
+            client.get(f"/api/files/{mt}/g2/fit", params={"q_min": 0.004, "q_max": 0.008}, headers=PAGE_A).json()[
+                "success"
+            ]
+        )
+        < 36
+    )
+    assert client.post("/api/g2", json={"names": [mt]}, headers=PAGE_A).json()["files"][0]["fit"]["func"] == "single"
+    assert (
+        client.post("/api/tauq", json={"names": [mt], "fit": True}, headers=PAGE_A).json()["files"][0]["fit"]["b"] < 0
+    )
+    # another page sees none of it
+    assert client.post("/api/g2", json={"names": [mt]}, headers=PAGE_B).json()["files"][0]["fit"] is None
+    assert client.get(f"/api/files/{mt}/g2/fit", headers=PAGE_B).json() is None
+    assert (
+        client.post("/api/tauq", json={"names": [mt]}, headers=PAGE_B)
+        .json()["skipped"][0]["reason"]
+        .endswith("fit g2 first")
+    )
+    # a bad request fails before a job starts
+    assert (
+        client.post("/api/jobs/g2-fit", json={"names": [mt], "bounds": [[1], [2]]}, headers=PAGE_A).status_code == 400
+    )
+    # a client without a session header (the old page, curl) gets a cookie and its own fits
+    plain = client.post("/api/g2/fit", json={"names": [mt], "fit_func": "single"})
+    assert plain.json()["files"][0]["fit"]["func"] == "single" and "webkit_session" in plain.cookies

@@ -196,3 +196,26 @@ def test_g2_and_c2_arrays(workspace, names):
     c2, meta = workspace.twotime_c2_array(names["tt"], selection=1, max_size=256)
     assert c2.dtype == np.float32 and max(c2.shape) <= 256 and meta["qbin"] == 2 and meta["zmin"] < meta["zmax"]
     assert workspace.twotime_c2(names["tt"], selection=1, max_size=256, include_c2=False)["c2"] is None
+
+
+def test_fits_in_a_given_store_with_progress(workspace, names):
+    mine: dict = {}
+    calls: list[tuple[int, int]] = []
+    out = workspace.fit_g2(
+        [names["mt"], names["tt"]], None, None, fits=mine, progress=lambda d, t: calls.append((d, t))
+    )
+    assert set(mine) == {names["mt"]} and calls and calls[-1][0] == calls[-1][1] > 0
+    assert out["files"][0]["fit"]["func"] == "single"
+    assert workspace.fit_payload(names["mt"], fits=mine)["func"] == "single"
+    assert workspace.fit_payload(names["tt"], fits=mine) is None
+    assert workspace.g2([names["mt"]], fits={})["files"][0]["fit"] is None, "another store has no fit"
+    assert workspace.tauq([names["mt"]], fits=mine)["files"][0]["fit"] is not None
+
+    class Stop(Exception):
+        pass
+
+    def stop(done, total):
+        raise Stop
+
+    with pytest.raises(Stop):
+        workspace.fit_g2([names["mt"]], None, None, fits={}, progress=stop)

@@ -12,9 +12,12 @@ from __future__ import annotations
 
 import datetime as _dt
 import logging
+import multiprocessing
 import os
 import threading
 from collections import OrderedDict
+from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor
 from typing import Any
 
 import numpy as np
@@ -22,6 +25,7 @@ import numpy as np
 from pyxpcsviewer.core.file_io.discover import ResultFile, list_result_files
 from pyxpcsviewer.core.file_io.hdf_reader import get_analysis_type, get_shape
 from pyxpcsviewer.core.file_io.qmap_utils import QMapManager
+from pyxpcsviewer.core.fitting import fit_g2_batch, fit_tauq_summary
 from pyxpcsviewer.core.image_utils import (
     block_mean,
     downsample_factor,
@@ -73,6 +77,10 @@ def _pair(values: list[float] | None) -> tuple[float, float] | None:
     return (lo, hi) if lo <= hi else (hi, lo)
 
 
+def _nothing() -> None:
+    """A task that starts a fit worker (sent to the pool to warm it)."""
+
+
 class Workspace:
     """The result files under ``root`` and the analyses the page shows for them.
 
@@ -97,6 +105,10 @@ class Workspace:
         self._open: OrderedDict[str, tuple[XpcsFile, float]] = OrderedDict()
         self._images: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()  # arrays and levels
         self._packed_images: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()  # JSON payloads
+        # g2 fits by file name: a page's live in its session, these are for callers without one
+        self._fits: dict[str, dict[str, Any]] = {}
+        self._fit_workers = max(1, min(os.cpu_count() or 1, 8))
+        self._pool: ProcessPoolExecutor | None = None
 
     # ── files ────────────────────────────────────────────────────────────────────────────────
 
@@ -454,10 +466,32 @@ class Workspace:
 
     # ── g2 ───────────────────────────────────────────────────────────────────────────────────
 
+    # ── fits: on the process pool, kept per session ────────────────────────────────────────
+
+    def _fit_pool(self) -> ProcessPoolExecutor:
+        """The process pool the fits run on, started on first use (spawned, not forked: the
+        server runs threads and an event loop)."""
+        with self._lock:
+            if self._pool is None:
+                self._pool = ProcessPoolExecutor(
+                    max_workers=self._fit_workers, mp_context=multiprocessing.get_context("spawn")
+                )
+            return self._pool
+
+    def warm_fit_pool(self) -> None:
+        """Start the fit workers now rather than at the first fit (spawning takes a second or two)."""
+        self._fit_pool().submit(_nothing)
+
+    def close(self) -> None:
+        """Stop the fit workers."""
+        with self._lock:
+            pool, self._pool = self._pool, None
+        if pool is not None:
+            pool.shutdown(wait=False, cancel_futures=True)
+
     @staticmethod
-    def _fit_payload(xf: XpcsFile, q_values: np.ndarray) -> dict[str, Any] | None:
-        """The stored g2 fit of ``xf`` matched to the plotted q values (None without a fit)."""
-        summary: dict[str, Any] | None = xf.fit_summary
+    def _fit_payload(summary: dict[str, Any] | None, q_values: np.ndarray) -> dict[str, Any] | None:
+        """A g2 fit summary matched to the plotted q values (None without a fit)."""
         if summary is None:
             return None
         fit_q = np.asarray(summary["q_val"])
@@ -502,8 +536,11 @@ class Workspace:
         q_range: list[float] | None = None,
         t_range: list[float] | None = None,
         with_fit: bool = True,
+        fits: dict[str, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
-        """The multi-tau g2 of the files, with their stored fits when ``with_fit``."""
+        """The multi-tau g2 of the files, with their fits from ``fits`` (a session's store; the
+        workspace's own without one) when ``with_fit``."""
+        store = self._fits if fits is None else fits
         qr = _pair(q_range)
         tr = _pair(t_range)
         files, skipped = [], []
@@ -523,7 +560,7 @@ class Workspace:
                     "t": pack(t_el),
                     "g2": pack(g2),
                     "err": pack(g2_err),
-                    "fit": self._fit_payload(xf, q) if with_fit else None,
+                    "fit": self._fit_payload(store.get(name), q) if with_fit else None,
                 }
             )
         return {"files": files, "skipped": skipped}
@@ -553,9 +590,17 @@ class Workspace:
         fit_func: str = "single",
         bounds: list[list[float]] | None = None,
         fit_flag: list[bool] | None = None,
+        *,
+        fits: dict[str, dict[str, Any]] | None = None,
+        progress: Callable[..., None] | None = None,
     ) -> dict[str, Any]:
-        """Fit every q-bin's g2 of the files (stored on each file for the τ(q) tab), then the
-        same payload as :meth:`g2`."""
+        """Fit every q-bin's g2 of the files on the process pool, keep the fits in ``fits`` (a
+        session's store; the workspace's own without one) for :meth:`g2` and :meth:`tauq`, and
+        return the payload of :meth:`g2`.
+
+        ``progress(done, total)`` is called as chunks of q-bins finish (a job's callback, which
+        may raise to stop the fit). A file whose fit fails is left without one, and logged.
+        """
         if fit_func not in ("single", "double"):
             raise WorkspaceError("fit_func must be single or double")
         if bounds is None:
@@ -573,16 +618,50 @@ class Workspace:
             raise WorkspaceError(f"fit_flag must have {count} entries")
         qr = _pair(q_range)
         tr = _pair(t_range)
+        store = self._fits if fits is None else fits
+        inputs, fitted = [], []
         for name in names:
             try:
                 xf = self._multitau(name)
             except WorkspaceError:
                 continue
-            try:
-                xf.fit_g2(q_range=qr, t_range=tr, bounds=[lower, upper], fit_flag=flags, fit_func=fit_func)
-            except Exception as exc:
-                raise WorkspaceError(f"fitting {xf.label} failed: {exc}") from exc
-        return self.g2(names, q_range, t_range, with_fit=True)
+            inputs.append(xf.get_g2_data(qrange=qr, trange=tr))
+            fitted.append(name)
+        summaries = fit_g2_batch(
+            inputs,
+            bounds=[lower, upper],
+            fit_flag=flags,
+            fit_func=fit_func,
+            q_range=qr,
+            t_range=tr,
+            max_workers=self._fit_workers,
+            progress_callback=progress,
+            executor=self._fit_pool(),
+        )
+        for name, summary in zip(fitted, summaries, strict=True):
+            if summary is None:
+                logger.warning("the g2 fit of %s failed", name)
+                store.pop(name, None)
+            else:
+                store[name] = summary
+        return self.g2(names, q_range, t_range, with_fit=True, fits=store)
+
+    def fit_payload(
+        self,
+        name: str,
+        q_range: list[float] | None = None,
+        t_range: list[float] | None = None,
+        *,
+        fits: dict[str, dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
+        """The fit of ``name`` in ``fits``, matched to the q values :meth:`g2_array` sends for the
+        same ranges; None without a fit."""
+        store = self._fits if fits is None else fits
+        summary = store.get(name)
+        if summary is None:
+            return None
+        q, *_ = self._multitau(name).get_g2_data(qrange=_pair(q_range), trange=_pair(t_range))
+        return self._fit_payload(summary, q)
 
     def tauq(
         self,
@@ -591,9 +670,12 @@ class Workspace:
         bounds: list[list[float]] | None = None,
         fit_flag: list[bool] | None = None,
         fit: bool = True,
+        fits: dict[str, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
-        """τ(q) of the fitted files: the fitted relaxation times, a power-law fit through them
-        (when ``fit``) and every fit parameter against q."""
+        """τ(q) of the files fitted in ``fits`` (a session's store; the workspace's own without
+        one): the fitted relaxation times, a power-law fit through them (when ``fit``) and every
+        fit parameter against q."""
+        store = self._fits if fits is None else fits
         if bounds is None:
             bounds = [list(b) for b in DEFAULT_TAUQ_BOUNDS]
         if len(bounds) != 2 or len(bounds[0]) != 2 or len(bounds[1]) != 2:
@@ -607,7 +689,7 @@ class Workspace:
             except WorkspaceError as exc:
                 skipped.append({"file": name, "reason": str(exc)})
                 continue
-            summary: dict[str, Any] | None = xf.fit_summary
+            summary = store.get(name)
             if summary is None:
                 skipped.append({"file": name, "reason": f"{xf.label}: fit g2 first"})
                 continue
@@ -616,10 +698,11 @@ class Workspace:
             val = np.asarray(summary["fit_val"])
             if fit and any(flags):
                 try:
-                    xf.fit_tauq(
-                        q_range=(qr[0], qr[1]),
-                        bounds=(np.asarray(bounds[0], float), np.asarray(bounds[1], float)),
-                        fit_flag=flags,
+                    fit_tauq_summary(
+                        summary,
+                        (qr[0], qr[1]),
+                        (np.asarray(bounds[0], float), np.asarray(bounds[1], float)),
+                        flags,
                     )
                 except Exception as exc:
                     logger.warning("tau(q) fit failed for %s: %s", name, exc)
