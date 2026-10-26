@@ -16,7 +16,7 @@ Conda environment for testing the installation and running the commands below: `
 Install in editable mode with dev extras (the package is not installed by default in this checkout):
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,gui]"   # gui: PySide6, pyqtgraph, matplotlib (the base package has no Qt)
 ```
 
 Run the GUI:
@@ -25,7 +25,11 @@ Run the GUI:
 pyxpcsviewer path_to_hdf_directory   # or: pyxpcsviewer   (uses cwd)
 ```
 
-Run the web viewer (needs the `web` extras: `pip install -e ".[web,dev]"` — fastapi, uvicorn, plotly, httpx):
+Run the web viewer (needs the `web` extras: `pip install -e ".[web,dev]"` — fastapi, uvicorn, plotly, httpx, and
+`beamline-webkit`, the shared package of the beamline web stack, installed from the `beamline-web` monorepo:
+`pip install -e path/to/beamline-web/packages/webkit-py`). `pyxpcsviewer-web --export-openapi
+src/pyxpcsviewer/web/openapi.json` regenerates the committed API document after a route change;
+`tests/test_web_openapi.py` fails while it is stale.
 
 ```bash
 pyxpcsviewer-web path_to_hdf_directory            # serves http://127.0.0.1:8070/

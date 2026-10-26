@@ -16,6 +16,9 @@ the g2_stability tab tried to plot.
 import warnings
 
 import numpy as np
+import pytest
+
+pytest.importorskip("PySide6")
 
 from pyxpcsviewer.gui.control.plot.g2_mod import _setup_subplots, pg_plot, pg_plot_one_g2
 

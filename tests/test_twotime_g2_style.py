@@ -8,6 +8,9 @@ pick "semilogx" (default, matching the old hardcoded behavior) or "linear".
 """
 
 import numpy as np
+import pytest
+
+pytest.importorskip("PySide6")
 
 from pyxpcsviewer.gui.control.plot.twotime import plot_twotime_g2
 

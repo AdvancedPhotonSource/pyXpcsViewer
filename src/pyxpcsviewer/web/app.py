@@ -30,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 STATIC_DIR = Path(__file__).parent / "static"
 LOOPBACK_HOSTS = ("localhost", "*.localhost", "127.0.0.1", "[::1]")
+# The version of the API as the committed openapi.json (``pyxpcsviewer-web --export-openapi``) describes
+# it: bump the minor for an addition, the major for a change a frontend built against the old document
+# would not survive. The package version is separate: it changes with every release.
+API_SCHEMA_VERSION = "0.1.0"
 
 
 # ── request bodies ───────────────────────────────────────────────────────────────────────────

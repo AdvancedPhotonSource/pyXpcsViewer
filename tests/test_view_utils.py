@@ -8,6 +8,10 @@ an invisible speck. Uses a bare duck-typed fake instead of a real pyqtgraph
 ViewBox so the test doesn't need a QApplication.
 """
 
+import pytest
+
+pytest.importorskip("PySide6")
+
 from pyxpcsviewer.gui.control.plot.view_utils import apply_zoom_limit
 
 

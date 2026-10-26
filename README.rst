@@ -41,7 +41,8 @@ to isolate pyXPCSViewer, so it does not interfere with dependencies of your exis
 
    .. code-block:: bash
 
-      pip install xpcs-viewer
+      pip install "xpcs-viewer[gui]"       # the desktop viewer (PySide6, pyqtgraph, matplotlib)
+      pip install xpcs-viewer              # the library and command-line tools only, no Qt
 
    **Note:** Running conda and pip commands together is generally not recommended. pyXPCSViewer will only use pip or conda once compatibility issues are resolved.
 
@@ -64,7 +65,7 @@ The same folder can be browsed in a web browser, with no Qt needed on the machin
 
 .. code-block:: bash
 
-   pip install "xpcs-viewer[web]"          # fastapi, uvicorn and plotly
+   pip install "xpcs-viewer[web]"          # fastapi, uvicorn, plotly and beamline-webkit (no Qt)
    pyxpcsviewer-web path_to_hdf_directory   # serves http://127.0.0.1:8070/ (--open starts a browser)
 
 Click a file to show its detector image and metadata, check files to compare them; the tabs on the right give
@@ -80,7 +81,7 @@ viewer does. The page's URL carries the file shown, the files checked and the ta
 
       .. code-block:: bash
 
-         pip install -U xpcs-viewer
+         pip install -U "xpcs-viewer[gui]"
 
 6. To uninstall:
 

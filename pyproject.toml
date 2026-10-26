@@ -37,17 +37,15 @@ keywords = [
     "science",
 ]
 
+# the library and command-line tools; the desktop viewer is the gui extra, the web viewer the web extra
 dependencies = [
     "numpy",
     "scipy",
     "h5py",
     "hdf5plugin",
-    "matplotlib",
-    "pyqtgraph",
     "scikit-learn",
     "psutil",
     "tqdm",
-    "pyside6>=6.8.3,<7",
 ]
 
 [project.scripts]
@@ -56,10 +54,13 @@ run_viewer = "pyxpcsviewer.cli:main"
 pyxpcsviewer-web = "pyxpcsviewer.web.cli:main"
 
 [project.optional-dependencies]
+gui = ["pyside6>=6.8.3,<7", "pyqtgraph", "matplotlib"]
+# the web viewer; beamline-webkit is the shared Python package of the beamline web stack
+# (https://github.com/AdvancedPhotonSource/beamline-web, packages/webkit-py)
+web = ["fastapi", "uvicorn", "plotly", "matplotlib", "beamline-webkit>=0.1,<1"]
 dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff", "httpx"]
-web = ["fastapi", "uvicorn", "plotly"]
 docs = ["sphinx", "sphinx-rtd-theme"]
-pyinstaller = ["pyinstaller>=6.21"]
+pyinstaller = ["pyinstaller>=6.21", "xpcs-viewer[gui]"]
 
 [project.urls]
 bugs = "https://github.com/AZjk/pyxpcsviewer/issues"

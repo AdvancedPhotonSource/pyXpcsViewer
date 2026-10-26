@@ -35,7 +35,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cache-size", type=int, default=8, help="open files kept in memory (default 8)")
     parser.add_argument("--open", action="store_true", help="open the page in a browser once the server is up")
     parser.add_argument("--log-level", default="info", choices=("critical", "error", "warning", "info", "debug"))
+    parser.add_argument(
+        "--export-openapi",
+        metavar="FILE",
+        help="write the API document (OpenAPI JSON) to FILE ('-' for stdout) and exit, instead of serving; "
+        "the committed copy lives at src/pyxpcsviewer/web/openapi.json",
+    )
     args = parser.parse_args(argv)
+
+    if args.export_openapi:
+        try:
+            from .openapi import export_openapi, openapi_text
+        except ModuleNotFoundError as exc:
+            parser.error(f"the API export needs the web extra ({exc.name} is missing): pip install 'xpcs-viewer[web]'")
+        if args.export_openapi == "-":
+            sys.stdout.write(openapi_text())
+        else:
+            print(f"API document written to {export_openapi(args.export_openapi)}", file=sys.stderr)
+        return 0
 
     root = os.path.abspath(args.path)
     if not os.path.isdir(root):

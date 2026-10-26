@@ -42,7 +42,6 @@ def main() -> int:
         Exit code for sys.exit().
     """
     from pyxpcsviewer import __version__
-    from pyxpcsviewer.gui.view.xpcs_viewer import main_gui
 
     argparser = argparse.ArgumentParser(description="pyXpcsViewer: a GUI tool for XPCS data analysis")
 
@@ -68,6 +67,15 @@ def main() -> int:
     args = argparser.parse_args()
     if args.positional_path is not None:
         args.path = args.positional_path
+
+    try:
+        from pyxpcsviewer.gui.view.xpcs_viewer import main_gui
+    except ModuleNotFoundError as exc:
+        if exc.name and exc.name.split(".")[0] in ("PySide6", "shiboken6", "pyqtgraph", "matplotlib"):
+            argparser.error(
+                f"the desktop viewer needs the gui extra ({exc.name} is missing): pip install 'xpcs-viewer[gui]'"
+            )
+        raise
 
     sys.exit(main_gui(args.path, args.label_style))
 

@@ -10,6 +10,8 @@ docs/superpowers/specs/2026-08-03-twotime-qbin-memory-design.md.
 
 import pytest
 
+pytest.importorskip("PySide6")
+
 from pyxpcsviewer.gui.control.plot_controller import PlotController
 
 
