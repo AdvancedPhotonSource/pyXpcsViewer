@@ -4,10 +4,13 @@
 
 import os
 
+import numpy as np
 import pytest
 
 fastapi = pytest.importorskip("fastapi")
 pytest.importorskip("httpx")
+pytest.importorskip("beamline_webkit")
+from beamline_webkit.testing import array_of, meta_of  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from pyxpcsviewer.web.app import build_app, trusted_hosts  # noqa: E402
@@ -70,3 +73,45 @@ def test_app_over_the_real_files(multitau_path, twotime_path):
     assert client.get(f"/api/files/{tt}/twotime/c2", params={"selection": 9}).status_code == 400
     assert client.get(f"/api/files/{mt}/twotime/bins").status_code == 400
     assert client.get(f"/api/files/{tt}/hdf").json()["groups"]["/xpcs/twotime/config"]
+
+
+def test_binary_routes_over_the_real_files(multitau_path, twotime_path):
+    client = TestClient(build_app(os.path.dirname(multitau_path)), base_url="http://localhost")
+    mt = os.path.basename(multitau_path)
+    tt = os.path.basename(twotime_path)
+
+    data = client.get(f"/api/files/{mt}/image/data", params={"max_size": 256})
+    z, meta = array_of(data), meta_of(data)
+    assert z.shape == (240, 229) and z.dtype == np.float32
+    assert (
+        meta["factor"] == 9 and meta["x0"] == 4.0 and meta["shape_full"] == [2162, 2068] and meta["zmin"] < meta["zmax"]
+    )
+    assert client.get(f"/api/files/{mt}/image/meta", params={"max_size": 256}).json() == meta
+    region = client.get(
+        f"/api/files/{mt}/image/data", params={"max_size": 0, "x_min": 10, "x_max": 110, "y_min": 20, "y_max": 70}
+    )
+    assert array_of(region).shape == (50, 100)
+    assert meta_of(region)["factor"] == 1 and meta_of(region)["x0"] == 10 and meta_of(region)["y0"] == 20
+    assert client.get(f"/api/files/{mt}/image/data", params={"x_min": 1}).status_code == 400
+    assert client.get(f"/api/files/{mt}/image/data", params={"kind": "nope"}).status_code == 400
+    assert (
+        array_of(client.get(f"/api/files/{mt}/image/data", params={"kind": "mask", "max_size": 256})).dtype == np.uint8
+    )
+    assert client.get(f"/api/files/{mt}/summary").json()["geometry"]["shape"] == [2162, 2068]
+
+    g2 = client.get(f"/api/files/{mt}/g2/data")
+    assert array_of(g2).shape == (2, 44, 36) and len(meta_of(g2)["t"]) == 44 and len(meta_of(g2)["labels"]) == 36
+    narrow = client.get(f"/api/files/{mt}/g2/data", params={"q_min": 0.004, "q_max": 0.008})
+    assert 0 < array_of(narrow).shape[2] < 36
+    assert client.get(f"/api/files/{mt}/g2/meta").json()["q"] == meta_of(g2)["q"]
+    assert client.get(f"/api/files/{tt}/g2/data").status_code == 400
+
+    c2 = client.get(f"/api/files/{tt}/twotime/c2/data", params={"selection": 1, "max_size": 256})
+    assert max(array_of(c2).shape) <= 256 and array_of(c2).dtype == np.float32 and meta_of(c2)["qbin"] == 2
+    assert client.get(f"/api/files/{tt}/twotime/c2/meta", params={"selection": 1, "max_size": 256}).json() == meta_of(
+        c2
+    )
+    rest = client.get(
+        f"/api/files/{tt}/twotime/c2", params={"selection": 1, "max_size": 256, "include_c2": "false"}
+    ).json()
+    assert rest["c2"] is None and rest["g2_full"]["shape"] == [2000]

@@ -57,7 +57,7 @@ pyxpcsviewer-web = "pyxpcsviewer.web.cli:main"
 gui = ["pyside6>=6.8.3,<7", "pyqtgraph", "matplotlib"]
 # the web viewer; beamline-webkit is the shared Python package of the beamline web stack
 # (https://github.com/AdvancedPhotonSource/beamline-web, packages/webkit-py)
-web = ["fastapi", "uvicorn", "plotly", "matplotlib", "beamline-webkit>=0.1,<1"]
+web = ["fastapi", "uvicorn", "plotly", "matplotlib", "beamline-webkit>=0.2,<1"]
 dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff", "httpx"]
 docs = ["sphinx", "sphinx-rtd-theme"]
 pyinstaller = ["pyinstaller>=6.21", "xpcs-viewer[gui]"]

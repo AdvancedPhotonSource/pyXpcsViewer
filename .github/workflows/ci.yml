@@ -11,7 +11,7 @@ env:
   PYTHON_VERSION: "3.12"
   # The shared Python package of the beamline web stack, installed from its monorepo at a tag
   # until it is published on PyPI. Keep the tag in step with the version pinned in pyproject.toml.
-  WEBKIT_SPEC: "beamline-webkit @ git+https://github.com/AdvancedPhotonSource/beamline-web.git@webkit-py-v0.1.0#subdirectory=packages/webkit-py"
+  WEBKIT_SPEC: "beamline-webkit @ git+https://github.com/AdvancedPhotonSource/beamline-web.git@webkit-py-v0.2.0#subdirectory=packages/webkit-py"
 
 jobs:
   test:

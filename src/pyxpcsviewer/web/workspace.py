@@ -95,7 +95,8 @@ class Workspace:
         self._files: list[ResultFile] | None = None
         self._types: dict[tuple[str, float, int], list[str] | None] = {}
         self._open: OrderedDict[str, tuple[XpcsFile, float]] = OrderedDict()
-        self._images: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()
+        self._images: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()  # arrays and levels
+        self._packed_images: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()  # JSON payloads
 
     # ── files ────────────────────────────────────────────────────────────────────────────────
 
@@ -194,6 +195,7 @@ class Workspace:
             while len(self._open) > self.cache_size:
                 dropped, _ = self._open.popitem(last=False)
                 self._images = OrderedDict((k, v) for k, v in self._images.items() if k[0] != dropped)
+                self._packed_images = OrderedDict((k, v) for k, v in self._packed_images.items() if k[0] != dropped)
         return xf
 
     def _multitau(self, name: str) -> XpcsFile:
@@ -253,24 +255,22 @@ class Workspace:
         info: dict[str, Any] = jsonable(self.open(name).get_hdf_info())
         return info
 
+    def geometry(self, name: str) -> dict[str, Any]:
+        """The detector geometry of a file: what a page needs to place its image in q."""
+        xf = self.open(name)
+        return {
+            "shape": [int(xf.saxs_2d.shape[0]), int(xf.saxs_2d.shape[1])],
+            "beam_center": [float(xf.bcx), float(xf.bcy)],
+            "extent_q": [float(v) for v in xf.get_detector_extent()],
+            "pixel_size": float(xf.pixel_size),
+            "det_dist": float(xf.det_dist),
+            "energy": float(xf.X_energy),
+        }
+
     # ── the detector image ───────────────────────────────────────────────────────────────────
 
-    def image(self, name: str, kind: str = "saxs", scale: str = "log", max_size: int = 1024) -> dict[str, Any]:
-        """A detector-sized map, downsampled so that no side exceeds ``max_size`` pixels.
-
-        Args:
-            name: The file.
-            kind: ``"saxs"`` (the time-averaged intensity), ``"dqmap"`` / ``"sqmap"`` (the dynamic /
-                static q-bin index per pixel, 0 outside every bin) or ``"mask"``.
-            scale: For the intensity, ``"log"`` (log10 of the intensity) or ``"linear"``.
-            max_size: Longest side of the image sent, in pixels (0: full resolution).
-
-        Returns:
-            The map ``z`` (packed) with its sampling (``factor``, the source pixels per sent pixel;
-            ``x0``/``y0`` the center of the first sent pixel in source pixel units), the color levels
-            ``zmin``/``zmax`` (the 1st and 99.9th percentiles of an intensity image) and the percentile
-            table ``levels`` (201 values), the beam center and the q extent.
-        """
+    def _image_arrays(self, name: str, kind: str, scale: str, max_size: int) -> dict[str, Any]:
+        """The downsampled map of :meth:`image` with its levels, as arrays (cached)."""
         if kind not in IMAGE_KINDS:
             raise WorkspaceError(f"kind must be one of {IMAGE_KINDS}")
         if scale not in ("log", "linear"):
@@ -310,31 +310,119 @@ class Workspace:
             top = float(np.nanmax(z)) if np.isfinite(z).any() else 1.0
             levels = np.array([1.0, top], dtype=np.float32)
             zmin, zmax = 1.0, top
-        result = {
+        arrays = {
+            "key": key,
             "file": name,
             "label": xf.label,
             "kind": kind,
             "scale": scale if kind == "saxs" else "linear",
             "factor": factor,
             "shape_full": [int(source.shape[0]), int(source.shape[1])],
+            "z": np.ascontiguousarray(z),
+            "levels": levels,
+            "zmin": zmin,
+            "zmax": zmax,
+        }
+        with self._lock:
+            self._images[key] = arrays
+            while len(self._images) > 6:
+                self._images.popitem(last=False)
+        return arrays
+
+    def image(self, name: str, kind: str = "saxs", scale: str = "log", max_size: int = 1024) -> dict[str, Any]:
+        """A detector-sized map, downsampled so that no side exceeds ``max_size`` pixels, as the
+        JSON payload of the image route.
+
+        Args:
+            name: The file.
+            kind: ``"saxs"`` (the time-averaged intensity), ``"dqmap"`` / ``"sqmap"`` (the dynamic /
+                static q-bin index per pixel, 0 outside every bin) or ``"mask"``.
+            scale: For the intensity, ``"log"`` (log10 of the intensity) or ``"linear"``.
+            max_size: Longest side of the image sent, in pixels (0: full resolution).
+
+        Returns:
+            The map ``z`` (packed) with its sampling (``factor``, the source pixels per sent pixel;
+            ``x0``/``y0`` the center of the first sent pixel in source pixel units), the color levels
+            ``zmin``/``zmax`` (the 1st and 99.9th percentiles of an intensity image) and the percentile
+            table ``levels`` (201 values), the beam center and the q extent.
+        """
+        arrays = self._image_arrays(name, kind, scale, max_size)
+        with self._lock:
+            cached = self._packed_images.get(arrays["key"])
+            if cached is not None:
+                self._packed_images.move_to_end(arrays["key"])
+                return cached
+        factor = arrays["factor"]
+        z = arrays["z"]
+        result = {
+            "file": name,
+            "label": arrays["label"],
+            "kind": arrays["kind"],
+            "scale": arrays["scale"],
+            "factor": factor,
+            "shape_full": list(arrays["shape_full"]),
             "shape": [int(z.shape[0]), int(z.shape[1])],
             "x0": (factor - 1) / 2,
             "y0": (factor - 1) / 2,
             "z": pack(z),
-            "levels": pack(levels),
-            "zmin": zmin,
-            "zmax": zmax,
-            "beam_center": [float(xf.bcx), float(xf.bcy)],
-            "extent_q": [float(v) for v in xf.get_detector_extent()],
-            "pixel_size": float(xf.pixel_size),
-            "det_dist": float(xf.det_dist),
-            "energy": float(xf.X_energy),
+            "levels": pack(arrays["levels"]),
+            "zmin": arrays["zmin"],
+            "zmax": arrays["zmax"],
         }
+        result.update((k, v) for k, v in self.geometry(name).items() if k != "shape")
         with self._lock:
-            self._images[key] = result
-            while len(self._images) > 6:
-                self._images.popitem(last=False)
+            self._packed_images[arrays["key"]] = result
+            while len(self._packed_images) > 6:
+                self._packed_images.popitem(last=False)
         return result
+
+    def image_array(
+        self,
+        name: str,
+        kind: str = "saxs",
+        scale: str = "log",
+        max_size: int = 1024,
+        region: tuple[int, int, int, int] | None = None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        """The map of :meth:`image` as an array, with the little JSON that describes it.
+
+        Args:
+            name, kind, scale, max_size: As :meth:`image`; ``max_size=0`` is the full resolution.
+            region: ``(x_min, x_max, y_min, y_max)`` in detector pixels, the maximum excluded:
+                only the sent pixels covering that part of the detector are returned, so a page
+                can fetch the full-resolution pixels of the part it shows.
+
+        Returns:
+            The array (float32, or uint8 for the mask) and its meta: ``factor`` (source pixels per
+            sent pixel), ``x0``/``y0`` (the center of the first sent pixel in detector pixel units),
+            ``shape_full``, ``zmin``/``zmax``.
+        """
+        arrays = self._image_arrays(name, kind, scale, max_size)
+        factor = arrays["factor"]
+        z = arrays["z"]
+        r0, c0 = 0, 0
+        if region is not None:
+            x_min, x_max, y_min, y_max = (int(v) for v in region)
+            if not (x_min < x_max and y_min < y_max):
+                raise WorkspaceError("region must satisfy x_min < x_max and y_min < y_max")
+            c0, c1 = max(0, x_min // factor), min(z.shape[1], -(-x_max // factor))
+            r0, r1 = max(0, y_min // factor), min(z.shape[0], -(-y_max // factor))
+            if c0 >= c1 or r0 >= r1:
+                raise WorkspaceError("region lies outside the detector")
+            z = z[r0:r1, c0:c1]
+        meta = {
+            "file": name,
+            "label": arrays["label"],
+            "kind": arrays["kind"],
+            "scale": arrays["scale"],
+            "factor": factor,
+            "shape_full": list(arrays["shape_full"]),
+            "x0": c0 * factor + (factor - 1) / 2,
+            "y0": r0 * factor + (factor - 1) / 2,
+            "zmin": arrays["zmin"],
+            "zmax": arrays["zmax"],
+        }
+        return z, meta
 
     def pixel(self, name: str, x: float, y: float) -> dict[str, Any]:
         """What is at detector pixel (column ``x``, row ``y``): intensity, q, φ, the q-bins."""
@@ -439,6 +527,23 @@ class Workspace:
                 }
             )
         return {"files": files, "skipped": skipped}
+
+    def g2_array(
+        self, name: str, q_range: list[float] | None = None, t_range: list[float] | None = None
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        """The multi-tau g2 of one file as one float32 array of shape (2, delays, q-bins): the g2
+        and its error, with the delays ``t``, the q values and their labels as the meta."""
+        xf = self._multitau(name)
+        q, t_el, g2, g2_err, labels = xf.get_g2_data(qrange=_pair(q_range), trange=_pair(t_range))
+        data = np.stack([np.asarray(g2, dtype=np.float32), np.asarray(g2_err, dtype=np.float32)])
+        meta = {
+            "file": name,
+            "label": xf.label,
+            "q": [float(v) for v in q],
+            "labels": list(labels),
+            "t": [float(v) for v in t_el],
+        }
+        return data, meta
 
     def fit_g2(
         self,
@@ -707,10 +812,16 @@ class Workspace:
         return {"x": col, "y": row, "qbin": qbin, "selection": selection}
 
     def twotime_c2(
-        self, name: str, selection: int = 0, correct_diag: bool = True, max_size: int = 512
+        self,
+        name: str,
+        selection: int = 0,
+        correct_diag: bool = True,
+        max_size: int = 512,
+        include_c2: bool = True,
     ) -> dict[str, Any]:
         """The two-time correlation of one q-bin, at most ``max_size`` by ``max_size``, with the
-        g2 computed from it (whole run and time segments)."""
+        g2 computed from it (whole run and time segments). Without ``include_c2`` the map itself
+        is left out (``None``): a page that fetched it from the binary route wants the rest."""
         xf = self._twotime(name)
         assert xf.c2_processed_bins is not None
         count = int(xf.c2_processed_bins.size)
@@ -728,7 +839,7 @@ class Workspace:
             "selection": int(selection),
             "qbin": qbin,
             "bin_label": xf.get_qbin_label(qbin),
-            "c2": pack(c2),
+            "c2": pack(c2) if include_c2 else None,
             "shape": [int(c2.shape[0]), int(c2.shape[1])],
             "delta_t": float(result["delta_t"]),
             "acquire_period": float(result["acquire_period"]),
@@ -738,3 +849,18 @@ class Workspace:
             "g2_full": pack(g2_full),
             "g2_partial": pack(g2_partial),
         }
+
+    def twotime_c2_array(
+        self, name: str, selection: int = 0, correct_diag: bool = True, max_size: int = 512
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        """The two-time correlation map of one q-bin as a float32 array, with its color range,
+        time step and bin as the meta."""
+        payload = self.twotime_c2(name, selection=selection, correct_diag=correct_diag, max_size=max_size)
+        xf = self._twotime(name)
+        result = xf.get_twotime_c2(selection=int(selection), correct_diag=bool(correct_diag), max_size=int(max_size))
+        c2 = np.ascontiguousarray(np.asarray(result["c2_mat"], dtype=np.float32))
+        meta = {
+            key: payload[key]
+            for key in ("file", "label", "selection", "qbin", "bin_label", "delta_t", "acquire_period", "zmin", "zmax")
+        }
+        return c2, meta

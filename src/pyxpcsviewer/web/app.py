@@ -15,6 +15,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from beamline_webkit import array_response, array_responses
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -34,7 +35,7 @@ LOOPBACK_HOSTS = ("localhost", "*.localhost", "127.0.0.1", "[::1]")
 # The version of the API as the committed openapi.json (``pyxpcsviewer-web --export-openapi``) describes
 # it: bump the minor for an addition, the major for a change a frontend built against the old document
 # would not survive. The package version is separate: it changes with every release.
-API_SCHEMA_VERSION = "0.2.0"
+API_SCHEMA_VERSION = "0.3.0"
 
 
 # ── request bodies ───────────────────────────────────────────────────────────────────────────
@@ -220,7 +221,12 @@ def build_app(
     # ── one file ─────────────────────────────────────────────────────────────────────────
     @app.get("/api/files/{name}/summary")
     def summary(name: str) -> models.Summary:
-        return {"file": name, "label": service.label(name), "rows": service.summary(name)}
+        return {  # type: ignore[return-value]
+            "file": name,
+            "label": service.label(name),
+            "rows": service.summary(name),
+            "geometry": service.geometry(name),
+        }
 
     @app.get("/api/files/{name}/hdf")
     def hdf(name: str) -> models.HdfInfo:
@@ -229,6 +235,41 @@ def build_app(
     @app.get("/api/files/{name}/image")
     def image(name: str, kind: str = "saxs", scale: str = "log", max_size: int = Query(1024, ge=0)) -> models.Image:
         return service.image(name, kind=kind, scale=scale, max_size=max_size)
+
+    @app.get("/api/files/{name}/image/meta")
+    def image_meta(
+        name: str, kind: str = "saxs", scale: str = "log", max_size: int = Query(1024, ge=0)
+    ) -> models.ImageMeta:
+        """What the binary image route sends for these parameters, without the array."""
+        return service.image_array(name, kind=kind, scale=scale, max_size=max_size)[1]  # type: ignore[return-value]
+
+    @app.get(
+        "/api/files/{name}/image/data",
+        response_class=Response,
+        responses=array_responses(
+            "the map as float32 rows (uint8 for the mask), downsampled to max_size or, with max_size=0, "
+            "at full resolution; x_min … y_max cut it to a region of the detector",
+            meta="ImageMeta",
+        ),
+    )
+    def image_data(
+        name: str,
+        kind: str = "saxs",
+        scale: str = "log",
+        max_size: int = Query(1024, ge=0),
+        x_min: int | None = Query(None, ge=0),
+        x_max: int | None = Query(None, ge=1),
+        y_min: int | None = Query(None, ge=0),
+        y_max: int | None = Query(None, ge=1),
+    ) -> Response:
+        bounds = (x_min, x_max, y_min, y_max)
+        region = None
+        if any(b is not None for b in bounds):
+            if any(b is None for b in bounds):
+                raise HTTPException(400, "a region needs all of x_min, x_max, y_min and y_max")
+            region = (x_min, x_max, y_min, y_max)
+        z, meta = service.image_array(name, kind=kind, scale=scale, max_size=max_size, region=region)
+        return array_response(z, meta=meta)
 
     @app.get("/api/files/{name}/pixel")
     def pixel(name: str, x: float, y: float) -> models.Pixel:
@@ -250,6 +291,36 @@ def build_app(
         t_range = [t_min, t_max] if t_min is not None and t_max is not None else None
         return service.g2_stability(name, q_range=q_range, t_range=t_range)
 
+    @app.get("/api/files/{name}/g2/meta")
+    def g2_meta(
+        name: str,
+        q_min: float | None = None,
+        q_max: float | None = None,
+        t_min: float | None = None,
+        t_max: float | None = None,
+    ) -> models.G2Meta:
+        """The q values, labels and delays of the binary g2 route, without the array."""
+        q_range = [q_min, q_max] if q_min is not None and q_max is not None else None
+        t_range = [t_min, t_max] if t_min is not None and t_max is not None else None
+        return service.g2_array(name, q_range=q_range, t_range=t_range)[1]  # type: ignore[return-value]
+
+    @app.get(
+        "/api/files/{name}/g2/data",
+        response_class=Response,
+        responses=array_responses("the g2 and its error as float32, shape (2, delays, q-bins)", meta="G2Meta"),
+    )
+    def g2_data(
+        name: str,
+        q_min: float | None = None,
+        q_max: float | None = None,
+        t_min: float | None = None,
+        t_max: float | None = None,
+    ) -> Response:
+        q_range = [q_min, q_max] if q_min is not None and q_max is not None else None
+        t_range = [t_min, t_max] if t_min is not None and t_max is not None else None
+        data, meta = service.g2_array(name, q_range=q_range, t_range=t_range)
+        return array_response(data, meta=meta)
+
     @app.get("/api/files/{name}/twotime/bins")
     def twotime_bins(name: str) -> models.TwotimeBins:
         return service.twotime_bins(name)
@@ -260,9 +331,33 @@ def build_app(
 
     @app.get("/api/files/{name}/twotime/c2")
     def twotime_c2(
-        name: str, selection: int = 0, correct_diag: bool = True, max_size: int = Query(512, ge=16)
+        name: str,
+        selection: int = 0,
+        correct_diag: bool = True,
+        max_size: int = Query(512, ge=16),
+        include_c2: bool = Query(True, description="false: leave the map out, the binary route has it"),
     ) -> models.TwotimeC2:
-        return service.twotime_c2(name, selection=selection, correct_diag=correct_diag, max_size=max_size)
+        return service.twotime_c2(
+            name, selection=selection, correct_diag=correct_diag, max_size=max_size, include_c2=include_c2
+        )
+
+    @app.get("/api/files/{name}/twotime/c2/meta")
+    def twotime_c2_meta(
+        name: str, selection: int = 0, correct_diag: bool = True, max_size: int = Query(512, ge=16)
+    ) -> models.C2Meta:
+        """What the binary two-time route sends for these parameters, without the array."""
+        return service.twotime_c2_array(name, selection=selection, correct_diag=correct_diag, max_size=max_size)[1]  # type: ignore[return-value]
+
+    @app.get(
+        "/api/files/{name}/twotime/c2/data",
+        response_class=Response,
+        responses=array_responses("the two-time correlation map of one q-bin as float32", meta="C2Meta"),
+    )
+    def twotime_c2_data(
+        name: str, selection: int = 0, correct_diag: bool = True, max_size: int = Query(512, ge=16)
+    ) -> Response:
+        c2, meta = service.twotime_c2_array(name, selection=selection, correct_diag=correct_diag, max_size=max_size)
+        return array_response(c2, meta=meta)
 
     # ── several files ────────────────────────────────────────────────────────────────────
     @app.post("/api/g2")

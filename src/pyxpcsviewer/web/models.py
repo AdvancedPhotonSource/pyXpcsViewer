@@ -74,10 +74,22 @@ class Files(Model):
 # ── one file ─────────────────────────────────────────────────────────────────────────────────
 
 
+class Geometry(Model):
+    """The detector geometry of a file: what a page needs to place its image in q."""
+
+    shape: tuple[int, int] = Field(description="rows, columns of the detector")
+    beam_center: tuple[float, float] = Field(description="x, y in detector pixels")
+    extent_q: list[float] = Field(description="qx min, qx max, qy min, qy max at the detector edges")
+    pixel_size: float
+    det_dist: float
+    energy: float
+
+
 class Summary(Model):
     file: str
     label: str
     rows: list[tuple[str, str]] = Field(description="[label, value] rows of the metadata card")
+    geometry: Geometry
 
 
 class HdfInfo(Model):
@@ -104,6 +116,21 @@ class Image(Model):
     pixel_size: float
     det_dist: float
     energy: float
+
+
+class ImageMeta(Model):
+    """What describes the array of the binary image route (its ``X-Array-Meta`` header)."""
+
+    file: str
+    label: str
+    kind: Literal["saxs", "dqmap", "sqmap", "mask"]
+    scale: Literal["log", "linear"]
+    factor: int = Field(description="source pixels per sent pixel, per axis")
+    shape_full: tuple[int, int] = Field(description="rows, columns of the detector")
+    x0: float = Field(description="center of the first sent column, in detector pixels")
+    y0: float = Field(description="center of the first sent row, in detector pixels")
+    zmin: float = Field(description="the 1st percentile of an intensity image: a first color range")
+    zmax: float = Field(description="the 99.9th percentile")
 
 
 class Pixel(Model):
@@ -164,13 +191,27 @@ class TwotimeBinAt(Model):
     selection: int | None = Field(description="the C2 block index at the pixel, null off every bin")
 
 
+class C2Meta(Model):
+    """What describes the array of the binary two-time route (its ``X-Array-Meta`` header)."""
+
+    file: str
+    label: str
+    selection: int
+    qbin: int
+    bin_label: str
+    delta_t: float = Field(description="seconds per C2 pixel")
+    acquire_period: float
+    zmin: float
+    zmax: float
+
+
 class TwotimeC2(Model):
     file: str
     label: str
     selection: int
     qbin: int
     bin_label: str
-    c2: PackedArray
+    c2: PackedArray | None = Field(description="null when include_c2 is false: fetch the binary route")
     shape: tuple[int, int]
     delta_t: float
     acquire_period: float
@@ -201,6 +242,16 @@ class G2Fit(Model):
     fit_flag: list[bool]
     q_range: Range | None
     t_range: Range | None
+
+
+class G2Meta(Model):
+    """What describes the array of the binary g2 route, shape (2, delays, q-bins): g2 and its error."""
+
+    file: str
+    label: str
+    q: list[float]
+    labels: list[str]
+    t: list[float] = Field(description="the delays, seconds")
 
 
 class G2File(Model):

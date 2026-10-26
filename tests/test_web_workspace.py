@@ -166,3 +166,33 @@ def test_twotime(workspace, names):
         workspace.twotime_c2(names["tt"], selection=7)
     with pytest.raises(WorkspaceError, match="no two-time"):
         workspace.twotime_bins(names["mt"])
+
+
+def test_image_arrays_and_regions(workspace, names):
+    z, meta = workspace.image_array(names["mt"], max_size=1024)
+    assert z.shape == (720, 689) and meta["factor"] == 3 and meta["x0"] == 1.0
+    # columns 4 .. 9 are covered by sent pixels 1 (4 // 3) up to 3 (10 / 3 rounded up, excluded)
+    part, meta = workspace.image_array(names["mt"], max_size=1024, region=(4, 10, 0, 3))
+    assert part.shape == (1, 3) and meta["x0"] == 4.0 and meta["y0"] == 1.0
+    full, meta = workspace.image_array(names["mt"], max_size=0, region=(0, 5, 0, 2))
+    assert full.shape == (2, 5) and meta["factor"] == 1 and meta["x0"] == 0.0 and meta["shape_full"] == [2162, 2068]
+    with pytest.raises(WorkspaceError):
+        workspace.image_array(names["mt"], region=(5, 5, 0, 1))
+    with pytest.raises(WorkspaceError, match="outside"):
+        workspace.image_array(names["mt"], region=(5000, 6000, 0, 1))
+    geometry = workspace.geometry(names["mt"])
+    assert workspace.image(names["mt"], max_size=1024)["beam_center"] == geometry["beam_center"]
+    assert geometry["shape"] == [2162, 2068] and len(geometry["extent_q"]) == 4
+
+
+def test_g2_and_c2_arrays(workspace, names):
+    data, meta = workspace.g2_array(names["mt"])
+    assert data.shape == (2, 44, 36) and data.dtype == np.float32
+    assert len(meta["labels"]) == 36 and len(meta["t"]) == 44 and len(meta["q"]) == 36
+    narrow, meta = workspace.g2_array(names["mt"], q_range=[0.004, 0.008])
+    assert 0 < narrow.shape[2] < 36 and len(meta["q"]) == narrow.shape[2]
+    with pytest.raises(WorkspaceError):
+        workspace.g2_array(names["tt"])
+    c2, meta = workspace.twotime_c2_array(names["tt"], selection=1, max_size=256)
+    assert c2.dtype == np.float32 and max(c2.shape) <= 256 and meta["qbin"] == 2 and meta["zmin"] < meta["zmax"]
+    assert workspace.twotime_c2(names["tt"], selection=1, max_size=256, include_c2=False)["c2"] is None
