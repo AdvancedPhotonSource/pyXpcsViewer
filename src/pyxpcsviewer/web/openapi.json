@@ -1,6 +1,392 @@
 {
   "components": {
     "schemas": {
+      "Colormaps": {
+        "additionalProperties": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "description": "Plotly color scales by name: ``[[position, \"rgb(r,g,b)\"], ...]``.",
+        "title": "Colormaps",
+        "type": "object"
+      },
+      "Defaults": {
+        "additionalProperties": false,
+        "description": "The Qt viewer's fit bounds, offered to the page as a starting point: ``[lower, upper]``.",
+        "properties": {
+          "g2_bounds": {
+            "additionalProperties": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "description": "by fit function: single, double",
+            "title": "G2 Bounds",
+            "type": "object"
+          },
+          "tauq_bounds": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Tauq Bounds",
+            "type": "array"
+          }
+        },
+        "required": [
+          "g2_bounds",
+          "tauq_bounds"
+        ],
+        "title": "Defaults",
+        "type": "object"
+      },
+      "FileRow": {
+        "additionalProperties": false,
+        "properties": {
+          "atype": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Multitau, Twotime or both; null for a file that is not a result",
+            "title": "Atype"
+          },
+          "id": {
+            "description": "the file name, the key of every per-file route",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "description": "the short label",
+            "title": "Label",
+            "type": "string"
+          },
+          "modified": {
+            "description": "the modification time, YYYY-MM-DD HH:MM",
+            "title": "Modified",
+            "type": "string"
+          },
+          "mtime": {
+            "title": "Mtime",
+            "type": "number"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "modified",
+          "mtime",
+          "size",
+          "atype"
+        ],
+        "title": "FileRow",
+        "type": "object"
+      },
+      "Files": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileRow"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "total": {
+            "description": "files matching the pattern before the limit",
+            "title": "Total",
+            "type": "integer"
+          },
+          "version": {
+            "description": "bumped at every rescan of the folder",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "files",
+          "total",
+          "version"
+        ],
+        "title": "Files",
+        "type": "object"
+      },
+      "G2": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/G2File"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "files",
+          "skipped"
+        ],
+        "title": "G2",
+        "type": "object"
+      },
+      "G2File": {
+        "additionalProperties": false,
+        "properties": {
+          "err": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/G2Fit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "g2": {
+            "$ref": "#/components/schemas/PackedArray",
+            "description": "shape (delays, q-bins)"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "q": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Q",
+            "type": "array"
+          },
+          "t": {
+            "$ref": "#/components/schemas/PackedArray"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "q",
+          "labels",
+          "t",
+          "g2",
+          "err",
+          "fit"
+        ],
+        "title": "G2File",
+        "type": "object"
+      },
+      "G2Fit": {
+        "additionalProperties": false,
+        "properties": {
+          "bounds": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bounds"
+          },
+          "errors": {
+            "items": {
+              "anyOf": [
+                {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "fit_flag": {
+            "items": {
+              "type": "boolean"
+            },
+            "title": "Fit Flag",
+            "type": "array"
+          },
+          "fit_x": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "fit_y": {
+            "$ref": "#/components/schemas/PackedArray",
+            "description": "shape (q-bins, points); NaN rows for bins without a fit"
+          },
+          "func": {
+            "enum": [
+              "single",
+              "double"
+            ],
+            "title": "Func",
+            "type": "string"
+          },
+          "param_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Param Names",
+            "type": "array"
+          },
+          "params": {
+            "items": {
+              "anyOf": [
+                {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Params",
+            "type": "array"
+          },
+          "q_range": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q Range"
+          },
+          "success": {
+            "items": {
+              "type": "boolean"
+            },
+            "title": "Success",
+            "type": "array"
+          },
+          "t_range": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "T Range"
+          }
+        },
+        "required": [
+          "func",
+          "param_names",
+          "fit_x",
+          "fit_y",
+          "success",
+          "params",
+          "errors",
+          "bounds",
+          "fit_flag",
+          "q_range",
+          "t_range"
+        ],
+        "title": "G2Fit",
+        "type": "object"
+      },
       "G2FitRequest": {
         "properties": {
           "bounds": {
@@ -126,6 +512,62 @@
         "title": "G2Request",
         "type": "object"
       },
+      "G2Stability": {
+        "additionalProperties": false,
+        "properties": {
+          "err": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "g2": {
+            "$ref": "#/components/schemas/PackedArray",
+            "description": "shape (segments, delays, q-bins)"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "q": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Q",
+            "type": "array"
+          },
+          "segments": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Segments",
+            "type": "array"
+          },
+          "t": {
+            "$ref": "#/components/schemas/PackedArray"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "q",
+          "labels",
+          "segments",
+          "t",
+          "g2",
+          "err"
+        ],
+        "title": "G2Stability",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -137,6 +579,300 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HdfInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "groups": {
+            "additionalProperties": true,
+            "description": "the instrument, sample, user and analysis groups, nested",
+            "title": "Groups",
+            "type": "object"
+          }
+        },
+        "required": [
+          "file",
+          "groups"
+        ],
+        "title": "HdfInfo",
+        "type": "object"
+      },
+      "Image": {
+        "additionalProperties": false,
+        "properties": {
+          "beam_center": {
+            "description": "x, y in detector pixels",
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Beam Center",
+            "type": "array"
+          },
+          "det_dist": {
+            "title": "Det Dist",
+            "type": "number"
+          },
+          "energy": {
+            "title": "Energy",
+            "type": "number"
+          },
+          "extent_q": {
+            "description": "the q range of the detector edges",
+            "items": {
+              "type": "number"
+            },
+            "title": "Extent Q",
+            "type": "array"
+          },
+          "factor": {
+            "description": "source pixels per sent pixel, per axis",
+            "title": "Factor",
+            "type": "integer"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "saxs",
+              "dqmap",
+              "sqmap",
+              "mask"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "levels": {
+            "$ref": "#/components/schemas/PackedArray",
+            "description": "the percentile table of z: 201 values"
+          },
+          "pixel_size": {
+            "title": "Pixel Size",
+            "type": "number"
+          },
+          "scale": {
+            "enum": [
+              "log",
+              "linear"
+            ],
+            "title": "Scale",
+            "type": "string"
+          },
+          "shape": {
+            "description": "rows, columns of the array sent",
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Shape",
+            "type": "array"
+          },
+          "shape_full": {
+            "description": "rows, columns of the detector",
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Shape Full",
+            "type": "array"
+          },
+          "x0": {
+            "description": "center of the first sent column, in source pixels",
+            "title": "X0",
+            "type": "number"
+          },
+          "y0": {
+            "title": "Y0",
+            "type": "number"
+          },
+          "z": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "zmax": {
+            "title": "Zmax",
+            "type": "number"
+          },
+          "zmin": {
+            "title": "Zmin",
+            "type": "number"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "kind",
+          "scale",
+          "factor",
+          "shape_full",
+          "shape",
+          "x0",
+          "y0",
+          "z",
+          "levels",
+          "zmin",
+          "zmax",
+          "beam_center",
+          "extent_q",
+          "pixel_size",
+          "det_dist",
+          "energy"
+        ],
+        "title": "Image",
+        "type": "object"
+      },
+      "Info": {
+        "additionalProperties": false,
+        "properties": {
+          "colormaps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Colormaps",
+            "type": "array"
+          },
+          "defaults": {
+            "$ref": "#/components/schemas/Defaults"
+          },
+          "label_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label Style"
+          },
+          "root": {
+            "description": "the folder served",
+            "title": "Root",
+            "type": "string"
+          },
+          "schema_version": {
+            "description": "the API schema version; a frontend refuses a different major",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "version": {
+            "description": "the xpcs-viewer package version",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "root",
+          "version",
+          "schema_version",
+          "label_style",
+          "colormaps",
+          "defaults"
+        ],
+        "title": "Info",
+        "type": "object"
+      },
+      "Intt": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/InttFile"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "files",
+          "skipped"
+        ],
+        "title": "Intt",
+        "type": "object"
+      },
+      "InttFile": {
+        "additionalProperties": false,
+        "properties": {
+          "fft_x": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "fft_y": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "frame_time": {
+            "title": "Frame Time",
+            "type": "number"
+          },
+          "frames": {
+            "title": "Frames",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "points": {
+            "title": "Points",
+            "type": "integer"
+          },
+          "x": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "y": {
+            "$ref": "#/components/schemas/PackedArray"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "frame_time",
+          "frames",
+          "points",
+          "x",
+          "y",
+          "fft_x",
+          "fft_y"
+        ],
+        "title": "InttFile",
         "type": "object"
       },
       "InttRequest": {
@@ -166,6 +902,326 @@
           }
         },
         "title": "InttRequest",
+        "type": "object"
+      },
+      "PackedArray": {
+        "additionalProperties": false,
+        "description": "A typed array as base64: ``dtype`` is the code the browser maps to a typed array\n(``f4`` Float32Array, ``u1`` Uint8Array, …), ``bdata`` its little-endian bytes.",
+        "properties": {
+          "bdata": {
+            "title": "Bdata",
+            "type": "string"
+          },
+          "dtype": {
+            "enum": [
+              "f4",
+              "f8",
+              "i1",
+              "u1",
+              "i2",
+              "u2",
+              "i4",
+              "u4"
+            ],
+            "title": "Dtype",
+            "type": "string"
+          },
+          "shape": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Shape",
+            "type": "array"
+          }
+        },
+        "required": [
+          "dtype",
+          "bdata",
+          "shape"
+        ],
+        "title": "PackedArray",
+        "type": "object"
+      },
+      "ParamsVsQ": {
+        "additionalProperties": false,
+        "properties": {
+          "bounds": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bounds"
+          },
+          "errors": {
+            "items": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Names",
+            "type": "array"
+          },
+          "q": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Q",
+            "type": "array"
+          },
+          "titles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Titles",
+            "type": "array"
+          },
+          "values": {
+            "description": "one row per parameter",
+            "items": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "q",
+          "names",
+          "titles",
+          "values",
+          "errors",
+          "bounds"
+        ],
+        "title": "ParamsVsQ",
+        "type": "object"
+      },
+      "Pixel": {
+        "additionalProperties": false,
+        "description": "What is at a detector pixel; only ``x``, ``y`` and ``on_detector`` off the detector.",
+        "properties": {
+          "dq_bin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dq Bin"
+          },
+          "dq_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dq Label"
+          },
+          "intensity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intensity"
+          },
+          "masked": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Masked"
+          },
+          "on_detector": {
+            "title": "On Detector",
+            "type": "boolean"
+          },
+          "phi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phi"
+          },
+          "q": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q"
+          },
+          "qx": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qx"
+          },
+          "qy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qy"
+          },
+          "sq_bin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sq Bin"
+          },
+          "x": {
+            "title": "X",
+            "type": "integer"
+          },
+          "y": {
+            "title": "Y",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "on_detector",
+          "x",
+          "y"
+        ],
+        "title": "Pixel",
+        "type": "object"
+      },
+      "Saxs1d": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/Saxs1dFile"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "files",
+          "skipped"
+        ],
+        "title": "Saxs1d",
+        "type": "object"
+      },
+      "Saxs1dFile": {
+        "additionalProperties": false,
+        "properties": {
+          "I": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "q": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "xlabel": {
+            "title": "Xlabel",
+            "type": "string"
+          },
+          "ylabel": {
+            "title": "Ylabel",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "labels",
+          "q",
+          "I",
+          "xlabel",
+          "ylabel"
+        ],
+        "title": "Saxs1dFile",
         "type": "object"
       },
       "Saxs1dRequest": {
@@ -232,6 +1288,264 @@
         "title": "Saxs1dRequest",
         "type": "object"
       },
+      "Skipped": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "reason"
+        ],
+        "title": "Skipped",
+        "type": "object"
+      },
+      "Stability": {
+        "additionalProperties": false,
+        "properties": {
+          "I": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "q": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "xlabel": {
+            "title": "Xlabel",
+            "type": "string"
+          },
+          "ylabel": {
+            "title": "Ylabel",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "q",
+          "I",
+          "labels",
+          "xlabel",
+          "ylabel"
+        ],
+        "title": "Stability",
+        "type": "object"
+      },
+      "Summary": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "rows": {
+            "description": "[label, value] rows of the metadata card",
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "type": "array"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "rows"
+        ],
+        "title": "Summary",
+        "type": "object"
+      },
+      "Tauq": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/TauqFile"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "files",
+          "skipped"
+        ],
+        "title": "Tauq",
+        "type": "object"
+      },
+      "TauqFile": {
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TauqFit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "params_vs_q": {
+            "$ref": "#/components/schemas/ParamsVsQ"
+          },
+          "q": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Q",
+            "type": "array"
+          },
+          "tau": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Tau",
+            "type": "array"
+          },
+          "tau_err": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Tau Err",
+            "type": "array"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "q",
+          "tau",
+          "tau_err",
+          "params_vs_q",
+          "fit"
+        ],
+        "title": "TauqFile",
+        "type": "object"
+      },
+      "TauqFit": {
+        "additionalProperties": false,
+        "properties": {
+          "a": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "A"
+          },
+          "a_err": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "A Err"
+          },
+          "b": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "B"
+          },
+          "b_err": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "B Err"
+          },
+          "x": {
+            "items": {
+              "type": "number"
+            },
+            "title": "X",
+            "type": "array"
+          },
+          "y": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Y",
+            "type": "array"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "a",
+          "a_err",
+          "b",
+          "b_err"
+        ],
+        "title": "TauqFit",
+        "type": "object"
+      },
       "TauqRequest": {
         "properties": {
           "bounds": {
@@ -296,6 +1610,186 @@
         "title": "TauqRequest",
         "type": "object"
       },
+      "TwotimeBin": {
+        "additionalProperties": false,
+        "properties": {
+          "index": {
+            "description": "the C2 block index: the selection of the c2 route",
+            "title": "Index",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "qbin": {
+            "title": "Qbin",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "index",
+          "qbin",
+          "label"
+        ],
+        "title": "TwotimeBin",
+        "type": "object"
+      },
+      "TwotimeBinAt": {
+        "additionalProperties": false,
+        "properties": {
+          "qbin": {
+            "title": "Qbin",
+            "type": "integer"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "the C2 block index at the pixel, null off every bin",
+            "title": "Selection"
+          },
+          "x": {
+            "title": "X",
+            "type": "integer"
+          },
+          "y": {
+            "title": "Y",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "qbin",
+          "selection"
+        ],
+        "title": "TwotimeBinAt",
+        "type": "object"
+      },
+      "TwotimeBins": {
+        "additionalProperties": false,
+        "properties": {
+          "bins": {
+            "items": {
+              "$ref": "#/components/schemas/TwotimeBin"
+            },
+            "title": "Bins",
+            "type": "array"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "time_step": {
+            "title": "Time Step",
+            "type": "number"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "bins",
+          "time_step"
+        ],
+        "title": "TwotimeBins",
+        "type": "object"
+      },
+      "TwotimeC2": {
+        "additionalProperties": false,
+        "properties": {
+          "acquire_period": {
+            "title": "Acquire Period",
+            "type": "number"
+          },
+          "bin_label": {
+            "title": "Bin Label",
+            "type": "string"
+          },
+          "c2": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "delta_t": {
+            "title": "Delta T",
+            "type": "number"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "g2_full": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "g2_partial": {
+            "$ref": "#/components/schemas/PackedArray",
+            "description": "shape (segments, delays)"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "levels": {
+            "$ref": "#/components/schemas/PackedArray"
+          },
+          "qbin": {
+            "title": "Qbin",
+            "type": "integer"
+          },
+          "selection": {
+            "title": "Selection",
+            "type": "integer"
+          },
+          "shape": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Shape",
+            "type": "array"
+          },
+          "zmax": {
+            "title": "Zmax",
+            "type": "number"
+          },
+          "zmin": {
+            "title": "Zmin",
+            "type": "number"
+          }
+        },
+        "required": [
+          "file",
+          "label",
+          "selection",
+          "qbin",
+          "bin_label",
+          "c2",
+          "shape",
+          "delta_t",
+          "acquire_period",
+          "levels",
+          "zmin",
+          "zmax",
+          "g2_full",
+          "g2_partial"
+        ],
+        "title": "TwotimeC2",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -340,7 +1834,7 @@
   },
   "info": {
     "title": "pyXPCSViewer web",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -352,9 +1846,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Colormaps Api Colormaps Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Colormaps"
                 }
               }
             },
@@ -432,9 +1924,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Files Api Files Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Files"
                 }
               }
             },
@@ -537,9 +2027,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response G2 Stability Api Files  Name  G2 Stability Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/G2Stability"
                 }
               }
             },
@@ -578,9 +2066,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Hdf Api Files  Name  Hdf Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/HdfInfo"
                 }
               }
             },
@@ -650,9 +2136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Image Api Files  Name  Image Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Image"
                 }
               }
             },
@@ -709,9 +2193,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Pixel Api Files  Name  Pixel Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Pixel"
                 }
               }
             },
@@ -760,9 +2242,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Stability Api Files  Name  Stability Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Stability"
                 }
               }
             },
@@ -801,9 +2281,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Summary Api Files  Name  Summary Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Summary"
                 }
               }
             },
@@ -860,9 +2338,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Twotime Bin At Api Files  Name  Twotime Bin At Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/TwotimeBinAt"
                 }
               }
             },
@@ -901,9 +2377,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Twotime Bins Api Files  Name  Twotime Bins Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/TwotimeBins"
                 }
               }
             },
@@ -973,9 +2447,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Twotime C2 Api Files  Name  Twotime C2 Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/TwotimeC2"
                 }
               }
             },
@@ -1013,9 +2485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response G2 Api G2 Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/G2"
                 }
               }
             },
@@ -1053,9 +2523,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response G2 Fit Api G2 Fit Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/G2"
                 }
               }
             },
@@ -1083,9 +2551,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Info Api Info Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Info"
                 }
               }
             },
@@ -1113,9 +2579,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Intt Api Intt Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Intt"
                 }
               }
             },
@@ -1153,9 +2617,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Saxs1D Api Saxs1D Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Saxs1d"
                 }
               }
             },
@@ -1193,9 +2655,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Tauq Api Tauq Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/Tauq"
                 }
               }
             },

@@ -24,6 +24,7 @@ def test_app_over_an_empty_folder(tmp_path):
     client = TestClient(build_app(str(tmp_path)), base_url="http://localhost")
     info = client.get("/api/info").json()
     assert info["root"] == str(tmp_path) and "viridis" in info["colormaps"]
+    assert info["schema_version"].count(".") == 2
     assert info["defaults"]["g2_bounds"]["single"][0] == [0.04, 1e-5, 0.5, 0.95]
     assert client.get("/api/files").json() == {"files": [], "total": 0, "version": 1}
     assert client.get("/api/colormaps").json()["jet"][0][0] == 0

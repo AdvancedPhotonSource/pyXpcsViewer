@@ -300,10 +300,12 @@ def _assemble_fit_summary(
         "fit_val": fit_val,
         "t_el": t_el,
         "q_val": q_val,
-        "q_range": str(q_range),
-        "t_range": str(t_range),
+        # the ranges the data was cut to, as (low, high) or None for all, and the fit flags as
+        # booleans: values a caller can use, not their text
+        "q_range": None if q_range is None else (float(q_range[0]), float(q_range[1])),
+        "t_range": None if t_range is None else (float(t_range[0]), float(t_range[1])),
         "bounds": bounds,
-        "fit_flag": str(fit_flag),
+        "fit_flag": None if fit_flag is None else [bool(f) for f in fit_flag],
         "fit_line": fit_line,
         "label": label,
     }

@@ -23,6 +23,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from pyxpcsviewer import __version__
 
+from . import models
 from .colormaps import COLORMAPS, colorscales
 from .workspace import DEFAULT_G2_BOUNDS, DEFAULT_TAUQ_BOUNDS, Workspace, WorkspaceError
 
@@ -33,7 +34,7 @@ LOOPBACK_HOSTS = ("localhost", "*.localhost", "127.0.0.1", "[::1]")
 # The version of the API as the committed openapi.json (``pyxpcsviewer-web --export-openapi``) describes
 # it: bump the minor for an addition, the major for a change a frontend built against the old document
 # would not survive. The package version is separate: it changes with every release.
-API_SCHEMA_VERSION = "0.1.0"
+API_SCHEMA_VERSION = "0.2.0"
 
 
 # ── request bodies ───────────────────────────────────────────────────────────────────────────
@@ -188,10 +189,11 @@ def build_app(
 
     # ── the folder ───────────────────────────────────────────────────────────────────────
     @app.get("/api/info")
-    def info() -> dict[str, Any]:
-        return {
+    def info() -> models.Info:
+        return {  # type: ignore[return-value]
             "root": service.root,
             "version": __version__,
+            "schema_version": API_SCHEMA_VERSION,
             "label_style": service.label_style,
             "colormaps": list(COLORMAPS),
             "defaults": {
@@ -201,8 +203,8 @@ def build_app(
         }
 
     @app.get("/api/colormaps")
-    def colormaps() -> dict[str, Any]:
-        return colorscales()
+    def colormaps() -> models.Colormaps:
+        return colorscales()  # type: ignore[return-value]
 
     @app.get("/api/files")
     def files(
@@ -211,29 +213,29 @@ def build_app(
         reverse: bool = False,
         rescan: bool = False,
         limit: int | None = Query(None, ge=1),
-    ) -> dict[str, Any]:
+    ) -> models.Files:
         rows = service.files(pattern, sort=sort, reverse=reverse, rescan=rescan, limit=limit)
         return {"files": rows, "total": service.count_files(pattern), "version": service.listing_version}
 
     # ── one file ─────────────────────────────────────────────────────────────────────────
     @app.get("/api/files/{name}/summary")
-    def summary(name: str) -> dict[str, Any]:
+    def summary(name: str) -> models.Summary:
         return {"file": name, "label": service.label(name), "rows": service.summary(name)}
 
     @app.get("/api/files/{name}/hdf")
-    def hdf(name: str) -> dict[str, Any]:
+    def hdf(name: str) -> models.HdfInfo:
         return {"file": name, "groups": service.hdf_info(name)}
 
     @app.get("/api/files/{name}/image")
-    def image(name: str, kind: str = "saxs", scale: str = "log", max_size: int = Query(1024, ge=0)) -> dict[str, Any]:
+    def image(name: str, kind: str = "saxs", scale: str = "log", max_size: int = Query(1024, ge=0)) -> models.Image:
         return service.image(name, kind=kind, scale=scale, max_size=max_size)
 
     @app.get("/api/files/{name}/pixel")
-    def pixel(name: str, x: float, y: float) -> dict[str, Any]:
+    def pixel(name: str, x: float, y: float) -> models.Pixel:
         return service.pixel(name, x, y)
 
     @app.get("/api/files/{name}/stability")
-    def stability(name: str, norm: str = "none") -> dict[str, Any]:
+    def stability(name: str, norm: str = "none") -> models.Stability:
         return service.stability(name, norm=norm)
 
     @app.get("/api/files/{name}/g2_stability")
@@ -243,42 +245,42 @@ def build_app(
         q_max: float | None = None,
         t_min: float | None = None,
         t_max: float | None = None,
-    ) -> dict[str, Any]:
+    ) -> models.G2Stability:
         q_range = [q_min, q_max] if q_min is not None and q_max is not None else None
         t_range = [t_min, t_max] if t_min is not None and t_max is not None else None
         return service.g2_stability(name, q_range=q_range, t_range=t_range)
 
     @app.get("/api/files/{name}/twotime/bins")
-    def twotime_bins(name: str) -> dict[str, Any]:
+    def twotime_bins(name: str) -> models.TwotimeBins:
         return service.twotime_bins(name)
 
     @app.get("/api/files/{name}/twotime/bin_at")
-    def twotime_bin_at(name: str, x: float, y: float) -> dict[str, Any]:
+    def twotime_bin_at(name: str, x: float, y: float) -> models.TwotimeBinAt:
         return service.twotime_bin_at(name, x, y)
 
     @app.get("/api/files/{name}/twotime/c2")
     def twotime_c2(
         name: str, selection: int = 0, correct_diag: bool = True, max_size: int = Query(512, ge=16)
-    ) -> dict[str, Any]:
+    ) -> models.TwotimeC2:
         return service.twotime_c2(name, selection=selection, correct_diag=correct_diag, max_size=max_size)
 
     # ── several files ────────────────────────────────────────────────────────────────────
     @app.post("/api/g2")
-    def g2(body: G2Request) -> dict[str, Any]:
+    def g2(body: G2Request) -> models.G2:
         return service.g2(body.names, body.q_range, body.t_range, with_fit=body.with_fit)
 
     @app.post("/api/g2/fit")
-    def g2_fit(body: G2FitRequest) -> dict[str, Any]:
+    def g2_fit(body: G2FitRequest) -> models.G2:
         return service.fit_g2(
             body.names, body.q_range, body.t_range, fit_func=body.fit_func, bounds=body.bounds, fit_flag=body.fit_flag
         )
 
     @app.post("/api/tauq")
-    def tauq(body: TauqRequest) -> dict[str, Any]:
+    def tauq(body: TauqRequest) -> models.Tauq:
         return service.tauq(body.names, body.q_range, bounds=body.bounds, fit_flag=body.fit_flag, fit=body.fit)
 
     @app.post("/api/saxs1d")
-    def saxs1d(body: Saxs1dRequest) -> dict[str, Any]:
+    def saxs1d(body: Saxs1dRequest) -> models.Saxs1d:
         return service.saxs1d(
             body.names,
             q_range=body.q_range,
@@ -291,7 +293,7 @@ def build_app(
         )
 
     @app.post("/api/intt")
-    def intt(body: InttRequest) -> dict[str, Any]:
+    def intt(body: InttRequest) -> models.Intt:
         return service.intt(body.names, window=body.window, sampling=body.sampling, max_points=body.max_points)
 
     return app

@@ -28,6 +28,12 @@ def test_document_shape():
     assert len(api_paths) == 17
     assert {"/api/info", "/api/files/{name}/image", "/api/files/{name}/twotime/c2", "/api/g2/fit"} <= set(api_paths)
     assert openapi_text() == openapi_text(), "the export is deterministic"
+    # every API route declares its answer
+    for path in api_paths:
+        for operation in doc["paths"][path].values():
+            answer = operation["responses"]["200"]["content"]["application/json"]["schema"]
+            assert "$ref" in answer, f"{path} has no response model"
+    assert "schema_version" in doc["components"]["schemas"]["Info"]["properties"]
 
 
 def test_export_writes_the_same_text(tmp_path):
