@@ -65,7 +65,7 @@ The same folder can be browsed in a web browser, with no Qt needed on the machin
 
 .. code-block:: bash
 
-   pip install "xpcs-viewer[web]"          # fastapi, uvicorn, plotly and beamline-webkit (no Qt)
+   pip install "xpcs-viewer[web]"          # fastapi, uvicorn and beamline-webkit (no Qt)
    pyxpcsviewer-web path_to_hdf_directory   # serves http://127.0.0.1:8070/ (--open starts a browser)
 
 Click a file to show its detector image and metadata, check files to compare them; the tabs on the right give

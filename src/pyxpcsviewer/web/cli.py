@@ -60,12 +60,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         import uvicorn
     except ModuleNotFoundError:
-        parser.error("the web viewer needs fastapi, uvicorn and plotly: pip install 'xpcs-viewer[web]'")
+        parser.error("the web viewer needs fastapi and uvicorn: pip install 'xpcs-viewer[web]'")
 
-    from .app import build_app, plotly_js_path
-
-    if plotly_js_path() is None:
-        parser.error("the plotly package is missing (it provides plotly.js): pip install plotly")
+    from .app import build_app
 
     logging.basicConfig(level=args.log_level.upper(), format="%(levelname)s %(name)s: %(message)s")
     app = build_app(root, label_style=args.label_style, cache_size=args.cache_size, host=args.host)

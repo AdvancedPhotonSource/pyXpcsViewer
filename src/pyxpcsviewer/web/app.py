@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
-from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +25,7 @@ from beamline_webkit import (
     create_app,
 )
 from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -92,13 +91,21 @@ class InttRequest(FilesRequest):
 # ── the application ──────────────────────────────────────────────────────────────────────────
 
 
-def plotly_js_path() -> Path | None:
-    """plotly.min.js as the ``plotly`` package ships it (None when the package is missing)."""
-    try:
-        path = resources.files("plotly") / "package_data" / "plotly.min.js"
-    except ModuleNotFoundError:
-        return None
-    return Path(str(path)) if path.is_file() else None
+NOT_BUILT = (
+    "<!doctype html><html lang=en><head><meta charset=utf-8><title>pyXPCSViewer web</title>"
+    "<style>body{font:14px system-ui,sans-serif;max-width:40rem;margin:4rem auto;color:#1f1f1d;line-height:1.5}"
+    "code{background:#efeeea;padding:0 .3em}</style></head><body><h1>pyXPCSViewer web</h1>"
+    "<p>The API is up (<a href=api/docs>api/docs</a>), but this install carries no frontend. Release wheels do; "
+    "from a checkout, build the app in the <code>beamline-web</code> repository "
+    "(<code>pnpm --filter @beamline-web/app-xpcs build</code>) and copy its <code>dist/</code> into "
+    "<code>src/pyxpcsviewer/web/static/</code>, or run its dev server, which proxies <code>/api</code> to this "
+    "service.</p></body></html>"
+)
+
+
+def frontend_dir() -> Path | None:
+    """The built app's folder when this install carries one (release wheels do), else None."""
+    return STATIC_DIR if (STATIC_DIR / "index.html").is_file() else None
 
 
 def build_app(
@@ -145,7 +152,6 @@ def build_app(
     app.state.jobs = jobs
     app.include_router(jobs.router())
     current_session = sessions.dependency()
-    plotly_js = plotly_js_path()
 
     @app.exception_handler(WorkspaceError)
     async def _workspace_error(_request: Any, exc: WorkspaceError) -> JSONResponse:
@@ -154,27 +160,16 @@ def build_app(
 
     # ── the page ─────────────────────────────────────────────────────────────────────────
     @app.get("/", include_in_schema=False)
-    def index() -> FileResponse:
-        return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
+    def index() -> Response:
+        built = frontend_dir()
+        if built is None:
+            return HTMLResponse(NOT_BUILT, headers={"Cache-Control": "no-cache"})
+        return FileResponse(built / "index.html", headers={"Cache-Control": "no-cache"})
 
-    @app.get("/vendor/plotly.min.js", include_in_schema=False)
-    def plotly_bundle() -> Response:
-        if plotly_js is None:
-            raise HTTPException(503, "the plotly package is not installed: pip install plotly")
-        return FileResponse(
-            plotly_js, media_type="application/javascript", headers={"Cache-Control": "public, max-age=86400"}
-        )
-
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
-    @app.middleware("http")
-    async def _revalidate_static(request: Any, call_next: Any) -> Any:
-        """The page's own files are revalidated on every load (ETag / Last-Modified), so a browser
-        never keeps an old stylesheet or script after the viewer is updated."""
-        response = await call_next(request)
-        if request.url.path.startswith("/static/"):
-            response.headers["Cache-Control"] = "no-cache"
-        return response
+    built = frontend_dir()
+    if built is not None and (built / "assets").is_dir():
+        # the bundle's hashed files, cacheable for good; index.html above is revalidated on every load
+        app.mount("/assets", StaticFiles(directory=str(built / "assets")), name="assets")
 
     # ── the folder ───────────────────────────────────────────────────────────────────────
     @app.get("/api/info")

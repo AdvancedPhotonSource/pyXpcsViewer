@@ -29,7 +29,6 @@ def test_app_over_an_empty_folder(tmp_path):
     assert client.get("/api/colormaps").json()["jet"][0][0] == 0
     page = client.get("/")
     assert page.status_code == 200 and "pyXPCSViewer" in page.text
-    assert client.get("/static/style.css").status_code == 200
     assert client.get("/api/files/missing.hdf/summary").status_code == 404
     assert client.get("/api/files/..%2Fx.hdf/summary").status_code in (400, 404)
     assert client.get("/api/info", headers={"Host": "evil.example.com"}).status_code == 400
@@ -163,3 +162,24 @@ def test_fits_belong_to_the_page_and_run_as_jobs(multitau_path, twotime_path):
     # a client without a session header (the old page, curl) gets a cookie and its own fits
     plain = client.post("/api/g2/fit", json={"names": [mt], "fit_func": "single"})
     assert plain.json()["files"][0]["fit"]["func"] == "single" and "webkit_session" in plain.cookies
+
+
+def test_the_built_app_is_served_when_the_install_carries_it(tmp_path, monkeypatch):
+    import pyxpcsviewer.web.app as web_app
+
+    static = tmp_path / "static"
+    (static / "assets").mkdir(parents=True)
+    (static / "index.html").write_text(
+        "<!doctype html><title>pyXPCSViewer web</title><script src=./assets/index-abc.js></script>"
+    )
+    (static / "assets" / "index-abc.js").write_text("console.log('hi')")
+    monkeypatch.setattr(web_app, "STATIC_DIR", static)
+    client = TestClient(build_app(str(tmp_path)), base_url="http://localhost")
+    page = client.get("/")
+    assert page.status_code == 200 and "index-abc.js" in page.text and page.headers["cache-control"] == "no-cache"
+    assert client.get("/assets/index-abc.js").status_code == 200
+    assert client.get("/api/health").status_code == 200
+    # without a build, the page says so and the API still answers
+    monkeypatch.setattr(web_app, "STATIC_DIR", tmp_path / "nowhere")
+    bare = TestClient(build_app(str(tmp_path)), base_url="http://localhost")
+    assert "carries no" in bare.get("/").text and bare.get("/api/info").status_code == 200

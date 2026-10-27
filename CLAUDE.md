@@ -25,7 +25,7 @@ Run the GUI:
 pyxpcsviewer path_to_hdf_directory   # or: pyxpcsviewer   (uses cwd)
 ```
 
-Run the web viewer (needs the `web` extras: `pip install -e ".[web,dev]"` — fastapi, uvicorn, plotly, httpx, and
+Run the web viewer (needs the `web` extras: `pip install -e ".[web,dev]"` — fastapi, uvicorn, httpx, and
 `beamline-webkit`, the shared package of the beamline web stack, installed from the `beamline-web` monorepo:
 `pip install -e path/to/beamline-web/packages/webkit-py`). `pyxpcsviewer-web --export-openapi
 src/pyxpcsviewer/web/openapi.json` regenerates the committed API document after a route change;
