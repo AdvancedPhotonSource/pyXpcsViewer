@@ -59,7 +59,7 @@ gui = ["pyside6>=6.8.3,<7", "pyqtgraph", "matplotlib"]
 # the web viewer; beamline-webkit is the shared Python package of the beamline web stack
 # (https://github.com/AZjk/beamline-web, packages/webkit-py)
 web = ["fastapi", "uvicorn", "matplotlib", "beamline-webkit>=0.2,<1"]
-dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff", "httpx"]
+dev = ["coverage", "pytest", "pytest-cov", "mypy", "ruff", "httpx", "httpx2"]  # starlette's test client asks for httpx2 from 1.0
 docs = ["sphinx", "sphinx-rtd-theme"]
 pyinstaller = ["pyinstaller>=6.21", "xpcs-viewer[gui]"]
 
