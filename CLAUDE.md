@@ -59,7 +59,7 @@ There is a real test suite under `tests/`: `test_fitting.py`, `test_g2_bounds_in
 `test_view_utils.py`, and `test_xpcs_viewer_smoke.py` (the latter two `pytest.importorskip("PySide6")` and set
 `QT_QPA_PLATFORM=offscreen` to construct real Qt widgets headlessly). The web viewer has `test_web_workspace.py`
 (the service on the real files), `test_web_api.py` (the routes through FastAPI's `TestClient`; skipped without
-fastapi/httpx) and `test_web_encoding.py`; the GUI-independent helpers have `test_discover.py`, `test_image_utils.py`
+fastapi/httpx) and `test_web_encoding.py`, `test_web_openapi.py` (the committed API document) and `test_synthetic.py`; the GUI-independent helpers have `test_discover.py`, `test_image_utils.py`
 and `test_intt_utils.py`. `test_pyxpcsviewer.py` is still an
 unmodified cookiecutter stub (imports the nonexistent `pyxpcsviewer.pyxpcsviewer`, no real assertions) —
 harmless, but don't treat it as a template for new tests.
@@ -71,8 +71,9 @@ on the primary dev machine) — the real `.hdf` files are intentionally not trac
 gitignored). The fixtures `pytest.skip` per-file if the target is missing, so the suite still runs clean
 without the data present; only `test_real_data.py`'s cases actually need it.
 
-There is still no CI workflow that runs tests — `.github/workflows/` only has `publish-pypi.yml`, which builds
-the sdist/wheel and publishes to PyPI on tag push. There is no PyInstaller/AppImage build workflow in the repo.
+`.github/workflows/ci.yml` runs pytest with and without the gui extra (headless Qt) on push and pull requests;
+`publish-pypi.yml` builds the sdist/wheel, with the web page from the monorepo's release of the same version,
+and publishes to PyPI on tag push. There is no PyInstaller/AppImage build workflow in the repo.
 
 ### Regenerating the Qt UI
 
@@ -143,34 +144,28 @@ cli.py -> gui/view/xpcs_viewer.py (XpcsViewer QMainWindow, generated Ui_mainWind
 
 ### Web viewer (`web/`)
 
-`pyxpcsviewer-web` (`web/cli.py`) serves one result folder in the browser with the three-column layout of gixsu's
-web app: the files and the metadata of the file shown (two panes) | the detector image over the I(q) panel (the
-stability of the file shown as I(q) or g2 per time segment, or the SAXS 1D of the checked files) and the I(t)
-panel (all in view, two gutters) | one tab per dynamics analysis (g2, τ(q), two-time, metadata; result above controls). Every split is a draggable gutter (`static/js/layout.js`, sizes kept in localStorage). Nothing in
-`web/` imports Qt.
+`pyxpcsviewer-web` (`web/cli.py`) serves one result folder in the browser: the service is here, the page is the
+`xpcs` app of the `beamline-web` monorepo (`apps/xpcs`, React on the shared kit), built and copied into
+`web/static/` (gitignored; release wheels carry it, `publish-pypi.yml` downloads it from the monorepo's
+`xpcs-v<version>` release). Nothing in `web/` imports Qt; nothing in `web/` knows the page's layout.
 
 - **`web/workspace.py`** (`Workspace`) is the service: the folder's files (analysis types cached by name/mtime),
-  an LRU of open `XpcsFile` objects, and one method per thing the page shows — `image` (downsampled detector maps
-  with a 201-point percentile table for the contrast slider), `pixel`, `g2`/`fit_g2`/`tauq`, `saxs1d`,
-  `stability`/`g2_stability`, `intt`, `twotime_bins`/`twotime_c2`/`twotime_bin_at`, `summary`, `hdf_info`. Every
-  method returns a JSON-ready dict; large arrays are packed by **`web/encoding.py`** as base64 typed arrays
-  (`{"dtype": "f4", "bdata": ..., "shape": [...]}`), decoded by `static/js/api.js`. `WorkspaceError` is a 4xx.
-  Fits are run through `XpcsFile.fit_g2`/`fit_tauq`, so the τ(q) tab reads the g2 tab's fit from the same object.
-- **`web/app.py`** (`build_app(root, label_style=, cache_size=, host=)`) wraps it as `/api/...` routes (OpenAPI
-  at `/api/docs`), serves `static/` and `plotly.min.js` from the installed `plotly` package (`/vendor/`), and
-  accepts only loopback Host headers (plus the bound address) unless bound to 0.0.0.0 (`trusted_hosts`).
-- **`web/static/`** is the page, plain ES modules with no build step: `index.html` holds every panel's controls
-  (named inputs read by `widgets.readForm`, persisted in localStorage); `style.css` carries the design tokens
-  (gixsu's, so the tools look like one family) and bundles Inter as `fonts/inter-xpcs.woff2` (OFL, see the
-  license file there); `js/state.js` is the store (files, the file shown, the files checked, the tab, the
-  two-time bin); `js/files.js` and `js/image.js` are the left and center columns; `js/charts.js` is the Plotly
-  theme and the panel grid; `js/g2figure.js` builds g2 grids for the g2 tab and the I(q) panel's g2 segments;
-  `js/tabs/*.js`
-  is one module per tab or center panel built with `tabs/base.js`'s `makeTab` (stale when its dependencies change,
-  refreshed when shown; the center panels are always shown). I(t) traces are averaged down to 16k points by the
-  server (`core/intt_utils.block_average`). The URL carries the file shown, the files checked and the tab (`?file=&check=&tab=`), so a view can be
-  shared. Analyses of several files use the checked files, else the file shown; single-file tabs (stability,
-  two-time, metadata) use the file shown. A click on a q-bin of the image picks the two-time block.
+  an LRU of open `XpcsFile` objects, and one method per thing the page shows — `image_array` (a downsampled
+  detector map, or a region of it, with its meta), `pixel`, `geometry`, `g2_array`/`fit_g2`/`tauq`, `saxs1d`,
+  `stability`/`g2_stability`, `intt`, `twotime_bins`/`twotime_c2_array`/`twotime_bin_at`, `summary`, `hdf_info`.
+  Arrays go to the browser as binary bodies (`beamline_webkit.array_response`, little-endian, with the shape and
+  dtype in headers and the rest of the result in the `X-Array-Meta` header, typed by a `/meta` route beside each
+  binary route); JSON results use `web/encoding.py`'s `jsonable`. `WorkspaceError` is a 4xx (`{"detail": ...}`).
+  g2 fits are per browser session (`fits=` dict, kept by the session store) and run as jobs with progress.
+- **`web/app.py`** (`build_app(root, label_style=, cache_size=, host=)`) wraps it as `/api/...` routes with
+  pydantic response models (`web/models.py`), built on `beamline_webkit.create_app` (health, sessions by the
+  `X-Session-Id` header or cookie, jobs with `/api/jobs/{id}/events` as SSE, `{"detail"}` errors, loopback-only
+  Host headers unless bound to 0.0.0.0). `API_SCHEMA_VERSION` is the contract with the page: bump the minor for
+  an addition, the major for a change the page would not survive, and regenerate `web/openapi.json`
+  (`pyxpcsviewer-web --export-openapi`); `tests/test_web_openapi.py` fails while the committed copy is stale, and
+  the monorepo generates the page's types from a copy of it.
+- **`core/file_io/synthetic.py`** (`pyxpcsviewer-synthetic FOLDER`) writes small synthetic result files (multi-tau,
+  two-time, both) so the service, the tests and the monorepo's end-to-end CI run without beamline data.
 - Not in the web viewer (Qt only): the averaging toolbox, G2 regrouping and its debug dialog, the g2 map.
 
 ### Data format

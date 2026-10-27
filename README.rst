@@ -69,10 +69,16 @@ The same folder can be browsed in a web browser, with no Qt needed on the machin
    pyxpcsviewer-web path_to_hdf_directory   # serves http://127.0.0.1:8070/ (--open starts a browser)
 
 Click a file to show its detector image and metadata, check files to compare them; the tabs on the right give
-the multi-tau g2 with its fits, SAXS 1D, the stability over time, the intensity trace, τ(q), the two-time
-correlation (click a q-bin on the image to pick it) and the file's metadata. ``--host 0.0.0.0`` opens the
-server to the network, ``--port`` picks the port, ``--label-style`` shortens the file labels as the desktop
-viewer does. The page's URL carries the file shown, the files checked and the tab, so a view can be shared.
+the multi-tau g2 with its fits, τ(q), the two-time correlation (click a q-bin on the image to pick it) and the
+file's metadata, the panels under the image I(q) and I(t). The image, its color map, scale, levels, zoom and
+pan run in the browser; fits run as jobs with their progress shown, and each browser keeps its own fits.
+``--host 0.0.0.0`` opens the server to the network, ``--port`` picks the port, ``--label-style`` shortens the file labels as the desktop viewer does.
+The page's URL carries the file shown, the files checked and the tab, so a view can be shared.
+
+The page itself is the ``xpcs`` app of the `beamline-web <https://github.com/AZjk/beamline-web>`_
+repository; release wheels carry it built. From a source checkout, build it there and copy its ``dist/``
+into ``src/pyxpcsviewer/web/static/``, or run its dev server. ``pyxpcsviewer-synthetic FOLDER`` writes
+synthetic result files to try the viewer without beamline data.
 
 5. To upgrade:
 

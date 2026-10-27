@@ -28,6 +28,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
+      - name: The web frontend, from the beamline-web release of this version
+        # The monorepo tags xpcs-v<version> and attaches xpcs-dist.tar.gz; the wheel serves it.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "xpcs-${GITHUB_REF_NAME}" --repo AZjk/beamline-web --pattern xpcs-dist.tar.gz --output xpcs-dist.tar.gz
+          mkdir -p src/pyxpcsviewer/web/static
+          tar -xzf xpcs-dist.tar.gz -C src/pyxpcsviewer/web/static
+          test -f src/pyxpcsviewer/web/static/index.html
+
       - name: Build package
         run: |
           python -m build

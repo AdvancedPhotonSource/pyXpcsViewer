@@ -37,7 +37,7 @@ def _pattern(shape: tuple[int, int], center: tuple[float, float], rng: np.random
 
 
 def _g2_curves(t_el: np.ndarray, q: np.ndarray, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
-    """Stretched exponentials whose relaxation time falls with q: g2 (delays × bins) and its error."""
+    """Stretched exponentials whose relaxation time falls with q: g2 (delays by bins) and its error."""
     tau_q = 0.08 * (q[0] / q)
     g2 = 1.0 + 0.25 * np.exp(-2.0 * (t_el[:, None] / tau_q[None, :]) ** 0.9)
     err = 0.004 + 0.002 * (t_el[:, None] / t_el[-1])
